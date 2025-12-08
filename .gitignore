@@ -1,0 +1,33 @@
+### Node / JS
+node_modules/
+**/node_modules/
+.pnp.*
+
+### Builds / Next.js / Vite
+.next/
+out/
+dist/
+build/
+
+### OS / Editor
+.DS_Store
+Thumbs.db
+*.log
+
+### Env / Secrets
+.env
+.env.*
+*.keystore
+
+### Media files (heavy)
+public/videos/
+public/audio/
+*.mp4
+*.wav
+*.mp3
+*.jks
+
+### Misc
+coverage/
+*.local
+.vercel

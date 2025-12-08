@@ -1,0 +1,177 @@
+/**
+ * HomeScreen Component
+ * Page d'accueil avec hero section et appels à l'action.
+ * ÉDITABLE: Tous les textes, images et couleurs peuvent être modifiés.
+ */
+
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui';
+
+export const HomeScreen: React.FC = () => {
+  return (
+    <div className="space-y-20 py-12">
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-4 py-12 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          {/* Text Content */}
+          <div className="space-y-6">
+            {/* TODO: MODIFIER - Titre principal */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              Crée du contenu extraordinaire avec l'IA
+            </h1>
+
+            {/* TODO: MODIFIER - Sous-titre / Description */}
+            <p className="text-lg md:text-xl text-slate-400">
+              T-shirts personnalisés, musiques générées par Suno et vidéos créées par Revide.ai.
+              Tout ce qu'il te faut pour transformer tes idées en réalité.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link href="/services">
+                <Button variant="primary" size="lg">
+                  Découvrir nos services
+                </Button>
+              </Link>
+              <Link href="/booking">
+                <Button variant="outline" size="lg">
+                  Prendre rendez-vous
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Image / Visual */}
+          <div className="h-80 md:h-96 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center">
+            {/* TODO: MODIFIER - Ajoute une image hero */}
+            <img
+              src="/images/hero.png"
+              alt="Hero"
+              className="w-full h-full object-cover rounded-lg"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x400?text=Ton+Image+Hero';
+              }}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="max-w-7xl mx-auto px-4 py-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          Nos capacités
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Feature 1 - T-shirts */}
+          <div className="p-8 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all">
+            <div className="text-4xl mb-4">👕</div>
+            <h3 className="text-xl font-bold mb-2">T-shirts personnalisés</h3>
+            {/* TODO: MODIFIER - Description du service T-shirts */}
+            <p className="text-slate-400">
+              Crée des designs uniques pour tes t-shirts avec l'IA. Personnalise chaque aspect et
+              rends-les comme tu les imagines.
+            </p>
+          </div>
+
+          {/* Feature 2 - Music (Suno) */}
+          <div className="p-8 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all">
+            <div className="text-4xl mb-4">🎵</div>
+            <h3 className="text-xl font-bold mb-2">Musique générée (Suno)</h3>
+            {/* TODO: MODIFIER - Description du service musique */}
+            <p className="text-slate-400">
+              Génère des musiques originales et royalty-free avec Suno. Des jingles, des bandes
+              sonores, des créations sans limites.
+            </p>
+          </div>
+
+          {/* Feature 3 - Videos (Revide.ai) */}
+          <div className="p-8 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all">
+            <div className="text-4xl mb-4">🎬</div>
+            <h3 className="text-xl font-bold mb-2">Vidéos IA (Revide.ai)</h3>
+            {/* TODO: MODIFIER - Description du service vidéos */}
+            <p className="text-slate-400">
+              Crée des vidéos profesionnelles avec Revide.ai. Animations, publicités, contenu
+              viral - tout est possible.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials / Social Proof Section */}
+      <section className="max-w-7xl mx-auto px-4 py-12 bg-slate-800 rounded-lg">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          Ils nous font confiance
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Testimonial 1 */}
+          <div className="p-6 rounded-lg bg-slate-700">
+            {/* TODO: MODIFIER - Ajoute des témoignages réels */}
+            <div className="flex gap-2 mb-4">
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+            </div>
+            <p className="text-slate-300 mb-4">
+              "Un service incroyable ! Mes designs de T-shirts sont sortis parfaits."
+            </p>
+            <p className="font-semibold">- Jean D.</p>
+          </div>
+
+          {/* Testimonial 2 */}
+          <div className="p-6 rounded-lg bg-slate-700">
+            <div className="flex gap-2 mb-4">
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+            </div>
+            <p className="text-slate-300 mb-4">
+              "La qualité des musiques générées m'a surpris. Parfait pour mon projet."
+            </p>
+            <p className="font-semibold">- Marie L.</p>
+          </div>
+
+          {/* Testimonial 3 */}
+          <div className="p-6 rounded-lg bg-slate-700">
+            <div className="flex gap-2 mb-4">
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+              <span>⭐</span>
+            </div>
+            <p className="text-slate-300 mb-4">
+              "Service client au top. Mes vidéos sont devenues virales !"
+            </p>
+            <p className="font-semibold">- Thomas M.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="max-w-7xl mx-auto px-4 py-12">
+        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-12 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Prêt à créer ?
+          </h2>
+          <p className="text-lg text-green-100 mb-8">
+            Réserve une consultation gratuite pour discuter de ton projet.
+          </p>
+          <Link href="/booking">
+            <Button variant="primary" size="lg" className="bg-white text-green-600 hover:bg-slate-100">
+              Prendre rendez-vous
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+};

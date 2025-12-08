@@ -1,0 +1,17 @@
+{
+  "name": "Héritier Millionnaire (Bridge)",
+  "short_name": "Millionnaire",
+  "description": "Jeu NOWIS: Cashflow, immobilier, quiz et dés.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0c0d10",
+  "background_color": "#0c0d10",
+  "iconUrl": "https://client-jeux-millionnaire.vercel.app/icons/icon-512.png",
+  "icons": [
+    { "src": "https://client-jeux-millionnaire.vercel.app/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "https://client-jeux-millionnaire.vercel.app/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "https://client-jeux-millionnaire.vercel.app/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

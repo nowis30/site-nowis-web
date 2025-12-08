@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.heritier.millionnaire",
+      "sha256_cert_fingerprints": [
+        "B9:0E:23:FA:33:61:58:AE:24:4D:F1:74:1D:61:83:15:1D:79:A8:3B:98:D0:0D:27:75:0A:F8:0F:EC:40:90:22"
+      ]
+    }
+  }
+]

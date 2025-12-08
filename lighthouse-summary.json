@@ -1,0 +1,213 @@
+{
+  "scores": {
+    "performance": 0.74,
+    "accessibility": 0.89,
+    "bestPractices": 0.73,
+    "seo": 1
+  },
+  "topWarnings": [
+    {
+      "id": "largest-contentful-paint",
+      "title": "Largest Contentful Paint",
+      "score": 0
+    },
+    {
+      "id": "speed-index",
+      "title": "Speed Index",
+      "score": 0.94
+    },
+    {
+      "id": "errors-in-console",
+      "title": "Browser errors were logged to the console",
+      "score": 0,
+      "details": [
+        {
+          "source": "console.error",
+          "description": "[API] Fetch error: ApiError: Unauthenticated\n    at h (https://twa-bridge-vercel.vercel.app/_next/static/chunks/app/page-bf926c0cdddad5eb.js:1:44071)\n    at async https://twa-bridge-vercel.vercel.app/_next/static/chunks/app/layout-c707e0e06d45de57.js:1:11338",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 3947
+          }
+        },
+        {
+          "source": "console.error",
+          "description": "[API] Fetch error: ApiError: Unauthenticated\n    at h (https://twa-bridge-vercel.vercel.app/_next/static/chunks/app/page-bf926c0cdddad5eb.js:1:44071)\n    at async https://twa-bridge-vercel.vercel.app/_next/static/chunks/app/layout-c707e0e06d45de57.js:1:12463",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 3947
+          }
+        },
+        {
+          "source": "console.error",
+          "description": "[API] Fetch error: ApiError: Unauthenticated\n    at h (https://twa-bridge-vercel.vercel.app/_next/static/chunks/app/page-bf926c0cdddad5eb.js:1:44071)\n    at async https://twa-bridge-vercel.vercel.app/_next/static/chunks/app/page-bf926c0cdddad5eb.js:1:555",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 3947
+          }
+        },
+        {
+          "source": "other",
+          "description": "Error while trying to use the following icon from the Manifest: https://twa-bridge-vercel.vercel.app/icons/icon-192.png (Download error or resource isn't a valid image)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "source": "other",
+          "description": "Error while trying to use the following icon from the Manifest: https://twa-bridge-vercel.vercel.app/icons/icon-192.png (Download error or resource isn't a valid image)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/login/",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "source": "exception",
+          "description": "Error: Minified React error #418; visit https://react.dev/errors/418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at t5 (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:24670)\n    at iZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:120535)\n    at ia (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:95162)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91088\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91095\n    at oZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91200)\n    at MessagePort.T (https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js:1:84144)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 24669
+          }
+        },
+        {
+          "source": "exception",
+          "description": "Error: Minified React error #423; visit https://react.dev/errors/423 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at iZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:118349)\n    at ia (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:95162)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:94984\n    at il (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:94991)\n    at oJ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:92347)\n    at oZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91766)\n    at MessagePort.T (https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js:1:84144)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 118348
+          }
+        },
+        {
+          "source": "exception",
+          "description": "Error: Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at sq (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:146765)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:101023\n    at iu (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:103867)\n    at ia (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:95223)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91088\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91095\n    at oZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91200)\n    at MessagePort.T (https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js:1:84144)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 146764
+          }
+        },
+        {
+          "source": "exception",
+          "description": "Error: Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at sq (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:146765)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:101023\n    at iu (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:103867)\n    at ia (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:95223)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91088\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91095\n    at oZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91200)\n    at MessagePort.T (https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js:1:84144)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 81816
+          }
+        },
+        {
+          "source": "exception",
+          "description": "Error: Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at sq (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:146765)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:101023\n    at iu (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:103867)\n    at ia (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:95223)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91088\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91095\n    at oZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91200)\n    at MessagePort.T (https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js:1:84144)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 81816
+          }
+        },
+        {
+          "source": "exception",
+          "description": "Error: Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at sq (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:146765)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:101023\n    at iu (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:103867)\n    at ia (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:95223)\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91088\n    at https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91095\n    at oZ (https://twa-bridge-vercel.vercel.app/_next/static/chunks/fd9d1056-4b87d5bb1aa946b3.js:1:91200)\n    at MessagePort.T (https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js:1:84144)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/_next/static/chunks/23-9a66da6b2cdc0bda.js",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 81816
+          }
+        },
+        {
+          "source": "network",
+          "description": "Failed to load resource: the server responded with a status of 401 ()",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://server-jeux-millionnaire.onrender.com/api/auth/me",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "source": "network",
+          "description": "Failed to load resource: the server responded with a status of 401 ()",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://server-jeux-millionnaire.onrender.com/api/auth/me",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "source": "network",
+          "description": "Failed to load resource: the server responded with a status of 401 ()",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://server-jeux-millionnaire.onrender.com/api/auth/me",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "source": "network",
+          "description": "Failed to load resource: the server responded with a status of 404 ()",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "https://twa-bridge-vercel.vercel.app/favicon.ico",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "interactive",
+      "title": "Time to Interactive",
+      "score": 0
+    },
+    {
+      "id": "third-party-cookies",
+      "title": "Uses third-party cookies",
+      "score": 0,
+      "details": [
+        {
+          "name": "hm_guest",
+          "url": "https://server-jeux-millionnaire.onrender.com/api/auth/me"
+        },
+        {
+          "name": "hm_csrf",
+          "url": "https://server-jeux-millionnaire.onrender.com/api/auth/me"
+        }
+      ]
+    }
+  ],
+  "timestamp": "2025-11-11T11:11:42.610Z"
+}

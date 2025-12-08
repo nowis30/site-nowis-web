@@ -1,0 +1,105 @@
+/**
+ * PortfolioScreen Component
+ * Galerie des projets et créations.
+ * ÉDITABLE: Ajoute tes projets dans la liste `projects`.
+ */
+
+'use client';
+
+import React from 'react';
+import { SectionTitle } from '@/components/ui';
+import { ProjectCard } from '@/components/portfolio';
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  imageSrc?: string;
+  imageAlt?: string;
+  fallbackEmoji?: string;
+  tags: string[];
+  href?: string;
+}
+
+// Projets Etsy T-shirts (liens directs)
+const projects: Project[] = [
+  {
+    id: 'etsy-1',
+    title: 'T-shirt IA – Skyline nocturne',
+    description: 'Illustration générée par IA: ciel étoilé, skyline stylisée, impression premium.',
+    imageSrc: undefined, // Ajoute ton image dans public/images/etsy-skyline.png si dispo
+    fallbackEmoji: '👕',
+    tags: ['T-shirt', 'Etsy', 'IA'],
+    href: 'https://nowisinc.etsy.com',
+  },
+  {
+    id: 'etsy-2',
+    title: 'T-shirt Camping créatif',
+    description: 'Feu de camp cartoon, couleurs chaudes, ambiance NOWIS.',
+    imageSrc: undefined, // Ajoute /images/etsy-camp.png pour lier une image
+    fallbackEmoji: '🏕️',
+    tags: ['T-shirt', 'Camping', 'Illustration'],
+    href: 'https://nowisinc.etsy.com',
+  },
+  {
+    id: 'etsy-3',
+    title: 'T-shirt Synthwave Sunset',
+    description: 'Dégradé violet/orange, look rétro synthwave généré par IA.',
+    imageSrc: undefined, // Ajoute /images/etsy-synthwave.png
+    fallbackEmoji: '🌅',
+    tags: ['T-shirt', 'Synthwave', 'Retro'],
+    href: 'https://nowisinc.etsy.com',
+  },
+];
+
+export const PortfolioScreen: React.FC = () => {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-12 md:py-24 space-y-12">
+      <div className="text-center">
+        <SectionTitle title="Portfolio" subtitle="Sélection de T-shirts Etsy" />
+        <p className="text-camp-sand mt-2">
+          Découvrez nos créations IA disponibles sur Etsy. Cliquez pour ouvrir la boutique.
+        </p>
+      </div>
+
+      {/* Projects Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((project) => (
+          <ProjectCard
+            key={project.id}
+            title={project.title}
+            description={project.description}
+            imageSrc={project.imageSrc}
+            imageAlt={project.imageAlt}
+            fallbackEmoji={project.fallbackEmoji}
+            tags={project.tags}
+            href={project.href}
+          />
+        ))}
+      </div>
+
+      {/* Call to Action */}
+      <div className="text-center py-12">
+        <p className="text-lg text-camp-sand mb-6">
+          Tu veux une création sur-mesure pour ta marque ?
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="https://nowisinc.etsy.com"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block px-8 py-3 bg-camp-fire hover:bg-camp-flame text-white rounded-lg font-semibold transition-colors"
+          >
+            🧡 Voir la boutique Etsy
+          </a>
+          <a
+            href="/booking"
+            className="inline-block px-8 py-3 border-2 border-camp-flame text-camp-flame hover:bg-camp-flame hover:text-camp-night rounded-lg font-semibold transition-colors"
+          >
+            🔥 Commander une création custom
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
