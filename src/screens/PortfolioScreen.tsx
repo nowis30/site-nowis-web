@@ -28,31 +28,11 @@ interface Project {
 // Produits disponibles sur Printify
 const projects: Project[] = [];
 
-// Musiques Suno (WAV) - TODO: Ajoute tes propres titres/fichiers
-const musiques = [
-  { id: 'audio1', title: 'Bon dieu', file: '/audio/bon dieu.wav' },
-  { id: 'audio2', title: 'Encore encore', file: '/audio/encore encore.wav' },
-  { id: 'audio3', title: "J'ai le goût de te voir", file: "/audio/j'ai le gout de te voir.wav" },
-  { id: 'audio4', title: 'Je lève le son (Cover)', file: '/audio/je leve le son(Cover).wav' },
-  { id: 'audio5', title: 'Je suis tombé amoureux (Cover)', file: '/audio/je suis tomber amoureux (Cover).wav' },
-  { id: 'audio6', title: 'Merci la vie', file: '/audio/merci la vie.wav' },
-  { id: 'audio7', title: 'Pas besoin de voir (Cover)', file: '/audio/pas besoin de voir (Cover).wav' },
-];
+// Musiques Suno (WAV) – placeholders pour éviter les 404 tant que les fichiers ne sont pas en ligne
+const musiques: Array<{ id: string; title: string; file?: string }> = [];
 
-// Vidéos (MP4) - TODO: Ajoute tes propres titres/fichiers
-const videos = [
-  { id: 'vid1', title: 'Amoureux de tes yeux bleus', file: '/videos/amoureux-de-tes-yeux-bleus.mp4' },
-  { id: 'vid2', title: 'Ça va bien aller', file: '/videos/ca-va-bien-aller (1).mp4' },
-  { id: 'vid3', title: 'Changer ma vie à do-ré-mi', file: '/videos/changer-ma-vie-a-do-re-mi.mp4' },
-  { id: 'vid4', title: 'Dieu, science et amour en interaction', file: '/videos/dieu-science-et-amour-en-interaction.mp4' },
-  { id: 'vid5', title: 'Le goût de te revoir', file: '/videos/le-gout-de-te-revoir.mp4' },
-  { id: 'vid6', title: 'Les farces des lutins du pôle nord', file: '/videos/les-farces-des-lutins-du-pole-nord (1).mp4' },
-  { id: 'vid7', title: 'Lève le son, monte le ton', file: '/videos/leve-le-son-monte-le-ton.mp4' },
-  { id: 'vid8', title: 'Pas besoin de voir pour aimer', file: '/videos/pas-besoin-de-voir-pour-aimer.mp4' },
-  { id: 'vid9', title: 'Petites vies, grandes misères', file: '/videos/petites-vies-grandes-miseres.mp4' },
-  { id: 'vid10', title: "Ramasse un peu, on s'aime à deux", file: '/videos/ramasse-un-peu-on-saime-a-deux.mp4' },
-  { id: 'vid11', title: 'Seul chez moi', file: '/videos/seul-chez-moi.mp4' },
-];
+// Vidéos (MP4) – placeholders pour éviter les 404 tant que les fichiers ne sont pas en ligne
+const videos: Array<{ id: string; title: string; file?: string }> = [];
 
 export const PortfolioScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'tshirts' | 'music' | 'videos'>('tshirts');
@@ -139,22 +119,28 @@ export const PortfolioScreen: React.FC = () => {
           <p className="text-center text-camp-sand text-lg mb-8">
             🎵 Écoute mes compositions créées avec Suno. Parfait pour jingles, publicités, événements.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {musiques.map((song) => (
-              <div
-                key={song.id}
-                className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-6 border-2 border-camp-fire/40 shadow-camp hover:shadow-fire transition-all duration-300"
-              >
-                <h3 className="text-xl font-bold text-camp-cream mb-4 flex items-center gap-2">
-                  🎵 {song.title}
-                </h3>
-                <audio controls className="w-full" preload="metadata">
-                  <source src={song.file} type="audio/wav" />
-                  Ton navigateur ne supporte pas l&apos;audio.
-                </audio>
-              </div>
-            ))}
-          </div>
+          {musiques.length === 0 ? (
+            <p className="text-center text-camp-sand">
+              Les extraits audio seront mis en ligne bientôt. Contacte-moi pour un aperçu personnalisé.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {musiques.map((song) => (
+                <div
+                  key={song.id}
+                  className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-6 border-2 border-camp-fire/40 shadow-camp hover:shadow-fire transition-all duration-300"
+                >
+                  <h3 className="text-xl font-bold text-camp-cream mb-4 flex items-center gap-2">
+                    🎵 {song.title}
+                  </h3>
+                  <audio controls className="w-full" preload="metadata">
+                    <source src={song.file} type="audio/wav" />
+                    Ton navigateur ne supporte pas l&apos;audio.
+                  </audio>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -164,26 +150,32 @@ export const PortfolioScreen: React.FC = () => {
           <p className="text-center text-camp-sand text-lg mb-8">
             🎬 Mes vidéos créées avec Revide.ai. Publicités, clips, contenu viral.
           </p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {videos.map((video) => (
-              <div
-                key={video.id}
-                className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-6 border-2 border-camp-flame/40 shadow-camp hover:shadow-fire transition-all duration-300"
-              >
-                <h3 className="text-xl font-bold text-camp-cream mb-4 flex items-center gap-2">
-                  🎬 {video.title}
-                </h3>
-                <video
-                  controls
-                  className="w-full rounded-lg"
-                  preload="metadata"
+          {videos.length === 0 ? (
+            <p className="text-center text-camp-sand">
+              Les vidéos seront mises en ligne bientôt. Écris-moi pour recevoir des exemples.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {videos.map((video) => (
+                <div
+                  key={video.id}
+                  className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-6 border-2 border-camp-flame/40 shadow-camp hover:shadow-fire transition-all duration-300"
                 >
-                  <source src={video.file} type="video/mp4" />
-                  Ton navigateur ne supporte pas la vidéo.
-                </video>
-              </div>
-            ))}
-          </div>
+                  <h3 className="text-xl font-bold text-camp-cream mb-4 flex items-center gap-2">
+                    🎬 {video.title}
+                  </h3>
+                  <video
+                    controls
+                    className="w-full rounded-lg"
+                    preload="metadata"
+                  >
+                    <source src={video.file} type="video/mp4" />
+                    Ton navigateur ne supporte pas la vidéo.
+                  </video>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
