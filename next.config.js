@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Output config for Vercel
+  output: 'standalone',
   // Optimize images
   images: {
     domains: ['via.placeholder.com'],
+    unoptimized: false,
   },
   // PWA support
   headers: async () => {
