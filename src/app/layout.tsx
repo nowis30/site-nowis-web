@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { BackgroundMusic } from '@/components/layout';
 
 export const metadata: Metadata = {
   title: 'Création NOWIS – Studio créatif propulsé par l\'intelligence artificielle',
@@ -36,6 +37,7 @@ export default function RootLayout({
       </head>
       <body className="bg-gray-50 text-gray-900">
         {children}
+        <BackgroundMusic />
       </body>
     </html>
   );
