@@ -23,6 +23,7 @@ Thumbs.db
 public/videos/
 *.mp4
 *.wav
+*.jks
 
 ### Misc
 coverage/
