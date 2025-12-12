@@ -39,7 +39,7 @@ export const Header: React.FC = () => {
           {/* Profile Photo */}
           <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary-600 shadow-md">
             <Image
-              src="/images/hero.jpg"
+              src="/hero.jpg"
               alt="Simon - Création NOWIS"
               width={48}
               height={48}

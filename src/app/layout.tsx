@@ -8,8 +8,8 @@ export const metadata: Metadata = {
     'Studio créatif spécialisé en vidéos publicitaires, chansons sur mesure et contenus pour entreprises et événements. Création NOWIS utilise l\'IA pour donner vie à vos projets.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/icon-192x192.png',
-    apple: '/icons/icon-192x192.png',
+    icon: '/hero.jpg',
+    apple: '/hero.jpg',
   },
   appleWebApp: {
     capable: true,
