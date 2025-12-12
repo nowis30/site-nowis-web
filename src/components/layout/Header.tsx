@@ -8,6 +8,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface NavLink {
   label: string;
@@ -35,6 +36,16 @@ export const Header: React.FC = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
+          {/* Profile Photo */}
+          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary-600 shadow-md">
+            <Image
+              src="/images/hero.jpg"
+              alt="Simon - Création NOWIS"
+              width={48}
+              height={48}
+              className="w-full h-full object-cover"
+            />
+          </div>
           {navLinks.map((link) => (
             <Link
               key={link.href}

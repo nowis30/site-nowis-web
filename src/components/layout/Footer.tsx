@@ -65,8 +65,8 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                  Confidentialité
+                <Link href="/confidentialite" className="text-gray-400 hover:text-white transition-colors">
+                  Confidentialité (Loi 25)
                 </Link>
               </li>
             </ul>
@@ -106,10 +106,14 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-800 pt-8">
+        <div className="border-t border-gray-800 pt-8 space-y-3">
           {/* Copyright */}
           <p className="text-center text-gray-500 text-sm">
             © {currentYear} Création NOWIS. Tous droits réservés.
+          </p>
+          {/* Loi 25 Notice */}
+          <p className="text-center text-gray-500 text-xs">
+            Conformité à la <Link href="/confidentialite" className="underline hover:text-gray-300">Loi 25</Link> sur la protection des renseignements personnels. Nous collectons le minimum nécessaire, sur consentement, et vous pouvez demander l’accès, la rectification ou la suppression de vos données.
           </p>
         </div>
       </div>
