@@ -91,7 +91,10 @@ export const HomeScreen: React.FC = () => {
                 playsInline
                 preload="auto"
                 controls={false}
+                controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+                disablePictureInPicture
                 aria-hidden="true"
+                tabIndex={-1}
               />
             </div>
             <p className="text-sm text-gray-500 mt-3 text-center">
