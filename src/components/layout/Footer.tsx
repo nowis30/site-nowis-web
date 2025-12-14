@@ -11,9 +11,9 @@ import Link from 'next/link';
 import { socialLinks } from '@/config/socialLinks';
 
 const footerPlatforms = [
-  { key: 'instagram', label: 'Instagram', icon: '📷' },
-  { key: 'facebook', label: 'Facebook', icon: '👤' },
-  { key: 'spotify', label: 'Spotify', icon: '🎵' },
+  { key: 'instagram', label: 'Instagram', icon: '📸' },
+  { key: 'facebook', label: 'Facebook', icon: '📘' },
+  { key: 'spotify', label: 'Spotify', icon: '🎧' },
   { key: 'youtube', label: 'YouTube', icon: '▶️' },
 ];
 
