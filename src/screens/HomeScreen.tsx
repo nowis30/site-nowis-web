@@ -13,10 +13,21 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export const HomeScreen: React.FC = () => {
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (!heroVideoRef.current) return;
+    const video = heroVideoRef.current;
+    video.muted = true; // ensure autoplay eligibility on mobile
+    video.play().catch(() => {
+      // Some browsers still block; no-op fallback keeps UI intact
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white">
       
@@ -71,12 +82,16 @@ export const HomeScreen: React.FC = () => {
           <div className="relative">
             <div className="overflow-hidden rounded-3xl shadow-soft border border-gray-100 bg-black/80">
               <video
+                ref={heroVideoRef}
                 src="/music/nowis-creation-mode.mp4"
                 className="w-full h-auto"
                 autoPlay
                 muted
                 loop
                 playsInline
+                preload="auto"
+                controls={false}
+                aria-hidden="true"
               />
             </div>
             <p className="text-sm text-gray-500 mt-3 text-center">
