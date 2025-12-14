@@ -22,10 +22,25 @@ export const HomeScreen: React.FC = () => {
   useEffect(() => {
     if (!heroVideoRef.current) return;
     const video = heroVideoRef.current;
-    video.muted = true; // ensure autoplay eligibility on mobile
-    video.play().catch(() => {
-      // Some browsers still block; no-op fallback keeps UI intact
-    });
+    video.muted = true;
+    video.playsInline = true;
+    
+    // Force play with delay for mobile Safari
+    const attemptPlay = () => {
+      video.play().catch((err) => {
+        console.warn('Autoplay blocked:', err);
+        // Retry after short delay
+        setTimeout(() => {
+          video.play().catch(() => {});
+        }, 500);
+      });
+    };
+    
+    if (video.readyState >= 2) {
+      attemptPlay();
+    } else {
+      video.addEventListener('loadeddata', attemptPlay, { once: true });
+    }
   }, []);
 
   return (
@@ -83,7 +98,6 @@ export const HomeScreen: React.FC = () => {
             <div className="overflow-hidden rounded-3xl shadow-soft border border-gray-100 bg-black/80">
               <video
                 ref={heroVideoRef}
-                src="/music/nowis-creation-mode.mp4"
                 className="w-full h-auto"
                 autoPlay
                 muted
@@ -95,7 +109,11 @@ export const HomeScreen: React.FC = () => {
                 disablePictureInPicture
                 aria-hidden="true"
                 tabIndex={-1}
-              />
+                style={{ maxHeight: '600px', objectFit: 'cover' }}
+              >
+                <source src="/music/nowis-creation-mode.mp4" type="video/mp4" />
+                Votre navigateur ne supporte pas la vidéo HTML5.
+              </video>
             </div>
             <p className="text-sm text-gray-500 mt-3 text-center">
               Créativité + Technologie — animation 10s
