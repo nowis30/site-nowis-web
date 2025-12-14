@@ -7,6 +7,24 @@ const nextConfig = {
     domains: ['via.placeholder.com'],
     unoptimized: false,
   },
+  // Host and path redirects
+  redirects: async () => {
+    return [
+      // Harmoniser ancienne URL de politique vers la nouvelle
+      {
+        source: '/privacy',
+        destination: '/confidentialite',
+        permanent: true,
+      },
+      // Rediriger www vers le domaine apex (si résolu côté DNS)
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.nowis.store' }],
+        destination: 'https://nowis.store/:path*',
+        permanent: true,
+      },
+    ];
+  },
   // PWA support
   headers: async () => {
     return [
