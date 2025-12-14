@@ -8,20 +8,13 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { socialLinks } from '@/config/socialLinks';
 
-interface SocialLink {
-  label: string;
-  url: string;
-  icon: string;
-}
-
-const socialLinks: SocialLink[] = [
-  // TODO: MODIFIER - Ajoute tes liens de réseaux sociaux
-  { label: 'Twitter', url: 'https://twitter.com/nowis', icon: '𝕏' },
-  { label: 'Instagram', url: 'https://instagram.com/nowis', icon: '📷' },
-  { label: 'LinkedIn', url: 'https://linkedin.com/company/nowis', icon: '🔗' },
-  { label: 'Discord', url: 'https://discord.com/invite/nowis', icon: '💬' },
-  { label: 'Boutique', url: '/shop', icon: '🛍️' },
+const footerPlatforms = [
+  { key: 'instagram', label: 'Instagram', icon: '📷' },
+  { key: 'facebook', label: 'Facebook', icon: '👤' },
+  { key: 'spotify', label: 'Spotify', icon: '🎵' },
+  { key: 'youtube', label: 'YouTube', icon: '▶️' },
 ];
 
 export const Footer: React.FC = () => {
@@ -89,18 +82,22 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="text-white font-semibold mb-4">Réseaux Sociaux</h4>
             <div className="flex gap-4">
-              {socialLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.url}
-                  aria-label={link.label}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors text-lg"
-                >
-                  {link.icon}
-                </a>
-              ))}
+              {footerPlatforms.map(({ key, label, icon }) => {
+                const url = socialLinks[key as keyof typeof socialLinks];
+                if (!url) return null;
+                return (
+                  <a
+                    key={key}
+                    href={url}
+                    aria-label={label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors text-lg"
+                  >
+                    {icon}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
