@@ -56,14 +56,14 @@ export const HomeScreen: React.FC = () => {
             <div className="space-y-4">
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
                 <span className="block text-gray-900">Création NOWIS</span>
-                <span className="block text-primary-600 mt-2">Studio créatif propulsé</span>
+                <span className="block text-primary-600 mt-2">Production musicale</span>
                 <span className="block bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent">
-                  par l'intelligence artificielle
+                  propulsée par l'intelligence artificielle
                 </span>
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-2xl">
-                Vidéos, publicités, chansons et contenus sur mesure pour entreprises et événements.
+                Je crée des chansons et contenus musicaux sur mesure avec l'IA. Production de musique originale, jingles, thèmes de podcast et vidéos musicales pour entreprises et événements.
               </p>
             </div>
 
