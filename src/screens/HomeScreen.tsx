@@ -67,30 +67,21 @@ export const HomeScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Illustration visuelle - placeholder moderne */}
+          {/* Illustration visuelle - animation vidéo */}
           <div className="relative">
-            <div className="aspect-square bg-gradient-to-br from-primary-100 via-secondary-50 to-primary-50 rounded-3xl p-12 shadow-soft">
-              <div className="w-full h-full bg-white rounded-2xl shadow-card flex items-center justify-center">
-                <div className="text-center space-y-6 p-8">
-                  <div className="flex justify-center gap-4">
-                    <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-glow flex items-center justify-center text-white text-3xl">
-                      🎬
-                    </div>
-                    <div className="w-20 h-20 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-2xl shadow-glow flex items-center justify-center text-white text-3xl">
-                      🎵
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-2xl shadow-glow flex items-center justify-center text-white text-3xl">
-                      ✨
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-4">
-                    Créativité + Technologie
-                  </p>
-                </div>
-              </div>
+            <div className="overflow-hidden rounded-3xl shadow-soft border border-gray-100 bg-black/80">
+              <video
+                src="/music/nowis-creation-mode.mp4"
+                className="w-full h-auto"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
             </div>
+            <p className="text-sm text-gray-500 mt-3 text-center">
+              Créativité + Technologie — animation 10s
+            </p>
           </div>
         </div>
       </section>
