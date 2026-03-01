@@ -1,3 +1,5 @@
+"use client"
+
 import React, {useState} from 'react'
 import LoanForm from './LoanForm'
 import ResultsSummary from './ResultsSummary'

@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import { LoanInput, summarizeLoan } from './loanMath'
 import './loanCalculator.css'
