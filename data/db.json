@@ -1,0 +1,45 @@
+{
+  "users": [
+    {
+      "id": "b241cb96-571f-47df-86dc-fee324b31e63",
+      "name": "simon morin",
+      "email": "Smorin_23@hotmail.com",
+      "passwordHash": "$2b$10$AQoVq49epo634L23rJTyHelsp1HVVc1kXh9ng4xmTkOP6LREAQO6y",
+      "role": "owner",
+      "createdAt": "2026-03-08T18:47:16.872Z"
+    }
+  ],
+  "listings": [
+    {
+      "id": "d889b7c1-dfbb-481a-b80e-522695c53291",
+      "slug": "5-et-demi-au-3e-tage-81c306",
+      "title": "5 et demi au 3e étage",
+      "price": 1100,
+      "city": "Drummondville",
+      "sector": "?",
+      "bedrooms": 3,
+      "bathrooms": 1,
+      "area": 35,
+      "descriptionShort": "petit paradis refaite en neuf a l interieur",
+      "descriptionLong": "grand logement",
+      "propertyType": "appartement",
+      "availabilityDate": "2026-04-01",
+      "bookingUrl": "https://calendly.com/simonmorin30",
+      "images": [
+        "/uploads/1772997045621-coeur avec licorne.png"
+      ],
+      "status": "approved",
+      "ownerId": "b241cb96-571f-47df-86dc-fee324b31e63",
+      "ownerName": "simon morin",
+      "ownerEmail": "Smorin_23@hotmail.com",
+      "ownerPhone": "",
+      "createdAt": "2026-03-08T19:14:50.654Z",
+      "updatedAt": "2026-03-08T19:38:40.752Z",
+      "heating": "electrique",
+      "parking": true,
+      "petsAllowed": false,
+      "smokingAllowed": true,
+      "furnished": false
+    }
+  ]
+}

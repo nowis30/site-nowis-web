@@ -2,6 +2,54 @@
  * Types personnalisés pour l'application NOWIS
  */
 
+export type UserRole = 'owner' | 'admin';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: UserRole;
+  createdAt: string; // ISO date
+}
+
+export type ListingStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+
+export interface Listing {
+  id: string;
+  slug: string;
+  title: string;
+  price: number; // en euros
+  address?: string;
+  city: string;
+  postalCode?: string;
+  sector?: string;
+  propertyType?: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number; // surface en m²
+  availabilityDate?: string; // ISO date
+  descriptionShort: string;
+  descriptionLong: string;
+  includedItems?: string[];
+  excludedItems?: string[];
+  petsAllowed?: boolean;
+  smokingAllowed?: boolean;
+  parking?: boolean;
+  furnished?: boolean;
+  heating?: string;
+  images: string[];
+  ownerId: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  bookingUrl?: string;
+  status: ListingStatus;
+  featured?: boolean;
+  createdAt: string; // ISO date
+  updatedAt: string; // ISO date
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -54,3 +102,6 @@ export interface SocialLink {
   url: string;
   icon: string;
 }
+
+// Legacy type alias (maintenir la compatibilité avec l'ancienne structure)
+export type Logement = Listing;

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'Création NOWIS – Production musicale avec intelligence artificielle',
@@ -37,7 +38,7 @@ export default function RootLayout({
       </head>
       <body className="bg-gray-50 text-gray-900">
         <UnregisterServiceWorker />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
