@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
-import { ExemplesProjetsScreen } from '@/screens/services/ExemplesProjetsScreen';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Exemples de projets – Création NOWIS',
-  description: 'Découvrez les types de projets et créations que Création NOWIS peut réaliser pour vous.',
+export const metadata = {
+  title: 'Service retiré - Création NOWIS',
+  description: 'Cette page n’est plus disponible. Découvrez nos projets dans le portfolio.',
 };
 
 export default function ExemplesProjetsPage() {
-  return <ExemplesProjetsScreen />;
+  redirect('/');
 }

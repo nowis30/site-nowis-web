@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
-import { CampagnesReseauxSociauxScreen } from '@/screens/services/CampagnesReseauxSociauxScreen';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Campagnes réseaux sociaux – Création NOWIS',
-  description: 'Campagnes complètes : visuels, textes, vidéos optimisés pour Facebook, Instagram, TikTok.',
+export const metadata = {
+  title: 'Service retiré - Création NOWIS',
+  description: 'Cette page n’est plus disponible. Découvrez nos projets dans le portfolio.',
 };
 
 export default function CampagnesPage() {
-  return <CampagnesReseauxSociauxScreen />;
+  redirect('/');
 }

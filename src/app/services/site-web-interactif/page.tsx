@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
-import { SiteWebInteractifScreen } from '@/screens/services/SiteWebInteractifScreen';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Sites web interactifs – Création NOWIS',
-  description: 'Création de sites web modernes, vitrines d\'entreprise et landing pages avec intégration IA.',
+export const metadata = {
+  title: 'Service retiré - Création NOWIS',
+  description: 'Cette page n’est plus disponible. Découvrez nos projets dans le portfolio.',
 };
 
 export default function SiteWebInteractifPage() {
-  return <SiteWebInteractifScreen />;
+  redirect('/');
 }

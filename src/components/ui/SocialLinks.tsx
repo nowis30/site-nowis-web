@@ -19,6 +19,7 @@ export const SocialLinks: React.FC<SocialLinksProps> = ({ className = '', showLa
     { key: 'facebook', icon: '👤', label: 'Facebook' },
     { key: 'spotify', icon: '🎵', label: 'Spotify' },
     { key: 'youtube', icon: '▶️', label: 'YouTube' },
+    { key: 'printify', icon: '🛍️', label: 'Printify' },
   ];
 
   return (

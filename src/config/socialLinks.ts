@@ -8,6 +8,7 @@ export const socialLinks = {
   facebook: 'https://www.facebook.com/profile.php?id=61581050842840',
   spotify: 'https://open.spotify.com/intl-fr/artist/2zH00JaaHdcg4eII8dZUts?si=S_03hL_DTWKLgIoQ7MewJw',
   youtube: 'https://www.youtube.com/@nowis30',
+  printify: 'https://nowis.printify.me/',
 };
 
 export type SocialPlatform = keyof typeof socialLinks;

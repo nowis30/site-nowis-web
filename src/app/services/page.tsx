@@ -1,10 +1,10 @@
-import { ServicesScreen } from '@/screens';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Services - NOWIS',
-  description: 'Tous nos services : design T-shirt, musique Suno, vidéos Revide.ai.',
+  description: 'Cette page a été retirée. Découvrez nos projets dans le portfolio.',
 };
 
 export default function ServicesPage() {
-  return <ServicesScreen />;
+  redirect('/');
 }

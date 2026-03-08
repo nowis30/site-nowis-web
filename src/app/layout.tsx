@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { BackgroundMusic } from '@/components/layout';
+import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
 
 export const metadata: Metadata = {
   title: 'Création NOWIS – Production musicale avec intelligence artificielle',
@@ -36,8 +36,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Création NOWIS" />
       </head>
       <body className="bg-gray-50 text-gray-900">
+        <UnregisterServiceWorker />
         {children}
-        <BackgroundMusic />
       </body>
     </html>
   );

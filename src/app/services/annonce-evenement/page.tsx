@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
-import { AnnonceEvenementScreen } from '@/screens/services/AnnonceEvenementScreen';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Annonces d\'événements – Création NOWIS',
-  description: 'Promotion d\'événements : vidéos, visuels et textes pour maximiser l\'audience.',
+export const metadata = {
+  title: 'Service retiré - Création NOWIS',
+  description: 'Cette page n’est plus disponible. Découvrez nos projets dans le portfolio.',
 };
 
 export default function AnnonceEvenementPage() {
-  return <AnnonceEvenementScreen />;
+  redirect('/');
 }

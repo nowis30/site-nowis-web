@@ -15,6 +15,7 @@ const footerPlatforms = [
   { key: 'facebook', label: 'Facebook', icon: '📘' },
   { key: 'spotify', label: 'Spotify', icon: '🎧' },
   { key: 'youtube', label: 'YouTube', icon: '▶️' },
+  { key: 'printify', label: 'Printify', icon: '🛍️' },
 ];
 
 export const Footer: React.FC = () => {
@@ -43,23 +44,18 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">
-                  Portfolio
+                <Link href="/#creations" className="text-gray-400 hover:text-white transition-colors">
+                  Créations
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="text-gray-400 hover:text-white transition-colors">
-                  Services
+                <Link href="/#about" className="text-gray-400 hover:text-white transition-colors">
+                  À propos
                 </Link>
               </li>
               <li>
-                <Link href="/booking" className="text-gray-400 hover:text-white transition-colors">
-                  Rendez-vous
-                </Link>
-              </li>
-              <li>
-                <Link href="/confidentialite" className="text-gray-400 hover:text-white transition-colors">
-                  Confidentialité (Loi 25)
+                <Link href="/#contact" className="text-gray-400 hover:text-white transition-colors">
+                  Contact
                 </Link>
               </li>
             </ul>

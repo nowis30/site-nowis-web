@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
-import { StoryInstagramScreen } from '@/screens/services/StoryInstagramScreen';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Stories Instagram – Création NOWIS',
-  description: 'Packs de stories Instagram animées et engageantes pour captiver vos followers.',
+export const metadata = {
+  title: 'Service retiré - Création NOWIS',
+  description: 'Cette page n’est plus disponible. Découvrez nos projets dans le portfolio.',
 };
 
 export default function StoryInstagramPage() {
-  return <StoryInstagramScreen />;
+  redirect('/');
 }

@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
-import { HymneEntrepriseScreen } from '@/screens/services/HymneEntrepriseScreen';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Hymne d\'entreprise – Création NOWIS',
-  description: 'Création de chansons-thèmes et hymnes d\'entreprise pour renforcer votre identité de marque.',
+export const metadata = {
+  title: 'Service retiré - Création NOWIS',
+  description: 'Cette page n’est plus disponible. Découvrez nos projets dans le portfolio.',
 };
 
 export default function HymneEntreprisePage() {
-  return <HymneEntrepriseScreen />;
+  redirect('/');
 }

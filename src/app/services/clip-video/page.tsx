@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
-import { ClipVideoScreen } from '@/screens/services/ClipVideoScreen';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Clips vidéo sur mesure – Création NOWIS',
-  description: 'Création de clips vidéo avec musique IA, montage professionnel pour réseaux sociaux et entreprises.',
+export const metadata = {
+  title: 'Service retiré - Création NOWIS',
+  description: 'Cette page n’est plus disponible. Découvrez nos projets dans le portfolio.',
 };
 
 export default function ClipVideoPage() {
-  return <ClipVideoScreen />;
+  redirect('/');
 }

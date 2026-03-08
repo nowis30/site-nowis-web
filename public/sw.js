@@ -102,7 +102,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Assets (CSS, JS, images, fonts) - Cache-first
+  // Assets (CSS, JS, images, fonts) - Cache-first (but avoid caching Next.js chunks to prevent stale build issues)
+  if (url.pathname.startsWith('/_next/')) {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request)
       .then((cached) => {

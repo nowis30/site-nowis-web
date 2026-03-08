@@ -30,21 +30,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   href,
   onClick,
 }) => {
-  const Wrapper = href ? 'a' : 'div';
-  const clickableProps = href
-    ? { href, target: '_blank', rel: 'noreferrer' }
-    : {};
+  // Always render an anchor tag so server and client markup stay consistent.
+  // If no href is provided, we keep it inert and still allow click handlers.
+  const realHref = href || '#';
 
   return (
-    <Wrapper
+    <a
       className="group cursor-pointer rounded-lg overflow-hidden bg-slate-800 hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-camp-flame"
+      href={realHref}
+      target={href ? '_blank' : undefined}
+      rel={href ? 'noreferrer' : undefined}
       onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyPress={(e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && onClick) onClick();
-      }}
-      {...clickableProps}
     >
       {/* Image ou fallback */}
       <div className="relative h-48 md:h-64 overflow-hidden bg-gradient-to-br from-camp-purple to-camp-violet flex items-center justify-center">
@@ -85,6 +81,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         )}
       </div>
-    </Wrapper>
+    </a>
   );
 };

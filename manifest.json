@@ -43,10 +43,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Nos services",
-      "short_name": "Services",
-      "description": "Découvrez tous nos services",
-      "url": "/services",
+      "name": "Portfolio",
+      "short_name": "Portfolio",
+      "description": "Voir des exemples de projets créatifs",
+      "url": "/portfolio",
       "icons": [
         {
           "src": "/icons/icon-192x192.png",
