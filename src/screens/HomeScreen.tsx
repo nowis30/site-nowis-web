@@ -84,7 +84,7 @@ export const HomeScreen: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
-                  href="#portfolio"
+                  href="/creations"
                   className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-semibold text-slate-900 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   Voir mes créations
@@ -122,7 +122,7 @@ export const HomeScreen: React.FC = () => {
                   allow="autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen
                 />
-                <div className="absolute inset-0 bg-black/20" />
+                <div className="absolute inset-0 bg-black/20 pointer-events-none" />
               </div>
             </div>
           </div>

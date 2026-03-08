@@ -1,3 +1,5 @@
+export type Platform = 'spotify' | 'youtube' | 'printify' | 'other';
+
 export type ProjectTemplate = {
   slug: string;
   title: string;
@@ -6,6 +8,7 @@ export type ProjectTemplate = {
   image?: string;
   tags?: string[];
   url?: string; // Lien externe (Spotify / YouTube / Printify)
+  platform?: Platform; // Permet d'afficher une icône claire
 };
 
 export const projects: ProjectTemplate[] = [
@@ -19,6 +22,7 @@ export const projects: ProjectTemplate[] = [
     image: '/hero.jpg',
     tags: ['musique', 'chanson', 'personnalisé'],
     url: 'https://open.spotify.com/intl-fr/artist/2zH00JaaHdcg4eII8dZUts?si=S_03hL_DTWKLgIoQ7MewJw',
+    platform: 'spotify',
   },
   {
     slug: 'video-teaser',
@@ -30,6 +34,7 @@ export const projects: ProjectTemplate[] = [
     image: '/hero.jpg',
     tags: ['vidéo', 'réseaux sociaux', 'clip'],
     url: 'https://www.youtube.com/watch?v=Ke6lWgFNJvQ',
+    platform: 'youtube',
   },
   {
     slug: 'projet-surprise',
@@ -41,5 +46,6 @@ export const projects: ProjectTemplate[] = [
     image: '/hero.jpg',
     tags: ['créatif', 'original', 'surprise'],
     url: 'https://nowis.printify.me/',
+    platform: 'printify',
   },
 ];
