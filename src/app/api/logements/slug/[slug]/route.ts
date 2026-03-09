@@ -73,20 +73,25 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
-  const user = ensureAuth(request);
-  if (!user) {
-    return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 });
-  }
+  try {
+    const user = ensureAuth(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 });
+    }
 
-  const listing = await getListingBySlug(params.slug);
-  if (!listing) {
-    return NextResponse.json({ error: 'Logement introuvable.' }, { status: 404 });
-  }
+    const listing = await getListingBySlug(params.slug);
+    if (!listing) {
+      return NextResponse.json({ error: 'Logement introuvable.' }, { status: 404 });
+    }
 
-  if (listing.ownerId !== user.sub) {
-    return NextResponse.json({ error: 'Accès refusé.' }, { status: 403 });
-  }
+    if (listing.ownerId !== user.sub) {
+      return NextResponse.json({ error: 'Accès refusé.' }, { status: 403 });
+    }
 
-  await deleteListing(listing.id);
-  return NextResponse.json({ ok: true });
+    await deleteListing(listing.id);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('DELETE logement error', error);
+    return NextResponse.json({ error: 'Erreur lors de la suppression du logement.' }, { status: 500 });
+  }
 }

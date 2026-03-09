@@ -29,7 +29,7 @@ ${message}
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
     const smtpFrom = process.env.SMTP_FROM || process.env.SMTP_USER;
-    const smtpTo = process.env.SMTP_TO;
+    const smtpTo = process.env.SMTP_TO || process.env.ADMIN_EMAIL || 'simonmorin@nowis.store';
 
     if (smtpHost && smtpPort && smtpUser && smtpPass && smtpTo) {
       const transporter = nodemailer.createTransport({

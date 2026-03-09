@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { getStoredUploadUrl, getUploadsDirectory } from '@/lib/storage';
 
 export const runtime = 'nodejs';
 
@@ -18,19 +19,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Type de fichier non accepté.' }, { status: 400 });
     }
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    const uploadsDir = getUploadsDirectory();
     await fs.mkdir(uploadsDir, { recursive: true });
 
-    const fileName = `${Date.now()}-${file.name}`;
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+    const fileName = `${Date.now()}-${sanitizedFileName}`;
     const destPath = path.join(uploadsDir, fileName);
 
     const arrayBuffer = await file.arrayBuffer();
     await fs.writeFile(destPath, Buffer.from(arrayBuffer));
 
-    const url = `/uploads/${fileName}`;
+    const url = getStoredUploadUrl(fileName);
     return NextResponse.json({ url });
   } catch (error) {
     console.error('upload error', error);
     return NextResponse.json({ error: 'Erreur lors de l’upload.' }, { status: 500 });
   }
 }
+

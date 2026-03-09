@@ -23,6 +23,7 @@ export default function ProprietaireListingPage() {
   const [loadingListing, setLoadingListing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
@@ -110,17 +111,28 @@ export default function ProprietaireListingPage() {
   }, [listing, title, price, city, descriptionShort]);
 
   const handleDelete = async () => {
-    if (!listing) return;
+    if (!listing || isDeleting) return;
     if (!confirm('Voulez-vous vraiment supprimer ce logement ?')) return;
+
+    setError(null);
+    setIsDeleting(true);
 
     try {
       const res = await fetch(`/api/logements/slug/${encodeURIComponent(slug)}`, {
         method: 'DELETE',
       });
-      if (!res.ok) throw new Error('Impossible de supprimer le logement.');
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error || 'Impossible de supprimer le logement.');
+      }
+
+      setListing(null);
+      router.refresh();
       router.push('/proprietaire');
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -196,8 +208,14 @@ export default function ProprietaireListingPage() {
             <Button variant="outline" size="sm" onClick={() => router.push('/proprietaire')}>
               Retour à mon espace
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleDelete}>
-              Supprimer
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Suppression…' : 'Supprimer'}
             </Button>
           </div>
         </div>

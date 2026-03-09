@@ -2,8 +2,9 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import type { Listing, User } from '@/types';
+import { getDatabaseFilePath } from '@/lib/storage';
 
-const DB_FILE = path.join(process.cwd(), 'data', 'db.json');
+const DB_FILE = getDatabaseFilePath();
 
 export interface Database {
   users: User[];
