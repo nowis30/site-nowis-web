@@ -1,15 +1,7 @@
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 import { HomeScreen } from '@/screens';
 
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow">
-        <HomeScreen />
-      </main>
-      <Footer />
-    </div>
-  );
+  return <HomeScreen />;
 }

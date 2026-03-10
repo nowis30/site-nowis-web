@@ -4,7 +4,7 @@ const nextConfig = {
   output: 'standalone',
   // Optimize images
   images: {
-    domains: ['via.placeholder.com'],
+    domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co'],
     unoptimized: false,
   },
   // Host and path redirects

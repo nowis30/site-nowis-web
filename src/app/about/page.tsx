@@ -1,10 +1,10 @@
-import { AboutScreen } from '@/screens';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'À propos - NOWIS',
-  description: 'Découvrez l\'histoire de NOWIS et notre équipe.',
+  title: 'À propos — Nowis Morin',
+  description: 'Redirection vers la page À propos de Nowis Morin.',
 };
 
 export default function AboutPage() {
-  return <AboutScreen />;
+  redirect('/a-propos');
 }

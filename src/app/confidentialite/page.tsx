@@ -7,15 +7,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 
 export default function ConfidentialitePage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow">
-        <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-20">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-20">
           <div className="max-w-4xl mx-auto px-6">
             
             {/* En-tête */}
@@ -226,9 +221,6 @@ export default function ConfidentialitePage() {
             </div>
 
           </div>
-        </div>
-      </main>
-      <Footer />
     </div>
   );
 }

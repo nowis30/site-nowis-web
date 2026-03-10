@@ -2,11 +2,17 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Création NOWIS – Production musicale avec intelligence artificielle',
-  description:
-    'Production musicale propulsée par l\'IA. Je crée des chansons originales, jingles, thèmes de podcast et contenus musicaux sur mesure pour entreprises et événements avec l\'intelligence artificielle.',
+  ...buildMetadata({
+    title: 'Nowis Morin — Chansons, vidéos et créations IA au Québec',
+    description:
+      'Nowis Morin crée des chansons, vidéos, visuels et projets créatifs avec l’aide de l’intelligence artificielle. Une vitrine artistique et marketing pensée pour l’écoute, la découverte et la prise de contact.',
+    path: '/',
+    keywords: ['Nowis Morin', 'Nowis Morin chanson', 'musique Nowis Morin', 'chanson IA Québec', 'artiste musique IA Québec'],
+  }),
   manifest: '/manifest.json',
   icons: {
     icon: '/hero.jpg',
@@ -38,7 +44,9 @@ export default function RootLayout({
       </head>
       <body className="bg-gray-50 text-gray-900">
         <UnregisterServiceWorker />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <AppLayout>{children}</AppLayout>
+        </AuthProvider>
       </body>
     </html>
   );

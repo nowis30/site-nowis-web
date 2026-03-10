@@ -6,7 +6,7 @@
 export const socialLinks = {
   instagram: 'https://www.instagram.com/simon.morin.18',
   facebook: 'https://www.facebook.com/profile.php?id=61581050842840',
-  spotify: 'https://open.spotify.com/intl-fr/artist/2zH00JaaHdcg4eII8dZUts?si=S_03hL_DTWKLgIoQ7MewJw',
+  spotify: 'https://open.spotify.com/artist/2zH00JaaHdcg4eII8dZUts',
   youtube: 'https://www.youtube.com/@nowis30',
   printify: 'https://nowis.printify.me/',
 };

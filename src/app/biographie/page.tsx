@@ -4,8 +4,6 @@
  */
 
 import type { Metadata } from 'next';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
 import { SocialLinks } from '@/components/ui/SocialLinks';
 
 export const metadata: Metadata = {
@@ -16,10 +14,7 @@ export const metadata: Metadata = {
 
 export default function BiographiePage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow">
-        <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-20">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-20">
           <div className="max-w-4xl mx-auto px-6">
             
             {/* Titre */}
@@ -96,9 +91,6 @@ export default function BiographiePage() {
             </div>
 
           </div>
-        </div>
-      </main>
-      <Footer />
     </div>
   );
 }
