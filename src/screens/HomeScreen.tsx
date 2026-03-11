@@ -98,14 +98,12 @@ export const HomeScreen: React.FC = async () => {
                 <Link href="/jeux" className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-6 py-3 font-semibold text-white transition hover:bg-slate-800">
                   Voir la page Jeux
                 </Link>
-                <a
-                  href="https://app.nowis.store/"
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href="/jeux/HéritierMillionaire"
                   className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white transition hover:bg-emerald-600"
                 >
                   Jouer à Héritier Millionnaire
-                </a>
+                </Link>
               </div>
             </div>
 

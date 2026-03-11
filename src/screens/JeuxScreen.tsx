@@ -55,14 +55,12 @@ export const JeuxScreen = () => {
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <a
-                href="https://app.nowis.store/"
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                href="/jeux/HéritierMillionaire"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
               >
                 Jouer à Héritier Millionnaire
-              </a>
+              </Link>
               <Link
                 href="/contact"
                 className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
@@ -137,14 +135,12 @@ export const JeuxScreen = () => {
                 <p className="mt-3 text-lg leading-relaxed text-slate-600">
                   La meilleure porte d’entrée pour présenter le jeu reste la version web, accessible immédiatement depuis un lien simple à partager.
                 </p>
-                <a
-                  href="https://app.nowis.store/"
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href="/jeux/HéritierMillionaire"
                   className="mt-6 inline-flex rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-600"
                 >
                   Ouvrir le jeu
-                </a>
+                </Link>
               </div>
 
               {otherGames.map((game) => (
@@ -176,14 +172,12 @@ export const JeuxScreen = () => {
               Utilise cette page pour partager Héritier Millionnaire plus facilement, améliorer sa visibilité et guider les visiteurs vers une action claire.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <a
-                href="https://app.nowis.store/"
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                href="/jeux/HéritierMillionaire"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
               >
                 Lancer le jeu
-              </a>
+              </Link>
               <Link
                 href="/booking"
                 className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
