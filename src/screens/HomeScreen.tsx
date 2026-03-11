@@ -99,7 +99,7 @@ export const HomeScreen: React.FC = async () => {
                   Voir la page Jeux
                 </Link>
                 <Link
-                  href="/jeux/HéritierMillionaire"
+                  href="/jeux/heritier-millionnaire"
                   className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white transition hover:bg-emerald-600"
                 >
                   Jouer à Héritier Millionnaire

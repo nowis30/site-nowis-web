@@ -23,8 +23,8 @@ export default function HeritierMillionnairePage() {
               Héritier Millionnaire
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-300 md:text-xl">
-              Voici la nouvelle adresse de présentation du jeu sur le site principal. Tu peux désormais partager facilement le chemin
-              <span className="font-semibold text-white"> nowis.store/jeux/HéritierMillionaire</span>.
+              Voici la nouvelle adresse stable de présentation du jeu sur le site principal. Tu peux désormais partager facilement le chemin
+              <span className="font-semibold text-white"> nowis.store/jeux/heritier-millionnaire</span>.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">

@@ -16,6 +16,21 @@ const nextConfig = {
         destination: '/confidentialite',
         permanent: true,
       },
+      {
+        source: '/jeux/H%C3%A9ritierMillionaire',
+        destination: '/jeux/heritier-millionnaire',
+        permanent: true,
+      },
+      {
+        source: '/jeux/HéritierMillionaire',
+        destination: '/jeux/heritier-millionnaire',
+        permanent: true,
+      },
+      {
+        source: '/jeux/HeritierMillionaire',
+        destination: '/jeux/heritier-millionnaire',
+        permanent: true,
+      },
       // Rediriger www vers le domaine apex (si résolu côté DNS)
       {
         source: '/:path*',

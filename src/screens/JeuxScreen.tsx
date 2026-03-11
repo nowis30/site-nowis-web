@@ -56,7 +56,7 @@ export const JeuxScreen = () => {
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
-                href="/jeux/HéritierMillionaire"
+                href="/jeux/heritier-millionnaire"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
               >
                 Jouer à Héritier Millionnaire
@@ -136,7 +136,7 @@ export const JeuxScreen = () => {
                   La meilleure porte d’entrée pour présenter le jeu reste la version web, accessible immédiatement depuis un lien simple à partager.
                 </p>
                 <Link
-                  href="/jeux/HéritierMillionaire"
+                  href="/jeux/heritier-millionnaire"
                   className="mt-6 inline-flex rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-600"
                 >
                   Ouvrir le jeu
@@ -173,7 +173,7 @@ export const JeuxScreen = () => {
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
-                href="/jeux/HéritierMillionaire"
+                href="/jeux/heritier-millionnaire"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
               >
                 Lancer le jeu
