@@ -22,6 +22,7 @@ const navLinks: NavLink[] = [
   { label: 'Musique', href: '/musique' },
   { label: 'Vidéos', href: '/videos' },
   { label: 'Services', href: '/services' },
+  { label: 'Jeux', href: '/jeux' },
   { label: 'À propos', href: '/a-propos' },
   { label: 'Logements', href: '/logements' },
   { label: 'Contact', href: '/contact' },

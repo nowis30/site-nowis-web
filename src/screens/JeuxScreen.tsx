@@ -1,127 +1,199 @@
-/**
- * JeuxScreen Component - Page d'accès aux jeux
- * Héritier Millionnaire + Drag Shift Duel
- */
+import Link from 'next/link';
 
-'use client';
+const highlights = [
+  'Fais grandir ton patrimoine avec l’immobilier, la bourse et une vraie logique de progression.',
+  'Débloque des gains grâce aux quiz, événements et mini-jeux intégrés.',
+  'Joue facilement sur mobile ou ordinateur avec une expérience pensée pour être fluide et rapide.',
+];
 
-import React from 'react';
-import { SectionTitle } from '@/components/ui';
-
-interface Jeu {
-  id: string;
-  emoji: string;
-  titre: string;
-  description: string;
-  lien: string;
-  estExterne: boolean;
-  badge?: string;
-}
-
-const jeux: Jeu[] = [
+const pillars = [
   {
-    id: 'millionnaire',
-    emoji: '💰',
-    titre: 'Héritier Millionnaire',
-    description: 'Jeu de finances personnelles mélant cashflow, immobilier, bourse, quiz et mini-jeux de dés. Construis ton patrimoine et deviens millionnaire !',
-    lien: 'https://app.nowis.store/',
-    estExterne: true,
-    badge: '🔥 Populaire',
+    title: 'Gestion financière',
+    description: 'Apprends à arbitrer entre liquidités, investissements et rendement à long terme.',
   },
   {
-    id: 'drag',
-    emoji: '🏎️',
-    titre: 'Drag Shift Duel',
-    description: 'Jeu de drag racing en 1 vs 1. Affronte tes amis dans des courses explosives ! Récompenses reliées à ton compte Millionnaire.',
-    lien: 'https://nowis30.github.io/drag/',
-    estExterne: true,
-    badge: '🎮 Action',
+    title: 'Immobilier',
+    description: 'Développe un parc immobilier et optimise tes décisions pour faire croître ton actif net.',
+  },
+  {
+    title: 'Bourse',
+    description: 'Observe le marché, prends position et fais évoluer ta stratégie selon les opportunités.',
+  },
+  {
+    title: 'Quiz et mini-jeux',
+    description: 'Ajoute du rythme à ta partie avec des mécaniques ludiques et des récompenses supplémentaires.',
   },
 ];
 
-export const JeuxScreen: React.FC = () => {
+const steps = [
+  'Lance Héritier Millionnaire depuis ton navigateur.',
+  'Commence à investir, répondre aux quiz et faire évoluer ton profil.',
+  'Reviens régulièrement pour optimiser ta progression et viser le statut de millionnaire.',
+];
+
+const otherGames = [
+  {
+    title: 'Drag Shift Duel',
+    description: 'Un jeu de drag racing 1 contre 1 plus arcade, connecté à l’univers NOWIS.',
+    href: 'https://nowis30.github.io/drag/',
+    label: 'Découvrir Drag Shift Duel',
+  },
+];
+
+export const JeuxScreen = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 md:py-24 space-y-12 bg-gradient-to-b from-camp-night to-camp-purple min-h-screen">
-      
-      {/* Header */}
-      <div className="text-center">
-        <SectionTitle 
-          title="🎮 Jeux NOWIS" 
-          subtitle="Découvre nos jeux propulsés par l'IA et la créativité" 
-        />
-        <p className="text-camp-sand text-lg mt-4 max-w-3xl mx-auto">
-          De la gestion financière au racing explosif, explore notre univers ludique. 
-          Tous les jeux sont jouables sur mobile et desktop !
-        </p>
-      </div>
-
-      {/* Grille de jeux */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {jeux.map((jeu) => (
-          <a
-            key={jeu.id}
-            href={jeu.lien}
-            target={jeu.estExterne ? '_blank' : '_self'}
-            rel={jeu.estExterne ? 'noreferrer' : undefined}
-            className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-8 border-2 border-camp-fire/40 shadow-camp hover:shadow-fire hover:scale-105 transition-all duration-300 group"
-          >
-            {/* Badge */}
-            {jeu.badge && (
-              <div className="inline-block mb-4 px-3 py-1 bg-camp-fire/20 border border-camp-fire rounded-full text-camp-flame text-sm font-semibold">
-                {jeu.badge}
-              </div>
-            )}
-
-            {/* Emoji + Titre */}
-            <div className="flex items-center gap-4 mb-4">
-              <div className="text-6xl">{jeu.emoji}</div>
-              <h3 className="text-2xl font-bold text-camp-cream group-hover:text-camp-flame transition-colors">
-                {jeu.titre}
-              </h3>
-            </div>
-
-            {/* Description */}
-            <p className="text-camp-sand leading-relaxed mb-6">
-              {jeu.description}
+    <div className="bg-slate-50 text-slate-900">
+      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.22),_transparent_30%),linear-gradient(180deg,#020617_0%,#0f172a_55%,#111827_100%)]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 md:grid-cols-[1.15fr_0.85fr] md:py-28">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Jeux NOWIS</p>
+            <h1 className="mt-5 text-4xl font-bold leading-tight text-white md:text-6xl">
+              Joue à Héritier Millionnaire directement depuis le site.
+            </h1>
+            <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-300 md:text-xl">
+              Héritier Millionnaire est un jeu de finances personnelles où tu construis ton avenir avec le cashflow, l’immobilier, la bourse, les quiz et des mini-jeux. Cette page te permet de le découvrir et d’y accéder rapidement.
             </p>
 
-            {/* Bouton CTA */}
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-camp-fire text-white rounded-lg font-semibold group-hover:bg-camp-flame transition-all">
-              ▶ Jouer maintenant
-              {jeu.estExterne && <span className="text-sm">↗</span>}
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <a
+                href="https://app.nowis.store/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
+              >
+                Jouer à Héritier Millionnaire
+              </a>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
+              >
+                Parler d’un projet de jeu
+              </Link>
             </div>
-          </a>
-        ))}
-      </div>
 
-      {/* Section Téléchargements */}
-      <div className="bg-gradient-to-br from-camp-violet to-camp-purple rounded-camp p-8 border-2 border-camp-flame/40 text-center">
-        <h3 className="text-2xl font-bold text-camp-cream mb-4">
-          📱 Télécharge les versions mobiles
-        </h3>
-        <p className="text-camp-sand mb-6">
-          Télécharge les APK Android pour jouer hors-ligne et profiter de la version complète.
-        </p>
-        <a
-          href="/telechargement.html"
-          className="inline-block px-8 py-3 bg-camp-fire hover:bg-camp-flame text-white rounded-lg font-semibold transition-all duration-300 shadow-fire"
-        >
-          ⬇ Page de téléchargement
-        </a>
-      </div>
+            <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/80">
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Immobilier</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Bourse</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Quiz</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Mobile & desktop</span>
+            </div>
+          </div>
 
-      {/* Call to Action */}
-      <div className="text-center py-12">
-        <p className="text-lg text-camp-sand mb-6">
-          Tu as une idée de jeu ? Créons-le ensemble avec l'IA !
-        </p>
-        <a
-          href="/booking"
-          className="inline-block px-8 py-3 border-2 border-camp-flame text-camp-flame hover:bg-camp-flame hover:text-camp-night rounded-lg font-semibold transition-all duration-300"
-        >
-          🔥 Parler de mon projet de jeu
-        </a>
-      </div>
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-2xl backdrop-blur-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Pourquoi ce jeu plaît</p>
+            <div className="mt-6 space-y-4">
+              {highlights.map((item) => (
+                <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-slate-200">
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 rounded-2xl bg-emerald-500/10 p-5 text-sm text-emerald-100 ring-1 ring-emerald-400/20">
+              Accès rapide, univers clair et progression motivante: la page est pensée pour convertir les visiteurs du site en joueurs.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="max-w-3xl">
+          <h2 className="text-3xl font-bold text-slate-950 md:text-4xl">Ce que propose Héritier Millionnaire</h2>
+          <p className="mt-4 text-lg leading-relaxed text-slate-600">
+            Le jeu mélange stratégie, progression personnelle et plaisir de jeu. Il ne se contente pas d’un seul système: il réunit plusieurs leviers de croissance dans une même expérience.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {pillars.map((pillar) => (
+            <article key={pillar.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="text-xl font-semibold text-slate-950">{pillar.title}</h3>
+              <p className="mt-3 leading-relaxed text-slate-600">{pillar.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-white py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Commencer</p>
+              <h2 className="mt-4 text-3xl font-bold">Comment jouer</h2>
+              <ol className="mt-6 space-y-4">
+                {steps.map((step, index) => (
+                  <li key={step} className="flex gap-4">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 font-semibold text-white">
+                      {index + 1}
+                    </span>
+                    <p className="pt-1 text-slate-300">{step}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm">
+                <h3 className="text-2xl font-bold text-slate-950">Accès principal</h3>
+                <p className="mt-3 text-lg leading-relaxed text-slate-600">
+                  La meilleure porte d’entrée pour présenter le jeu reste la version web, accessible immédiatement depuis un lien simple à partager.
+                </p>
+                <a
+                  href="https://app.nowis.store/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-6 inline-flex rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-600"
+                >
+                  Ouvrir le jeu
+                </a>
+              </div>
+
+              {otherGames.map((game) => (
+                <div key={game.title} className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+                  <h3 className="text-2xl font-bold text-slate-950">Autre jeu à découvrir</h3>
+                  <p className="mt-4 text-lg font-semibold text-slate-900">{game.title}</p>
+                  <p className="mt-3 leading-relaxed text-slate-600">{game.description}</p>
+                  <a
+                    href={game.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-6 inline-flex rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100"
+                  >
+                    {game.label}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="rounded-3xl bg-[linear-gradient(135deg,#0f172a_0%,#111827_45%,#065f46_100%)] px-8 py-10 text-white shadow-sm md:px-12 md:py-14">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Page Jeux en ligne</p>
+            <h2 className="mt-4 text-3xl font-bold md:text-4xl">Le jeu a maintenant une vraie vitrine sur le site.</h2>
+            <p className="mt-4 text-lg leading-relaxed text-slate-200">
+              Utilise cette page pour partager Héritier Millionnaire plus facilement, améliorer sa visibilité et guider les visiteurs vers une action claire.
+            </p>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <a
+                href="https://app.nowis.store/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
+              >
+                Lancer le jeu
+              </a>
+              <Link
+                href="/booking"
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
+              >
+                Réserver un appel
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

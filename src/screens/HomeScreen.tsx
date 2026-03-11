@@ -85,6 +85,45 @@ export const HomeScreen: React.FC = async () => {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-6 py-8 md:py-12">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="grid gap-8 px-8 py-10 md:grid-cols-[1.15fr_0.85fr] md:px-10 md:py-12">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Jeux NOWIS</p>
+              <h2 className="mt-4 text-3xl font-bold text-slate-950 md:text-4xl">Découvre Héritier Millionnaire sur le site</h2>
+              <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-600">
+                Un jeu de finances personnelles où tu développes ton patrimoine avec l’immobilier, la bourse, des quiz et des mini-jeux. La nouvelle page Jeux présente clairement le projet et permet de lancer la partie en quelques secondes.
+              </p>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <Link href="/jeux" className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-6 py-3 font-semibold text-white transition hover:bg-slate-800">
+                  Voir la page Jeux
+                </Link>
+                <a
+                  href="https://app.nowis.store/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white transition hover:bg-emerald-600"
+                >
+                  Jouer à Héritier Millionnaire
+                </a>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1">
+              {[
+                'Cashflow, immobilier et bourse dans une même progression.',
+                'Accessible sur mobile et ordinateur.',
+                'Univers NOWIS relié à d’autres expériences comme Drag Shift Duel.',
+              ].map((item) => (
+                <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-5 text-sm font-medium leading-relaxed text-slate-700">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="flex items-end justify-between gap-6">
           <div>

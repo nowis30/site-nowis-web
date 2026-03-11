@@ -6,7 +6,7 @@ import { JeuxScreen } from '@/screens/JeuxScreen';
 
 export const metadata = {
   title: 'Jeux – NOWIS',
-  description: 'Accède à Héritier Millionnaire et Drag Shift Duel - Jeux propulsés par NOWIS',
+  description: 'Découvre Héritier Millionnaire, le jeu NOWIS de finances personnelles, immobilier, bourse, quiz et mini-jeux, avec un accès rapide depuis le site.',
 };
 
 export default function JeuxPage() {
