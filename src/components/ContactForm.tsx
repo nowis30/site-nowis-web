@@ -110,6 +110,22 @@ export const ContactForm: React.FC<ContactFormProps> = ({
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="phone">
+              Téléphone
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Votre numéro pour un retour d'appel"
+            />
+            <p className="mt-2 text-xs text-gray-500">
+              Optionnel, mais utile si vous voulez que je vous rappelle.
+            </p>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="projectType">
               Type de projet
             </label>

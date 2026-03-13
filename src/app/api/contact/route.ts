@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { name, email, projectType, message, kind } = data;
+    const { name, email, phone, projectType, message, kind } = data;
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
 Type: ${typeLabel}
 Nom: ${name}
 Email: ${email}
+  Téléphone: ${phone || 'Non renseigné'}
 Type de projet: ${projectType || 'Non précisé'}
 
 Message:
@@ -53,7 +54,7 @@ ${message}
     }
 
     // No SMTP configured: log and return success for local development
-    console.log('Contact form submission (no SMTP configured):', { name, email, projectType, message });
+    console.log('Contact form submission (no SMTP configured):', { name, email, phone, projectType, message });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
