@@ -9,8 +9,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 
 interface NavLink {
@@ -25,7 +23,6 @@ const navLinks: NavLink[] = [
   { label: 'Services', href: '/services' },
   { label: 'Jeux', href: '/jeux' },
   { label: 'À propos', href: '/a-propos' },
-  { label: 'Logements', href: '/logements' },
   { label: 'Contact', href: '/contact' },
 ];
 
@@ -37,13 +34,6 @@ const resourceLinks: NavLink[] = [
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await logout();
-    router.push('/');
-  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl shadow-sm">
@@ -107,39 +97,6 @@ export const Header: React.FC = () => {
           >
             Me contacter
           </ContactPrefillLink>
-
-          {loading ? null : user ? (
-            <>
-              <Link
-                href="/proprietaire"
-                className="rounded-xl border border-emerald-400/40 px-4 py-2 font-medium text-emerald-300 transition-colors hover:bg-emerald-400/10"
-              >
-                Mon espace
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-xl bg-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/15"
-              >
-                Se déconnecter
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/connexion"
-                className="rounded-xl border border-white/10 px-4 py-2 font-medium text-slate-200 transition-colors hover:bg-white/5"
-              >
-                Connexion
-              </Link>
-              <Link
-                href="/inscription"
-                className="rounded-xl bg-emerald-500 px-4 py-2 font-medium text-white transition-colors hover:bg-emerald-600"
-              >
-                Inscription
-              </Link>
-            </>
-          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -208,49 +165,6 @@ export const Header: React.FC = () => {
             >
               Me contacter
             </ContactPrefillLink>
-
-            {!loading && (
-              <div className="px-6 py-4 border-t border-gray-100">
-                {user ? (
-                  <>
-                    <Link
-                      href="/proprietaire"
-                      className="block w-full rounded-xl border border-emerald-400/40 px-4 py-2 text-center font-medium text-emerald-300 transition-colors hover:bg-emerald-400/10"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Mon espace
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="mt-3 w-full rounded-xl bg-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/15"
-                    >
-                      Se déconnecter
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/connexion"
-                      className="block w-full rounded-xl border border-white/10 px-4 py-2 text-center font-medium text-slate-200 transition-colors hover:bg-white/5"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Connexion
-                    </Link>
-                    <Link
-                      href="/inscription"
-                      className="mt-3 block w-full rounded-xl bg-emerald-500 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-emerald-600"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Inscription
-                    </Link>
-                  </>
-                )}
-              </div>
-            )}
           </div>
         )}
       </nav>
