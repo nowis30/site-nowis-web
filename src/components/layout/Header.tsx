@@ -28,6 +28,12 @@ const navLinks: NavLink[] = [
   { label: 'Contact', href: '/contact' },
 ];
 
+const resourceLinks: NavLink[] = [
+  { label: 'Commander une chanson', href: '/commander-une-chanson' },
+  { label: 'Assistant projet', href: '/assistant-projet' },
+  { label: 'Idées', href: '/idees' },
+];
+
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, loading, logout } = useAuth();
@@ -63,6 +69,29 @@ export const Header: React.FC = () => {
               {link.label}
             </Link>
           ))}
+
+          <div className="group relative">
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-200 transition-colors duration-200 hover:text-emerald-300"
+            >
+              Ressources
+              <svg className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
+            </button>
+            <div className="invisible absolute right-0 top-full z-50 mt-4 w-72 rounded-2xl border border-white/10 bg-slate-950/95 p-3 opacity-0 shadow-2xl backdrop-blur-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+              {resourceLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block rounded-xl px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-white/5 hover:text-emerald-300"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <Link
             href="/shop"
@@ -146,6 +175,22 @@ export const Header: React.FC = () => {
                 {link.label}
               </Link>
             ))}
+
+            <div className="border-b border-white/10 px-6 py-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Ressources</p>
+              <div className="mt-3 flex flex-col">
+                {resourceLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="rounded-xl px-3 py-3 text-slate-200 transition-colors hover:bg-white/5 hover:text-emerald-300"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
 
             <Link
               href="/shop"

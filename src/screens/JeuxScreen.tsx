@@ -26,9 +26,9 @@ const pillars = [
 ];
 
 const steps = [
-  'Lance Héritier Millionnaire depuis ton navigateur.',
-  'Commence à investir, répondre aux quiz et faire évoluer ton profil.',
-  'Reviens régulièrement pour optimiser ta progression et viser le statut de millionnaire.',
+  'Ouvre la page du jeu, découvre le principe et lance une partie en quelques secondes depuis ton mobile ou ton ordinateur.',
+  'Fais progresser ton patrimoine avec l’immobilier, la bourse, les quiz et les mini-jeux pour débloquer plus d’opportunités.',
+  'Reviens améliorer ta stratégie, comparer tes choix et viser une progression plus solide jusqu’au statut de millionnaire.',
 ];
 
 const otherGames = [

@@ -3,7 +3,15 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 
-export const ContactForm: React.FC = () => {
+type ContactFormProps = {
+  initialProjectType?: string;
+  initialMessage?: string;
+};
+
+export const ContactForm: React.FC<ContactFormProps> = ({
+  initialProjectType = '',
+  initialMessage = '',
+}) => {
   const [submitted, setSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +104,7 @@ export const ContactForm: React.FC = () => {
               id="projectType"
               name="projectType"
               required
+              defaultValue={initialProjectType}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="">Sélectionnez</option>
@@ -115,6 +124,7 @@ export const ContactForm: React.FC = () => {
               name="message"
               rows={5}
               required
+              defaultValue={initialMessage}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Quelques détails sur ton projet (inspiration, ton, ambiance, deadline...)."
             />

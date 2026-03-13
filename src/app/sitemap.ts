@@ -5,7 +5,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nowis.store';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const songs = await getAllSongs();
-  const staticPages = ['', '/musique', '/videos', '/a-propos', '/services', '/jeux', '/jeux/heritier-millionnaire', '/contact', '/creations', '/booking', '/logements'];
+  const staticPages = ['', '/musique', '/videos', '/a-propos', '/services', '/jeux', '/jeux/heritier-millionnaire', '/contact', '/creations', '/booking', '/logements', '/commander-une-chanson', '/assistant-projet', '/idees', '/avant-de-mecrire'];
 
   return [
     ...staticPages.map((path) => ({

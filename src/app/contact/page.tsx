@@ -11,7 +11,14 @@ export const metadata = buildMetadata({
   keywords: ['Contact Nowis Morin', 'projet créatif IA Québec', 'chanson personnalisée Québec'],
 });
 
-export default function ContactPage() {
+export default function ContactPage({
+  searchParams,
+}: {
+  searchParams?: { projectType?: string; message?: string };
+}) {
+  const initialProjectType = typeof searchParams?.projectType === 'string' ? searchParams.projectType : '';
+  const initialMessage = typeof searchParams?.message === 'string' ? searchParams.message : '';
+
   return (
     <div className="bg-slate-50">
       <PageHero
@@ -21,7 +28,7 @@ export default function ContactPage() {
       />
 
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr]">
-        <ContactForm />
+        <ContactForm initialProjectType={initialProjectType} initialMessage={initialMessage} />
 
         <div className="space-y-6">
           <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
