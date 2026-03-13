@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
 import { getSongBySlug } from '@/data/songs';
@@ -148,9 +149,9 @@ export default async function ChansonPage({ params }: PageProps) {
               <Link href="/musique" className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
                 Retour à la musique
               </Link>
-              <Link href="/contact" className="inline-flex rounded-xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+              <ContactPrefillLink href="/contact" className="inline-flex rounded-xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
                 Me contacter
-              </Link>
+              </ContactPrefillLink>
             </div>
           </article>
         </div>

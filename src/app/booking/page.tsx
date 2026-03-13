@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
@@ -29,7 +30,7 @@ export default function BookingPage() {
           <h2 className="text-3xl font-bold">Prêt à en parler?</h2>
           <p className="mt-4 max-w-3xl leading-relaxed text-slate-300">Le moyen le plus simple est de me contacter directement avec ton idée. Tu peux me parler d’une chanson, d’un clip, d’un visuel ou d’une collaboration artistique plus large.</p>
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <Link href="/contact" className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Aller au formulaire de contact</Link>
+            <ContactPrefillLink href="/contact" className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Aller au formulaire de contact</ContactPrefillLink>
             <a href="mailto:simonmorin@nowis.store" className="inline-flex rounded-xl border border-white/15 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white/10">simonmorin@nowis.store</a>
           </div>
         </div>

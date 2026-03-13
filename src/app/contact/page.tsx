@@ -14,8 +14,10 @@ export const metadata = buildMetadata({
 export default function ContactPage({
   searchParams,
 }: {
-  searchParams?: { projectType?: string; message?: string };
+  searchParams?: { name?: string; email?: string; projectType?: string; message?: string };
 }) {
+  const initialName = typeof searchParams?.name === 'string' ? searchParams.name : '';
+  const initialEmail = typeof searchParams?.email === 'string' ? searchParams.email : '';
   const initialProjectType = typeof searchParams?.projectType === 'string' ? searchParams.projectType : '';
   const initialMessage = typeof searchParams?.message === 'string' ? searchParams.message : '';
 
@@ -28,7 +30,12 @@ export default function ContactPage({
       />
 
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr]">
-        <ContactForm initialProjectType={initialProjectType} initialMessage={initialMessage} />
+        <ContactForm
+          initialName={initialName}
+          initialEmail={initialEmail}
+          initialProjectType={initialProjectType}
+          initialMessage={initialMessage}
+        />
 
         <div className="space-y-6">
           <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">

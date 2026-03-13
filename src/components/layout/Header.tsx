@@ -11,6 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 
 interface NavLink {
   label: string;
@@ -100,12 +101,12 @@ export const Header: React.FC = () => {
             🛍️ Boutique
           </Link>
 
-          <Link
+          <ContactPrefillLink
             href="/contact"
             className="ml-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 transition-all duration-200 hover:bg-slate-200"
           >
             Me contacter
-          </Link>
+          </ContactPrefillLink>
 
           {loading ? null : user ? (
             <>
@@ -200,13 +201,13 @@ export const Header: React.FC = () => {
               🛍️ Boutique
             </Link>
 
-            <Link
+            <ContactPrefillLink
               href="/contact"
               className="m-4 rounded-xl bg-white px-6 py-3 text-center font-semibold text-slate-950 transition-colors hover:bg-slate-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Me contacter
-            </Link>
+            </ContactPrefillLink>
 
             {!loading && (
               <div className="px-6 py-4 border-t border-gray-100">

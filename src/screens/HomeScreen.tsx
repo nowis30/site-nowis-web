@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 
 export const HomeScreen = () => {
   const services = [
@@ -82,12 +83,12 @@ export const HomeScreen = () => {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link
+              <ContactPrefillLink
                 href="/contact"
                 className="rounded-2xl bg-white px-6 py-3 font-semibold text-zinc-950 transition hover:scale-[1.02]"
               >
                 Parler à Nowis Morin
-              </Link>
+              </ContactPrefillLink>
               <Link
                 href="/services"
                 className="rounded-2xl border border-white/20 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
@@ -259,12 +260,12 @@ export const HomeScreen = () => {
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
+            <ContactPrefillLink
               href="/contact"
               className="rounded-2xl bg-white px-6 py-3 font-semibold text-zinc-950 transition hover:scale-[1.02]"
             >
               Me contacter
-            </Link>
+            </ContactPrefillLink>
             <Link
               href="/musique"
               className="rounded-2xl border border-white/15 px-6 py-3 font-semibold text-white transition hover:bg-white/10"

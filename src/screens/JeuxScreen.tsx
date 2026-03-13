@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 
 const highlights = [
   'Fais grandir ton patrimoine avec l’immobilier, la bourse et une vraie logique de progression.',
@@ -61,12 +62,12 @@ export const JeuxScreen = () => {
               >
                 Jouer à Héritier Millionnaire
               </Link>
-              <Link
+              <ContactPrefillLink
                 href="/contact"
                 className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
               >
                 Parler d’un projet de jeu
-              </Link>
+              </ContactPrefillLink>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/80">

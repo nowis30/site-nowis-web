@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui';
 import type { Logement } from '@/types';
@@ -144,11 +145,11 @@ export const LogementBookingScreen: React.FC<BookingScreenProps> = ({ logement }
               Si vous avez des questions sur le logement, le processus de visite ou les conditions,
               n&#39;hésitez pas à nous contacter.
             </p>
-            <Link href="/contact">
+            <ContactPrefillLink href="/contact">
               <Button variant="secondary" className="w-full">
                 Contacter NOWIS
               </Button>
-            </Link>
+            </ContactPrefillLink>
           </div>
         </aside>
       </div>

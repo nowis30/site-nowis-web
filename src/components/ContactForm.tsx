@@ -2,19 +2,28 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
+import { useAuth } from '@/contexts/AuthContext';
 
 type ContactFormProps = {
+  initialName?: string;
+  initialEmail?: string;
   initialProjectType?: string;
   initialMessage?: string;
 };
 
 export const ContactForm: React.FC<ContactFormProps> = ({
+  initialName = '',
+  initialEmail = '',
   initialProjectType = '',
   initialMessage = '',
 }) => {
   const [submitted, setSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  const resolvedName = initialName || user?.name || '';
+  const resolvedEmail = initialEmail || user?.email || '';
 
   return (
     <div className="bg-white rounded-3xl p-10 shadow-lg">
@@ -73,10 +82,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               Nom
             </label>
             <input
+              key={`name-${resolvedName}`}
               id="name"
               name="name"
               type="text"
               required
+              defaultValue={resolvedName}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Votre nom"
             />
@@ -87,10 +98,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               Courriel
             </label>
             <input
+              key={`email-${resolvedEmail}`}
               id="email"
               name="email"
               type="email"
               required
+              defaultValue={resolvedEmail}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="vous@example.com"
             />

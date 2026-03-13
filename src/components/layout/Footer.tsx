@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { FaFacebookF, FaInstagram, FaSpotify, FaYoutube } from 'react-icons/fa';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { socialLinks } from '@/config/socialLinks';
 
 const footerPlatforms = [
@@ -110,9 +111,9 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                <ContactPrefillLink href="/contact" className="text-gray-400 hover:text-white transition-colors">
                   Contact
-                </Link>
+                </ContactPrefillLink>
               </li>
             </ul>
           </div>

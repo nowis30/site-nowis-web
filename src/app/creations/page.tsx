@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
@@ -18,7 +19,7 @@ export default function CreationsPage() {
           <Link href="/musique" className="rounded-2xl bg-white px-6 py-5 font-semibold text-slate-950 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">Musique</Link>
           <Link href="/videos" className="rounded-2xl bg-white px-6 py-5 font-semibold text-slate-950 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">Vidéos</Link>
           <Link href="/services" className="rounded-2xl bg-white px-6 py-5 font-semibold text-slate-950 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">Services</Link>
-          <Link href="/contact" className="rounded-2xl bg-slate-950 px-6 py-5 font-semibold text-white shadow-sm transition hover:-translate-y-1 hover:bg-slate-800 hover:shadow-lg">Contact</Link>
+          <ContactPrefillLink href="/contact" className="rounded-2xl bg-slate-950 px-6 py-5 font-semibold text-white shadow-sm transition hover:-translate-y-1 hover:bg-slate-800 hover:shadow-lg">Contact</ContactPrefillLink>
         </div>
       </section>
     </div>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 
 type PageHeroProps = {
   eyebrow?: string;
@@ -19,14 +20,26 @@ export function PageHero({ eyebrow, title, description, primaryCta, secondaryCta
           {(primaryCta || secondaryCta) && (
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               {primaryCta ? (
-                <Link href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
-                  {primaryCta.label}
-                </Link>
+                primaryCta.href.startsWith('/contact') ? (
+                  <ContactPrefillLink href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+                    {primaryCta.label}
+                  </ContactPrefillLink>
+                ) : (
+                  <Link href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+                    {primaryCta.label}
+                  </Link>
+                )
               ) : null}
               {secondaryCta ? (
-                <Link href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
-                  {secondaryCta.label}
-                </Link>
+                secondaryCta.href.startsWith('/contact') ? (
+                  <ContactPrefillLink href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+                    {secondaryCta.label}
+                  </ContactPrefillLink>
+                ) : (
+                  <Link href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+                    {secondaryCta.label}
+                  </Link>
+                )
               ) : null}
             </div>
           )}
