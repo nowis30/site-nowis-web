@@ -105,7 +105,7 @@ export const artists: ArtistProfile[] = [
     ],
     customCreationsExamples: ['Mariage', 'Naissance', 'Hommage', 'Décès', 'Histoire d’amour', 'Souvenir de famille', 'Projet personnel'],
     pricingNote:
-      'Pour les premiers projets créatifs, Création Nowis propose des collaborations à tarif accessible, à partir de 20 $/heure selon la demande.',
+      'Les créations sur mesure sont maintenant proposées avec des forfaits fixes clairs, à partir de 49,99 $, avec options visuelles ou vidéo selon le projet.',
     listeningTitle: 'Écouter Nowis Morin',
     associationTitle: 'Création Nowis, une bannière pour faire vivre les projets',
     associationLabel: 'Création Nowis',
@@ -205,7 +205,7 @@ export const artists: ArtistProfile[] = [
     ],
     customCreationsExamples: ['Mariage', 'Naissance', 'Hommage', 'Décès', 'Histoire d’amour', 'Souvenir de famille', 'Projet personnel'],
     pricingNote:
-      'Pour les premiers projets créatifs, Création Nowis propose des collaborations à tarif accessible, à partir de 20 $/heure selon la demande.',
+      'Les créations sur mesure sont maintenant proposées avec des forfaits fixes clairs, à partir de 49,99 $, avec options visuelles ou vidéo selon le projet.',
     listeningTitle: 'Écouter Yemme & SX',
     associationTitle: 'Des artistes associés qui renforcent la bannière Création Nowis',
     associationLabel: 'Volet associé',

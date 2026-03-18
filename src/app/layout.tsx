@@ -7,11 +7,11 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = {
   ...buildMetadata({
-    title: 'Nowis Morin — Chansons, vidéos et créations IA au Québec',
+    title: 'Création Nowis | Chansons personnalisées et créations musicales',
     description:
-      'Nowis Morin crée des chansons, vidéos, visuels et projets créatifs avec l’aide de l’intelligence artificielle. Une vitrine artistique et marketing pensée pour l’écoute, la découverte et la prise de contact.',
+      'Création Nowis propose des chansons personnalisées, des créations musicales sur mesure et des options visuelles ou vidéo IA pour accompagner les moments importants.',
     path: '/',
-    keywords: ['Nowis Morin', 'Nowis Morin chanson', 'musique Nowis Morin', 'chanson IA Québec', 'artiste musique IA Québec'],
+    keywords: ['Création Nowis', 'chanson personnalisée Québec', 'chansons sur mesure', 'Nowis Morin musique'],
   }),
   manifest: '/manifest.json',
   icons: {

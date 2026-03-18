@@ -6,11 +6,11 @@ import { buildMetadata } from '@/lib/seo';
 export const dynamic = 'force-dynamic';
 
 export const metadata = buildMetadata({
-  title: 'Musique — Nowis Morin | Chansons IA, créations musicales et univers artistique',
+  title: 'Musique | Création Nowis',
   description:
-    'Découvre la musique de Nowis Morin : chansons originales, projets artistiques assistés par intelligence artificielle et créations musicales conçues au Québec.',
+    'Écoute des exemples de chansons de Création Nowis pour découvrir le ton, l’émotion et la qualité des créations musicales personnalisées.',
   path: '/musique',
-  keywords: ['Nowis Morin', 'musique Nowis Morin', 'Nowis Morin chanson', 'chanson IA Québec', 'artiste musique IA Québec'],
+  keywords: ['musique Création Nowis', 'exemples chansons personnalisées', 'Nowis Morin musique', 'chansons Québec'],
 });
 
 export default async function MusiquePage() {
@@ -20,9 +20,9 @@ export default async function MusiquePage() {
     <div className="bg-slate-50">
       <PageHero
         eyebrow="Musique"
-        title="Les chansons de Nowis Morin : une direction artistique humaine, amplifiée par l’IA"
-        description="Cette page rassemble les chansons, ma démarche créative et l’univers musical Nowis Morin. Chaque morceau dispose d’une page dédiée, pensée pour l’écoute, le référencement et la découverte de mon travail."
-        primaryCta={{ label: 'Me contacter', href: '/contact' }}
+        title="Des exemples pour entendre le style des chansons Création Nowis"
+        description="Cette page rassemble les chansons publiées pour te permettre d’écouter des exemples concrets avant de commander une création sur mesure."
+        primaryCta={{ label: 'Commander une chanson', href: '/commander-une-chanson' }}
         secondaryCta={{ label: 'Voir les vidéos', href: '/videos' }}
       />
 
@@ -30,7 +30,7 @@ export default async function MusiquePage() {
         <div className="max-w-3xl">
           <h2 className="text-3xl font-bold text-slate-950 md:text-4xl">Les créations musicales de Nowis Morin</h2>
           <p className="mt-4 text-lg leading-relaxed text-slate-600">
-            Cette page est alimentée par un catalogue synchronisé depuis YouTube et Spotify. Chaque chanson affiche uniquement les données réellement récupérées, avec une correspondance Spotify ajoutée seulement lorsqu’elle est certaine.
+            Ces chansons servent d’exemples d’écoute. Elles montrent la direction émotionnelle, la couleur musicale et l’approche générale avant de passer à une demande personnalisée.
           </p>
         </div>
 

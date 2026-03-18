@@ -4,11 +4,11 @@ import { socialLinks } from '@/config/socialLinks';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
-  title: 'Contact — Nowis Morin | Projet musical, vidéo ou création personnalisée',
+  title: 'Contact | Création Nowis',
   description:
-    'Contacte Nowis Morin pour une chanson personnalisée, une vidéo créative, un visuel ou une collaboration artistique assistée par intelligence artificielle.',
+    'Contacte Création Nowis pour commander une chanson personnalisée, demander une option vidéo IA ou discuter d’un projet créatif.',
   path: '/contact',
-  keywords: ['Contact Nowis Morin', 'projet créatif IA Québec', 'chanson personnalisée Québec'],
+  keywords: ['Contact Création Nowis', 'commander une chanson Québec', 'projet créatif musique'],
 });
 
 export default function ContactPage({
@@ -25,8 +25,8 @@ export default function ContactPage({
     <div className="bg-slate-50">
       <PageHero
         eyebrow="Contact"
-        title="Parle-moi de ton projet créatif"
-        description="Tu veux une chanson, une vidéo, un concept visuel ou une collaboration plus ambitieuse? Décris-moi ton idée et je te répondrai avec une approche claire, humaine et adaptée à ton objectif."
+        title="Parle-moi de ta chanson ou de ton projet créatif"
+        description="La priorité reste la chanson personnalisée. Tu peux aussi me parler d’une option visuelle, d’une capsule vidéo IA ou d’un besoin créatif plus large."
       />
 
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr]">

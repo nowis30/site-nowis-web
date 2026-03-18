@@ -17,7 +17,7 @@ export default function AProposPage() {
         title="Nowis Morin : une approche créative, humaine et résolument tournée vers l’avenir"
         description="Je crée des chansons, vidéos, visuels et concepts artistiques avec l’aide de l’intelligence artificielle. Mon objectif n’est pas de remplacer la sensibilité humaine, mais de l’amplifier pour produire des créations plus fortes, plus rapides et plus mémorables."
         primaryCta={{ label: 'Découvrir ma musique', href: '/musique' }}
-        secondaryCta={{ label: 'Me contacter', href: '/contact' }}
+        secondaryCta={{ label: 'Parler de mon projet', href: '/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée ou d’un projet créatif.' }}
       />
 
       <section className="mx-auto max-w-7xl space-y-10 px-6 py-16 md:py-20">

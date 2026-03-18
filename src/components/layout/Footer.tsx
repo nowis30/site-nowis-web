@@ -86,8 +86,8 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/musique" className="text-gray-400 hover:text-white transition-colors">
-                  Musique
+                <Link href="/commander-une-chanson" className="text-gray-400 hover:text-white transition-colors">
+                  Commander une chanson
                 </Link>
               </li>
               <li>
@@ -96,8 +96,8 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/videos" className="text-gray-400 hover:text-white transition-colors">
-                  Vidéos
+                <Link href="/musique" className="text-gray-400 hover:text-white transition-colors">
+                  Musique / exemples
                 </Link>
               </li>
               <li>
@@ -106,8 +106,8 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/jeux" className="text-gray-400 hover:text-white transition-colors">
-                  Jeux
+                <Link href="/videos" className="text-gray-400 hover:text-white transition-colors">
+                  Vidéos IA
                 </Link>
               </li>
               <li>
@@ -133,7 +133,7 @@ export const Footer: React.FC = () => {
                 📞 <a href="tel:+18193883407" className="hover:text-white transition-colors">(819) 388-3407</a>
               </li>
               <li>
-                <Link href="/booking" className="text-gray-400 hover:text-white transition-colors">Réserver / parler de mon projet</Link>
+                <Link href="/booking" className="text-gray-400 hover:text-white transition-colors">Parler de mon projet</Link>
               </li>
             </ul>
           </div>

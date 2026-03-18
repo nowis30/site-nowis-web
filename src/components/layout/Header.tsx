@@ -18,19 +18,18 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { label: 'Accueil', href: '/' },
-  { label: 'Musique', href: '/musique' },
+  { label: 'Commander une chanson', href: '/commander-une-chanson' },
   { label: 'Artistes', href: '/artistes' },
-  { label: 'Vidéos', href: '/videos' },
-  { label: 'Services', href: '/services' },
-  { label: 'Jeux', href: '/jeux' },
-  { label: 'À propos', href: '/a-propos' },
+  { label: 'Exemples', href: '/musique' },
   { label: 'Contact', href: '/contact' },
 ];
 
 const resourceLinks: NavLink[] = [
-  { label: 'Commander une chanson', href: '/commander-une-chanson' },
+  { label: 'Musique', href: '/musique' },
+  { label: 'Vidéos', href: '/videos' },
+  { label: 'Services créatifs', href: '/services' },
   { label: 'Assistant projet', href: '/assistant-projet' },
-  { label: 'Idées', href: '/idees' },
+  { label: 'À propos', href: '/a-propos' },
 ];
 
 export const Header: React.FC = () => {
@@ -45,8 +44,8 @@ export const Header: React.FC = () => {
             <Image src="/hero.jpg" alt="Nowis Morin" fill className="object-cover" />
           </span>
           <span>
-            <span className="block text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Artiste & créateur IA</span>
-            <span className="block text-lg font-bold md:text-xl">Nowis Morin</span>
+            <span className="block text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Création Nowis</span>
+            <span className="block text-lg font-bold md:text-xl">Chansons personnalisées</span>
           </span>
         </Link>
 
@@ -93,10 +92,10 @@ export const Header: React.FC = () => {
           </Link>
 
           <ContactPrefillLink
-            href="/contact"
+            href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée."
             className="ml-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 transition-all duration-200 hover:bg-slate-200"
           >
-            Me contacter
+            Commander une chanson
           </ContactPrefillLink>
         </div>
 
@@ -160,11 +159,11 @@ export const Header: React.FC = () => {
             </Link>
 
             <ContactPrefillLink
-              href="/contact"
+              href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée."
               className="m-4 rounded-xl bg-white px-6 py-3 text-center font-semibold text-slate-950 transition-colors hover:bg-slate-200"
               onClick={() => setIsMenuOpen(false)}
             >
-              Me contacter
+              Commander une chanson
             </ContactPrefillLink>
           </div>
         )}

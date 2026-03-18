@@ -18,7 +18,7 @@ export default function ServicesPage() {
         eyebrow="Services / Collaborations"
         title="Des créations personnalisées pour les artistes, les idées fortes et les projets qui veulent se démarquer"
         description="Cette page présente ce que Nowis Morin peut concevoir pour toi : chansons sur mesure, vidéos, visuels créatifs et concepts plus ambitieux mêlant art, émotion et intelligence artificielle."
-        primaryCta={{ label: 'Me contacter', href: '/contact' }}
+        primaryCta={{ label: 'Parler de mon projet', href: '/contact?projectType=autre&message=Bonjour, je veux discuter d’un projet créatif avec Création Nowis.' }}
         secondaryCta={{ label: 'Écouter mes chansons', href: '/musique' }}
       />
 

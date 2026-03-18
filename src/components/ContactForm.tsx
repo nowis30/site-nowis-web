@@ -9,6 +9,7 @@ type ContactFormProps = {
   initialEmail?: string;
   initialProjectType?: string;
   initialMessage?: string;
+  showPortfolioConsent?: boolean;
 };
 
 export const ContactForm: React.FC<ContactFormProps> = ({
@@ -16,6 +17,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   initialEmail = '',
   initialProjectType = '',
   initialMessage = '',
+  showPortfolioConsent = false,
 }) => {
   const [submitted, setSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -158,6 +160,37 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               placeholder="Quelques détails sur ton projet (inspiration, ton, ambiance, deadline...)."
             />
           </div>
+
+          {showPortfolioConsent ? (
+            <fieldset className="rounded-2xl border border-gray-200 bg-slate-50 px-5 py-4">
+              <legend className="px-1 text-sm font-medium text-gray-700">Portfolio et diffusion</legend>
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Certains projets peuvent être montrés comme exemples seulement avec ton accord.
+              </p>
+              <div className="mt-4 space-y-3">
+                <label className="flex items-start gap-3 text-sm text-gray-700">
+                  <input
+                    type="radio"
+                    name="portfolioConsent"
+                    value="accept"
+                    className="mt-1 h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500"
+                    required
+                  />
+                  <span>J’accepte que mon projet ou un extrait soit utilisé dans le portfolio de Création Nowis.</span>
+                </label>
+                <label className="flex items-start gap-3 text-sm text-gray-700">
+                  <input
+                    type="radio"
+                    name="portfolioConsent"
+                    value="refuse"
+                    className="mt-1 h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500"
+                    required
+                  />
+                  <span>Je refuse toute diffusion publique de mon projet.</span>
+                </label>
+              </div>
+            </fieldset>
+          ) : null}
 
           <Button type="submit" disabled={isSending} className="w-full">
             {isSending ? 'Envoi en cours…' : 'Envoyer ma demande'}
