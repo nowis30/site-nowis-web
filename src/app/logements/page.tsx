@@ -1,11 +1,14 @@
 import { LogementsScreen } from '@/screens/LogementsScreen';
 import { getPublishedListings } from '@/lib/logements';
+import { buildMetadata } from '@/lib/seo';
 
-export const metadata = {
-  title: 'Logements à louer - NOWIS',
+export const metadata = buildMetadata({
+  title: 'Logements à louer | Création Nowis',
   description:
-    'Explorez nos logements à louer : photos, tarifs, localisation et réservation de visite. Découvrez votre prochain logement en quelques clics.',
-};
+    'Explorez les logements à louer avec photos, tarifs mensuels en dollars canadiens, localisation et demande de visite au Québec.',
+  path: '/logements',
+  keywords: ['logements à louer Québec', 'location appartement Québec', 'logements Création Nowis'],
+});
 
 export default async function LogementsPage() {
   const listings = await getPublishedListings();

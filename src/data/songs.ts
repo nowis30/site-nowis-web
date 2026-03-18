@@ -52,6 +52,85 @@ type RawSong = {
 const songsFilePath = path.join(process.cwd(), 'data', 'songs.json');
 const baseSeoTags = ['Nowis Morin', 'Nowis Morin chanson', 'musique Nowis Morin', 'chanson IA Québec', 'artiste musique IA Québec'];
 
+function cleanSongTitle(title: string) {
+  const normalized = title.replace(/\s+/g, ' ').trim();
+
+  if (!normalized) return '';
+
+  return normalized.charAt(0).toLocaleUpperCase('fr-CA') + normalized.slice(1);
+}
+
+function cleanSongDescription(description?: string) {
+  if (!description) return '';
+
+  return description
+    .replace(/\*\*/g, '')
+    .replace(/(^|\s)\*(.+?)\*(?=\s|$)/g, '$1$2')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => {
+      if (!line) return false;
+      if (/^(https?:\/\/)/i.test(line)) return false;
+      if (/^#/i.test(line)) return false;
+      if (/^(Suivez-moi|YouTube\s*:|Spotify\s*:|Site web\s*:|🌐|🎵|🎶|✍️|🤖)/i.test(line)) return false;
+      if (/(^|\s)(Artiste|Paroles|Couplets|Refrain et musique|Histoire|Création musicale)\s*:/i.test(line)) return false;
+      return true;
+    })
+    .join('\n\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function buildSongExcerpt(description: string, maxLength = 180) {
+  if (description.length <= maxLength) {
+    return description;
+  }
+
+  const sliced = description.slice(0, maxLength);
+  const safeSlice = sliced.slice(0, sliced.lastIndexOf(' ')).trim();
+  return `${safeSlice || sliced.trim()}…`;
+}
+
+function normalizeSongTitleKey(title: string) {
+  return title
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function getSongPlatformCount(song: SongRecord) {
+  return Number(Boolean(song.youtubeUrl)) + Number(Boolean(song.spotifyUrl)) + Number(Boolean(song.otherStreamUrl));
+}
+
+function dedupeSongsForPublicCatalog(songs: SongRecord[]) {
+  const grouped = new Map<string, SongRecord[]>();
+
+  for (const song of songs) {
+    const key = normalizeSongTitleKey(song.title);
+    const existing = grouped.get(key) || [];
+    existing.push(song);
+    grouped.set(key, existing);
+  }
+
+  return [...grouped.values()].map((group) =>
+    [...group].sort((a, b) => {
+      const platformDiff = getSongPlatformCount(b) - getSongPlatformCount(a);
+      if (platformDiff !== 0) return platformDiff;
+
+      const descriptionDiff = Number(Boolean(b.description?.trim())) - Number(Boolean(a.description?.trim()));
+      if (descriptionDiff !== 0) return descriptionDiff;
+
+      const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+      const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+      if (dateA !== dateB) return dateB - dateA;
+
+      return a.title.localeCompare(b.title, 'fr');
+    })[0],
+  );
+}
+
 function buildUniqueSongSlug(song: Pick<SongRecord, 'slug' | 'title' | 'youtubeVideoId' | 'spotifyTrackId' | 'id'>, slugCounts: Map<string, number>) {
   const baseSlug = song.slug || slugify(song.title) || 'chanson';
   const currentCount = slugCounts.get(baseSlug) || 0;
@@ -328,10 +407,11 @@ function normalizeSongRecord(song: SongRecord): SongRecord {
   const spotifyUrl = song.spotifyUrl || (spotifyTrackId ? `https://open.spotify.com/track/${spotifyTrackId}` : undefined);
   const coverImage = song.coverImage || getYouTubeThumbnailUrl(youtubeUrl, 'hqdefault') || '/hero.jpg';
   const source: SongSource = youtubeUrl && spotifyUrl ? 'both' : youtubeUrl ? 'youtube' : 'spotify';
+  const description = cleanSongDescription(song.description?.trim() || '');
 
   return {
     id: song.id || (youtubeVideoId ? `youtube:${youtubeVideoId}` : spotifyTrackId ? `spotify:${spotifyTrackId}` : `song:${song.slug || slugify(song.title)}`),
-    title: song.title,
+    title: cleanSongTitle(song.title),
     slug: song.slug || slugify(song.title),
     youtubeUrl,
     youtubeVideoId,
@@ -340,7 +420,7 @@ function normalizeSongRecord(song: SongRecord): SongRecord {
     coverImage,
     publishedAt: song.publishedAt || null,
     source,
-    description: song.description?.trim() || '',
+    description,
     status: song.status || 'published',
     notes: song.notes,
     otherStreamUrl: song.otherStreamUrl,
@@ -348,12 +428,14 @@ function normalizeSongRecord(song: SongRecord): SongRecord {
 }
 
 function mapSongForUi(song: SongRecord, index: number): Song {
+  const longDescription = song.description || '';
+
   return {
     ...song,
     image: song.coverImage || '/hero.jpg',
-    shortDescription: song.description || '',
-    longDescription: song.description || '',
-    creationMethod: song.description || '',
+    shortDescription: buildSongExcerpt(longDescription),
+    longDescription,
+    creationMethod: longDescription,
     mood: '',
     seoTags: [...baseSeoTags, song.title],
     featured: index < 3,
@@ -400,7 +482,7 @@ export async function getAllSongs(): Promise<Song[]> {
   const syncedSongs = await readSongsFile();
   const sourceSongs = syncedSongs.length > 0 ? syncedSongs : legacySongs;
 
-  return ensureUniqueSlugs(sortSongs(sourceSongs.filter((song) => song.status !== 'hidden'))).map(mapSongForUi);
+  return ensureUniqueSlugs(dedupeSongsForPublicCatalog(sortSongs(sourceSongs.filter((song) => song.status !== 'hidden')))).map(mapSongForUi);
 }
 
 export async function getFeaturedSongs(limit = 3): Promise<Song[]> {

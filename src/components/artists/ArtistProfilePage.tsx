@@ -52,9 +52,9 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                 <ContactPrefillLink href={artist.contactHref} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
                   Demander une chanson personnalisée
                 </ContactPrefillLink>
-                <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+                <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
                   Parler de mon projet
-                </Link>
+                </ContactPrefillLink>
               </div>
             </div>
 
@@ -78,10 +78,11 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                       .slice(0, 3)}
                   </div>
                   <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-emerald-300">Visuel en attente</p>
-                    <p className="mt-3 text-2xl font-semibold">Une identité à compléter</p>
+                    <p className="text-sm uppercase tracking-[0.24em] text-emerald-300">Création Nowis</p>
+                    <p className="mt-3 text-3xl font-semibold">{artist.name}</p>
+                    <p className="mt-2 text-lg text-slate-200">{artist.role}</p>
                     <p className="mt-3 max-w-md text-slate-300">
-                      Cette page utilise un fallback propre tant qu’un visuel officiel dédié n’a pas encore été ajouté pour cet artiste.
+                      Un univers présenté avec une direction sobre, humaine et cohérente avec le reste du site, même sans visuel dédié.
                     </p>
                   </div>
                 </div>

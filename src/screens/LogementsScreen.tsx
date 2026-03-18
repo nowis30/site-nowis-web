@@ -48,8 +48,11 @@ export const LogementsScreen: React.FC<LogementsScreenProps> = ({ logements }) =
         />
       </div>
 
-      <section className="mb-10">
-        <h3 className="text-lg font-semibold text-white mb-4">Filtres</h3>
+      <section className="mb-10 rounded-3xl bg-slate-950 p-6 shadow-sm">
+        <h3 className="mb-4 text-lg font-semibold text-white">Filtres</h3>
+        <p className="mb-5 max-w-3xl text-sm text-slate-300">
+          Affinez la recherche selon la ville, le budget mensuel et la disponibilité actuelle.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <label className="space-y-1 text-sm">
             <span className="text-slate-300">Ville</span>
@@ -75,10 +78,10 @@ export const LogementsScreen: React.FC<LogementsScreenProps> = ({ logements }) =
               className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white"
             >
               <option value="all">Tous</option>
-              <option value="under-1000">Moins de 1000€</option>
-              <option value="1000-1500">1000€ - 1500€</option>
-              <option value="1500-2000">1500€ - 2000€</option>
-              <option value="over-2000">Plus de 2000€</option>
+              <option value="under-1000">Moins de 1 000 $ CA</option>
+              <option value="1000-1500">1 000 $ CA à 1 500 $ CA</option>
+              <option value="1500-2000">1 500 $ CA à 2 000 $ CA</option>
+              <option value="over-2000">Plus de 2 000 $ CA</option>
             </select>
           </label>
 
@@ -112,7 +115,9 @@ export const LogementsScreen: React.FC<LogementsScreenProps> = ({ logements }) =
       {filteredLogements.length === 0 ? (
         <div className="rounded-xl p-8 bg-slate-900 border border-slate-700 text-center">
           <h3 className="text-xl font-semibold text-white">Aucun logement ne correspond à vos critères.</h3>
-          <p className="mt-2 text-slate-400">Essayez d&#39;ajuster les filtres pour afficher plus de résultats.</p>
+          <p className="mt-2 text-slate-400">
+            Essayez d&apos;ajuster les filtres pour afficher plus de résultats ou revenir à une recherche plus large.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

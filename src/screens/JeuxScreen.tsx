@@ -88,7 +88,7 @@ export const JeuxScreen = () => {
               ))}
             </div>
             <div className="mt-6 rounded-2xl bg-emerald-500/10 p-5 text-sm text-emerald-100 ring-1 ring-emerald-400/20">
-              Accès rapide, univers clair et progression motivante: la page est pensée pour convertir les visiteurs du site en joueurs.
+              Accès rapide, univers clair et progression motivante : la page est pensée pour guider les visiteurs jusqu’au jeu sans détour.
             </div>
           </div>
         </div>
@@ -118,7 +118,7 @@ export const JeuxScreen = () => {
             <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Commencer</p>
               <h2 className="mt-4 text-3xl font-bold">Comment jouer</h2>
-              <ol className="mt-6 space-y-4">
+              <ol className="mt-6 list-none space-y-4">
                 {steps.map((step, index) => (
                   <li key={step} className="flex gap-4">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 font-semibold text-white">
@@ -179,12 +179,12 @@ export const JeuxScreen = () => {
               >
                 Lancer le jeu
               </Link>
-              <Link
-                href="/booking"
+              <ContactPrefillLink
+                href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet de jeu ou d’une collaboration avec Création Nowis."
                 className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
               >
-                Réserver un appel
-              </Link>
+                Contacter Création Nowis
+              </ContactPrefillLink>
             </div>
           </div>
         </div>

@@ -1,96 +1,133 @@
-/**
- * Page Biographie - NOWIS Morin
- * Présentation personnelle et liens sociaux
- */
+import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
+import { PageHero } from '@/components/marketing/PageHero';
+import { socialLinks } from '@/config/socialLinks';
+import { getArtistBySlug } from '@/data/artists';
+import { buildMetadata } from '@/lib/seo';
 
-import type { Metadata } from 'next';
-import { SocialLinks } from '@/components/ui/SocialLinks';
+const artist = getArtistBySlug('nowis-morin');
 
-export const metadata: Metadata = {
-  title: 'Biographie | NOWIS Morin – Chanteur, Guitariste, Créateur',
+export const metadata = buildMetadata({
+  title: 'Biographie | Nowis Morin',
   description:
-    'Découvrez l\'histoire de NOWIS Morin : chanteur, guitariste et auteur passionné par la musique et la création propulsée par l\'IA. Une vie d\'art, d\'émotion et de création.',
-};
+    artist?.seoDescription ||
+    'Découvre la biographie de Nowis Morin, son parcours musical et sa manière de créer des chansons et projets visuels avec sensibilité.',
+  path: '/biographie',
+  keywords: ['biographie Nowis Morin', 'artiste Québec', 'Création Nowis', 'chansons personnalisées'],
+});
+
+const platformLinks = [
+  { label: 'Spotify', href: socialLinks.spotify },
+  { label: 'YouTube', href: socialLinks.youtube },
+  { label: 'Instagram', href: socialLinks.instagram },
+  { label: 'Facebook', href: socialLinks.facebook },
+];
 
 export default function BiographiePage() {
+  if (!artist) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-20">
-          <div className="max-w-4xl mx-auto px-6">
-            
-            {/* Titre */}
-            <div className="text-center mb-16">
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-                NOWIS Morin
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-600 italic">
-                Chanteur • Guitariste • Créateur
+    <div className="bg-slate-50">
+      <PageHero
+        eyebrow="Biographie"
+        title="Nowis Morin : une démarche musicale guidée par l’émotion, la mémoire et la création"
+        description={artist.shortBio}
+        primaryCta={{ label: 'Écouter ma musique', href: '/musique' }}
+        secondaryCta={{ label: 'Parler de mon projet', href: artist.contactHref }}
+      />
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
+          <article className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200 md:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Parcours</p>
+            <h2 className="mt-4 text-3xl font-bold text-slate-950">Une biographie ancrée dans le vrai</h2>
+            <div className="mt-6 space-y-5 text-base leading-8 text-slate-600">
+              {artist.longBio.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </article>
+
+          <aside className="space-y-6">
+            <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Repères</p>
+              <ul className="mt-5 space-y-3 text-sm text-slate-200">
+                {artist.heroHighlights.map((item) => (
+                  <li key={item} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Plateformes</p>
+              <h2 className="mt-4 text-2xl font-bold text-slate-950">Suivre Nowis Morin</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Retrouve les sorties, les vidéos et les nouvelles créations sur les plateformes principales.
               </p>
-              <div className="h-1 w-24 bg-gradient-to-r from-primary-600 to-secondary-500 mx-auto mt-6"></div>
-            </div>
-
-            {/* Contenu biographie */}
-            <article className="bg-white rounded-3xl p-8 md:p-12 shadow-card border border-gray-100 space-y-6 text-gray-700 leading-relaxed">
-              
-              <section>
-                <p>
-                  NOWIS Morin, c'est l'histoire d'un gars qui a commencé la guitare à 15 ans… et qui n'a jamais vraiment arrêté, même quand la vie essayait de lui faire croire le contraire. Avant les algorithmes, avant les plateformes, avant les "stratégies de contenu", il y avait surtout une chose : la nécessité de chanter. De se vider le cœur. De mettre des mots sur ce qui pèse, sur ce qui brûle, sur ce qui fait rire aussi, parce que oui — parfois, l'humour, c'est juste une autre façon élégante de survivre.
-                </p>
-              </section>
-
-              <section>
-                <p>
-                  Chanteur avant tout, guitariste par réflexe, auteur par besoin, NOWIS écrit comme on respire quand l'air manque. Ses chansons sont des pages arrachées d'un carnet mental : souvenirs qui remontent, blessures qui cicatrisent, moments de lumière qui frappent sans avertir. Il raconte le passé sans le maquiller, le présent sans filtre, et le futur avec cette espèce de foi têtue qu'on garde quand on a déjà traversé des tempêtes.
-                </p>
-              </section>
-
-              <section>
-                <p>
-                  Aujourd'hui, la musique de NOWIS Morin prend une nouvelle vitesse grâce à l'intelligence artificielle — pas pour remplacer l'âme, mais pour l'amplifier. L'IA devient un studio élargi, un partenaire de création, un accélérateur d'idées : des maquettes qui deviennent des chansons complètes, des textes qui se transforment en univers, des émotions brutes qui trouvent enfin leur forme finale. Il reste au centre de tout : la voix, l'intention, la vérité. La machine, elle, aide à peaufiner, à explorer, à produire plus loin et plus vite… mais le cœur du morceau, c'est toujours le sien.
-                </p>
-              </section>
-
-              <section>
-                <p>
-                  Présent sur Spotify et sur les principales plateformes de diffusion, NOWIS Morin publie de plus en plus de titres qui ressemblent à un journal vivant — une discographie qui se construit morceau par morceau, comme on construit une vie : en essayant, en tombant, en se relevant, en créant. Chaque nouvelle sortie est un chapitre, parfois doux, parfois rugueux, mais toujours vrai.
-                </p>
-              </section>
-
-              <section>
-                <p>
-                  Bienvenue dans l'univers de NOWIS Morin : un studio à ciel ouvert, une guitare comme boussole, une voix comme moteur… et une créativité qui ne demande qu'à prendre encore plus de place.
-                </p>
-              </section>
-
-            </article>
-
-            {/* Section Suivre */}
-            <div className="text-center mt-20 space-y-8">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  Suivre NOWIS Morin
-                </h2>
-                <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                  Retrouvez les nouvelles sorties musicales, les coulisses créatifs et les projets en cours sur les réseaux.
-                </p>
+              <div className="mt-6 grid gap-3">
+                {platformLinks.map((platform) => (
+                  <Link
+                    key={platform.label}
+                    href={platform.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-emerald-300 hover:text-emerald-700"
+                  >
+                    <span>{platform.label}</span>
+                    <span aria-hidden="true">↗</span>
+                  </Link>
+                ))}
               </div>
-              
-              <SocialLinks className="mt-8" showLabel={true} />
             </div>
+          </aside>
+        </div>
+      </section>
 
-            {/* CTA retour */}
-            <div className="text-center mt-16">
-              <a
-                href="/"
-                className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-white text-lg font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
+      <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <article className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Vision</p>
+            <h2 className="mt-4 text-2xl font-bold text-slate-950">Une approche artistique qui utilise l’IA sans perdre l’humain</h2>
+            <div className="mt-5 space-y-4 text-sm leading-7 text-slate-600">
+              {artist.journey.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Créer ensemble</p>
+            <h2 className="mt-4 text-2xl font-bold">Des chansons et projets sur mesure pour des moments qui comptent</h2>
+            <p className="mt-4 text-sm leading-7 text-slate-300">{artist.customCreationsIntro[0]}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              {artist.customCreationsExamples.map((example) => (
+                <span key={example} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+                  {example}
+                </span>
+              ))}
+            </div>
+            <p className="mt-6 text-sm leading-7 text-slate-300">{artist.pricingNote}</p>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <ContactPrefillLink
+                href={artist.contactHref}
+                className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
               >
-                <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Retour à l'accueil
-              </a>
+                Contacter Création Nowis
+              </ContactPrefillLink>
+              <Link
+                href="/artistes/nowis-morin"
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
+              >
+                Voir la page artiste complète
+              </Link>
             </div>
-
-          </div>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }

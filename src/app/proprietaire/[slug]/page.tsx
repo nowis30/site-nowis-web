@@ -229,14 +229,14 @@ export default function ProprietaireListingPage() {
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Appartement lumineux à Paris"
+                placeholder="Appartement lumineux à Québec"
                 className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 required
               />
             </label>
 
             <label className="space-y-2 text-sm">
-              <span className="font-medium text-gray-700">Prix (€ / mois)*</span>
+              <span className="font-medium text-gray-700">Prix ($ CA / mois)*</span>
               <input
                 type="number"
                 min={0}
@@ -253,7 +253,7 @@ export default function ProprietaireListingPage() {
               <input
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="Paris"
+                placeholder="Québec"
                 className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 required
               />
@@ -264,7 +264,7 @@ export default function ProprietaireListingPage() {
               <input
                 value={sector}
                 onChange={(e) => setSector(e.target.value)}
-                placeholder="Montmartre"
+                placeholder="Saint-Roch"
                 className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
               />
             </label>

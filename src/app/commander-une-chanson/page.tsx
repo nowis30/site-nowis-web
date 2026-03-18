@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { PageHero } from '@/components/marketing/PageHero';
 import { buildMetadata } from '@/lib/seo';
 
@@ -11,11 +12,26 @@ export const metadata = buildMetadata({
 });
 
 const audiences = [
-  'Couple',
-  'Famille',
-  'Anniversaire',
-  'Hommage',
-  'Entreprise / projet spécial',
+  {
+    title: 'Couple',
+    description: 'Pour raconter une rencontre, une promesse, un mariage ou une histoire d’amour avec une vraie couleur émotionnelle.',
+  },
+  {
+    title: 'Famille',
+    description: 'Pour transformer un souvenir de famille, une naissance ou un lien précieux en chanson durable et partageable.',
+  },
+  {
+    title: 'Anniversaire',
+    description: 'Pour offrir un cadeau plus personnel qu’un simple message, avec des détails réels et une ambiance adaptée.',
+  },
+  {
+    title: 'Hommage',
+    description: 'Pour souligner un parcours, remercier une personne importante ou garder une mémoire vivante avec justesse.',
+  },
+  {
+    title: 'Projet spécial',
+    description: 'Pour un lancement, une surprise, un projet personnel ou une idée qui mérite une forme originale et sensible.',
+  },
 ];
 
 const inputs = [
@@ -27,10 +43,22 @@ const inputs = [
 ];
 
 const outcomes = [
-  'Une chanson personnalisée qui part de ton histoire.',
-  'Un refrain accrocheur qui reste en tête.',
-  'Une ambiance touchante, lumineuse ou énergique selon ton besoin.',
-  'Un texte inspiré de votre histoire, de vos souvenirs ou de votre message.',
+  {
+    title: 'Une chanson construite à partir de ton histoire',
+    description: 'Le point de départ reste toujours ton vécu, ton message ou le moment que tu veux faire ressentir.',
+  },
+  {
+    title: 'Un refrain qui porte vraiment l’idée',
+    description: 'L’objectif n’est pas juste d’écrire un texte, mais de créer une chanson mémorable et cohérente.',
+  },
+  {
+    title: 'Une ambiance juste pour l’émotion recherchée',
+    description: 'Douce, lumineuse, profonde, festive ou plus intense : la direction dépend de ce que tu veux transmettre.',
+  },
+  {
+    title: 'Une base claire pour aller plus loin',
+    description: 'Selon le projet, la chanson peut aussi être accompagnée d’un visuel, d’une vidéo simple ou d’une mise en valeur plus complète.',
+  },
 ];
 
 const contactHref = '/contact?projectType=chanson&message=Je%20souhaite%20commander%20une%20chanson%20personnalisee.%20Voici%20mon%20histoire%20et%20le%20contexte%20de%20ma%20demande.';
@@ -51,16 +79,16 @@ export default function CommanderUneChansonPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Pour qui</p>
           <h2 className="mt-4 text-3xl font-bold text-slate-950 md:text-4xl">Des chansons qui servent une émotion réelle.</h2>
           <p className="mt-4 text-lg leading-relaxed text-slate-600">
-            Que ce soit pour faire pleurer, faire sourire ou laisser un souvenir durable, la chanson devient un vrai cadeau utile et mémorable.
+            Ici, le but n’est pas de produire un texte générique. Le but est de transformer une histoire, une relation ou un événement en chanson claire, sensible et réellement personnelle.
           </p>
         </div>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
           {audiences.map((item) => (
-            <article key={item} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-lg font-semibold text-slate-950">{item}</p>
+            <article key={item.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-lg font-semibold text-slate-950">{item.title}</p>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Une demande claire, humaine et personnelle pour transformer une idée en chanson marquante.
+                {item.description}
               </p>
             </article>
           ))}
@@ -85,11 +113,9 @@ export default function CommanderUneChansonPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Ce que je peux créer</p>
             <div className="mt-6 space-y-4">
               {outcomes.map((item) => (
-                <div key={item} className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="font-semibold text-slate-950">{item}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    L’objectif est de livrer une chanson cohérente, touchante et alignée avec ton intention.
-                  </p>
+                <div key={item.title} className="rounded-2xl border border-slate-200 bg-white p-5">
+                  <p className="font-semibold text-slate-950">{item.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
                 </div>
               ))}
             </div>
@@ -105,12 +131,12 @@ export default function CommanderUneChansonPage() {
             Envoie-moi les bons détails dès maintenant et je pourrai te répondre plus vite avec une direction claire pour ta chanson personnalisée.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Link
+            <ContactPrefillLink
               href={contactHref}
               className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
             >
-              Me parler d’une chanson personnalisée
-            </Link>
+              Commander une chanson personnalisée
+            </ContactPrefillLink>
             <Link
               href="/avant-de-mecrire"
               className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"

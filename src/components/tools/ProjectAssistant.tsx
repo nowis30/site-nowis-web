@@ -26,8 +26,8 @@ const recommendationContent: Record<RecommendationKey, { title: string; descript
     contactHref: '/contact?projectType=chanson&message=Je%20veux%20une%20chanson%20personnalisee.%20Voici%20mon%20objectif%20et%20le%20contexte%20de%20mon%20projet.',
   },
   video: {
-    title: 'Vidéo promo IA',
-    description: 'Une vidéo courte, claire et percutante sera le format le plus utile pour capter l’attention, présenter une offre ou vendre une idée.',
+    title: 'Vidéo créative',
+    description: 'Une vidéo courte, claire et percutante sera le format le plus utile pour capter l’attention, présenter une offre ou mettre une idée en mouvement.',
     contactHref: '/contact?projectType=video&message=Je%20veux%20une%20video%20promo%20IA.%20Voici%20ce%20que%20je%20veux%20montrer%20ou%20vendre.',
   },
   visual: {
@@ -178,15 +178,21 @@ export function ProjectAssistant() {
                   href={recommendation.contactHref}
                   className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
                 >
-                  Passer à l’action
+                  Parler de mon projet
                 </Link>
               </>
             ) : (
               <>
                 <h2 className="mt-4 text-3xl font-bold">Commence par répondre aux 4 blocs</h2>
                 <p className="mt-4 text-lg leading-relaxed text-slate-300">
-                  Dès que tes réponses sont complètes, l’assistant t’indique la meilleure direction entre chanson, vidéo, visuel ou projet web / jeu / concept.
+                  L’assistant sert à clarifier une direction réaliste pour ton idée. Tu peux ensuite passer au formulaire de contact avec une demande déjà mieux cadrée.
                 </p>
+                <Link
+                  href="/contact?projectType=autre&message=Bonjour, je veux discuter d’un projet créatif avec Création Nowis."
+                  className="mt-8 inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
+                >
+                  Contacter Création Nowis
+                </Link>
               </>
             )}
           </div>
