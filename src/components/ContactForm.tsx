@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
+import { legalConfig, legalLinks, privacyCollectionNotice } from '@/data/legal';
 
 type ContactFormProps = {
   initialName?: string;
@@ -174,9 +176,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                     name="portfolioConsent"
                     value="accept"
                     className="mt-1 h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500"
-                    required
                   />
-                  <span>J’accepte que mon projet ou un extrait soit utilisé dans le portfolio de Création Nowis.</span>
+                  <span>J’accepte que ma chanson, mon visuel, ma vidéo ou un extrait puisse être utilisé par Création Nowis à titre de portfolio.</span>
                 </label>
                 <label className="flex items-start gap-3 text-sm text-gray-700">
                   <input
@@ -184,13 +185,44 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                     name="portfolioConsent"
                     value="refuse"
                     className="mt-1 h-4 w-4 border-gray-300 text-green-600 focus:ring-green-500"
-                    required
                   />
                   <span>Je refuse toute diffusion publique de mon projet.</span>
                 </label>
               </div>
+              <p className="mt-3 text-xs leading-5 text-gray-500">
+                Ce choix est facultatif. Si tu préfères, il pourra aussi être confirmé plus tard par écrit.
+              </p>
             </fieldset>
           ) : null}
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-600">
+            <p>{privacyCollectionNotice.text}</p>
+            <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-500">
+              {privacyCollectionNotice.bullets.map((item) => (
+                <li key={item}>• {item}</li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              Responsable : {legalConfig.responsiblePrivacyName} —{' '}
+              <a href={`mailto:${legalConfig.privacyEmail}`} className="font-medium text-emerald-700 hover:underline">
+                {legalConfig.privacyEmail}
+              </a>{' '}
+              —{' '}
+              <a href={legalConfig.privacyPhoneHref} className="font-medium text-emerald-700 hover:underline">
+                {legalConfig.privacyPhone}
+              </a>
+            </p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              <Link href={legalLinks.privacy} className="font-medium text-emerald-700 hover:underline">
+                Consulter notre politique de confidentialité
+              </Link>
+              {' '}et{' '}
+              <Link href={legalLinks.terms} className="font-medium text-emerald-700 hover:underline">
+                nos conditions de vente
+              </Link>
+              .
+            </p>
+          </div>
 
           <Button type="submit" disabled={isSending} className="w-full">
             {isSending ? 'Envoi en cours…' : 'Envoyer ma demande'}

@@ -10,6 +10,7 @@ import {
   SongVideoExtrasSection,
   WhyNowisSection,
 } from '@/components/marketing/SongSalesSections';
+import { legalLinks } from '@/data/legal';
 import { portfolioDisclosure, songSalesCtas } from '@/data/songSales';
 import { buildMetadata } from '@/lib/seo';
 
@@ -70,6 +71,21 @@ export default function CommanderUneChansonPage() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">Avant l’envoi</p>
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                La garantie satisfaction s’applique selon les conditions du projet. Les détails sur les paiements, les délais, les révisions, les annulations et les droits d’utilisation sont expliqués dans les pages légales ci-dessous.
+              </p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <Link href={legalLinks.terms} className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-100">
+                  Voir les conditions de vente
+                </Link>
+                <Link href={legalLinks.privacy} className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-100">
+                  Voir la politique de confidentialité
+                </Link>
+              </div>
             </div>
           </div>
 

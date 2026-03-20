@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { FaFacebookF, FaInstagram, FaSpotify, FaYoutube } from 'react-icons/fa';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
+import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
 
 const footerPlatforms = [
@@ -76,7 +77,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid gap-10 py-10 md:grid-cols-2 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid gap-10 py-10 md:grid-cols-2 lg:grid-cols-[1fr_0.9fr_0.9fr]">
           <div>
             <h4 className="mb-4 text-white font-semibold">Navigation</h4>
             <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:max-w-md">
@@ -116,7 +117,7 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <ContactPrefillLink href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                <ContactPrefillLink href={legalLinks.contact} className="text-gray-400 hover:text-white transition-colors">
                   Contact
                 </ContactPrefillLink>
               </li>
@@ -127,13 +128,32 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 text-white font-semibold">Contact</h4>
             <ul className="space-y-2 text-sm">
               <li className="text-gray-400">
-                📧 <a href="mailto:simonmorin@nowis.store" className="hover:text-white transition-colors">simonmorin@nowis.store</a>
+                📧 <a href={`mailto:${legalConfig.contactEmail}`} className="hover:text-white transition-colors">{legalConfig.contactEmail}</a>
               </li>
               <li className="text-gray-400">
-                📞 <a href="tel:+18193883407" className="hover:text-white transition-colors">(819) 388-3407</a>
+                📞 <a href={legalConfig.contactPhoneHref} className="hover:text-white transition-colors">{legalConfig.contactPhone}</a>
               </li>
               <li>
                 <Link href="/booking" className="text-gray-400 hover:text-white transition-colors">Parler de mon projet</Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="mb-4 text-white font-semibold">Informations légales</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href={legalLinks.privacy} className="text-gray-400 hover:text-white transition-colors">
+                  Politique de confidentialité
+                </Link>
+              </li>
+              <li>
+                <Link href={legalLinks.terms} className="text-gray-400 hover:text-white transition-colors">
+                  Conditions de vente
+                </Link>
+              </li>
+              <li className="text-gray-400 leading-6">
+                {legalConfig.responsiblePrivacyTitle} : {legalConfig.responsiblePrivacyName}
               </li>
             </ul>
           </div>
@@ -144,7 +164,10 @@ export const Footer: React.FC = () => {
             © {currentYear} Nowis Morin. Tous droits réservés.
           </p>
           <p className="text-center text-gray-500 text-xs">
-            Conformité à la <Link href="/confidentialite" className="underline hover:text-gray-300">Loi 25</Link> sur la protection des renseignements personnels. Nous collectons le minimum nécessaire, sur consentement, et vous pouvez demander l’accès, la rectification ou la suppression de vos données.
+            <Link href={legalLinks.privacy} className="underline hover:text-gray-300">Politique de confidentialité</Link>
+            {' '}et{' '}
+            <Link href={legalLinks.terms} className="underline hover:text-gray-300">conditions de vente</Link>
+            {' '}accessibles en tout temps depuis le site public.
           </p>
         </div>
       </div>

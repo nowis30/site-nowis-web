@@ -159,7 +159,7 @@ export const whyNowisParagraphs = [
 
 export const satisfactionGuarantee = {
 	title: 'Garantie satisfaction',
-	text: 'Si le résultat final proposé ne vous convient pas après la révision incluse au forfait, je vous rembourse.',
+	text: 'Si le résultat final proposé ne vous convient pas après la révision incluse au forfait, Création Nowis peut offrir un remboursement selon les conditions du projet.',
 	note: 'Dans ce cas, le livrable remboursé n’est pas remis au client et demeure la propriété de Création Nowis.',
 };
 

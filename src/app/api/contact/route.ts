@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { NextRequest, NextResponse } from 'next/server';
+import { legalConfig } from '@/data/legal';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +33,7 @@ Consentement portfolio: ${portfolioConsent === 'accept' ? 'Accord donné' : port
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
     const smtpFrom = process.env.SMTP_FROM || process.env.SMTP_USER;
-    const smtpTo = process.env.SMTP_TO || process.env.ADMIN_EMAIL || 'simonmorin@nowis.store';
+    const smtpTo = process.env.SMTP_TO || process.env.ADMIN_EMAIL || legalConfig.contactEmail;
 
     if (smtpHost && smtpPort && smtpUser && smtpPass && smtpTo) {
       const transporter = nodemailer.createTransport({

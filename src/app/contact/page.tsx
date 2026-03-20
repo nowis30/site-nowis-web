@@ -1,5 +1,6 @@
 import { ContactForm } from '@/components/ContactForm';
 import { PageHero } from '@/components/marketing/PageHero';
+import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
 import { buildMetadata } from '@/lib/seo';
 
@@ -35,6 +36,7 @@ export default function ContactPage({
           initialEmail={initialEmail}
           initialProjectType={initialProjectType}
           initialMessage={initialMessage}
+          showPortfolioConsent
         />
 
         <div className="space-y-6">
@@ -42,9 +44,32 @@ export default function ContactPage({
             <h2 className="text-2xl font-bold">Contact direct</h2>
             <p className="mt-4 text-slate-300">Pour une demande rapide, une collaboration ou une idée à clarifier :</p>
             <ul className="mt-6 space-y-3 text-slate-200">
-              <li>📧 <a href="mailto:simonmorin@nowis.store" className="hover:underline">simonmorin@nowis.store</a></li>
-              <li>📞 <a href="tel:+18193883407" className="hover:underline">(819) 388-3407</a></li>
+              <li>📧 <a href={`mailto:${legalConfig.contactEmail}`} className="hover:underline">{legalConfig.contactEmail}</a></li>
+              <li>📞 <a href={legalConfig.contactPhoneHref} className="hover:underline">{legalConfig.contactPhone}</a></li>
             </ul>
+          </div>
+
+          <div className="rounded-3xl bg-white p-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-slate-950">Protection des renseignements personnels</h2>
+            <p className="mt-4 leading-relaxed text-slate-600">
+              Responsable : {legalConfig.responsiblePrivacyName}. Pour toute demande liée à l’accès, à la correction ou au retrait de renseignements personnels, tu peux écrire directement à cette personne.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <a href={`mailto:${legalConfig.privacyEmail}`} className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">
+                {legalConfig.privacyEmail}
+              </a>
+              <a href={legalConfig.privacyPhoneHref} className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">
+                {legalConfig.privacyPhone}
+              </a>
+            </div>
+            <div className="mt-6 flex flex-col gap-3">
+              <a href={legalLinks.privacy} className="text-sm font-semibold text-emerald-700 hover:underline">
+                Voir la politique de confidentialité
+              </a>
+              <a href={legalLinks.terms} className="text-sm font-semibold text-emerald-700 hover:underline">
+                Voir les conditions de vente
+              </a>
+            </div>
           </div>
 
           <div className="rounded-3xl bg-white p-8 shadow-sm">
