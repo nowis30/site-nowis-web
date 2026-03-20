@@ -7,6 +7,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { SectionTitle } from '@/components/ui';
 
 export const AboutScreen: React.FC = () => {
@@ -32,16 +33,14 @@ export const AboutScreen: React.FC = () => {
             pour transformer ton imagination en réalité.
           </p>
         </div>
-        <div className="h-80 md:h-96 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center">
+        <div className="relative h-80 md:h-96 overflow-hidden rounded-lg bg-gradient-to-br from-green-600 to-green-800">
           {/* TODO: MODIFIER - Ajoute une image */}
-          <img
-            src="/images/about-story.png"
+          <Image
+            src="/nowis.png"
             alt="Notre histoire"
-            className="w-full h-full object-cover rounded-lg"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                'https://via.placeholder.com/600x400?text=Notre+Histoire';
-            }}
+            fill
+            className="object-contain p-6"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>
       </section>

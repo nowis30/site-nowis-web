@@ -9,7 +9,7 @@ interface LogementGalleryProps {
 }
 
 export const LogementGallery: React.FC<LogementGalleryProps> = ({ logement }) => {
-  const images = logement.images && logement.images.length > 0 ? logement.images : ['/hero.jpg'];
+  const images = logement.images && logement.images.length > 0 ? logement.images : ['/nowis.png'];
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (

@@ -17,7 +17,7 @@ function formatPrice(value: number) {
 }
 
 export const LogementCard: React.FC<LogementCardProps> = ({ logement, className = '' }) => {
-  const imageUrl = logement.images?.[0] || '/hero.jpg';
+  const imageUrl = logement.images?.[0] || '/nowis.png';
   const isAvailable = logement.status === 'approved';
 
   return (

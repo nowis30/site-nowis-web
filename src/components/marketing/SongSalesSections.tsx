@@ -23,22 +23,22 @@ function SectionHeader({ eyebrow, title, description, centered = false }: Sectio
   return (
     <div className={centered ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl'}>
       {eyebrow ? (
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">{eyebrow}</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">{eyebrow}</p>
       ) : null}
-      <h2 className="mt-4 text-3xl font-bold text-slate-950 md:text-4xl">{title}</h2>
-      {description ? <p className="mt-4 text-lg leading-relaxed text-slate-600">{description}</p> : null}
+      <h2 className="mt-4 font-display text-4xl leading-none text-white md:text-5xl">{title}</h2>
+      {description ? <p className="mt-4 text-lg leading-relaxed text-slate-300">{description}</p> : null}
     </div>
   );
 }
 
 export function SongTrustStrip() {
   return (
-    <section className="border-b border-slate-200 bg-white">
+    <section className="border-y border-white/10 bg-coal-950/70 backdrop-blur-sm">
       <div className="mx-auto grid max-w-7xl gap-4 px-6 py-6 md:grid-cols-2 xl:grid-cols-4">
         {songTrustItems.map((item) => (
-          <article key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 shadow-sm">
-            <p className="font-semibold text-slate-950">{item.title}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
+          <article key={item.title} className="brand-card px-5 py-4">
+            <p className="font-semibold text-white">{item.title}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">{item.description}</p>
           </article>
         ))}
       </div>
@@ -57,17 +57,17 @@ export function SongHowItWorksSection() {
 
       <ol className="mt-10 grid list-none gap-6 lg:grid-cols-3">
         {songProcessSteps.map((item, index) => (
-          <li key={item.step} className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+          <li key={item.step} className="brand-card p-8">
             <div className="flex items-center gap-4">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-lg font-bold text-white">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-warm text-lg font-bold text-white shadow-fire">
                 {index + 1}
               </span>
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">{item.step}</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-300">{item.step}</p>
               </div>
             </div>
-            <h3 className="mt-6 text-xl font-bold text-slate-950">{item.title}</h3>
-            <p className="mt-4 leading-7 text-slate-600">{item.description}</p>
+            <h3 className="mt-6 font-display text-3xl leading-none text-white">{item.title}</h3>
+            <p className="mt-4 leading-7 text-slate-300">{item.description}</p>
           </li>
         ))}
       </ol>
@@ -97,32 +97,32 @@ export function SongPackagesSection({
           <article
             key={pack.name}
             className={[
-              'relative rounded-[2rem] border bg-white p-8 shadow-sm transition',
+              'relative rounded-[2rem] border p-8 shadow-card transition backdrop-blur-sm',
               pack.featured
-                ? 'border-emerald-300 ring-2 ring-emerald-200 xl:-translate-y-2'
-                : 'border-slate-200',
+                ? 'border-primary-300/60 bg-white/[0.08] ring-2 ring-primary-400/30 xl:-translate-y-2'
+                : 'border-white/10 bg-white/[0.04]',
             ].join(' ')}
           >
             {pack.badge ? (
-              <p className="inline-flex rounded-full bg-emerald-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
+              <p className="inline-flex rounded-full bg-primary-500/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">
                 {pack.badge}
               </p>
             ) : null}
             <div className="mt-4 flex items-end justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-bold text-slate-950">{pack.name}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{pack.description}</p>
+                <h3 className="font-display text-4xl leading-none text-white">{pack.name}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-300">{pack.description}</p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="text-sm font-medium text-slate-500">Prix fixe</p>
-                <p className="text-3xl font-black text-slate-950">{pack.price}</p>
+                <p className="text-sm font-medium text-slate-400">Prix fixe</p>
+                <p className="text-3xl font-black text-primary-200">{pack.price}</p>
               </div>
             </div>
 
-            <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
+            <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-200">
               {pack.features.map((feature) => (
                 <li key={feature} className="flex gap-3">
-                  <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                  <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-warm text-xs font-bold text-white">
                     ✓
                   </span>
                   <span>{feature}</span>
@@ -133,7 +133,7 @@ export function SongPackagesSection({
             {showCardCta ? (
               <Link
                 href={songSalesCtas.order.href}
-                className="mt-8 inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white transition hover:bg-slate-800"
+                className="mt-8 inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
               >
                 {songSalesCtas.order.label}
               </Link>
@@ -156,7 +156,7 @@ export function SongProjectTypesSection() {
 
       <div className="mt-10 flex flex-wrap gap-3">
         {songProjectTypes.map((item) => (
-          <span key={item} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+          <span key={item} className="rounded-full border border-primary-400/25 bg-primary-500/10 px-4 py-2 text-sm font-semibold text-primary-100 shadow-sm">
             {item}
           </span>
         ))}
@@ -169,9 +169,9 @@ export function SongVideoExtrasSection() {
   return (
     <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
       <div className="grid gap-8 lg:grid-cols-[1fr_1.05fr] lg:items-start">
-        <div className="rounded-[2rem] bg-slate-950 p-8 text-white shadow-sm md:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Extra</p>
-          <h2 className="mt-4 text-3xl font-bold">Option visuelle et vidéo IA</h2>
+        <div className="brand-panel p-8 text-white md:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Extra</p>
+          <h2 className="mt-4 font-display text-5xl leading-none">Option visuelle et vidéo IA</h2>
           <p className="mt-5 text-lg leading-relaxed text-slate-300">
             Je peux aussi ajouter un visuel ou une capsule vidéo IA pour accompagner votre chanson. Le rendu est créatif, joli et marquant, mais le cœur du service reste la musique.
           </p>
@@ -182,10 +182,10 @@ export function SongVideoExtrasSection() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {videoExtraOptions.map((option) => (
-            <article key={option.name} className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Extra visuel</p>
-              <h3 className="mt-4 text-2xl font-bold text-slate-950">{option.name}</h3>
-              <p className="mt-3 text-3xl font-black text-slate-950">{option.price}</p>
+            <article key={option.name} className="brand-card-light p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-600">Extra visuel</p>
+              <h3 className="mt-4 font-display text-4xl leading-none text-slate-950">{option.name}</h3>
+              <p className="mt-3 text-3xl font-black text-primary-700">{option.price}</p>
               <p className="mt-4 leading-7 text-slate-600">{option.description}</p>
             </article>
           ))}
@@ -197,9 +197,9 @@ export function SongVideoExtrasSection() {
 
 export function WhyNowisSection() {
   return (
-    <section className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
-      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Pourquoi je fais ça</p>
-      <h2 className="mt-4 text-3xl font-bold text-slate-950">Une approche née de la musique, puis consolidée par l’IA</h2>
+    <section className="brand-card-light p-8 md:p-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-600">Pourquoi je fais ça</p>
+      <h2 className="mt-4 font-display text-5xl leading-none text-slate-950">Une approche née de la musique, puis consolidée par l’IA</h2>
       <div className="mt-6 space-y-4 text-base leading-8 text-slate-600">
         {whyNowisParagraphs.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
@@ -211,9 +211,9 @@ export function WhyNowisSection() {
 
 export function SongGuaranteeBlock() {
   return (
-    <article className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-8 shadow-sm">
-      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">{satisfactionGuarantee.title}</p>
-      <h2 className="mt-4 text-2xl font-bold text-slate-950">Une garantie simple et lisible</h2>
+    <article className="rounded-[2rem] border border-primary-200/70 bg-primary-50 p-8 shadow-sm">
+      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-700">{satisfactionGuarantee.title}</p>
+      <h2 className="mt-4 font-display text-4xl leading-none text-slate-950">Une garantie simple et lisible</h2>
       <p className="mt-4 text-base leading-7 text-slate-700">{satisfactionGuarantee.text}</p>
       <p className="mt-4 text-sm leading-6 text-slate-600">{satisfactionGuarantee.note}</p>
     </article>
@@ -222,9 +222,9 @@ export function SongGuaranteeBlock() {
 
 export function SongPortfolioBlock() {
   return (
-    <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">{portfolioDisclosure.title}</p>
-      <h2 className="mt-4 text-2xl font-bold text-slate-950">Diffusion seulement avec accord</h2>
+    <article className="brand-card-light p-8">
+      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-600">{portfolioDisclosure.title}</p>
+      <h2 className="mt-4 font-display text-4xl leading-none text-slate-950">Diffusion seulement avec accord</h2>
       <p className="mt-4 text-base leading-7 text-slate-600">{portfolioDisclosure.text}</p>
       <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
         {portfolioDisclosure.options.map((option) => (
@@ -242,22 +242,22 @@ export function SongPortfolioBlock() {
 
 export function SongFinalCtaSection() {
   return (
-    <section className="rounded-[2rem] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_100%)] p-8 text-white shadow-sm md:p-10">
-      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Prêt à lancer la demande</p>
-      <h2 className="mt-4 text-3xl font-bold">Une offre pensée pour être claire, humaine et facile à acheter</h2>
+    <section className="brand-shell rounded-[2rem] p-8 text-white shadow-card md:p-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Prêt à lancer la demande</p>
+      <h2 className="mt-4 font-display text-5xl leading-none">Une offre pensée pour être claire, humaine et facile à acheter</h2>
       <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-300">
         Si tu veux passer à l’action, tu peux soit lancer directement la demande, soit me parler d’abord du contexte. L’objectif est de garder un processus simple et rassurant.
       </p>
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
         <Link
           href="#commande"
-          className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
         >
           Commander une chanson
         </Link>
         <ContactPrefillLink
           href={songSalesCtas.talk.href}
-          className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
+          className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-primary-500/10"
         >
           {songSalesCtas.talk.label}
         </ContactPrefillLink>

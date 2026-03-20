@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
@@ -424,11 +425,16 @@ export default function ProprietaireListingPage() {
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 {images.map((image, index) => (
                   <div key={index} className="relative">
-                    <img
-                      src={image}
-                      alt={`Image ${index + 1}`}
-                      className="h-28 w-full rounded-lg object-cover border border-gray-200"
-                    />
+                    <div className="relative h-28 w-full overflow-hidden rounded-lg border border-gray-200">
+                      <Image
+                        src={image}
+                        alt={`Image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        unoptimized
+                      />
+                    </div>
                     <button
                       type="button"
                       onClick={() => setImages((prev) => prev.filter((_, i) => i !== index))}

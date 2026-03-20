@@ -76,7 +76,7 @@ export const artists: ArtistProfile[] = [
     seoDescription:
       'Découvre Nowis Morin, artiste principal de Création Nowis : bio, démarche, chansons personnalisées, écoute Spotify et YouTube, projets visuels et vidéo.',
     image: {
-      src: '/hero.jpg',
+      src: '/nowis.png',
       alt: 'Nowis Morin, artiste principal de Création Nowis',
     },
     heroHighlights: ['Chansons francophones', 'IA au service de l’émotion', 'Créations sur mesure'],

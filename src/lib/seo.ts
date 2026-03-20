@@ -6,7 +6,7 @@ export function buildMetadata({
   title,
   description,
   path = '/',
-  image = '/hero.jpg',
+  image = '/nowis.png',
   keywords = [],
 }: {
   title: string;

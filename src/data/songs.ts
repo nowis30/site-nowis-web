@@ -381,7 +381,7 @@ const legacySongs: SongRecord[] = rawSongs.map((song) => ({
   youtubeVideoId: extractYouTubeVideoId(song.youtubeUrl) || undefined,
   spotifyUrl: song.spotifyUrl || undefined,
   spotifyTrackId: extractSpotifyTrackId(song.spotifyUrl) || undefined,
-  coverImage: getYouTubeThumbnailUrl(song.youtubeUrl, 'hqdefault') || '/hero.jpg',
+  coverImage: getYouTubeThumbnailUrl(song.youtubeUrl, 'hqdefault') || '/nowis.png',
   publishedAt: null,
   source: song.youtubeUrl && song.spotifyUrl ? 'both' : song.youtubeUrl ? 'youtube' : 'spotify',
   description: song.description,
@@ -405,7 +405,7 @@ function normalizeSongRecord(song: SongRecord): SongRecord {
   const spotifyTrackId = song.spotifyTrackId || extractSpotifyTrackId(song.spotifyUrl) || undefined;
   const youtubeUrl = song.youtubeUrl || (youtubeVideoId ? `https://www.youtube.com/watch?v=${youtubeVideoId}` : undefined);
   const spotifyUrl = song.spotifyUrl || (spotifyTrackId ? `https://open.spotify.com/track/${spotifyTrackId}` : undefined);
-  const coverImage = song.coverImage || getYouTubeThumbnailUrl(youtubeUrl, 'hqdefault') || '/hero.jpg';
+  const coverImage = song.coverImage || getYouTubeThumbnailUrl(youtubeUrl, 'hqdefault') || '/nowis.png';
   const source: SongSource = youtubeUrl && spotifyUrl ? 'both' : youtubeUrl ? 'youtube' : 'spotify';
   const description = cleanSongDescription(song.description?.trim() || '');
 
@@ -432,7 +432,7 @@ function mapSongForUi(song: SongRecord, index: number): Song {
 
   return {
     ...song,
-    image: song.coverImage || '/hero.jpg',
+    image: song.coverImage || '/nowis.png',
     shortDescription: buildSongExcerpt(longDescription),
     longDescription,
     creationMethod: longDescription,

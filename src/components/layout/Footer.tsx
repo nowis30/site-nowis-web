@@ -36,14 +36,14 @@ export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-20 border-t border-white/10 bg-slate-950 text-white">
+    <footer className="mt-20 border-t border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(255,122,43,0.18),_transparent_24%),linear-gradient(180deg,#090a0d_0%,#121317_100%)] text-white">
       <div className="mx-auto max-w-7xl px-6 py-14 md:px-10 lg:px-12">
         <div className="flex flex-col gap-10 border-b border-white/10 pb-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary-200">
               Footer global
             </p>
-            <h3 className="mt-3 text-3xl font-black text-white">Nowis Morin</h3>
+            <h3 className="brand-metal-text mt-3 font-display text-5xl leading-none">Nowis Morin</h3>
             <p className="mt-3 text-base leading-7 text-slate-300">
               Retrouve Nowis Morin sur ses plateformes officielles.
             </p>
@@ -82,42 +82,42 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 text-white font-semibold">Navigation</h4>
             <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:max-w-md">
               <li>
-                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-primary-200 transition-colors">
                   Accueil
                 </Link>
               </li>
               <li>
-                <Link href="/commander-une-chanson" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/commander-une-chanson" className="text-gray-400 hover:text-primary-200 transition-colors">
                   Commander une chanson
                 </Link>
               </li>
               <li>
-                <Link href="/artistes" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/artistes" className="text-gray-400 hover:text-primary-200 transition-colors">
                   Artistes
                 </Link>
               </li>
               <li>
-                <Link href="/musique" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/musique" className="text-gray-400 hover:text-primary-200 transition-colors">
                   Musique / exemples
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/services" className="text-gray-400 hover:text-primary-200 transition-colors">
                   Services / Collaborations
                 </Link>
               </li>
               <li>
-                <Link href="/videos" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/videos" className="text-gray-400 hover:text-primary-200 transition-colors">
                   Vidéos IA
                 </Link>
               </li>
               <li>
-                <Link href="/a-propos" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/a-propos" className="text-gray-400 hover:text-primary-200 transition-colors">
                   À propos
                 </Link>
               </li>
               <li>
-                <ContactPrefillLink href={legalLinks.contact} className="text-gray-400 hover:text-white transition-colors">
+                <ContactPrefillLink href={legalLinks.contact} className="text-gray-400 hover:text-primary-200 transition-colors">
                   Contact
                 </ContactPrefillLink>
               </li>
@@ -128,13 +128,13 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 text-white font-semibold">Contact</h4>
             <ul className="space-y-2 text-sm">
               <li className="text-gray-400">
-                📧 <a href={`mailto:${legalConfig.contactEmail}`} className="hover:text-white transition-colors">{legalConfig.contactEmail}</a>
+                📧 <a href={`mailto:${legalConfig.contactEmail}`} className="hover:text-primary-200 transition-colors">{legalConfig.contactEmail}</a>
               </li>
               <li className="text-gray-400">
-                📞 <a href={legalConfig.contactPhoneHref} className="hover:text-white transition-colors">{legalConfig.contactPhone}</a>
+                📞 <a href={legalConfig.contactPhoneHref} className="hover:text-primary-200 transition-colors">{legalConfig.contactPhone}</a>
               </li>
               <li>
-                <Link href="/booking" className="text-gray-400 hover:text-white transition-colors">Parler de mon projet</Link>
+                <Link href="/booking" className="text-gray-400 hover:text-primary-200 transition-colors">Parler de mon projet</Link>
               </li>
             </ul>
           </div>
@@ -143,12 +143,12 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 text-white font-semibold">Informations légales</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href={legalLinks.privacy} className="text-gray-400 hover:text-white transition-colors">
+                <Link href={legalLinks.privacy} className="text-gray-400 hover:text-primary-200 transition-colors">
                   Politique de confidentialité
                 </Link>
               </li>
               <li>
-                <Link href={legalLinks.terms} className="text-gray-400 hover:text-white transition-colors">
+                <Link href={legalLinks.terms} className="text-gray-400 hover:text-primary-200 transition-colors">
                   Conditions de vente
                 </Link>
               </li>
@@ -164,9 +164,9 @@ export const Footer: React.FC = () => {
             © {currentYear} Nowis Morin. Tous droits réservés.
           </p>
           <p className="text-center text-gray-500 text-xs">
-            <Link href={legalLinks.privacy} className="underline hover:text-gray-300">Politique de confidentialité</Link>
+            <Link href={legalLinks.privacy} className="underline hover:text-primary-200">Politique de confidentialité</Link>
             {' '}et{' '}
-            <Link href={legalLinks.terms} className="underline hover:text-gray-300">conditions de vente</Link>
+            <Link href={legalLinks.terms} className="underline hover:text-primary-200">conditions de vente</Link>
             {' '}accessibles en tout temps depuis le site public.
           </p>
         </div>

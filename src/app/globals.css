@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-coal-950 font-sans text-slate-100 antialiased;
+    background-image:
+      radial-gradient(circle at top left, rgba(255, 122, 43, 0.12), transparent 26%),
+      radial-gradient(circle at top right, rgba(246, 59, 59, 0.08), transparent 20%),
+      linear-gradient(180deg, #090a0d 0%, #121317 48%, #181b22 100%);
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .brand-display {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: 0.01em;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -12,24 +40,20 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #e2e8f0;
+  background: #121317;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: linear-gradient(180deg, #ff7d36 0%, #c82b10 100%);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #ff5a1f;
 }
 
 * {
   @apply transition-colors duration-200;
-}
-
-body {
-  @apply bg-slate-50 text-slate-900 antialiased;
 }
 
 button:focus,
@@ -37,7 +61,7 @@ a:focus,
 input:focus,
 textarea:focus,
 select:focus {
-  @apply outline-none ring-2 ring-emerald-500 ring-offset-2 ring-offset-white;
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-coal-950;
 }
 
 .line-clamp-2 {
@@ -52,4 +76,79 @@ select:focus {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@layer components {
+  .brand-emblem {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .brand-emblem::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgba(243, 194, 120, 0.9), rgba(255, 122, 43, 0.55), rgba(127, 34, 22, 0.9));
+    z-index: -1;
+    filter: blur(0.4px);
+    opacity: 0.95;
+  }
+
+  .brand-emblem::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 9999px;
+    border: 1px solid rgba(245, 222, 179, 0.5);
+    z-index: -1;
+  }
+
+  .brand-shell {
+    @apply relative overflow-hidden bg-brand-hero;
+  }
+
+  .brand-panel {
+    @apply rounded-[2rem] border border-white/10 bg-brand-panel shadow-card backdrop-blur-sm;
+  }
+
+  .brand-panel-dark {
+    @apply rounded-[2rem] border border-white/10 bg-white/5 shadow-card backdrop-blur-sm;
+  }
+
+  .brand-card {
+    @apply rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-soft backdrop-blur-sm;
+  }
+
+  .brand-card-light {
+    @apply rounded-[2rem] border border-primary-100/60 bg-white text-slate-900 shadow-soft;
+  }
+
+  .brand-chip {
+    @apply inline-flex rounded-full border border-primary-300/30 bg-primary-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-200;
+  }
+
+  .brand-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-primary-500/40 to-transparent;
+  }
+
+  .brand-ivory {
+    color: #f4e1b7;
+  }
+
+  .brand-metal-text {
+    color: #f4e1b7;
+    text-shadow: 0 1px 0 rgba(15, 15, 15, 0.5), 0 6px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  .brand-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .text-brand-muted {
+    @apply text-slate-300;
+  }
 }

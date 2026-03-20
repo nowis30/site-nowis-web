@@ -22,7 +22,7 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
     title: `${artist.pageTitle} | Création Nowis`,
     description: artist.seoDescription,
     path: `/artistes/${artist.slug}`,
-    image: artist.image?.src || '/hero.jpg',
+    image: artist.image?.src || '/nowis.png',
     keywords: [artist.name, artist.role, 'Création Nowis', 'artiste musique Québec', 'chanson personnalisée'],
   });
 }
