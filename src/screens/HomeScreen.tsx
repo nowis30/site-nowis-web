@@ -61,11 +61,14 @@ export const HomeScreen = async () => {
               <div className="absolute -left-6 top-10 hidden h-24 w-24 rounded-full bg-primary-500/20 blur-3xl md:block" />
               <div className="absolute -right-6 bottom-16 hidden h-28 w-28 rounded-full bg-secondary-500/20 blur-3xl md:block" />
               <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] border border-[#f4e1b7]/20 bg-[radial-gradient(circle_at_center,_rgba(255,122,43,0.18),_transparent_45%),linear-gradient(180deg,#120f11_0%,#191312_100%)]">
-                <Image src="/nowis.png" alt="Logo Nowis, Création Nowis" fill className="object-contain p-5 md:p-8" priority />
-                <div className="absolute inset-0 bg-gradient-to-t from-coal-950/35 via-transparent to-transparent" />
+                <Image src="/hero.jpg" alt="Nowis Morin, artiste principal de Création Nowis" fill className="object-cover brightness-[0.68] contrast-[1.05]" priority />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,6,7,0.2)_0%,rgba(8,6,7,0.36)_45%,rgba(8,6,7,0.88)_100%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(240,61,18,0.2),transparent_30%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                  <p className="text-sm uppercase tracking-[0.24em] text-primary-200">Création Nowis</p>
-                  <p className="brand-metal-text mt-2 font-display text-3xl leading-none">Une chanson pensée pour un vrai moment de vie</p>
+                  <div className="max-w-md rounded-[1.25rem] border border-white/10 bg-black/45 px-5 py-4 shadow-2xl backdrop-blur-sm">
+                    <p className="text-sm uppercase tracking-[0.24em] text-primary-100">Création Nowis</p>
+                    <p className="mt-2 font-display text-3xl leading-none text-[#fff7e8]">Une chanson pensée pour un vrai moment de vie</p>
+                  </div>
                 </div>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">

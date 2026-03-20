@@ -63,6 +63,9 @@ export default function ContactPage({
               </a>
             </div>
             <div className="mt-6 flex flex-col gap-3">
+              <a href={legalLinks.legal} className="text-sm font-semibold text-emerald-700 hover:underline">
+                Voir les mentions légales
+              </a>
               <a href={legalLinks.privacy} className="text-sm font-semibold text-emerald-700 hover:underline">
                 Voir la politique de confidentialité
               </a>

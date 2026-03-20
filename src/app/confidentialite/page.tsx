@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHero } from '@/components/marketing/PageHero';
 import { buildMetadata } from '@/lib/seo';
-import { legalConfig, legalLinks } from '@/data/legal';
+import { complianceNotes, essentialCookies, legalConfig, legalLinks } from '@/data/legal';
 
 export const metadata = buildMetadata({
   title: 'Politique de confidentialité | Création Nowis',
@@ -62,7 +62,9 @@ const privacySections = [
   {
     title: '7. Cookies et outils similaires',
     content: [
-      'Le site peut utiliser des cookies ou technologies similaires pour le fonctionnement normal du site, pour la sécurité ou pour mieux comprendre l’utilisation générale du service.',
+      'Le site utilise surtout des mécanismes techniques nécessaires à son bon fonctionnement, à la sécurité ou à la gestion d’une session authentifiée lorsque certaines zones privées sont utilisées.',
+      complianceNotes.noMarketingCookies,
+      complianceNotes.cookieBannerRule,
       'Vous pouvez limiter certains cookies dans votre navigateur, mais certaines fonctions du site pourraient alors être affectées.',
     ],
   },
@@ -150,8 +152,26 @@ export default function ConfidentialitePage() {
         ))}
 
         <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
+          <h2 className="text-2xl font-bold text-slate-950">Cookies essentiels actuellement déclarés</h2>
+          <div className="mt-6 space-y-4">
+            {essentialCookies.map((cookie) => (
+              <div key={cookie.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-700">
+                <p className="font-semibold text-slate-950">{cookie.name}</p>
+                <p className="mt-2">Finalité : {cookie.purpose}</p>
+                <p>Durée maximale : {cookie.duration}</p>
+                <p>Essentiel : {cookie.required ? 'oui' : 'non'}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-600">{complianceNotes.legalReview}</p>
+        </article>
+
+        <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
           <h2 className="text-2xl font-bold text-slate-950">Liens utiles</h2>
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+            <Link href={legalLinks.legal} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
+              Voir les mentions légales
+            </Link>
             <Link href={legalLinks.terms} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
               Voir les conditions de vente
             </Link>

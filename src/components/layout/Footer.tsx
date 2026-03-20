@@ -143,6 +143,11 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 text-white font-semibold">Informations légales</h4>
             <ul className="space-y-2 text-sm">
               <li>
+                <Link href={legalLinks.legal} className="text-gray-400 hover:text-primary-200 transition-colors">
+                  Mentions légales
+                </Link>
+              </li>
+              <li>
                 <Link href={legalLinks.privacy} className="text-gray-400 hover:text-primary-200 transition-colors">
                   Politique de confidentialité
                 </Link>

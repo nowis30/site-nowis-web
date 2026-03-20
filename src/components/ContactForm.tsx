@@ -213,6 +213,10 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               </a>
             </p>
             <p className="mt-2 text-xs leading-5 text-slate-500">
+              <Link href={legalLinks.legal} className="font-medium text-emerald-700 hover:underline">
+                Consulter nos mentions légales
+              </Link>
+              {' '}—{' '}
               <Link href={legalLinks.privacy} className="font-medium text-emerald-700 hover:underline">
                 Consulter notre politique de confidentialité
               </Link>

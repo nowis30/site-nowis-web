@@ -1,6 +1,8 @@
 export const legalConfig = {
   companyName: 'Création Nowis',
   legalName: null as string | null,
+  businessIdLabel: 'NEQ / identifiant d’entreprise',
+  businessIdValue: null as string | null,
   responsiblePrivacyTitle: 'Responsable de la protection des renseignements personnels',
   responsiblePrivacyName: 'Simon Morin',
   contactEmail: 'simonmorin@nowis.store',
@@ -26,9 +28,28 @@ export const privacyCollectionNotice = {
 };
 
 export const legalLinks = {
+  legal: '/mentions-legales',
   privacy: '/confidentialite',
   terms: '/conditions-de-vente',
   contact: '/contact',
+};
+
+export const essentialCookies = [
+  {
+    name: 'nowis_session',
+    purpose: 'Maintenir la session utilisateur dans les sections nécessitant une authentification.',
+    duration: '30 jours maximum',
+    required: true,
+  },
+];
+
+export const complianceNotes = {
+  noMarketingCookies:
+    'Au moment de cette version, le site public n’installe pas de cookie publicitaire ou analytique non essentiel de façon déclarée.',
+  cookieBannerRule:
+    'Si des outils d’analyse, de publicité, de reciblage ou d’intégration tiers déposant des traceurs non essentiels sont ajoutés, un mécanisme de consentement préalable devra être mis en place avant leur activation.',
+  legalReview:
+    'Les contenus publiés améliorent la transparence publique du site, mais ils ne remplacent pas une validation juridique professionnelle adaptée à la situation exacte de l’entreprise.',
 };
 
 export const conditionsContent = {
@@ -61,4 +82,10 @@ export const conditionsContent = {
     'Sauf mention contraire écrite, les créations produites par Création Nowis sont fournies avec une licence d’utilisation adaptée au projet convenu. Toute cession complète de droits doit faire l’objet d’une entente distincte.',
     'L’usage personnel et l’usage commercial peuvent demander des modalités différentes. Si un projet est destiné à un usage commercial, cela doit être précisé avant la production finale.',
   ],
+  distanceSelling: [
+    'Les services sont offerts principalement à distance, au moyen du site web, du courriel, du téléphone ou d’un échange écrit direct avec le client.',
+    'Avant la confirmation finale d’une commande, le client peut poser ses questions, vérifier les modalités applicables et demander des précisions sur le livrable, le prix, les délais et les révisions.',
+  ],
+  governingLaw:
+    'Sauf règle impérative contraire, les relations contractuelles avec Création Nowis sont interprétées selon les lois applicables au Québec et au Canada.',
 };

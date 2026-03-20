@@ -1,5 +1,5 @@
 import { PageHero } from '@/components/marketing/PageHero';
-import { conditionsContent, legalConfig, legalLinks } from '@/data/legal';
+import { complianceNotes, conditionsContent, legalConfig, legalLinks } from '@/data/legal';
 import { songPackages, videoExtraOptions } from '@/data/songSales';
 import { buildMetadata } from '@/lib/seo';
 
@@ -49,6 +49,10 @@ export default function ConditionsDeVentePage() {
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <dt className="font-semibold text-slate-950">Nom légal</dt>
               <dd className="mt-1"><InfoValue value={legalConfig.legalName} fallback="À compléter si différent du nom commercial." /></dd>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <dt className="font-semibold text-slate-950">{legalConfig.businessIdLabel}</dt>
+              <dd className="mt-1"><InfoValue value={legalConfig.businessIdValue} fallback="À compléter avant mise en ligne si applicable." /></dd>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <dt className="font-semibold text-slate-950">Courriel</dt>
@@ -150,6 +154,24 @@ export default function ConditionsDeVentePage() {
               <p key={item}>{item}</p>
             ))}
           </div>
+        </article>
+
+        <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
+          <h2 className="text-2xl font-bold text-slate-950">9. Vente à distance</h2>
+          <ul className="mt-6 space-y-3 text-slate-700">
+            {conditionsContent.distanceSelling.map((item) => (
+              <li key={item} className="flex gap-3">
+                <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xs font-bold text-white">•</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
+          <h2 className="text-2xl font-bold text-slate-950">10. Droit applicable</h2>
+          <p className="mt-4 leading-7 text-slate-700">{conditionsContent.governingLaw}</p>
+          <p className="mt-4 text-sm leading-6 text-slate-600">{complianceNotes.legalReview}</p>
         </article>
       </section>
     </div>

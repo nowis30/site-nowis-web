@@ -36,10 +36,10 @@ export const AboutScreen: React.FC = () => {
         <div className="relative h-80 md:h-96 overflow-hidden rounded-lg bg-gradient-to-br from-green-600 to-green-800">
           {/* TODO: MODIFIER - Ajoute une image */}
           <Image
-            src="/nowis.png"
-            alt="Notre histoire"
+            src="/hero.jpg"
+            alt="Nowis Morin"
             fill
-            className="object-contain p-6"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>
