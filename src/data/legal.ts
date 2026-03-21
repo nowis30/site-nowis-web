@@ -1,8 +1,8 @@
 export const legalConfig = {
   companyName: 'Création Nowis',
-  legalName: null as string | null,
+  legalName: 'Simon Morin',
   businessIdLabel: 'NEQ / identifiant d’entreprise',
-  businessIdValue: null as string | null,
+  businessIdValue: 'Non applicable à ce jour',
   responsiblePrivacyTitle: 'Responsable de la protection des renseignements personnels',
   responsiblePrivacyName: 'Simon Morin',
   contactEmail: 'simonmorin@nowis.store',
@@ -11,8 +11,9 @@ export const legalConfig = {
   privacyEmail: 'simonmorin@nowis.store',
   privacyPhone: '(819) 388-3407',
   privacyPhoneHref: 'tel:+18193883407',
-  companyAddress: null as string | null,
-  companyAddressPlaceholder: 'Adresse postale à compléter avant mise en ligne.',
+  // TODO: Ajouter le code postal ici lorsque confirmé.
+  companyAddress: '4667, rue Traversy\nDrummondville (Québec)',
+  companyAddressPlaceholder: '',
   companyRegion: 'Québec, Canada',
   currency: 'dollars canadiens',
   legalLastUpdated: '20 mars 2026',

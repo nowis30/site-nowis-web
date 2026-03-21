@@ -489,6 +489,41 @@ export async function getFeaturedSongs(limit = 3): Promise<Song[]> {
   return (await getAllSongs()).slice(0, limit);
 }
 
+export async function getLatestYouTubeSongs(limit = 4): Promise<Song[]> {
+  return (await getAllSongs())
+    .filter((song) => Boolean(song.youtubeUrl))
+    .slice(0, limit);
+}
+
+export async function getHomeSongs(limit = 4): Promise<Song[]> {
+  const excludedSlugs = new Set(['la-prochaine-chanson-pour-toi']);
+  const preferredSlugs = ['marraine'];
+
+  const songs = (await getAllSongs()).filter((song) => !excludedSlugs.has(song.slug));
+  const selected = songs.slice(0, limit);
+
+  for (const slug of preferredSlugs) {
+    const preferredSong = songs.find((song) => song.slug === slug);
+
+    if (!preferredSong) {
+      continue;
+    }
+
+    const alreadyIncluded = selected.some((song) => song.slug === slug);
+    if (alreadyIncluded) {
+      continue;
+    }
+
+    if (selected.length >= limit) {
+      selected[selected.length - 1] = preferredSong;
+    } else {
+      selected.push(preferredSong);
+    }
+  }
+
+  return selected;
+}
+
 export async function getSongBySlug(slug: string): Promise<Song | undefined> {
   return (await getAllSongs()).find((song) => song.slug === slug);
 }

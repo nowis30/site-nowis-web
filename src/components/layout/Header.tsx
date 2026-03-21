@@ -37,7 +37,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07101f]/72 backdrop-blur-2xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/60">
-      <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <nav className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo / Brand */}
         <Link href="/" className="flex items-center gap-3 text-white transition-colors hover:text-primary-200">
           <span className="brand-emblem relative h-12 w-12 overflow-hidden rounded-full border border-white/10 bg-coal-950 shadow-fire">

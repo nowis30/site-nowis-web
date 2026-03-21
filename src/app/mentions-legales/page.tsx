@@ -11,10 +11,6 @@ export const metadata = buildMetadata({
   keywords: ['mentions légales Création Nowis', 'informations entreprise Nowis', 'conformité site Québec'],
 });
 
-function ValueOrWarning({ value, fallback }: { value: string | null; fallback: string }) {
-  return value ? <span>{value}</span> : <span className="font-medium text-amber-700">{fallback}</span>;
-}
-
 export default function MentionsLegalesPage() {
   return (
     <div className="bg-slate-50">
@@ -30,7 +26,7 @@ export default function MentionsLegalesPage() {
         <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
           <h1 className="text-3xl font-bold text-slate-950 md:text-4xl">Mentions légales</h1>
           <p className="mt-4 text-base leading-7 text-slate-600">
-            Ces informations améliorent la transparence du site public. Certaines données d’entreprise doivent encore être validées ou complétées lorsque cela s’applique.
+            Cette page présente les informations publiques d’identification de l’exploitant, les coordonnées de contact et les éléments de transparence utiles au public.
           </p>
           <p className="mt-4 text-sm text-slate-500">Dernière mise à jour : {legalConfig.legalLastUpdated}</p>
         </article>
@@ -44,11 +40,11 @@ export default function MentionsLegalesPage() {
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <dt className="font-semibold text-slate-950">Nom légal</dt>
-              <dd className="mt-1"><ValueOrWarning value={legalConfig.legalName} fallback="À compléter avant mise en ligne si différent du nom commercial." /></dd>
+              <dd className="mt-1">{legalConfig.legalName}</dd>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <dt className="font-semibold text-slate-950">{legalConfig.businessIdLabel}</dt>
-              <dd className="mt-1"><ValueOrWarning value={legalConfig.businessIdValue} fallback="À compléter si l’activité doit être identifiée publiquement." /></dd>
+              <dd className="mt-1">{legalConfig.businessIdValue}</dd>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <dt className="font-semibold text-slate-950">Région d’activité</dt>
@@ -56,7 +52,7 @@ export default function MentionsLegalesPage() {
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 md:col-span-2">
               <dt className="font-semibold text-slate-950">Adresse postale</dt>
-              <dd className="mt-1"><ValueOrWarning value={legalConfig.companyAddress} fallback={legalConfig.companyAddressPlaceholder} /></dd>
+              <dd className="mt-1 whitespace-pre-line">{legalConfig.companyAddress}</dd>
             </div>
           </dl>
         </article>
@@ -85,14 +81,12 @@ export default function MentionsLegalesPage() {
           <p className="mt-2 text-sm leading-6 text-slate-600">{complianceNotes.cookieBannerRule}</p>
         </article>
 
-        <article className="rounded-3xl border border-amber-200 bg-amber-50 p-8 shadow-sm md:p-10">
-          <h2 className="text-2xl font-bold text-slate-950">4. Points à compléter avant prétendre à une conformité complète</h2>
-          <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
-            <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">!</span><span>Renseigner le nom légal exact si différent de « Création Nowis ».</span></li>
-            <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">!</span><span>Ajouter l’adresse postale réelle de l’exploitant.</span></li>
-            <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">!</span><span>Ajouter le NEQ ou l’identifiant d’entreprise si applicable.</span></li>
-            <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">!</span><span>Faire valider les textes par un juriste si le site est exploité commercialement de façon active.</span></li>
-          </ul>
+        <article className="rounded-3xl border border-slate-200 bg-slate-100 p-8 shadow-sm md:p-10">
+          <h2 className="text-2xl font-bold text-slate-950">4. Note d’exploitation</h2>
+          <p className="mt-4 text-sm leading-7 text-slate-700">
+            Le site est exploité par Simon Morin à titre de travailleur autonome. Aucun NEQ n’est affiché à ce jour.
+          </p>
+          <p className="mt-2 text-sm leading-7 text-slate-700">{complianceNotes.legalReview}</p>
         </article>
 
         <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">

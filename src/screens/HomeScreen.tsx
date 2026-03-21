@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
-import { getFeaturedSongs } from '@/data/songs';
+import { getHomeSongs } from '@/data/songs';
 import { satisfactionGuarantee, songPackages, songSalesCtas } from '@/data/songSales';
 
 const packagePrices: Record<string, string> = {
@@ -74,7 +74,7 @@ function buildExampleHref(title: string) {
 }
 
 export const HomeScreen = async () => {
-  const songs = await getFeaturedSongs(3);
+  const songs = await getHomeSongs(4);
 
   return (
     <div className="relative overflow-hidden bg-transparent text-slate-100">
@@ -171,10 +171,10 @@ export const HomeScreen = async () => {
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Exemples</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Des chansons qui racontent déjà quelque chose</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Dernières chansons</p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Les chansons mises en avant sur l’accueil</h2>
             <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
-              Chaque exemple donne une idée du ton, de la sensibilité et de la façon dont une émotion peut devenir une chanson. Ici, on parle d’histoires, pas juste de morceaux audio.
+              Cette section met en avant les chansons que tu veux faire découvrir en priorité, qu’elles soient disponibles sur YouTube, Spotify ou sur plusieurs plateformes.
             </p>
           </div>
           <Link

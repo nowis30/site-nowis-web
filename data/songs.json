@@ -2,6 +2,20 @@
   "syncedAt": "2026-03-13T20:35:36.967Z",
   "songs": [
     {
+      "id": "youtube:VBHVxp0y40o",
+      "title": "La lumière après la tempête",
+      "slug": "la-lumiere-apres-la-tempete",
+      "youtubeUrl": "https://www.youtube.com/watch?v=VBHVxp0y40o",
+      "youtubeVideoId": "VBHVxp0y40o",
+      "spotifyUrl": "",
+      "spotifyTrackId": "",
+      "coverImage": "https://i.ytimg.com/vi/VBHVxp0y40o/hqdefault.jpg",
+      "publishedAt": "2026-03-21T00:00:00Z",
+      "source": "youtube",
+      "description": "La lumière après la tempête est maintenant ajoutée parmi les dernières chansons publiées sur YouTube par Nowis Morin.",
+      "status": "published"
+    },
+    {
       "id": "youtube:464_3lqnkSc",
       "title": "Papa,  mon ami",
       "slug": "papa-mon-ami",
