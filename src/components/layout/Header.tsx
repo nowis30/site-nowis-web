@@ -36,11 +36,11 @@ export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-coal-950/88 backdrop-blur-xl shadow-card">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07101f]/72 backdrop-blur-2xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/60">
       <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo / Brand */}
         <Link href="/" className="flex items-center gap-3 text-white transition-colors hover:text-primary-200">
-          <span className="brand-emblem relative h-12 w-12 overflow-hidden rounded-full border border-black/30 bg-coal-950 shadow-fire">
+          <span className="brand-emblem relative h-12 w-12 overflow-hidden rounded-full border border-white/10 bg-coal-950 shadow-fire">
             <Image src="/nowis.png" alt="Logo Nowis" fill className="object-contain p-1" />
           </span>
           <span>
@@ -55,7 +55,7 @@ export const Header: React.FC = () => {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-slate-200 transition-colors duration-200 hover:text-primary-200"
+              className="text-sm font-medium text-slate-200 transition-colors duration-200 hover:text-primary-100"
             >
               {link.label}
             </Link>
@@ -64,19 +64,19 @@ export const Header: React.FC = () => {
           <div className="group relative">
             <button
               type="button"
-              className="inline-flex items-center gap-2 text-sm font-medium text-slate-100 transition-colors duration-200 hover:text-primary-200"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-100 transition-colors duration-200 hover:text-primary-100"
             >
               Ressources
               <svg className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clipRule="evenodd" />
               </svg>
             </button>
-            <div className="invisible absolute right-0 top-full z-50 mt-4 w-72 rounded-2xl border border-white/10 bg-coal-950/95 p-3 opacity-0 shadow-card backdrop-blur-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+            <div className="invisible absolute right-0 top-full z-50 mt-4 w-72 rounded-2xl border border-white/10 bg-[#09101f]/92 p-3 opacity-0 shadow-card backdrop-blur-2xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
               {resourceLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block rounded-xl px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
+                  className="block rounded-xl px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-primary-500/12 hover:text-primary-100"
                 >
                   {link.label}
                 </Link>
@@ -94,7 +94,7 @@ export const Header: React.FC = () => {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+          className="md:hidden rounded-xl border border-white/10 p-2 text-slate-100 transition-colors hover:bg-white/10"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Menu mobile"
         >
@@ -115,12 +115,12 @@ export const Header: React.FC = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="absolute top-full left-0 right-0 border-b border-white/10 bg-coal-950 md:hidden flex flex-col shadow-card">
+          <div className="absolute top-full left-0 right-0 flex flex-col border-b border-white/10 bg-[#07101f]/94 shadow-card backdrop-blur-2xl md:hidden">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="border-b border-white/10 px-6 py-4 text-slate-200 transition-colors hover:bg-primary-500/10 hover:text-primary-200 last:border-b-0"
+                className="border-b border-white/10 px-6 py-4 text-slate-200 transition-colors hover:bg-primary-500/12 hover:text-primary-100 last:border-b-0"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
@@ -134,7 +134,7 @@ export const Header: React.FC = () => {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="rounded-xl px-3 py-3 text-slate-200 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
+                    className="rounded-xl px-3 py-3 text-slate-200 transition-colors hover:bg-primary-500/12 hover:text-primary-100"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}

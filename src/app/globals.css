@@ -5,6 +5,10 @@
 @layer base {
   :root {
     color-scheme: dark;
+    --site-bg: #050816;
+    --site-panel: rgba(9, 13, 24, 0.78);
+    --site-panel-strong: rgba(8, 12, 24, 0.9);
+    --site-border: rgba(148, 163, 184, 0.18);
   }
 
   html {
@@ -14,10 +18,12 @@
   body {
     @apply bg-coal-950 font-sans text-base leading-relaxed text-slate-100 antialiased;
     background-image:
-      radial-gradient(circle at top left, rgba(255, 122, 43, 0.12), transparent 26%),
-      radial-gradient(circle at top right, rgba(246, 59, 59, 0.08), transparent 20%),
-      linear-gradient(180deg, #090a0d 0%, #121317 48%, #181b22 100%);
+      radial-gradient(circle at 15% 18%, rgba(96, 165, 250, 0.13), transparent 24%),
+      radial-gradient(circle at 82% 12%, rgba(139, 92, 246, 0.12), transparent 22%),
+      radial-gradient(circle at 48% 100%, rgba(14, 165, 233, 0.08), transparent 28%),
+      linear-gradient(180deg, #050816 0%, #0b1220 48%, #11192d 100%);
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   p {
@@ -45,16 +51,16 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #121317;
+  background: #0b1220;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #ff7d36 0%, #c82b10 100%);
+  background: linear-gradient(180deg, #60a5fa 0%, #4f46e5 100%);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff5a1f;
+  background: #3b82f6;
 }
 
 * {
@@ -94,7 +100,7 @@ select:focus {
     position: absolute;
     inset: -6px;
     border-radius: 9999px;
-    background: linear-gradient(135deg, rgba(243, 194, 120, 0.9), rgba(255, 122, 43, 0.55), rgba(127, 34, 22, 0.9));
+    background: linear-gradient(135deg, rgba(147, 197, 253, 0.92), rgba(79, 70, 229, 0.62), rgba(49, 46, 129, 0.94));
     z-index: -1;
     filter: blur(0.4px);
     opacity: 0.95;
@@ -105,32 +111,41 @@ select:focus {
     position: absolute;
     inset: -2px;
     border-radius: 9999px;
-    border: 1px solid rgba(245, 222, 179, 0.5);
+    border: 1px solid rgba(191, 219, 254, 0.5);
     z-index: -1;
   }
 
   .brand-shell {
     @apply relative overflow-hidden bg-brand-hero;
+    isolation: isolate;
   }
 
   .brand-panel {
-    @apply rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,rgba(12,15,20,0.8),rgba(20,24,32,0.72))] shadow-card backdrop-blur-md;
+    @apply rounded-[2rem] border shadow-card backdrop-blur-md;
+    border-color: var(--site-border);
+    background: linear-gradient(145deg, rgba(8, 12, 24, 0.82), rgba(18, 27, 48, 0.72));
   }
 
   .brand-panel-dark {
-    @apply rounded-[2rem] border border-white/10 bg-black/35 shadow-card backdrop-blur-md;
+    @apply rounded-[2rem] border shadow-card backdrop-blur-md;
+    border-color: var(--site-border);
+    background: rgba(5, 8, 22, 0.72);
   }
 
   .brand-card {
-    @apply rounded-[2rem] border border-white/10 bg-white/[0.06] shadow-soft backdrop-blur-md;
+    @apply rounded-[2rem] border shadow-soft backdrop-blur-md;
+    border-color: rgba(148, 163, 184, 0.16);
+    background: linear-gradient(180deg, rgba(10, 15, 28, 0.82), rgba(15, 23, 42, 0.68));
   }
 
   .brand-card-light {
-    @apply rounded-[2rem] border border-slate-200/90 bg-white/95 text-slate-900 shadow-soft;
+    @apply rounded-[2rem] border text-slate-900 shadow-soft;
+    border-color: rgba(219, 234, 254, 0.72);
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(239, 246, 255, 0.92));
   }
 
   .brand-chip {
-    @apply inline-flex rounded-full border border-primary-300/30 bg-primary-500/10 px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-primary-100;
+    @apply inline-flex rounded-full border border-primary-300/30 bg-slate-950/70 px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-primary-100 backdrop-blur-sm;
   }
 
   .brand-divider {
@@ -138,12 +153,12 @@ select:focus {
   }
 
   .brand-ivory {
-    color: #f4e1b7;
+    color: #e6eefc;
   }
 
   .brand-metal-text {
-    color: #f4e1b7;
-    text-shadow: 0 1px 0 rgba(15, 15, 15, 0.55), 0 10px 28px rgba(0, 0, 0, 0.32);
+    color: #f8fbff;
+    text-shadow: 0 1px 0 rgba(7, 11, 20, 0.55), 0 12px 34px rgba(37, 99, 235, 0.16);
   }
 
   .brand-grid {
@@ -154,6 +169,6 @@ select:focus {
   }
 
   .text-brand-muted {
-    @apply text-slate-200;
+    @apply text-slate-300;
   }
 }

@@ -9,6 +9,7 @@
 import React, { ReactNode } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { StarfieldBackground } from './StarfieldBackground';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -16,17 +17,22 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900">
+    <div className="relative flex min-h-screen flex-col overflow-x-clip bg-transparent text-slate-100 isolate">
+      <StarfieldBackground />
       {/* Header - Navigation */}
-      <Header />
+      <div className="relative z-10">
+        <Header />
+      </div>
 
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="relative z-10 flex-grow">
         {children}
       </main>
 
       {/* Footer */}
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   );
 };

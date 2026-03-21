@@ -25,13 +25,6 @@ export function ArtistCard({ artist }: { artist: ArtistProfile }) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.25),_transparent_30%),linear-gradient(180deg,#020617_0%,#0f172a_100%)]" />
         )}
 
-        <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-          <div className="max-w-xl rounded-[1.25rem] border border-white/10 bg-slate-950/65 px-5 py-4 backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">{artist.role}</p>
-            <h2 className="mt-3 text-3xl font-bold leading-tight">{artist.name}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-100">{artist.hook}</p>
-          </div>
-        </div>
       </div>
 
       <div className="space-y-5 p-6 md:p-8">

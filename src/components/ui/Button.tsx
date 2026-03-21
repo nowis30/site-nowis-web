@@ -22,9 +22,9 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = 'inline-flex items-center justify-center gap-2 rounded-xl font-semibold leading-none transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-coal-950';
   
   const variantClasses = {
-    primary: 'bg-brand-warm text-white shadow-fire hover:-translate-y-0.5 hover:brightness-110 focus:ring-primary-500',
-    secondary: 'border border-white/15 bg-white/8 text-slate-50 hover:bg-white/14 focus:ring-primary-500',
-    outline: 'border border-primary-300/55 bg-primary-500/8 text-primary-100 hover:bg-primary-500/16 hover:text-white focus:ring-primary-500',
+    primary: 'bg-brand-warm text-white shadow-fire hover:-translate-y-0.5 hover:saturate-150 hover:brightness-110 focus:ring-primary-400',
+    secondary: 'border border-white/15 bg-slate-950/50 text-slate-50 backdrop-blur-sm hover:border-primary-300/35 hover:bg-white/10 focus:ring-primary-400',
+    outline: 'border border-primary-300/50 bg-primary-500/10 text-primary-100 backdrop-blur-sm hover:bg-primary-500/18 hover:text-white focus:ring-primary-400',
   };
 
   const sizeClasses = {

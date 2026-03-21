@@ -100,17 +100,17 @@ export const HomeScreen = async () => {
               </Link>
               <Link
                 href={songSalesCtas.listen.href}
-                className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/8 px-6 py-3.5 font-semibold text-white transition hover:bg-primary-500/10"
+                className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-slate-950/55 px-6 py-3.5 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/12"
               >
                 Écouter des exemples
               </Link>
             </div>
             <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-4 backdrop-blur-sm">
+              <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-4 backdrop-blur-md">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Pour qui</p>
                 <p className="mt-2 text-sm leading-6 text-slate-100">Mariage, anniversaire, naissance, hommage, amour, famille, projet personnel.</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-4 backdrop-blur-sm">
+              <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-4 backdrop-blur-md">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Pourquoi ça touche</p>
                 <p className="mt-2 text-sm leading-6 text-slate-100">Parce que la chanson part d’une histoire réelle, avec une vraie attention à ce que tu veux faire ressentir.</p>
               </div>
@@ -121,19 +121,12 @@ export const HomeScreen = async () => {
             <div className="brand-panel p-4 md:p-5">
               <div className="absolute -left-6 top-10 hidden h-24 w-24 rounded-full bg-primary-500/20 blur-3xl md:block" />
               <div className="absolute -right-6 bottom-16 hidden h-28 w-28 rounded-full bg-secondary-500/20 blur-3xl md:block" />
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] border border-[#f4e1b7]/20 bg-[radial-gradient(circle_at_center,_rgba(255,122,43,0.18),_transparent_45%),linear-gradient(180deg,#120f11_0%,#191312_100%)]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] border border-primary-200/20 bg-[radial-gradient(circle_at_center,_rgba(96,165,250,0.16),_transparent_45%),linear-gradient(180deg,#07101f_0%,#10182d_100%)]">
                 <Image src="/hero.jpg" alt="Nowis Morin, artiste principal de Création Nowis" fill className="object-cover object-center brightness-[0.72] contrast-[1.05]" priority />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,6,7,0.12)_0%,rgba(8,6,7,0.28)_38%,rgba(8,6,7,0.88)_100%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(240,61,18,0.2),transparent_30%)]" />
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                  <div className="max-w-md rounded-[1.25rem] border border-white/10 bg-black/45 px-5 py-4 shadow-2xl backdrop-blur-sm">
-                    <p className="text-sm uppercase tracking-[0.24em] text-primary-100">Nowis Morin</p>
-                    <p className="mt-2 font-display text-3xl leading-none text-[#fff7e8]">Une chanson personnalisée pour dire ce que vous ressentez vraiment</p>
-                    <p className="mt-3 text-sm leading-6 text-slate-100">Je crée des chansons sur mesure pour transformer un souvenir, un message ou une émotion en cadeau touchant et unique.</p>
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.24)_38%,rgba(5,8,22,0.88)_100%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(79,70,229,0.18),transparent_30%)]" />
               </div>
-              <div className="mt-4 rounded-2xl border border-white/10 bg-coal-950/70 p-4 text-white">
+              <div className="mt-4 rounded-2xl border border-white/10 bg-coal-950/78 p-4 text-white backdrop-blur-sm">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Ce que tu peux m’envoyer</p>
                 <p className="mt-2 text-sm leading-6 text-slate-100">Un texte déjà écrit, quelques souvenirs, une relation importante ou simplement l’émotion que tu veux faire passer.</p>
               </div>
@@ -143,11 +136,11 @@ export const HomeScreen = async () => {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-14 md:py-18">
-        <div className="grid gap-4 rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-soft md:grid-cols-3 md:p-8">
+        <div className="grid gap-4 rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,rgba(8,12,24,0.84),rgba(18,27,48,0.74))] p-6 shadow-card backdrop-blur-md md:grid-cols-3 md:p-8">
           {emotionStatements.map((item, index) => (
-            <article key={item} className="rounded-[1.5rem] bg-slate-50 px-5 py-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-600">{index === 0 ? 'Émotion' : index === 1 ? 'Message' : 'Transformation'}</p>
-              <p className="mt-3 text-lg leading-8 text-slate-800">{item}</p>
+            <article key={item} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">{index === 0 ? 'Émotion' : index === 1 ? 'Message' : 'Transformation'}</p>
+              <p className="mt-3 text-lg leading-8 text-slate-100">{item}</p>
             </article>
           ))}
         </div>
@@ -186,7 +179,7 @@ export const HomeScreen = async () => {
           </div>
           <Link
             href={songSalesCtas.listen.href}
-            className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-primary-500/10"
+            className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-slate-950/55 px-5 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/12"
           >
             {songSalesCtas.listen.label}
           </Link>
@@ -203,7 +196,7 @@ export const HomeScreen = async () => {
                   <Link href={`/chanson/${song.slug}`} className="font-semibold text-primary-200 transition hover:text-primary-100">
                     Écouter l’exemple →
                   </Link>
-                  <ContactPrefillLink href={buildExampleHref(song.title)} className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+                  <ContactPrefillLink href={buildExampleHref(song.title)} className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-slate-950/45 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/10">
                     Je veux la même chose
                   </ContactPrefillLink>
                 </div>
@@ -241,18 +234,18 @@ export const HomeScreen = async () => {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {testimonials.map((testimonial) => (
-            <article key={`${testimonial.author}-${testimonial.context}`} className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft">
-              <div className="flex gap-1 text-amber-500" aria-hidden="true">
+            <article key={`${testimonial.author}-${testimonial.context}`} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(9,14,28,0.84),rgba(14,23,42,0.76))] p-8 text-white shadow-card backdrop-blur-sm">
+              <div className="flex gap-1 text-primary-300" aria-hidden="true">
                 <span>★</span>
                 <span>★</span>
                 <span>★</span>
                 <span>★</span>
                 <span>★</span>
               </div>
-              <p className="mt-5 text-lg leading-8 text-slate-800">“{testimonial.quote}”</p>
-              <div className="mt-6 border-t border-slate-200 pt-5">
-                <p className="font-semibold text-slate-950">{testimonial.author}</p>
-                <p className="text-sm text-slate-500">{testimonial.context}</p>
+              <p className="mt-5 text-lg leading-8 text-slate-100">“{testimonial.quote}”</p>
+              <div className="mt-6 border-t border-white/10 pt-5">
+                <p className="font-semibold text-white">{testimonial.author}</p>
+                <p className="text-sm text-slate-300">{testimonial.context}</p>
               </div>
             </article>
           ))}
@@ -294,30 +287,30 @@ export const HomeScreen = async () => {
               className={[
                 'relative rounded-[2rem] border p-8 shadow-soft transition',
                 pack.featured
-                  ? 'border-primary-200 bg-white text-slate-900 ring-2 ring-primary-200 shadow-[0_28px_80px_rgba(255,122,43,0.22)] xl:-translate-y-2'
-                  : 'border-slate-200 bg-slate-50 text-slate-900',
+                  ? 'border-primary-300 bg-[linear-gradient(180deg,rgba(18,27,48,0.96),rgba(28,39,70,0.92))] text-white ring-2 ring-primary-300 shadow-[0_28px_80px_rgba(59,130,246,0.22)] xl:-translate-y-2'
+                  : 'border-white/10 bg-[linear-gradient(180deg,rgba(9,14,28,0.84),rgba(14,23,42,0.76))] text-white',
               ].join(' ')}
             >
               {pack.badge ? (
                 <div className="flex items-center justify-between gap-3">
-                  <p className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-700">
+                  <p className="inline-flex rounded-full bg-primary-500/16 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-100">
                     {pack.badge}
                   </p>
-                  <p className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                  <p className="rounded-full bg-slate-950/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
                     99,99 $
                   </p>
                 </div>
               ) : (
-                <p className="inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 shadow-sm">
+                <p className="inline-flex rounded-full border border-white/10 bg-slate-950/55 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200 shadow-sm backdrop-blur-sm">
                   {packagePrices[pack.name]}
                 </p>
               )}
-              <h3 className="mt-4 font-display text-4xl leading-[1.05] text-slate-950">{pack.name}</h3>
-              <p className="mt-3 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
+              <h3 className="mt-4 font-display text-4xl leading-[1.05] text-white">{pack.name}</h3>
+              <p className="mt-3 inline-flex rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-slate-200">
                 {pack.note}
               </p>
-              <p className="mt-5 text-base leading-8 text-slate-700">{pack.description}</p>
-              <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
+              <p className="mt-5 text-base leading-8 text-slate-200">{pack.description}</p>
+              <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-200">
                 {pack.features.map((feature) => (
                   <li key={feature} className="flex gap-3">
                     <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-warm text-xs font-bold text-white">✓</span>
@@ -331,7 +324,7 @@ export const HomeScreen = async () => {
                   'mt-8 inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition',
                   pack.featured
                     ? 'bg-brand-warm text-white shadow-fire hover:-translate-y-0.5 hover:brightness-110'
-                    : 'border border-slate-200 bg-white text-slate-900 hover:bg-slate-100',
+                    : 'border border-white/10 bg-slate-950/45 text-white backdrop-blur-sm hover:bg-white/10',
                 ].join(' ')}
               >
                 Commander cette formule
@@ -343,14 +336,14 @@ export const HomeScreen = async () => {
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <article className="rounded-[2rem] border border-emerald-200 bg-emerald-50 p-8 shadow-soft md:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">Garantie / rassurance</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-slate-950">Tu peux avancer sans te sentir pris au piège</h2>
-            <p className="mt-4 text-base leading-8 text-slate-700">{satisfactionGuarantee.text}</p>
-            <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
-              <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">✓</span><span>Des ajustements sont possibles avant la version finale.</span></li>
-              <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">✓</span><span>Tu échanges avec une vraie personne, directement impliquée dans la création.</span></li>
-              <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">✓</span><span>Si tu as besoin d’un visuel ou d’une capsule vidéo, on peut aussi l’ajouter comme complément.</span></li>
+          <article className="rounded-[2rem] border border-emerald-400/20 bg-[linear-gradient(145deg,rgba(4,33,32,0.88),rgba(10,48,47,0.78))] p-8 text-white shadow-card backdrop-blur-sm md:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">Garantie / rassurance</p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white">Tu peux avancer sans te sentir pris au piège</h2>
+            <p className="mt-4 text-base leading-8 text-emerald-50/90">{satisfactionGuarantee.text}</p>
+            <ul className="mt-6 space-y-3 text-sm leading-6 text-emerald-50/90">
+              <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-xs font-bold text-slate-950">✓</span><span>Des ajustements sont possibles avant la version finale.</span></li>
+              <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-xs font-bold text-slate-950">✓</span><span>Tu échanges avec une vraie personne, directement impliquée dans la création.</span></li>
+              <li className="flex gap-3"><span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-xs font-bold text-slate-950">✓</span><span>Si tu as besoin d’un visuel ou d’une capsule vidéo, on peut aussi l’ajouter comme complément.</span></li>
             </ul>
           </article>
 
@@ -370,7 +363,7 @@ export const HomeScreen = async () => {
                   L’IA m’aide à aller plus loin dans la création, mais elle reste un outil. Ce qui compte vraiment, c’est l’émotion, la justesse et la personne derrière la chanson.
                 </p>
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                  <Link href="/a-propos" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+                  <Link href="/a-propos" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-slate-950/45 px-5 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-white/10">
                     En savoir plus sur moi
                   </Link>
                   <ContactPrefillLink href={songSalesCtas.talk.href} className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">
@@ -400,7 +393,7 @@ export const HomeScreen = async () => {
             </Link>
             <ContactPrefillLink
               href={songSalesCtas.talk.href}
-              className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-primary-500/10"
+              className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-slate-950/55 px-6 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/12"
             >
               Parler de mon projet
             </ContactPrefillLink>

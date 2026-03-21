@@ -63,12 +63,6 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                 <div className="relative min-h-[360px]">
                   <Image src={artist.image.src} alt={artist.image.alt} fill className="object-cover brightness-[0.7] contrast-[1.05]" />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.12)_0%,rgba(2,6,23,0.32)_40%,rgba(2,6,23,0.9)_100%)]" />
-                  <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                    <div className="max-w-md rounded-[1.25rem] border border-white/10 bg-slate-950/65 px-5 py-4 shadow-2xl backdrop-blur-sm">
-                      <p className="text-sm uppercase tracking-[0.24em] text-emerald-200">Création Nowis</p>
-                      <p className="mt-2 text-lg font-semibold text-white">{artist.role}</p>
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div className="flex min-h-[360px] flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_30%),linear-gradient(180deg,#020617_0%,#0f172a_100%)] p-8 text-white">
