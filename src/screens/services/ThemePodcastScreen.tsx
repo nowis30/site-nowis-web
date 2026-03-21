@@ -82,9 +82,9 @@ export const ThemePodcastScreen: React.FC = () => {
 
         {/* Note tarif */}
         <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 border-l-4 border-primary-600">
-          <h3 className="font-bold text-gray-900 mb-2">Note tarif</h3>
+          <h3 className="font-bold text-gray-900 mb-2">Approche</h3>
           <p className="text-gray-700">
-            Pack intro + outro + transition à partir d'environ <strong>120 $ CA</strong>.
+            L’identité sonore est préparée sur demande selon le format de l’émission, le ton recherché et les éléments à livrer.
           </p>
         </div>
 

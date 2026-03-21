@@ -17,11 +17,11 @@ export function VideoCard({ title, image, shortDescription, youtubeUrl, category
         <Image src={image} alt={title} fill className="object-cover transition duration-500 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-coal-950 via-coal-950/10 to-transparent" />
       </div>
-      <div className="space-y-4 p-6">
+      <div className="space-y-5 p-7">
         <span className="inline-flex rounded-full border border-primary-400/25 bg-primary-500/10 px-3 py-1 text-xs font-semibold text-primary-100">{category}</span>
         <div>
-          <h3 className="font-display text-4xl leading-none text-white">{title}</h3>
-          <p className="mt-3 leading-relaxed text-slate-300">{shortDescription}</p>
+          <h3 className="font-display text-3xl leading-[1.08] text-white md:text-[2rem]">{title}</h3>
+          <p className="mt-3 text-base leading-7 text-slate-200">{shortDescription}</p>
         </div>
         <a
           href={youtubeUrl}

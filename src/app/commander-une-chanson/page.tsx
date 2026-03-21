@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ContactForm } from '@/components/ContactForm';
 import { PageHero } from '@/components/marketing/PageHero';
 import {
+  SongHowItWorksSection,
   SongFinalCtaSection,
   SongGuaranteeBlock,
   SongPackagesSection,
@@ -17,9 +18,9 @@ import { buildMetadata } from '@/lib/seo';
 export const metadata = buildMetadata({
   title: 'Commander une chanson | Création Nowis',
   description:
-    'Commande une chanson personnalisée avec Création Nowis : forfaits fixes, option vidéo IA, garantie satisfaction et demande simple à envoyer.',
+    'Commande une chanson personnalisée avec Création Nowis : projet sur mesure, option vidéo IA, garantie satisfaction et demande simple à envoyer.',
   path: '/commander-une-chanson',
-  keywords: ['Commander une chanson', 'chanson personnalisée Québec', 'forfaits chanson personnalisée', 'Création Nowis'],
+  keywords: ['Commander une chanson', 'chanson personnalisée Québec', 'projet musical sur mesure', 'Création Nowis'],
 });
 
 export default function CommanderUneChansonPage() {
@@ -35,9 +36,15 @@ export default function CommanderUneChansonPage() {
 
       <SongProjectTypesSection />
 
-      <SongPackagesSection showCardCta={false} />
+      <SongHowItWorksSection theme="light" />
 
-      <SongVideoExtrasSection />
+      <SongPackagesSection
+        eyebrow="Niveaux d’accompagnement"
+        title="Trois façons d’aborder votre chanson sur mesure"
+        description="Selon votre point de départ, je peux mettre un texte en chanson, construire une chanson complète à partir d’une histoire ou accompagner une demande plus personnelle avec plus de délicatesse."
+      />
+
+      <SongVideoExtrasSection theme="light" />
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <WhyNowisSection />
@@ -58,7 +65,7 @@ export default function CommanderUneChansonPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Commande</p>
             <h2 className="mt-4 text-3xl font-bold text-slate-950">Envoyer une demande claire et complète</h2>
             <p className="mt-4 text-lg leading-relaxed text-slate-600">
-              Décris l’histoire, l’émotion recherchée et le type de forfait voulu. Si tu hésites encore, tu peux simplement raconter le contexte avec tes mots.
+              Décris l’histoire, l’émotion recherchée et le type d’accompagnement souhaité. Si tu hésites encore, tu peux simplement raconter le contexte avec tes mots.
             </p>
             <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Consentement portfolio</p>

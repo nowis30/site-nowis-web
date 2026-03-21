@@ -64,7 +64,7 @@ export const Header: React.FC = () => {
           <div className="group relative">
             <button
               type="button"
-              className="inline-flex items-center gap-2 text-sm font-medium text-slate-200 transition-colors duration-200 hover:text-primary-200"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-100 transition-colors duration-200 hover:text-primary-200"
             >
               Ressources
               <svg className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -76,20 +76,13 @@ export const Header: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block rounded-xl px-4 py-3 text-sm text-slate-200 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
+                  className="block rounded-xl px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
           </div>
-
-          <Link
-            href="/shop"
-            className="text-sm font-medium text-slate-200 transition-colors duration-200 hover:text-primary-200"
-          >
-            🛍️ Boutique
-          </Link>
 
           <ContactPrefillLink
             href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée."
@@ -149,14 +142,6 @@ export const Header: React.FC = () => {
                 ))}
               </div>
             </div>
-
-            <Link
-              href="/shop"
-              className="border-b border-white/10 px-6 py-4 text-slate-200 transition-colors hover:bg-primary-500/10 hover:text-primary-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              🛍️ Boutique
-            </Link>
 
             <ContactPrefillLink
               href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée."

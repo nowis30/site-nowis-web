@@ -6,7 +6,7 @@ import { buildMetadata } from '@/lib/seo';
 export const metadata = buildMetadata({
   title: 'Conditions de vente | Création Nowis',
   description:
-    'Consultez les conditions de vente et de service de Création Nowis : informations sur l’entreprise, forfaits, paiements, révisions, remboursements et droits d’utilisation.',
+    'Consultez les conditions de vente et de service de Création Nowis : informations sur l’entreprise, validation des projets, paiements, révisions, remboursements et droits d’utilisation.',
   path: '/conditions-de-vente',
   keywords: ['conditions de vente Création Nowis', 'conditions de service chanson personnalisée', 'remboursement Création Nowis'],
 });
@@ -25,7 +25,7 @@ export default function ConditionsDeVentePage() {
       <PageHero
         eyebrow="Conditions de vente"
         title="Des conditions claires pour vendre les services de façon plus propre et plus compréhensible"
-        description="Cette page explique les informations utiles avant de commander : services offerts, prix, paiements, délais, révisions, remboursement, annulation et droits d’utilisation."
+        description="Cette page explique les informations utiles avant de commander : services offerts, validation du projet, paiement, délais, révisions, remboursement, annulation et droits d’utilisation."
         primaryCta={{ label: 'Commander une chanson', href: '/commander-une-chanson' }}
         secondaryCta={{ label: 'Politique de confidentialité', href: legalLinks.privacy }}
       />
@@ -82,7 +82,7 @@ export default function ConditionsDeVentePage() {
         </article>
 
         <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
-          <h2 className="text-2xl font-bold text-slate-950">3. Prix et paiements</h2>
+          <h2 className="text-2xl font-bold text-slate-950">3. Validation du projet et paiement</h2>
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1fr]">
             <div>
               <ul className="space-y-3 text-slate-700">
@@ -95,22 +95,22 @@ export default function ConditionsDeVentePage() {
               </ul>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Forfaits affichés</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Exemples d’accompagnement</p>
               <div className="mt-4 space-y-4">
                 {songPackages.map((pack) => (
                   <div key={pack.name} className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-2">
                       <p className="font-semibold text-slate-950">{pack.name}</p>
-                      <p className="font-bold text-slate-950">{pack.price}</p>
+                      <p className="text-sm font-medium text-slate-500">{pack.note}</p>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{pack.description}</p>
                   </div>
                 ))}
                 {videoExtraOptions.map((option) => (
                   <div key={option.name} className="rounded-2xl border border-dashed border-slate-300 bg-white p-4">
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-2">
                       <p className="font-semibold text-slate-950">{option.name}</p>
-                      <p className="font-bold text-slate-950">{option.price}</p>
+                      <p className="text-sm font-medium text-slate-500">{option.note}</p>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{option.description}</p>
                   </div>

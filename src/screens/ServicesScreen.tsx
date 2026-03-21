@@ -189,12 +189,11 @@ export const ServicesScreen: React.FC = () => {
 
           <details className="bg-slate-700 p-4 rounded-lg cursor-pointer group">
             <summary className="font-semibold flex justify-between items-center">
-              Proposez-vous des tarifs pour les gros volumes ?
+              Pouvez-vous adapter l’accompagnement pour un plus gros besoin ?
               <span className="group-open:rotate-180 transition-transform">▼</span>
             </summary>
             <p className="mt-4 text-slate-300 text-sm">
-              Oui ! Pour les commandes en volume, nous proposons des tarifs personnalisés. Réserve
-              un appel pour discuter.
+              Oui. L’accompagnement peut être ajusté selon le volume, le rythme et les livrables attendus. Le plus simple est d’en discuter directement.
             </p>
           </details>
         </div>
@@ -203,9 +202,9 @@ export const ServicesScreen: React.FC = () => {
       {/* CTA */}
       <div className="text-center py-12">
         <p className="text-lg text-slate-400 mb-6">Prêt à commencer ?</p>
-        <Link href="/booking">
+        <Link href="/contact">
           <Button variant="primary" size="lg">
-            Réserver une consultation gratuite
+            Parler de mon projet
           </Button>
         </Link>
       </div>

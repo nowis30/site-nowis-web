@@ -27,7 +27,7 @@ export function SongCard({ song }: { song: Song }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-coal-950 via-coal-950/10 to-transparent" />
       </div>
-      <div className="space-y-4 p-6">
+      <div className="space-y-5 p-7">
         <div className="flex flex-wrap gap-2">
           {song.seoTags.slice(0, 3).map((tag) => (
             <span key={tag} className="rounded-full border border-primary-400/25 bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary-100">
@@ -36,9 +36,9 @@ export function SongCard({ song }: { song: Song }) {
           ))}
         </div>
         <div>
-          <h3 className="font-display text-4xl leading-none text-white">{song.title}</h3>
-          {publishedAt ? <p className="mt-2 text-sm font-medium text-slate-400">{publishedAt}</p> : null}
-          {song.shortDescription ? <p className="mt-3 leading-relaxed text-slate-300">{song.shortDescription}</p> : null}
+          <h3 className="font-display text-3xl leading-[1.08] text-white md:text-[2rem]">{song.title}</h3>
+          {publishedAt ? <p className="mt-2 text-sm font-medium text-slate-300">{publishedAt}</p> : null}
+          {song.shortDescription ? <p className="mt-3 text-base leading-7 text-slate-200">{song.shortDescription}</p> : null}
         </div>
         <div className="flex flex-wrap gap-3">
           <Link

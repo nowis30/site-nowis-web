@@ -82,9 +82,9 @@ export const StoryInstagramScreen: React.FC = () => {
 
         {/* Note tarif */}
         <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 border-l-4 border-primary-600">
-          <h3 className="font-bold text-gray-900 mb-2">Note tarif</h3>
+          <h3 className="font-bold text-gray-900 mb-2">Approche</h3>
           <p className="text-gray-700">
-            Pack de stories (par exemple 5 stories) à partir d'environ <strong>120 $ CA</strong>.
+            Les stories sont pensées sur mesure selon le nombre de formats, le rythme de publication et l’intention du message.
           </p>
         </div>
 

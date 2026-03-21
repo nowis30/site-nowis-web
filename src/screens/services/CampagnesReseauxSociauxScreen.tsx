@@ -82,9 +82,9 @@ export const CampagnesReseauxSociauxScreen: React.FC = () => {
 
         {/* Note tarif */}
         <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 border-l-4 border-primary-600">
-          <h3 className="font-bold text-gray-900 mb-2">Note tarif</h3>
+          <h3 className="font-bold text-gray-900 mb-2">Approche</h3>
           <p className="text-gray-700">
-            Petite campagne (quelques visuels + textes) à partir d'environ <strong>150 $ CA</strong>.
+            Chaque campagne est préparée selon les plateformes, les formats attendus et l’ampleur du contenu à produire.
           </p>
         </div>
 

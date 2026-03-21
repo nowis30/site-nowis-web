@@ -60,17 +60,18 @@ export const conditionsContent = {
     'autres services créatifs déjà présentés sur le site lorsque le projet est accepté',
   ],
   pricing: [
-    'Les forfaits affichés sur le site sont indiqués en dollars canadiens.',
+    'Chaque projet fait l’objet d’une validation avant confirmation finale.',
+    'Le tarif applicable est communiqué selon la nature, la complexité et les besoins du projet.',
     'Les taxes sont ajoutées si elles sont applicables au projet ou au mode de facturation retenu.',
-    'Le paiement se fait selon le mode proposé sur le site ou confirmé directement au client.',
+    'Le paiement se fait selon le mode confirmé directement au client.',
     'Une commande n’est confirmée qu’après validation du projet et acceptation des conditions applicables.',
   ],
   delays:
-    'Les délais varient selon le forfait, la complexité du projet et les informations fournies par le client. Un délai estimatif est communiqué avant le début du projet.',
+    'Les délais varient selon la nature du projet, sa complexité et les informations fournies par le client. Un délai estimatif est communiqué avant le début du projet.',
   revisions:
-    'Chaque forfait inclut un nombre limité de révisions selon ce qui est affiché sur la page de vente ou confirmé au client avant le début du projet.',
+    'Le nombre de révisions ou d’ajustements est précisé au client avant la confirmation finale du projet, selon le type d’accompagnement retenu.',
   guarantee:
-    'Si le résultat final proposé ne vous convient pas après la révision incluse au forfait, Création Nowis peut offrir un remboursement selon les conditions du projet. Dans ce cas, le livrable remboursé n’est pas remis au client et demeure la propriété de Création Nowis.',
+    'Si le résultat final proposé ne vous convient pas après la phase de révision prévue, Création Nowis peut offrir un remboursement selon les conditions du projet. Dans ce cas, le livrable remboursé n’est pas remis au client et demeure la propriété de Création Nowis.',
   cancellation: [
     'Avant le début réel du projet, une annulation peut être analysée au cas par cas selon l’état de validation et les frais déjà engagés.',
     'Après le début du projet, un remboursement complet n’est pas automatique, car une partie du travail créatif peut déjà avoir été réalisée.',
@@ -84,7 +85,7 @@ export const conditionsContent = {
   ],
   distanceSelling: [
     'Les services sont offerts principalement à distance, au moyen du site web, du courriel, du téléphone ou d’un échange écrit direct avec le client.',
-    'Avant la confirmation finale d’une commande, le client peut poser ses questions, vérifier les modalités applicables et demander des précisions sur le livrable, le prix, les délais et les révisions.',
+    'Avant la confirmation finale d’une commande, le client peut poser ses questions, vérifier les modalités applicables et demander des précisions sur le livrable, le délai, les révisions et les conditions financières.',
   ],
   governingLaw:
     'Sauf règle impérative contraire, les relations contractuelles avec Création Nowis sont interprétées selon les lois applicables au Québec et au Canada.',

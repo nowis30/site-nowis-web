@@ -92,7 +92,7 @@ export default function ArtistesPage() {
               Création Nowis peut aussi accompagner des clients qui veulent une chanson personnalisée à partir d’une histoire réelle, d’un souvenir ou d’un événement marquant. L’approche reste sobre, crédible et émotionnelle, avec la possibilité d’ajouter ensuite un visuel, une vidéo ou une petite vitrine de présentation.
             </p>
             <p className="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-relaxed text-slate-200">
-              Les créations sur mesure sont maintenant proposées avec des forfaits fixes clairs, à partir de 49,99 $, avec options visuelles ou vidéo selon le projet.
+              Chaque demande est évaluée selon le projet. L’idée est de garder une approche claire, humaine et facile à discuter avant de lancer la création.
             </p>
           </article>
 

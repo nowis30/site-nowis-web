@@ -16,7 +16,7 @@ export type SongProcessStep = {
 
 export type SongPackage = {
 	name: string;
-	price: string;
+	note: string;
 	description: string;
 	features: string[];
 	badge?: string;
@@ -25,7 +25,7 @@ export type SongPackage = {
 
 export type VideoExtraOption = {
 	name: string;
-	price: string;
+	note: string;
 	description: string;
 };
 
@@ -50,78 +50,78 @@ export const songSalesCtas = {
 
 export const songTrustItems: SongTrustItem[] = [
 	{
-		title: 'Forfaits simples',
-		description: 'Des prix fixes et lisibles, sans logique horaire floue.',
-	},
-	{
 		title: 'Création humaine + IA',
-		description: 'L’IA sert l’atelier, mais l’émotion, la direction et le tri restent humains.',
+		description: 'Une approche guidée par l’émotion et la direction artistique.',
 	},
 	{
-		title: 'Option vidéo souvenir',
-		description: 'Un extra visuel ou vidéo peut accompagner la chanson quand tu le souhaites.',
+		title: 'Musique pour de vrais moments',
+		description: 'Mariage, naissance, hommage, famille ou projet personnel.',
 	},
 	{
-		title: 'Garantie satisfaction',
-		description: 'Une garantie claire est prévue après la révision incluse au forfait.',
+		title: 'Option visuelle en complément',
+		description: 'Un visuel ou une vidéo peut prolonger la chanson si cela aide le projet.',
+	},
+	{
+		title: 'Contact simple et direct',
+		description: 'Un premier échange clair permet de cadrer la demande sans complication.',
 	},
 ];
 
 export const songProcessSteps: SongProcessStep[] = [
 	{
-		step: 'Étape 1',
-		title: 'Vous m’envoyez vos paroles, votre poème ou simplement votre histoire.',
-		description: 'Tu peux partir d’un texte déjà écrit ou d’un simple souvenir raconté avec tes mots.',
+		step: 'Prise de contact',
+		title: 'Vous me partagez votre histoire, votre texte ou vos repères.',
+		description: 'Quelques phrases, un souvenir ou des paroles déjà écrites suffisent pour démarrer.',
 	},
 	{
-		step: 'Étape 2',
-		title: 'Je transforme le tout en chanson selon le forfait choisi.',
-		description: 'Je structure la chanson, j’oriente l’ambiance et je prépare une version cohérente avec l’émotion recherchée.',
+		step: 'Création musicale',
+		title: 'Je construis une chanson fidèle à l’émotion recherchée.',
+		description: 'Je guide le ton, la structure et la direction musicale selon la sensibilité du projet.',
 	},
 	{
-		step: 'Étape 3',
-		title: 'Vous recevez votre chanson finale, avec option visuelle ou vidéo si désiré.',
-		description: 'Le cœur du service reste la musique, avec la possibilité d’ajouter un habillage visuel en extra.',
+		step: 'Finalisation',
+		title: 'Vous recevez une version aboutie, avec ajustements si nécessaire.',
+		description: 'La musique reste au cœur du projet, avec un complément visuel possible si cela a du sens.',
 	},
 ];
 
 export const songPackages: SongPackage[] = [
 	{
 		name: 'Mise en chanson',
-		price: '49,99 $',
+		note: 'Pour un texte déjà écrit',
 		description:
-			'Pour un texte, un poème ou des paroles déjà écrites. Je prends votre contenu existant et je le transforme en chanson.',
+			'Pour un texte, un poème ou des paroles déjà écrites à mettre en musique avec une direction simple et sensible.',
 		features: [
 			'mise en chanson d’un texte déjà fourni',
-			'1 direction musicale',
-			'1 version finale audio',
-			'1 petite révision',
+			'direction musicale claire',
+			'livrable audio final',
+			'ajustement de finition selon le projet',
 		],
 	},
 	{
 		name: 'Chanson personnalisée',
-		price: '99,99 $',
+		note: 'Pour une histoire à transformer',
 		description:
-			'Pour une histoire, une idée ou un souvenir à transformer en chanson complète.',
+			'Pour une histoire, une idée ou un souvenir à transformer en chanson complète avec une approche plus guidée.',
 		features: [
 			'adaptation ou écriture des paroles',
 			'structure complète de la chanson',
 			'version finale audio',
-			'1 révision',
+			'échange de validation',
 		],
-		badge: 'Le choix le plus simple pour commencer',
+		badge: 'Le plus demandé',
 		featured: true,
 	},
 	{
 		name: 'Chanson émotion',
-		price: '149,99 $',
+		note: 'Pour une demande plus intime ou délicate',
 		description:
 			'Pour les projets plus personnels : mariage, naissance, hommage, anniversaire, amour ou famille.',
 		features: [
 			'échange plus détaillé',
-			'paroles plus travaillées',
+			'travail émotionnel plus approfondi',
 			'chanson complète',
-			'2 révisions',
+			'suivi plus attentif selon le projet',
 		],
 	},
 ];
@@ -140,13 +140,13 @@ export const songProjectTypes = [
 export const videoExtraOptions: VideoExtraOption[] = [
 	{
 		name: 'Visuel simple IA',
-		price: '+49,99 $',
-		description: 'Ajout d’un visuel ou montage simple pour accompagner la chanson.',
+		note: 'Complément visuel discret',
+		description: 'Ajout d’un visuel ou d’un montage simple pour accompagner la chanson et mieux la présenter.',
 	},
 	{
 		name: 'Capsule vidéo IA',
-		price: '+99,99 $',
-		description: 'Ajout d’une courte vidéo IA plus travaillée pour présenter ou accompagner la chanson.',
+		note: 'Présentation plus immersive',
+		description: 'Ajout d’une courte vidéo IA plus travaillée pour présenter, offrir ou accompagner la chanson.',
 	},
 ];
 
@@ -159,7 +159,7 @@ export const whyNowisParagraphs = [
 
 export const satisfactionGuarantee = {
 	title: 'Garantie satisfaction',
-	text: 'Si le résultat final proposé ne vous convient pas après la révision incluse au forfait, Création Nowis peut offrir un remboursement selon les conditions du projet.',
+	text: 'Si le résultat final proposé ne vous convient pas après la phase de révision prévue, Création Nowis peut offrir un remboursement selon les conditions du projet.',
 	note: 'Dans ce cas, le livrable remboursé n’est pas remis au client et demeure la propriété de Création Nowis.',
 };
 
@@ -173,7 +173,7 @@ export const portfolioDisclosure = {
 };
 
 export const artistPricingNote =
-	'Les créations sur mesure sont maintenant proposées avec des forfaits fixes clairs, à partir de 49,99 $, avec options visuelles ou vidéo selon le projet.';
+	'Les créations sur mesure sont proposées selon la nature du projet, avec un accompagnement ajusté, une direction claire et des compléments visuels possibles si cela aide vraiment le rendu.';
 
 export const secondaryCreativeServices = [
 	{

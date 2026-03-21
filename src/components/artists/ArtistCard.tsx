@@ -26,14 +26,16 @@ export function ArtistCard({ artist }: { artist: ArtistProfile }) {
         )}
 
         <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-300">{artist.role}</p>
-          <h2 className="mt-3 text-3xl font-bold">{artist.name}</h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-200">{artist.hook}</p>
+          <div className="max-w-xl rounded-[1.25rem] border border-white/10 bg-slate-950/65 px-5 py-4 backdrop-blur-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">{artist.role}</p>
+            <h2 className="mt-3 text-3xl font-bold leading-tight">{artist.name}</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-100">{artist.hook}</p>
+          </div>
         </div>
       </div>
 
       <div className="space-y-5 p-6 md:p-8">
-        <p className="leading-relaxed text-slate-600">{artist.cardSummary}</p>
+        <p className="text-base leading-8 text-slate-700">{artist.cardSummary}</p>
 
         <div className="flex flex-wrap gap-2">
           {artist.heroHighlights.map((highlight) => (

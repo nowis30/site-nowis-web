@@ -17,28 +17,33 @@ type SectionHeaderProps = {
   title: string;
   description?: string;
   centered?: boolean;
+  theme?: 'light' | 'dark';
 };
 
-function SectionHeader({ eyebrow, title, description, centered = false }: SectionHeaderProps) {
+function SectionHeader({ eyebrow, title, description, centered = false, theme = 'dark' }: SectionHeaderProps) {
+  const titleClass = theme === 'dark' ? 'text-white' : 'text-slate-950';
+  const descClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
+  const eyebrowClass = theme === 'dark' ? 'text-primary-300' : 'text-primary-600';
+
   return (
     <div className={centered ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl'}>
       {eyebrow ? (
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">{eyebrow}</p>
+        <p className={`text-sm font-semibold uppercase tracking-[0.28em] ${eyebrowClass}`}>{eyebrow}</p>
       ) : null}
-      <h2 className="mt-4 font-display text-4xl leading-none text-white md:text-5xl">{title}</h2>
-      {description ? <p className="mt-4 text-lg leading-relaxed text-slate-300">{description}</p> : null}
+      <h2 className={`mt-4 font-display text-3xl leading-[1.05] md:text-5xl ${titleClass}`}>{title}</h2>
+      {description ? <p className={`mt-4 max-w-2xl text-base leading-8 md:text-lg ${descClass}`}>{description}</p> : null}
     </div>
   );
 }
 
 export function SongTrustStrip() {
   return (
-    <section className="border-y border-white/10 bg-coal-950/70 backdrop-blur-sm">
+    <section className="border-y border-white/10 bg-coal-950/65 backdrop-blur-sm">
       <div className="mx-auto grid max-w-7xl gap-4 px-6 py-6 md:grid-cols-2 xl:grid-cols-4">
         {songTrustItems.map((item) => (
-          <article key={item.title} className="brand-card px-5 py-4">
-            <p className="font-semibold text-white">{item.title}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-300">{item.description}</p>
+          <article key={item.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">{item.title}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-200">{item.description}</p>
           </article>
         ))}
       </div>
@@ -46,28 +51,36 @@ export function SongTrustStrip() {
   );
 }
 
-export function SongHowItWorksSection() {
+export function SongHowItWorksSection({ theme = 'dark' }: { theme?: 'light' | 'dark' }) {
+  const sectionText = theme === 'dark' ? 'text-white' : 'text-slate-950';
+  const cardClass = theme === 'dark'
+    ? 'brand-card p-8'
+    : 'rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm';
+  const labelClass = theme === 'dark' ? 'text-primary-300' : 'text-primary-600';
+  const bodyClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
       <SectionHeader
         eyebrow="Comment ça fonctionne"
         title="Une commande simple, claire et guidée du début à la fin"
         description="Le processus reste volontairement direct pour que l’offre soit facile à comprendre et rapide à lancer."
+        theme={theme}
       />
 
       <ol className="mt-10 grid list-none gap-6 lg:grid-cols-3">
         {songProcessSteps.map((item, index) => (
-          <li key={item.step} className="brand-card p-8">
+          <li key={item.step} className={cardClass}>
             <div className="flex items-center gap-4">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-warm text-lg font-bold text-white shadow-fire">
                 {index + 1}
               </span>
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-300">{item.step}</p>
+                <p className={`text-sm font-semibold uppercase tracking-[0.24em] ${labelClass}`}>{item.step}</p>
               </div>
             </div>
-            <h3 className="mt-6 font-display text-3xl leading-none text-white">{item.title}</h3>
-            <p className="mt-4 leading-7 text-slate-300">{item.description}</p>
+            <h3 className={`mt-6 font-display text-3xl leading-[1.08] ${sectionText}`}>{item.title}</h3>
+            <p className={`mt-4 text-base leading-7 ${bodyClass}`}>{item.description}</p>
           </li>
         ))}
       </ol>
@@ -83,14 +96,14 @@ type SongPackagesSectionProps = {
 };
 
 export function SongPackagesSection({
-  eyebrow = 'Forfaits',
-  title = 'Des forfaits fixes, lisibles et crédibles',
-  description = 'L’offre est pensée pour être simple à comprendre. Le cœur du service reste la création d’une chanson personnalisée, avec un niveau d’accompagnement adapté au projet.',
-  showCardCta = true,
+  eyebrow = 'Niveaux d’accompagnement',
+  title = 'Plusieurs façons d’aborder un projet sur mesure',
+  description = 'Le cœur du service reste la création d’une chanson personnalisée, avec un accompagnement ajusté à la nature du projet et à l’émotion recherchée.',
+  showCardCta = false,
 }: SongPackagesSectionProps) {
   return (
     <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-      <SectionHeader eyebrow={eyebrow} title={title} description={description} />
+      <SectionHeader eyebrow={eyebrow} title={title} description={description} theme="light" />
 
       <div className="mt-10 grid gap-6 xl:grid-cols-3">
         {songPackages.map((pack) => (
@@ -99,27 +112,24 @@ export function SongPackagesSection({
             className={[
               'relative rounded-[2rem] border p-8 shadow-card transition backdrop-blur-sm',
               pack.featured
-                ? 'border-primary-300/60 bg-white/[0.08] ring-2 ring-primary-400/30 xl:-translate-y-2'
-                : 'border-white/10 bg-white/[0.04]',
+                ? 'border-primary-200 bg-primary-50/70 ring-2 ring-primary-200 xl:-translate-y-1'
+                : 'border-slate-200 bg-white',
             ].join(' ')}
           >
             {pack.badge ? (
-              <p className="inline-flex rounded-full bg-primary-500/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">
+              <p className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-700">
                 {pack.badge}
               </p>
             ) : null}
-            <div className="mt-4 flex items-end justify-between gap-4">
+            <div className="mt-4 space-y-4">
               <div>
-                <h3 className="font-display text-4xl leading-none text-white">{pack.name}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-300">{pack.description}</p>
+                <h3 className="font-display text-3xl leading-[1.08] text-slate-950">{pack.name}</h3>
+                <p className="mt-3 text-base leading-7 text-slate-600">{pack.description}</p>
               </div>
-              <div className="shrink-0 text-right">
-                <p className="text-sm font-medium text-slate-400">Prix fixe</p>
-                <p className="text-3xl font-black text-primary-200">{pack.price}</p>
-              </div>
+              <p className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">{pack.note}</p>
             </div>
 
-            <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-200">
+            <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
               {pack.features.map((feature) => (
                 <li key={feature} className="flex gap-3">
                   <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-warm text-xs font-bold text-white">
@@ -152,11 +162,12 @@ export function SongProjectTypesSection() {
         eyebrow="Types de projets"
         title="Des chansons pensées pour les moments qui comptent vraiment"
         description="Le service principal de Création Nowis est conçu pour des projets humains, émotionnels et faciles à raconter."
+        theme="light"
       />
 
       <div className="mt-10 flex flex-wrap gap-3">
         {songProjectTypes.map((item) => (
-          <span key={item} className="rounded-full border border-primary-400/25 bg-primary-500/10 px-4 py-2 text-sm font-semibold text-primary-100 shadow-sm">
+          <span key={item} className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm">
             {item}
           </span>
         ))}
@@ -165,17 +176,27 @@ export function SongProjectTypesSection() {
   );
 }
 
-export function SongVideoExtrasSection() {
+export function SongVideoExtrasSection({ theme = 'dark' }: { theme?: 'light' | 'dark' }) {
+  const mainCard = theme === 'dark'
+    ? 'brand-panel p-8 text-white md:p-10'
+    : 'rounded-[2rem] border border-slate-200 bg-white p-8 text-slate-900 shadow-sm md:p-10';
+  const labelClass = theme === 'dark' ? 'text-primary-200' : 'text-primary-600';
+  const titleClass = theme === 'dark' ? 'text-white' : 'text-slate-950';
+  const bodyClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
+  const noteClass = theme === 'dark'
+    ? 'mt-5 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-6 text-slate-200'
+    : 'mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-700';
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
       <div className="grid gap-8 lg:grid-cols-[1fr_1.05fr] lg:items-start">
-        <div className="brand-panel p-8 text-white md:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Extra</p>
-          <h2 className="mt-4 font-display text-5xl leading-none">Option visuelle et vidéo IA</h2>
-          <p className="mt-5 text-lg leading-relaxed text-slate-300">
+        <div className={mainCard}>
+          <p className={`text-sm font-semibold uppercase tracking-[0.28em] ${labelClass}`}>Complément créatif</p>
+          <h2 className={`mt-4 font-display text-4xl leading-[1.05] md:text-5xl ${titleClass}`}>Option visuelle et vidéo IA</h2>
+          <p className={`mt-5 text-base leading-8 md:text-lg ${bodyClass}`}>
             Je peux aussi ajouter un visuel ou une capsule vidéo IA pour accompagner votre chanson. Le rendu est créatif, joli et marquant, mais le cœur du service reste la musique.
           </p>
-          <p className="mt-5 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-6 text-slate-200">
+          <p className={noteClass}>
             Cette section est présentée comme un complément. Elle sert à prolonger l’émotion de la chanson, pas à remplacer le service principal.
           </p>
         </div>
@@ -184,9 +205,9 @@ export function SongVideoExtrasSection() {
           {videoExtraOptions.map((option) => (
             <article key={option.name} className="brand-card-light p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-600">Extra visuel</p>
-              <h3 className="mt-4 font-display text-4xl leading-none text-slate-950">{option.name}</h3>
-              <p className="mt-3 text-3xl font-black text-primary-700">{option.price}</p>
-              <p className="mt-4 leading-7 text-slate-600">{option.description}</p>
+              <h3 className="mt-4 font-display text-3xl leading-[1.08] text-slate-950">{option.name}</h3>
+              <p className="mt-3 inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">{option.note}</p>
+              <p className="mt-4 text-base leading-7 text-slate-600">{option.description}</p>
             </article>
           ))}
         </div>
@@ -199,8 +220,8 @@ export function WhyNowisSection() {
   return (
     <section className="brand-card-light p-8 md:p-10">
       <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-600">Pourquoi je fais ça</p>
-      <h2 className="mt-4 font-display text-5xl leading-none text-slate-950">Une approche née de la musique, puis consolidée par l’IA</h2>
-      <div className="mt-6 space-y-4 text-base leading-8 text-slate-600">
+      <h2 className="mt-4 font-display text-4xl leading-[1.06] text-slate-950 md:text-5xl">Une approche née de la musique, puis consolidée par l’IA</h2>
+      <div className="mt-6 space-y-4 text-base leading-8 text-slate-700">
         {whyNowisParagraphs.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
@@ -213,8 +234,8 @@ export function SongGuaranteeBlock() {
   return (
     <article className="rounded-[2rem] border border-primary-200/70 bg-primary-50 p-8 shadow-sm">
       <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-700">{satisfactionGuarantee.title}</p>
-      <h2 className="mt-4 font-display text-4xl leading-none text-slate-950">Une garantie simple et lisible</h2>
-      <p className="mt-4 text-base leading-7 text-slate-700">{satisfactionGuarantee.text}</p>
+      <h2 className="mt-4 font-display text-4xl leading-[1.08] text-slate-950">Une garantie simple et lisible</h2>
+      <p className="mt-4 text-base leading-8 text-slate-700">{satisfactionGuarantee.text}</p>
       <p className="mt-4 text-sm leading-6 text-slate-600">{satisfactionGuarantee.note}</p>
     </article>
   );
@@ -244,9 +265,9 @@ export function SongFinalCtaSection() {
   return (
     <section className="brand-shell rounded-[2rem] p-8 text-white shadow-card md:p-10">
       <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Prêt à lancer la demande</p>
-      <h2 className="mt-4 font-display text-5xl leading-none">Une offre pensée pour être claire, humaine et facile à acheter</h2>
-      <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-300">
-        Si tu veux passer à l’action, tu peux soit lancer directement la demande, soit me parler d’abord du contexte. L’objectif est de garder un processus simple et rassurant.
+      <h2 className="mt-4 font-display text-4xl leading-[1.05] md:text-5xl">Un projet musical simple à lancer, sans complication</h2>
+      <p className="mt-4 max-w-3xl text-base leading-8 text-slate-200 md:text-lg">
+        Si tu veux passer à l’action, tu peux lancer directement la demande ou commencer par m’expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.
       </p>
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
         <Link

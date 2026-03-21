@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import {
   SongHowItWorksSection,
-  SongPackagesSection,
   SongTrustStrip,
   SongVideoExtrasSection,
   WhyNowisSection,
@@ -28,15 +27,10 @@ export const HomeScreen = async () => {
             <h1 className="brand-metal-text mt-6 max-w-4xl font-display text-5xl leading-[0.95] md:text-7xl xl:text-8xl">
               Je transforme votre histoire en chanson personnalisée
             </h1>
-            <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-300 md:text-xl">
+            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-200 md:text-xl">
               Mariage, anniversaire, naissance, hommage, amour, famille.
               Création musicale sur mesure, avec option visuelle et vidéo IA.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
-              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Ambiance vintage</span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Direction premium</span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">Palette feu + acier</span>
-            </div>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
                 href={songSalesCtas.order.href}
@@ -51,8 +45,8 @@ export const HomeScreen = async () => {
                 {songSalesCtas.listen.label}
               </Link>
             </div>
-            <p className="mt-6 max-w-2xl text-sm leading-6 text-slate-400">
-              Création Nowis vend d’abord la musique. Les visuels et vidéos IA sont proposés ensuite comme compléments, quand ils servent vraiment la chanson.
+            <p className="mt-6 max-w-2xl text-sm leading-7 text-slate-300">
+              La musique reste au centre. Les visuels et vidéos IA viennent ensuite comme compléments, seulement quand ils servent vraiment la chanson.
             </p>
           </div>
 
@@ -73,12 +67,12 @@ export const HomeScreen = async () => {
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-white/10 bg-coal-950/70 p-4 text-white">
-                  <p className="text-sm text-slate-400">Formats demandés</p>
+                  <p className="text-sm text-slate-300">Formats demandés</p>
                   <p className="mt-2 font-semibold">Mariage, hommage, anniversaire, famille</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-coal-950/70 p-4 text-white">
-                  <p className="text-sm text-slate-400">Logique d’offre</p>
-                  <p className="mt-2 font-semibold">Forfaits fixes et options claires</p>
+                  <p className="text-sm text-slate-300">Approche</p>
+                  <p className="mt-2 font-semibold">Projet sur demande et accompagnement clair</p>
                 </div>
               </div>
             </div>
@@ -90,14 +84,12 @@ export const HomeScreen = async () => {
 
       <SongHowItWorksSection />
 
-      <SongPackagesSection />
-
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Exemples</p>
-            <h2 className="mt-4 font-display text-5xl leading-none text-white md:text-6xl">Des réalisations pour entendre le ton, l’émotion et la direction</h2>
-            <p className="mt-4 text-lg leading-relaxed text-slate-300">
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Des réalisations pour entendre le ton, l’émotion et la direction</h2>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
               Voici quelques chansons déjà publiées pour montrer la couleur du projet. Elles servent de repères concrets avant de commander une création sur mesure.
             </p>
           </div>
@@ -123,8 +115,8 @@ export const HomeScreen = async () => {
 
           <article className="brand-panel p-8 text-white">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Demandes fréquentes</p>
-            <h3 className="mt-4 font-display text-5xl leading-none">Une même offre, plusieurs histoires possibles</h3>
-            <p className="mt-4 text-lg leading-relaxed text-slate-300">
+            <h3 className="mt-4 font-display text-4xl leading-[1.05]">Une même approche, plusieurs histoires possibles</h3>
+            <p className="mt-4 text-base leading-8 text-slate-200 md:text-lg">
               Le point commun reste toujours le même : partir d’un vrai vécu et lui donner une forme musicale stable, touchante et facile à offrir.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -146,8 +138,8 @@ export const HomeScreen = async () => {
 
           <article className="brand-panel p-8 text-white md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Artistes / univers</p>
-            <h2 className="mt-4 font-display text-5xl leading-none">Création Nowis, un univers d’abord musical</h2>
-            <p className="mt-4 text-lg leading-relaxed text-slate-300">
+            <h2 className="mt-4 font-display text-4xl leading-[1.05]">Création Nowis, un univers d’abord musical</h2>
+            <p className="mt-4 text-base leading-8 text-slate-200 md:text-lg">
               La bannière Création Nowis met en avant Nowis Morin comme artiste principal, puis ouvre vers des collaborations et artistes associés qui élargissent l’univers sans brouiller l’offre principale.
             </p>
             <div className="mt-8 grid gap-4">
@@ -166,8 +158,8 @@ export const HomeScreen = async () => {
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Autres services créatifs</p>
-          <h2 className="mt-4 font-display text-5xl leading-none text-white md:text-6xl">Des services secondaires pour prolonger l’univers</h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-300">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Des services secondaires pour prolonger l’univers</h2>
+          <p className="mt-4 text-base leading-8 text-slate-200 md:text-lg">
             Quand la chanson est en place, Création Nowis peut aussi ajouter des éléments visuels, promotionnels ou interactifs. Ces services restent volontairement en second plan.
           </p>
         </div>
@@ -185,9 +177,9 @@ export const HomeScreen = async () => {
       <section className="brand-shell">
         <div className="mx-auto max-w-5xl px-6 py-20 text-center text-white md:py-24">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">CTA final</p>
-          <h2 className="mt-4 font-display text-5xl leading-none md:text-7xl">Une offre plus claire pour commander la musique en premier</h2>
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-relaxed text-slate-300">
-            Si tu veux offrir ou faire créer une chanson sur mesure, tout est maintenant pensé pour être simple : forfaits fixes, exemples d’écoute, options vidéo en extra et contact direct.
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] md:text-6xl">Une façon plus simple de lancer un projet musical</h2>
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-slate-200 md:text-lg">
+            Si tu veux offrir ou faire créer une chanson sur mesure, tout est pensé pour rester simple : exemples d’écoute, échange direct, option vidéo en complément et accompagnement clair.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

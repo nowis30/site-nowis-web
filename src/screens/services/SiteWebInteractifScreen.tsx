@@ -82,9 +82,9 @@ export const SiteWebInteractifScreen: React.FC = () => {
 
         {/* Note tarif */}
         <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 border-l-4 border-primary-600">
-          <h3 className="font-bold text-gray-900 mb-2">Note tarif</h3>
+          <h3 className="font-bold text-gray-900 mb-2">Approche</h3>
           <p className="text-gray-700">
-            Petit site vitrine (1–3 pages) à partir d'environ <strong>400 $ CA</strong>, selon la complexité.
+            Chaque site est discuté selon le nombre de pages, les contenus à préparer et le niveau d’interactivité attendu.
           </p>
         </div>
 

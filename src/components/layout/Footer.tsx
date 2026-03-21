@@ -41,19 +41,16 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col gap-10 border-b border-white/10 pb-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary-200">
-              Footer global
+              Création Nowis
             </p>
-            <h3 className="brand-metal-text mt-3 font-display text-5xl leading-none">Nowis Morin</h3>
-            <p className="mt-3 text-base leading-7 text-slate-300">
-              Retrouve Nowis Morin sur ses plateformes officielles.
-            </p>
-            <p className="mt-1 text-sm leading-6 text-slate-400">
-              Musique, vidéos et présence officielle regroupées dans un footer propre, professionnel et accessible sur tout le site.
+            <h3 className="brand-metal-text mt-3 font-display text-4xl leading-none md:text-5xl">Nowis Morin</h3>
+            <p className="mt-3 text-base leading-8 text-slate-200">
+              Musique, créations visuelles et prise de contact réunies dans un footer plus sobre, lisible et direct.
             </p>
           </div>
 
           <div className="flex flex-col gap-4 lg:items-end">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-300">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-200">
               Retrouve-moi sur mes plateformes officielles
             </p>
             <div className="flex flex-wrap items-center gap-3 md:gap-4 lg:justify-end">
@@ -82,42 +79,42 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 text-white font-semibold">Navigation</h4>
             <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:max-w-md">
               <li>
-                <Link href="/" className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href="/" className="text-slate-300 hover:text-primary-200 transition-colors">
                   Accueil
                 </Link>
               </li>
               <li>
-                <Link href="/commander-une-chanson" className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href="/commander-une-chanson" className="text-slate-300 hover:text-primary-200 transition-colors">
                   Commander une chanson
                 </Link>
               </li>
               <li>
-                <Link href="/artistes" className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href="/artistes" className="text-slate-300 hover:text-primary-200 transition-colors">
                   Artistes
                 </Link>
               </li>
               <li>
-                <Link href="/musique" className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href="/musique" className="text-slate-300 hover:text-primary-200 transition-colors">
                   Musique / exemples
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href="/services" className="text-slate-300 hover:text-primary-200 transition-colors">
                   Services / Collaborations
                 </Link>
               </li>
               <li>
-                <Link href="/videos" className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href="/videos" className="text-slate-300 hover:text-primary-200 transition-colors">
                   Vidéos IA
                 </Link>
               </li>
               <li>
-                <Link href="/a-propos" className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href="/a-propos" className="text-slate-300 hover:text-primary-200 transition-colors">
                   À propos
                 </Link>
               </li>
               <li>
-                <ContactPrefillLink href={legalLinks.contact} className="text-gray-400 hover:text-primary-200 transition-colors">
+                <ContactPrefillLink href={legalLinks.contact} className="text-slate-300 hover:text-primary-200 transition-colors">
                   Contact
                 </ContactPrefillLink>
               </li>
@@ -127,14 +124,14 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="mb-4 text-white font-semibold">Contact</h4>
             <ul className="space-y-2 text-sm">
-              <li className="text-gray-400">
+              <li className="text-slate-300">
                 📧 <a href={`mailto:${legalConfig.contactEmail}`} className="hover:text-primary-200 transition-colors">{legalConfig.contactEmail}</a>
               </li>
-              <li className="text-gray-400">
+              <li className="text-slate-300">
                 📞 <a href={legalConfig.contactPhoneHref} className="hover:text-primary-200 transition-colors">{legalConfig.contactPhone}</a>
               </li>
               <li>
-                <Link href="/booking" className="text-gray-400 hover:text-primary-200 transition-colors">Parler de mon projet</Link>
+                <ContactPrefillLink href={legalLinks.contact} className="text-slate-300 hover:text-primary-200 transition-colors">Parler de mon projet</ContactPrefillLink>
               </li>
             </ul>
           </div>
@@ -143,21 +140,21 @@ export const Footer: React.FC = () => {
             <h4 className="mb-4 text-white font-semibold">Informations légales</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href={legalLinks.legal} className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href={legalLinks.legal} className="text-slate-300 hover:text-primary-200 transition-colors">
                   Mentions légales
                 </Link>
               </li>
               <li>
-                <Link href={legalLinks.privacy} className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href={legalLinks.privacy} className="text-slate-300 hover:text-primary-200 transition-colors">
                   Politique de confidentialité
                 </Link>
               </li>
               <li>
-                <Link href={legalLinks.terms} className="text-gray-400 hover:text-primary-200 transition-colors">
+                <Link href={legalLinks.terms} className="text-slate-300 hover:text-primary-200 transition-colors">
                   Conditions de vente
                 </Link>
               </li>
-              <li className="text-gray-400 leading-6">
+              <li className="text-slate-400 leading-6">
                 {legalConfig.responsiblePrivacyTitle} : {legalConfig.responsiblePrivacyName}
               </li>
             </ul>
@@ -165,14 +162,14 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-800 pt-8 space-y-3">
-          <p className="text-center text-gray-500 text-sm">
+          <p className="text-center text-slate-400 text-sm">
             © {currentYear} Nowis Morin. Tous droits réservés.
           </p>
-          <p className="text-center text-gray-500 text-xs">
+          <p className="text-center text-slate-500 text-xs leading-6">
             <Link href={legalLinks.privacy} className="underline hover:text-primary-200">Politique de confidentialité</Link>
             {' '}et{' '}
             <Link href={legalLinks.terms} className="underline hover:text-primary-200">conditions de vente</Link>
-            {' '}accessibles en tout temps depuis le site public.
+            {' '}accessibles en tout temps depuis le site public. Conformité vie privée présentée de façon claire et discrète.
           </p>
         </div>
       </div>

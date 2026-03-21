@@ -23,7 +23,7 @@ export const ClipVideoScreen: React.FC = () => {
           </h1>
           
           <p className="text-xl text-gray-600 max-w-3xl">
-            Musique, images et montage assistés par l'intelligence artificielle, pour des vidéos qui ont de l'impact… sans exploser votre budget.
+            Musique, images et montage assistés par l'intelligence artificielle, pour des vidéos qui ont de l'impact avec une approche claire et adaptée au projet.
           </p>
         </div>
       </section>
@@ -82,9 +82,9 @@ export const ClipVideoScreen: React.FC = () => {
 
         {/* Note tarif */}
         <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 border-l-4 border-primary-600">
-          <h3 className="font-bold text-gray-900 mb-2">Note tarif</h3>
+          <h3 className="font-bold text-gray-900 mb-2">Approche</h3>
           <p className="text-gray-700">
-            Tarifs sur mesure en fonction du projet. À titre indicatif, un clip court avec musique originale commence généralement autour de <strong>200 $ CA</strong>.
+            Chaque clip est discuté selon le format, le rythme, la direction visuelle et le niveau de finition attendu.
           </p>
         </div>
 

@@ -45,7 +45,7 @@ export const AnnonceEvenementScreen: React.FC = () => {
             </li>
             <li className="flex gap-3">
               <span className="text-primary-600 font-bold">✓</span>
-              <span>Rédiger un texte clair avec date, lieu, prix et appel à l'action.</span>
+              <span>Rédiger un texte clair avec date, lieu, informations clés et appel à l'action.</span>
             </li>
           </ul>
         </div>
@@ -82,9 +82,9 @@ export const AnnonceEvenementScreen: React.FC = () => {
 
         {/* Note tarif */}
         <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 border-l-4 border-primary-600">
-          <h3 className="font-bold text-gray-900 mb-2">Note tarif</h3>
+          <h3 className="font-bold text-gray-900 mb-2">Approche</h3>
           <p className="text-gray-700">
-            Vidéo promo simple + visuel principal à partir d'environ <strong>200 $ CA</strong>.
+            Chaque annonce est préparée sur demande, selon le volume, les formats souhaités et le niveau d’accompagnement nécessaire.
           </p>
         </div>
 

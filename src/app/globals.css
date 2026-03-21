@@ -12,12 +12,16 @@
   }
 
   body {
-    @apply bg-coal-950 font-sans text-slate-100 antialiased;
+    @apply bg-coal-950 font-sans text-base leading-relaxed text-slate-100 antialiased;
     background-image:
       radial-gradient(circle at top left, rgba(255, 122, 43, 0.12), transparent 26%),
       radial-gradient(circle at top right, rgba(246, 59, 59, 0.08), transparent 20%),
       linear-gradient(180deg, #090a0d 0%, #121317 48%, #181b22 100%);
     min-height: 100vh;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   h1,
@@ -27,6 +31,7 @@
   .brand-display {
     font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
     letter-spacing: 0.01em;
+    text-wrap: balance;
   }
 }
 
@@ -109,23 +114,23 @@ select:focus {
   }
 
   .brand-panel {
-    @apply rounded-[2rem] border border-white/10 bg-brand-panel shadow-card backdrop-blur-sm;
+    @apply rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,rgba(12,15,20,0.8),rgba(20,24,32,0.72))] shadow-card backdrop-blur-md;
   }
 
   .brand-panel-dark {
-    @apply rounded-[2rem] border border-white/10 bg-white/5 shadow-card backdrop-blur-sm;
+    @apply rounded-[2rem] border border-white/10 bg-black/35 shadow-card backdrop-blur-md;
   }
 
   .brand-card {
-    @apply rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-soft backdrop-blur-sm;
+    @apply rounded-[2rem] border border-white/10 bg-white/[0.06] shadow-soft backdrop-blur-md;
   }
 
   .brand-card-light {
-    @apply rounded-[2rem] border border-primary-100/60 bg-white text-slate-900 shadow-soft;
+    @apply rounded-[2rem] border border-slate-200/90 bg-white/95 text-slate-900 shadow-soft;
   }
 
   .brand-chip {
-    @apply inline-flex rounded-full border border-primary-300/30 bg-primary-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-200;
+    @apply inline-flex rounded-full border border-primary-300/30 bg-primary-500/10 px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-primary-100;
   }
 
   .brand-divider {
@@ -138,7 +143,7 @@ select:focus {
 
   .brand-metal-text {
     color: #f4e1b7;
-    text-shadow: 0 1px 0 rgba(15, 15, 15, 0.5), 0 6px 18px rgba(0, 0, 0, 0.25);
+    text-shadow: 0 1px 0 rgba(15, 15, 15, 0.55), 0 10px 28px rgba(0, 0, 0, 0.32);
   }
 
   .brand-grid {
@@ -149,6 +154,6 @@ select:focus {
   }
 
   .text-brand-muted {
-    @apply text-slate-300;
+    @apply text-slate-200;
   }
 }

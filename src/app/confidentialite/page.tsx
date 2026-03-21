@@ -32,7 +32,7 @@ const privacySections = [
     bullets: [
       'répondre à votre demande ;',
       'communiquer avec vous et assurer le suivi du projet ;',
-      'préparer une offre, un forfait ou une direction de création adaptée ;',
+      'préparer une proposition ou une direction de création adaptée ;',
       'respecter les obligations administratives, contractuelles ou légales applicables.',
     ],
   },
