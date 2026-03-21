@@ -4,6 +4,12 @@ import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { getFeaturedSongs } from '@/data/songs';
 import { satisfactionGuarantee, songPackages, songSalesCtas } from '@/data/songSales';
 
+const packagePrices: Record<string, string> = {
+  'Mise en chanson': '49,99 $',
+  'Chanson personnalisée': '99,99 $',
+  'Chanson émotion': '149,99 $',
+};
+
 const emotionStatements = [
   'Tu veux offrir quelque chose de vrai.',
   'Tu veux dire merci, je t’aime, je pense à toi ou je suis fier de toi.',
@@ -16,16 +22,34 @@ const trustReasons = [
     description: 'Je ne produis pas une formule impersonnelle. Je pars de ton histoire, de tes mots et de l’émotion que tu veux transmettre.',
   },
   {
-    title: 'L’humain reste au centre',
-    description: 'L’IA m’aide comme outil de création, mais la sensibilité, la direction et le tri viennent de moi.',
+    title: 'Tu parles à une vraie personne',
+    description: 'Je prends le temps de comprendre ce que tu veux faire ressentir. L’IA m’aide à créer, mais elle ne remplace jamais l’écoute ni la sensibilité.',
   },
   {
-    title: 'Le projet est construit pour la personne qui le reçoit',
+    title: 'La chanson est pensée pour la personne qui la reçoit',
     description: 'Le ton, les mots et l’ambiance sont pensés pour créer un vrai moment, pas juste un beau fichier audio.',
   },
   {
-    title: 'Le contact est simple',
+    title: 'Le contact reste simple et humain',
     description: 'Tu peux m’écrire avec une idée encore floue. Je t’aide à la clarifier sans pression et sans jargon.',
+  },
+];
+
+const testimonials = [
+  {
+    quote: 'J’ai eu des frissons en entendant la chanson. On sent qu’il y avait quelque chose de vrai du début à la fin.',
+    author: 'Mélanie',
+    context: 'Cadeau pour un anniversaire',
+  },
+  {
+    quote: 'C’était le plus beau cadeau que je pouvais offrir. La chanson a touché tout le monde sans en faire trop.',
+    author: 'Patrick',
+    context: 'Projet pour un proche',
+  },
+  {
+    quote: 'On sent que ce n’est pas fait à la chaîne. Il y a une vraie sensibilité derrière chaque création.',
+    author: 'Julie',
+    context: 'Chanson souvenir',
   },
 ];
 
@@ -45,31 +69,34 @@ const processSteps = [
 ];
 
 function buildExampleHref(title: string) {
-  return `/contact?projectType=chanson&message=${encodeURIComponent(`Bonjour, j’aime beaucoup l’exemple « ${title} ». Je veux une chanson personnalisée dans le même esprit pour mon histoire.`)}`;
+  const message = `Bonjour, j’aime beaucoup l’exemple « ${title} ». Je veux une chanson personnalisée dans le même esprit pour mon histoire.`;
+  return `/contact?projectType=chanson&message=${encodeURIComponent(message)}`;
 }
 
 export const HomeScreen = async () => {
   const songs = await getFeaturedSongs(3);
 
   return (
-    <div className="bg-transparent text-slate-100">
+    <div className="relative overflow-hidden bg-transparent text-slate-100">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(99,102,241,0.12),transparent_24%),radial-gradient(circle_at_86%_10%,rgba(168,85,247,0.12),transparent_20%),radial-gradient(circle_at_76%_38%,rgba(59,130,246,0.08),transparent_22%)]" />
       <section className="brand-shell brand-grid">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,10,13,0.12)_0%,rgba(9,10,13,0.38)_40%,rgba(9,10,13,0.82)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(99,102,241,0.18),transparent_24%),radial-gradient(circle_at_84%_16%,rgba(168,85,247,0.14),transparent_22%),radial-gradient(circle_at_74%_62%,rgba(59,130,246,0.10),transparent_24%),linear-gradient(180deg,rgba(9,10,13,0.14)_0%,rgba(9,10,13,0.40)_40%,rgba(9,10,13,0.84)_100%)]" />
+        <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(rgba(255,255,255,0.55)_0.7px,transparent_0.7px)] [background-size:22px_22px]" />
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-[1.02fr_0.98fr] md:items-center md:py-24 lg:py-28">
           <div className="relative z-10">
             <p className="brand-chip">Chansons personnalisées</p>
             <h1 className="brand-metal-text mt-6 max-w-4xl font-display text-5xl leading-[0.95] md:text-7xl xl:text-[5.5rem]">
-              Je transforme votre histoire en chanson personnalisée
+              Offrez une chanson unique à quelqu’un que vous aimez
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100 md:text-xl">
-              J’aide à mettre en musique un souvenir, un message du cœur ou un moment important pour en faire un cadeau profondément humain et unique.
+              Je transforme vos souvenirs, vos mots et vos émotions en chanson personnalisée, pour créer un cadeau vrai, marquant et profondément humain.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
                 href={songSalesCtas.order.href}
                 className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3.5 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
               >
-                Créer ma chanson
+                Commander une chanson
               </Link>
               <Link
                 href={songSalesCtas.listen.href}
@@ -79,13 +106,13 @@ export const HomeScreen = async () => {
               </Link>
             </div>
             <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 backdrop-blur-sm">
+              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-4 backdrop-blur-sm">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Pour qui</p>
                 <p className="mt-2 text-sm leading-6 text-slate-100">Mariage, anniversaire, naissance, hommage, amour, famille, projet personnel.</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 backdrop-blur-sm">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Ce qui est spécial</p>
-                <p className="mt-2 text-sm leading-6 text-slate-100">Une vraie présence humaine, avec l’IA comme outil discret au service de l’émotion.</p>
+              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-4 backdrop-blur-sm">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Pourquoi ça touche</p>
+                <p className="mt-2 text-sm leading-6 text-slate-100">Parce que la chanson part d’une histoire réelle, avec une vraie attention à ce que tu veux faire ressentir.</p>
               </div>
             </div>
           </div>
@@ -101,14 +128,14 @@ export const HomeScreen = async () => {
                 <div className="absolute inset-x-0 bottom-0 p-6 text-white">
                   <div className="max-w-md rounded-[1.25rem] border border-white/10 bg-black/45 px-5 py-4 shadow-2xl backdrop-blur-sm">
                     <p className="text-sm uppercase tracking-[0.24em] text-primary-100">Nowis Morin</p>
-                    <p className="mt-2 font-display text-3xl leading-none text-[#fff7e8]">Une chanson pensée pour dire quelque chose de vrai</p>
-                    <p className="mt-3 text-sm leading-6 text-slate-100">Je crée des chansons sur mesure pour transformer un souvenir, un message ou une émotion en cadeau marquant.</p>
+                    <p className="mt-2 font-display text-3xl leading-none text-[#fff7e8]">Une chanson personnalisée pour dire ce que vous ressentez vraiment</p>
+                    <p className="mt-3 text-sm leading-6 text-slate-100">Je crée des chansons sur mesure pour transformer un souvenir, un message ou une émotion en cadeau touchant et unique.</p>
                   </div>
                 </div>
               </div>
               <div className="mt-4 rounded-2xl border border-white/10 bg-coal-950/70 p-4 text-white">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Ce que tu peux me confier</p>
-                <p className="mt-2 text-sm leading-6 text-slate-100">Un texte déjà écrit, une histoire à raconter ou une émotion délicate à offrir avec justesse.</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Ce que tu peux m’envoyer</p>
+                <p className="mt-2 text-sm leading-6 text-slate-100">Un texte déjà écrit, quelques souvenirs, une relation importante ou simplement l’émotion que tu veux faire passer.</p>
               </div>
             </div>
           </div>
@@ -205,6 +232,35 @@ export const HomeScreen = async () => {
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="max-w-3xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Témoignages</p>
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Des mots qui rassurent avant de se lancer</h2>
+          <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
+            Voici trois exemples de retours courts, pensés comme repères en attendant tes témoignages définitifs. La structure est déjà prête pour être remplacée facilement plus tard.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          {testimonials.map((testimonial) => (
+            <article key={`${testimonial.author}-${testimonial.context}`} className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft">
+              <div className="flex gap-1 text-amber-500" aria-hidden="true">
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+              </div>
+              <p className="mt-5 text-lg leading-8 text-slate-800">“{testimonial.quote}”</p>
+              <div className="mt-6 border-t border-slate-200 pt-5">
+                <p className="font-semibold text-slate-950">{testimonial.author}</p>
+                <p className="text-sm text-slate-500">{testimonial.context}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Pourquoi choisir Nowis</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Une création plus humaine, plus sensible et plus mémorable</h2>
           <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
@@ -236,17 +292,26 @@ export const HomeScreen = async () => {
             <article
               key={pack.name}
               className={[
-                'rounded-[2rem] border p-8 shadow-soft transition',
+                'relative rounded-[2rem] border p-8 shadow-soft transition',
                 pack.featured
-                  ? 'border-primary-200 bg-white text-slate-900 ring-2 ring-primary-200'
+                  ? 'border-primary-200 bg-white text-slate-900 ring-2 ring-primary-200 shadow-[0_28px_80px_rgba(255,122,43,0.22)] xl:-translate-y-2'
                   : 'border-slate-200 bg-slate-50 text-slate-900',
               ].join(' ')}
             >
               {pack.badge ? (
-                <p className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-700">
-                  {pack.badge}
+                <div className="flex items-center justify-between gap-3">
+                  <p className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-700">
+                    {pack.badge}
+                  </p>
+                  <p className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                    99,99 $
+                  </p>
+                </div>
+              ) : (
+                <p className="inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 shadow-sm">
+                  {packagePrices[pack.name]}
                 </p>
-              ) : null}
+              )}
               <h3 className="mt-4 font-display text-4xl leading-[1.05] text-slate-950">{pack.name}</h3>
               <p className="mt-3 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
                 {pack.note}
@@ -269,7 +334,7 @@ export const HomeScreen = async () => {
                     : 'border border-slate-200 bg-white text-slate-900 hover:bg-slate-100',
                 ].join(' ')}
               >
-                Choisir cette formule
+                Commander cette formule
               </Link>
             </article>
           ))}
@@ -299,10 +364,10 @@ export const HomeScreen = async () => {
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-200">À propos / Nowis Morin</p>
                 <h2 className="mt-4 font-display text-4xl leading-[1.05]">Je crée des chansons parce que certaines émotions méritent mieux qu’un simple message.</h2>
                 <p className="mt-4 text-base leading-8 text-slate-200">
-                  Je suis musicien, créatif et profondément sensible à ce que les gens veulent transmettre. Mon travail, c’est de prendre quelque chose de personnel et de lui donner une forme musicale juste, touchante et durable.
+                  Je crée depuis longtemps. Ce que j’aime, c’est prendre un souvenir, une émotion ou une histoire et lui donner une forme musicale qui touche vraiment.
                 </p>
                 <p className="mt-4 text-base leading-8 text-slate-200">
-                  L’IA fait partie de mes outils, mais jamais du cœur du message. Ce qui compte vraiment, c’est l’émotion, la justesse et la personne derrière l’histoire.
+                  L’IA m’aide à aller plus loin dans la création, mais elle reste un outil. Ce qui compte vraiment, c’est l’émotion, la justesse et la personne derrière la chanson.
                 </p>
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                   <Link href="/a-propos" className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
@@ -319,6 +384,7 @@ export const HomeScreen = async () => {
       </section>
 
       <section className="brand-shell">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.14),transparent_22%),radial-gradient(circle_at_82%_18%,rgba(168,85,247,0.12),transparent_20%),radial-gradient(circle_at_72%_70%,rgba(59,130,246,0.08),transparent_24%)]" />
         <div className="mx-auto max-w-5xl px-6 py-20 text-center text-white md:py-24">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">CTA final</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] md:text-6xl">Tu as une histoire, un message ou un souvenir à offrir ?</h2>
