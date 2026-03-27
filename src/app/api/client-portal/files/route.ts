@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyClientPortalToken } from '@/lib/client-portal';
-import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
-import { persistUploadedFile } from '@/lib/uploaded-file';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +12,12 @@ const DOCUMENT_TYPE_LABELS: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    const [{ verifyClientPortalToken }, { getClientPortalSessionFromCookieHeader }, { persistUploadedFile }] = await Promise.all([
+      import('@/lib/client-portal'),
+      import('@/features/client-portal/auth/session'),
+      import('@/lib/uploaded-file'),
+    ]);
+
     const formData = await request.formData();
     const token = String(formData.get('token') || '');
     const songRequestId = String(formData.get('songRequestId') || '');

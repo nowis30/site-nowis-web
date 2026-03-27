@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyClientPortalToken } from '@/lib/client-portal';
-import { deleteStoredFileByUrl } from '@/lib/uploaded-file';
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const [{ verifyClientPortalToken }, { deleteStoredFileByUrl }] = await Promise.all([
+    import('@/lib/client-portal'),
+    import('@/lib/uploaded-file'),
+  ]);
+
   const token = request.nextUrl.searchParams.get('token') || '';
   const session = verifyClientPortalToken(token);
 
