@@ -206,19 +206,51 @@ export const HomeScreen = async () => {
 
           <article className="brand-panel p-8 text-white md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Connexion</p>
-            <h3 className="mt-4 font-display text-4xl leading-[1.05]">Tu n’achètes pas juste une chanson. Tu fais passer un message.</h3>
+            <h3 className="mt-4 font-display text-4xl leading-[1.05]">Choisis ton espace et connecte-toi en quelques secondes.</h3>
             <p className="mt-4 text-base leading-8 text-slate-200 md:text-lg">
-              Un merci. Un je t’aime. Un hommage. Un souvenir qu’on ne veut pas laisser se perdre. C’est cette charge émotionnelle que je cherche à traduire avec justesse.
+              L’espace utilisateur permet aux propriétaires d’accéder à leurs logements et à leur suivi. L’accès CRM est réservé aux membres internes qui gèrent l’activité et les dossiers.
             </p>
-            <p className="mt-4 text-base leading-8 text-slate-200 md:text-lg">
-              Si ton idée est encore floue, ce n’est pas un problème. On peut partir d’un simple ressenti et construire le reste à partir de là.
-            </p>
-            <ContactPrefillLink
-              href={songSalesCtas.talk.href}
-              className="mt-8 inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
-            >
-              Parler de mon projet
-            </ContactPrefillLink>
+
+            <div className="mt-8 grid gap-4">
+              <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Acces client</p>
+                <p className="mt-2 text-sm leading-7 text-slate-200">
+                  Connexion directe pour consulter votre portail client, vos messages, vos documents et vos rendez-vous.
+                </p>
+                <Link
+                  href="/client"
+                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+                >
+                  Acces client
+                </Link>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Espace utilisateur</p>
+                <p className="mt-2 text-sm leading-7 text-slate-200">
+                  Connexion pour consulter votre espace propriétaire, vos logements et vos informations personnelles.
+                </p>
+                <Link
+                  href="/connexion"
+                  className="mt-4 inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+                >
+                  Se connecter
+                </Link>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Accès équipe CRM</p>
+                <p className="mt-2 text-sm leading-7 text-slate-200">
+                  Connexion interne pour les utilisateurs autorisés du back-office Nowis.
+                </p>
+                <Link
+                  href="/crm/login"
+                  className="mt-4 inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-slate-950/55 px-5 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/12"
+                >
+                  Ouvrir le CRM
+                </Link>
+              </div>
+            </div>
           </article>
         </div>
       </section>

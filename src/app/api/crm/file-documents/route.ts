@@ -1,0 +1,132 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { requireApiPermission } from '@/features/crm/auth/api-guard';
+import { FILE_VISIBILITY_DB } from '@/lib/file-documents';
+import { storeFileInPersistentStorage } from '@/lib/file-storage';
+import { uploadFileMetadataSchema, validateUploadFile } from '@/lib/validators/file-document';
+
+const querySchema = z.object({
+  contactId: z.string().uuid().optional(),
+  songRequestId: z.string().uuid().optional(),
+});
+
+export async function GET(request: NextRequest) {
+  const guard = requireApiPermission(request, 'documents', 'read');
+  if (guard.error) return guard.error;
+
+  const parsedQuery = querySchema.safeParse({
+    contactId: request.nextUrl.searchParams.get('contactId') || undefined,
+    songRequestId: request.nextUrl.searchParams.get('songRequestId') || undefined,
+  });
+
+  if (!parsedQuery.success) {
+    return NextResponse.json({ error: 'Filtres invalides' }, { status: 400 });
+  }
+
+  const items = await prisma.fileDocument.findMany({
+    where: {
+      ...(parsedQuery.data.contactId ? { contactId: parsedQuery.data.contactId } : {}),
+      ...(parsedQuery.data.songRequestId ? { songRequestId: parsedQuery.data.songRequestId } : {}),
+    },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      uploadedByUser: { select: { id: true, fullName: true } },
+    },
+    take: 100,
+  });
+
+  return NextResponse.json({ items });
+}
+
+export async function POST(request: NextRequest) {
+  const guard = requireApiPermission(request, 'documents', 'create');
+  if (guard.error) return guard.error;
+
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file');
+
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'Aucun fichier recu.' }, { status: 400 });
+    }
+
+    validateUploadFile(file);
+
+    const parsedMeta = uploadFileMetadataSchema.parse({
+      contactId: formData.get('contactId') || undefined,
+      songRequestId: formData.get('songRequestId') || undefined,
+      category: formData.get('category') || 'document',
+      visibility: formData.get('visibility') || 'client_visible',
+    });
+
+    let contactId = parsedMeta.contactId ?? null;
+
+    if (parsedMeta.songRequestId) {
+      const songRequest = await prisma.songRequest.findUnique({
+        where: { id: parsedMeta.songRequestId },
+        select: { id: true, contactId: true },
+      });
+      if (!songRequest) {
+        return NextResponse.json({ error: 'Demande de chanson introuvable' }, { status: 404 });
+      }
+      if (contactId && contactId !== songRequest.contactId) {
+        return NextResponse.json({ error: 'Le contact et la demande ne correspondent pas' }, { status: 400 });
+      }
+      contactId = songRequest.contactId;
+    }
+
+    if (!contactId) {
+      return NextResponse.json({ error: 'Le contact est obligatoire' }, { status: 400 });
+    }
+
+    const contact = await prisma.contact.findUnique({ where: { id: contactId }, select: { id: true } });
+    if (!contact) {
+      return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
+    }
+
+    const stored = await storeFileInPersistentStorage(file, { folder: 'crm-files' });
+
+    const item = await prisma.fileDocument.create({
+      data: {
+        contactId,
+        songRequestId: parsedMeta.songRequestId ?? null,
+        uploadedByUserId: guard.session.sub,
+        filename: stored.filename,
+        originalName: stored.originalName,
+        mimeType: stored.mimeType,
+        size: stored.size,
+        storageKey: stored.storageKey,
+        url: stored.url,
+        category: parsedMeta.category,
+        visibility: FILE_VISIBILITY_DB[parsedMeta.visibility],
+      },
+      include: { uploadedByUser: { select: { id: true, fullName: true } } },
+    });
+
+    await prisma.activity.create({
+      data: {
+        type: 'FILE',
+        title: parsedMeta.songRequestId ? 'Document ajoute a la demande de chanson' : 'Fichier depose',
+        description: [
+          `Nom: ${stored.originalName}`,
+          `Categorie: ${parsedMeta.category}`,
+          `Visibilite: ${parsedMeta.visibility}`,
+          parsedMeta.songRequestId ? `Demande chanson: ${parsedMeta.songRequestId}` : null,
+        ].filter(Boolean).join('\n'),
+        contactId,
+        songRequestId: parsedMeta.songRequestId ?? null,
+        userId: guard.session.sub,
+      },
+    });
+
+    return NextResponse.json({ item }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation invalide', details: error.issues }, { status: 400 });
+    }
+
+    console.error('[CRM_FILE_DOCUMENT_POST]', error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Upload impossible' }, { status: 500 });
+  }
+}

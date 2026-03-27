@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ContactForm } from '@/components/ContactForm';
+import { SongRequestForm } from '@/components/forms/SongRequestForm';
 import { PageHero } from '@/components/marketing/PageHero';
 import {
   SongHowItWorksSection,
@@ -112,11 +112,7 @@ export default function CommanderUneChansonPage() {
           </div>
         </div>
 
-        <ContactForm
-          initialProjectType="chanson"
-          initialMessage="Bonjour, je veux commander une chanson personnalisée. Voici mon histoire, le contexte du projet et l’émotion que je veux transmettre."
-          showPortfolioConsent
-        />
+        <SongRequestForm />
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">

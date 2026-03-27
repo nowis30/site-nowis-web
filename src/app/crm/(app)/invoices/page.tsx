@@ -1,0 +1,45 @@
+import { requireCrmSession } from '@/features/crm/auth/session';
+import { prisma } from '@/lib/prisma';
+import { InvoicesPage } from '@/features/crm/components/invoices/InvoicesPage';
+
+export default async function CrmInvoicesPage() {
+  await requireCrmSession();
+
+  const [invoices, contacts, stats] = await Promise.all([
+    prisma.invoice.findMany({
+      include: { contact: { select: { fullName: true, email: true } } },
+      orderBy: { issueDate: 'desc' },
+    }),
+    prisma.contact.findMany({
+      select: { id: true, fullName: true },
+      orderBy: { fullName: 'asc' },
+    }),
+    prisma.invoice.groupBy({
+      by: ['status'],
+      _count: { id: true },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  return (
+    <InvoicesPage
+      invoices={invoices.map((item) => ({
+        id: item.id,
+        number: item.number,
+        contactId: item.contactId,
+        issueDate: item.issueDate.toISOString(),
+        dueDate: item.dueDate.toISOString(),
+        amount: item.amount.toString(),
+        status: item.status,
+        description: item.description,
+        contact: item.contact,
+      }))}
+      contacts={contacts}
+      stats={stats.map((row) => ({
+        status: row.status,
+        _count: row._count,
+        _sum: { amount: row._sum.amount?.toString() ?? null },
+      }))}
+    />
+  );
+}

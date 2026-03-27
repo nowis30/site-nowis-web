@@ -38,7 +38,7 @@ export const PortfolioScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'tshirts' | 'music' | 'videos'>('tshirts');
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 md:py-24 space-y-12 bg-gradient-to-b from-camp-night to-camp-purple min-h-screen">
+    <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 md:py-24 space-y-12 bg-gradient-to-b from-camp-night to-camp-purple min-h-screen">
       
       {/* Header */}
       <div className="text-center">
@@ -46,8 +46,13 @@ export const PortfolioScreen: React.FC = () => {
       </div>
 
       {/* Onglets de navigation */}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="relative z-20 flex flex-wrap justify-center gap-4 pointer-events-auto" role="tablist" aria-label="Navigation portfolio">
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'tshirts'}
+          aria-controls="portfolio-panel-tshirts"
+          id="portfolio-tab-tshirts"
           onClick={() => setActiveTab('tshirts')}
           className={`px-6 py-3 rounded-camp font-semibold transition-all duration-300 ${
             activeTab === 'tshirts'
@@ -58,6 +63,11 @@ export const PortfolioScreen: React.FC = () => {
           👕 T-shirts Etsy
         </button>
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'music'}
+          aria-controls="portfolio-panel-music"
+          id="portfolio-tab-music"
           onClick={() => setActiveTab('music')}
           className={`px-6 py-3 rounded-camp font-semibold transition-all duration-300 ${
             activeTab === 'music'
@@ -68,6 +78,11 @@ export const PortfolioScreen: React.FC = () => {
           🎵 Musiques Suno
         </button>
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'videos'}
+          aria-controls="portfolio-panel-videos"
+          id="portfolio-tab-videos"
           onClick={() => setActiveTab('videos')}
           className={`px-6 py-3 rounded-camp font-semibold transition-all duration-300 ${
             activeTab === 'videos'
@@ -81,7 +96,7 @@ export const PortfolioScreen: React.FC = () => {
 
       {/* Section Boutique Printify */}
       {activeTab === 'tshirts' && (
-        <>
+        <section id="portfolio-panel-tshirts" role="tabpanel" aria-labelledby="portfolio-tab-tshirts">
           <p className="text-center text-camp-sand text-lg mb-8">
             🛍️ Découvrez nos produits disponibles sur Printify
           </p>
@@ -110,12 +125,12 @@ export const PortfolioScreen: React.FC = () => {
               </div>
             </div>
           </div>
-        </>
+        </section>
       )}
 
       {/* Section Musique Suno */}
       {activeTab === 'music' && (
-        <div className="space-y-6">
+        <section id="portfolio-panel-music" role="tabpanel" aria-labelledby="portfolio-tab-music" className="space-y-6">
           <p className="text-center text-camp-sand text-lg mb-8">
             🎵 Écoute mes compositions créées avec Suno. Parfait pour jingles, publicités, événements.
           </p>
@@ -141,12 +156,12 @@ export const PortfolioScreen: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* Section Vidéos */}
       {activeTab === 'videos' && (
-        <div className="space-y-6">
+        <section id="portfolio-panel-videos" role="tabpanel" aria-labelledby="portfolio-tab-videos" className="space-y-6">
           <p className="text-center text-camp-sand text-lg mb-8">
             🎬 Mes vidéos créées avec Revide.ai. Publicités, clips, contenu viral.
           </p>
@@ -176,7 +191,7 @@ export const PortfolioScreen: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* Call to Action */}

@@ -1,0 +1,715 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  ASSISTANT
+  TENANT
+}
+
+enum ContactType {
+  PROSPECT
+  CLIENT
+  PARTENAIRE
+  PROPRIETAIRE
+  LOCATAIRE_PROSPECT
+}
+
+enum InquiryStatus {
+  NEW
+  QUALIFIED
+  CLOSED
+}
+
+enum CaseType {
+  CLIENT
+  LOCATION
+  SUPPORT
+  MAINTENANCE
+}
+
+enum CaseStatus {
+  OPEN
+  IN_PROGRESS
+  ON_HOLD
+  CLOSED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+  MIXED
+}
+
+enum UnitStatus {
+  VACANT
+  OCCUPIED
+  MAINTENANCE
+}
+
+enum LeaseStatus {
+  DRAFT
+  ACTIVE
+  ENDED
+  TERMINATED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  LATE
+  PARTIAL
+  CANCELLED
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MaintenanceStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageSenderType {
+  ADMIN
+  CLIENT
+}
+
+enum AppointmentType {
+  VISIT
+  CALL
+  FOLLOWUP
+  MEETING
+  INSPECTION
+  DEADLINE
+  REMINDER
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  DONE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ActivityType {
+  NOTE
+  CALL
+  MESSAGE
+  EMAIL
+  APPOINTMENT
+  INVOICE
+  PAYMENT
+  FORM
+  FORM_SUBMISSION
+  FILE
+  TASK
+}
+
+enum SongRequestStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  IN_PROGRESS
+  IN_PRODUCTION
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum LinkedType {
+  CONTACT
+  INQUIRY
+  CASE
+  PROPERTY
+  UNIT
+  TENANT
+  LEASE
+  PAYMENT
+  MAINTENANCE_TICKET
+  APPOINTMENT
+  INVOICE
+  ACTIVITY
+  SONG_REQUEST
+}
+
+enum FileVisibility {
+  ADMIN_ONLY
+  CLIENT_VISIBLE
+}
+
+model User {
+  id           String          @id @default(uuid()) @db.Uuid
+  email        String          @unique
+  fullName     String
+  passwordHash String
+  role         UserRole        @default(ASSISTANT)
+  isActive     Boolean         @default(true)
+  contactId     String?         @unique @db.Uuid
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  createdCases               CaseRecord[]         @relation("CaseCreatedBy")
+  assignedTasks              Task[]               @relation("TaskAssignedTo")
+  createdTasks               Task[]               @relation("TaskCreatedBy")
+  authoredNotes              CaseNote[]
+  uploadedDocuments          Document[]           @relation("DocumentUploadedBy")
+  uploadedFileDocuments      FileDocument[]       @relation("FileDocumentUploadedBy")
+  reportedMaintenanceTickets MaintenanceTicket[]  @relation("MaintenanceTicketReportedBy")
+  maintenanceUpdates         MaintenanceUpdate[]
+  communications             Communication[]       @relation("CommunicationUser")
+  handledCommunications      Communication[]       @relation("CommunicationHandledBy")
+  appointments               Appointment[]
+  activities                 Activity[]
+  outboundEmails             OutboundEmail[]
+  contact                    Contact?              @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@map("users")
+}
+
+model Contact {
+  id              String          @id @default(uuid()) @db.Uuid
+  type            ContactType
+  fullName        String
+  companyName     String?
+  email           String?
+  phone           String?
+  preferredLocale String?         @default("fr-CA")
+  source          String?
+  tags            String[]
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  inquiries       Inquiry[]
+  cases           CaseRecord[]
+  tenantProfile   Tenant?
+  communications  Communication[]
+  messages        Message[]
+  appointments    Appointment[]
+  invoices        Invoice[]
+  activities      Activity[]
+  fileDocuments   FileDocument[]
+  songRequests    SongRequest[]
+  outboundEmails  OutboundEmail[]
+  userAccount     User?
+
+  @@index([type])
+  @@index([fullName])
+  @@map("contacts")
+}
+
+model Message {
+  id         String            @id @default(uuid()) @db.Uuid
+  contactId  String            @db.Uuid
+  senderType MessageSenderType
+  content    String
+  createdAt  DateTime          @default(now())
+  isRead     Boolean           @default(false)
+
+  contact    Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([contactId, createdAt])
+  @@index([contactId, senderType, isRead])
+  @@map("messages")
+}
+
+model Inquiry {
+  id             String       @id @default(uuid()) @db.Uuid
+  subject        String
+  message        String
+  source         String?
+  status         InquiryStatus @default(NEW)
+  contactId      String?      @db.Uuid
+  caseId         String?      @db.Uuid
+  receivedAt     DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  contact        Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  caseRecord     CaseRecord?  @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([caseId])
+  @@map("inquiries")
+}
+
+model CaseRecord {
+  id               String       @id @default(uuid()) @db.Uuid
+  title            String
+  description      String?
+  type             CaseType
+  status           CaseStatus   @default(OPEN)
+  contactId        String?      @db.Uuid
+  ownerUserId      String?      @db.Uuid
+  referenceCode    String       @unique
+  openedAt         DateTime     @default(now())
+  closedAt         DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  contact          Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  ownerUser        User?        @relation("CaseCreatedBy", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  notes            CaseNote[]
+  tasks            Task[]
+  inquiries        Inquiry[]
+
+  @@index([type, status])
+  @@index([contactId])
+  @@map("cases")
+}
+
+model CaseNote {
+  id           String      @id @default(uuid()) @db.Uuid
+  caseId       String      @db.Uuid
+  authorUserId String?     @db.Uuid
+  content      String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  caseRecord   CaseRecord  @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  author       User?       @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@map("case_notes")
+}
+
+model Task {
+  id             String       @id @default(uuid()) @db.Uuid
+  title          String
+  description    String?
+  status         TaskStatus   @default(TODO)
+  priority       TaskPriority @default(MEDIUM)
+  dueDate        DateTime?
+  caseId         String?      @db.Uuid
+  assignedToId   String?      @db.Uuid
+  createdById    String?      @db.Uuid
+  songRequestId  String?      @db.Uuid
+  linkedType     LinkedType?
+  linkedId       String?      @db.Uuid
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  caseRecord     CaseRecord?  @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  assignedTo     User?        @relation("TaskAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdBy      User?        @relation("TaskCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  songRequest    SongRequest? @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@index([songRequestId])
+  @@index([linkedType, linkedId])
+  @@map("tasks")
+}
+
+model Document {
+  id             String       @id @default(uuid()) @db.Uuid
+  fileName       String
+  fileUrl        String
+  mimeType       String?
+  sizeBytes      Int?
+  linkedType     LinkedType
+  linkedId       String       @db.Uuid
+  uploadedById   String?      @db.Uuid
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  uploadedBy     User?        @relation("DocumentUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([linkedType, linkedId])
+  @@map("documents")
+}
+
+model FileDocument {
+  id               String         @id @default(uuid()) @db.Uuid
+  contactId        String?        @db.Uuid
+  songRequestId    String?        @db.Uuid
+  uploadedByUserId String?        @db.Uuid
+  filename         String
+  originalName     String
+  mimeType         String
+  size             Int
+  storageKey       String         @unique
+  url              String
+  category         String
+  visibility       FileVisibility @default(CLIENT_VISIBLE)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  contact          Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  songRequest      SongRequest?   @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+  uploadedByUser   User?          @relation("FileDocumentUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([songRequestId])
+  @@index([visibility])
+  @@index([createdAt])
+  @@map("file_documents")
+}
+
+model Property {
+  id                 String               @id @default(uuid()) @db.Uuid
+  code               String               @unique
+  name               String
+  type               PropertyType         @default(RESIDENTIAL)
+  addressLine1       String
+  addressLine2       String?
+  city               String
+  province           String
+  postalCode         String
+  country            String               @default("CA")
+  totalUnits         Int                  @default(0)
+  yearBuilt          Int?
+  managerName        String?
+  managerPhone       String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  units              Unit[]
+  maintenanceTickets MaintenanceTicket[]
+  appointments       Appointment[]
+
+  @@index([name])
+  @@map("properties")
+}
+
+model Unit {
+  id                 String               @id @default(uuid()) @db.Uuid
+  propertyId         String               @db.Uuid
+  unitNumber         String
+  floor              String?
+  bedrooms           Int                  @default(1)
+  bathrooms          Float                @default(1)
+  areaSqft           Int?
+  monthlyRent        Decimal?             @db.Decimal(10, 2)
+  status             UnitStatus           @default(VACANT)
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  property           Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenants            Tenant[]
+  leases             Lease[]
+  payments           Payment[]
+  maintenanceTickets MaintenanceTicket[]
+
+  @@unique([propertyId, unitNumber])
+  @@index([propertyId])
+  @@map("units")
+}
+
+model Tenant {
+  id                 String               @id @default(uuid()) @db.Uuid
+  contactId          String               @unique @db.Uuid
+  unitId             String?              @db.Uuid
+  emergencyContact   String?
+  emergencyPhone     String?
+  moveInDate         DateTime?
+  moveOutDate        DateTime?
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  contact            Contact              @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  unit               Unit?                @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  leases             Lease[]
+  payments           Payment[]
+  maintenanceTickets MaintenanceTicket[]
+  communications     Communication[]
+
+  @@index([unitId])
+  @@map("tenants")
+}
+
+model Lease {
+  id                  String               @id @default(uuid()) @db.Uuid
+  leaseNumber         String               @unique
+  tenantId            String               @db.Uuid
+  unitId              String               @db.Uuid
+  startDate           DateTime
+  endDate             DateTime
+  rentAmount          Decimal              @db.Decimal(10, 2)
+  securityDeposit     Decimal?             @db.Decimal(10, 2)
+  frequency           String               @default("MONTHLY")
+  status              LeaseStatus          @default(ACTIVE)
+  signedAt            DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  unit                Unit                 @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  payments            Payment[]
+
+  @@index([tenantId])
+  @@index([unitId])
+  @@map("leases")
+}
+
+model Payment {
+  id                  String               @id @default(uuid()) @db.Uuid
+  leaseId             String               @db.Uuid
+  tenantId            String               @db.Uuid
+  unitId              String               @db.Uuid
+  amount              Decimal              @db.Decimal(10, 2)
+  dueDate             DateTime
+  paidDate            DateTime?
+  method              String?
+  status              PaymentStatus        @default(PENDING)
+  reference           String?
+  notes               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  lease               Lease                @relation(fields: [leaseId], references: [id], onDelete: Restrict)
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  unit                Unit                 @relation(fields: [unitId], references: [id], onDelete: Restrict)
+
+  @@index([leaseId])
+  @@index([tenantId])
+  @@index([unitId])
+  @@map("payments")
+}
+
+model MaintenanceTicket {
+  id                  String               @id @default(uuid()) @db.Uuid
+  propertyId          String               @db.Uuid
+  unitId              String?              @db.Uuid
+  tenantId            String?              @db.Uuid
+  title               String
+  description         String?
+  priority            MaintenancePriority  @default(MEDIUM)
+  status              MaintenanceStatus    @default(OPEN)
+  reportedByUserId    String?              @db.Uuid
+  reportedAt          DateTime             @default(now())
+  resolvedAt          DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  property            Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unit                Unit?                @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  tenant              Tenant?              @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  reportedBy          User?                @relation("MaintenanceTicketReportedBy", fields: [reportedByUserId], references: [id], onDelete: SetNull)
+  updates             MaintenanceUpdate[]
+
+  @@index([propertyId])
+  @@index([unitId])
+  @@index([tenantId])
+  @@map("maintenance_tickets")
+}
+
+model MaintenanceUpdate {
+  id                  String               @id @default(uuid()) @db.Uuid
+  maintenanceTicketId String               @db.Uuid
+  authorUserId        String?              @db.Uuid
+  message             String
+  status              MaintenanceStatus?
+  createdAt           DateTime             @default(now())
+
+  maintenanceTicket   MaintenanceTicket    @relation(fields: [maintenanceTicketId], references: [id], onDelete: Cascade)
+  author              User?                @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([maintenanceTicketId])
+  @@map("maintenance_updates")
+}
+
+model Communication {
+  id             String                 @id @default(uuid()) @db.Uuid
+  contactId      String?                @db.Uuid
+  tenantId       String?                @db.Uuid
+  userId         String?                @db.Uuid
+  handledById    String?                @db.Uuid
+  channel        String
+  subject        String?
+  body           String
+  direction      CommunicationDirection
+  linkedType     LinkedType
+  linkedId       String                 @db.Uuid
+  sentAt         DateTime               @default(now())
+  handledAt      DateTime?
+  createdAt      DateTime               @default(now())
+
+  contact        Contact?               @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  tenant         Tenant?                @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  user           User?                  @relation("CommunicationUser", fields: [userId], references: [id], onDelete: SetNull)
+  handledBy      User?                  @relation("CommunicationHandledBy", fields: [handledById], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([tenantId])
+  @@index([handledAt])
+  @@index([handledById])
+  @@index([linkedType, linkedId])
+  @@map("communications")
+}
+
+model Appointment {
+  id          String            @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  startAt     DateTime
+  endAt       DateTime
+  type        AppointmentType   @default(MEETING)
+  status      AppointmentStatus @default(PENDING)
+  contactId   String?           @db.Uuid
+  propertyId  String?           @db.Uuid
+  userId      String?           @db.Uuid
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  contact     Contact?          @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  property    Property?         @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([startAt])
+  @@map("appointments")
+}
+
+model Invoice {
+  id          String        @id @default(uuid()) @db.Uuid
+  number      String        @unique
+  contactId   String        @db.Uuid
+  issueDate   DateTime      @default(now())
+  dueDate     DateTime
+  amount      Decimal       @db.Decimal(10, 2)
+  status      InvoiceStatus @default(DRAFT)
+  description String?
+  fileUrl     String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Restrict)
+
+  @@index([contactId])
+  @@index([status])
+  @@map("invoices")
+}
+
+model Activity {
+  id            String       @id @default(uuid()) @db.Uuid
+  type          ActivityType @default(NOTE)
+  title         String
+  description   String?
+  contactId     String?      @db.Uuid
+  propertyId    String?      @db.Uuid
+  appointmentId String?      @db.Uuid
+  invoiceId     String?      @db.Uuid
+  songRequestId String?      @db.Uuid
+  userId        String?      @db.Uuid
+  createdAt     DateTime     @default(now())
+
+  contact       Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  songRequest   SongRequest? @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([songRequestId])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+model OutboundEmail {
+  id                String    @id @default(uuid()) @db.Uuid
+  trackingToken     String    @unique
+  contactId         String    @db.Uuid
+  createdById       String?   @db.Uuid
+  recipientEmail    String
+  subject           String
+  messagePreview    String
+  provider          String?
+  providerMessageId String?
+  sendError         String?
+  sentAt            DateTime  @default(now())
+  openedAt          DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  contact           Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  createdBy         User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([openedAt])
+  @@index([sentAt])
+  @@map("outbound_emails")
+}
+
+model SongRequest {
+  id                   String            @id @default(uuid()) @db.Uuid
+  contactId            String            @db.Uuid
+  title                String?
+  fullName             String
+  email                String
+  phone                String
+  songType             String
+  language             String?
+  occasion             String
+  eventType            String?
+  recipientName        String
+  specialMessage       String?
+  style                String
+  mood                 String
+  tempo                String?
+  theme                String?
+  description          String?
+  inspirations         String?
+  lyrics               String?
+  structureVerse       String?
+  structureChorus      String?
+  structureBridge      String?
+  fileUrl              String?
+  details              String
+  budget               Decimal?          @db.Decimal(10, 2)
+  desiredDeadline      DateTime?
+  source               String            @default("website")
+  status               SongRequestStatus @default(NEW)
+  convertedAppointmentId String?         @db.Uuid
+  convertedInvoiceId   String?           @db.Uuid
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  contact              Contact           @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  activities           Activity[]
+  fileDocuments        FileDocument[]
+  tasks                Task[]
+
+  @@index([contactId])
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@map("song_requests")
+}

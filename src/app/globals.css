@@ -90,6 +90,60 @@ select:focus {
 }
 
 @layer components {
+  .crm-main-scroll {
+    scroll-padding-top: 1.5rem;
+  }
+
+  .crm-surface {
+    @apply rounded-[1.75rem] border border-slate-800 bg-slate-900/70 shadow-xl shadow-black/15;
+  }
+
+  .fc {
+    --fc-border-color: rgba(51, 65, 85, 0.8);
+    --fc-button-bg-color: rgb(37 99 235);
+    --fc-button-border-color: rgb(37 99 235);
+    --fc-button-hover-bg-color: rgb(29 78 216);
+    --fc-button-hover-border-color: rgb(29 78 216);
+    --fc-button-active-bg-color: rgb(30 64 175);
+    --fc-button-active-border-color: rgb(30 64 175);
+    --fc-event-border-color: transparent;
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: rgba(15, 23, 42, 0.78);
+    --fc-list-event-hover-bg-color: rgba(30, 41, 59, 0.78);
+    color: rgb(226 232 240);
+  }
+
+  .fc .fc-scrollgrid,
+  .fc .fc-theme-standard td,
+  .fc .fc-theme-standard th {
+    border-color: rgba(51, 65, 85, 0.8);
+  }
+
+  .fc .fc-toolbar-title {
+    @apply text-xl font-semibold text-white;
+  }
+
+  .fc .fc-col-header-cell-cushion,
+  .fc .fc-daygrid-day-number,
+  .fc .fc-list-day-text,
+  .fc .fc-list-day-side-text {
+    color: rgb(226 232 240);
+  }
+
+  .fc .fc-day-today {
+    background: rgba(37, 99, 235, 0.12) !important;
+  }
+
+  .fc .fc-event {
+    @apply rounded-xl px-1 py-0.5 shadow-none;
+  }
+
+  .fc .fc-timegrid-slot,
+  .fc .fc-timegrid-axis,
+  .fc .fc-timegrid-axis-cushion {
+    color: rgb(148 163 184);
+  }
+
   .brand-emblem {
     position: relative;
     isolation: isolate;

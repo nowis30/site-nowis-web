@@ -37,7 +37,7 @@ export default function ConnexionPage() {
   return (
     <div className="min-h-[calc(100vh-120px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion utilisateur</h1>
         <p className="text-sm text-gray-600 mb-6">
           Accédez à votre espace propriétaire pour gérer vos logements.
         </p>
@@ -80,6 +80,13 @@ export default function ConnexionPage() {
             Créer un compte
           </a>
         </p>
+
+        <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          Vous êtes un utilisateur interne ?{' '}
+          <a href="/crm/login" className="font-medium text-primary-600 hover:underline">
+            Accéder au CRM
+          </a>
+        </div>
       </div>
     </div>
   );
