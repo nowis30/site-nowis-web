@@ -13,18 +13,21 @@ export interface CrmTokenPayload {
   fullName: string;
 }
 
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  throw new Error('[CRM] La variable d\'environnement JWT_SECRET est obligatoire en production.');
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production' && !secret) {
+    throw new Error('[CRM] La variable d\'environnement JWT_SECRET est obligatoire en production.');
+  }
+  return secret || 'dev-only-secret-must-change-before-prod';
 }
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-secret-must-change-before-prod';
 
 export function signCrmToken(payload: CrmTokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: '30d' });
 }
 
 export function verifyCrmToken(token: string): CrmTokenPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as CrmTokenPayload;
+    return jwt.verify(token, getJwtSecret()) as CrmTokenPayload;
   } catch {
     return null;
   }

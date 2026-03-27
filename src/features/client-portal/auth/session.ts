@@ -4,13 +4,13 @@ import { redirect } from 'next/navigation';
 import { CRM_COOKIE_NAME, verifyCrmToken } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 
-if (process.env.NODE_ENV === 'production' && !process.env.CLIENT_PORTAL_JWT_SECRET && !process.env.JWT_SECRET) {
-  throw new Error('[Portal] Au moins CLIENT_PORTAL_JWT_SECRET ou JWT_SECRET doit être défini en production.');
+function getClientPortalSecret() {
+  const secret = process.env.CLIENT_PORTAL_JWT_SECRET || process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production' && !secret) {
+    throw new Error('[Portal] Au moins CLIENT_PORTAL_JWT_SECRET ou JWT_SECRET doit être défini en production.');
+  }
+  return secret || 'dev-only-portal-secret-must-change';
 }
-const CLIENT_PORTAL_SECRET =
-  process.env.CLIENT_PORTAL_JWT_SECRET ||
-  process.env.JWT_SECRET ||
-  'dev-only-portal-secret-must-change';
 
 export const CLIENT_PORTAL_COOKIE_NAME = 'nowis_client_session';
 export const CLIENT_PORTAL_IMPERSONATION_COOKIE_NAME = 'nowis_client_impersonation';
@@ -62,20 +62,20 @@ export function getClientPortalBaseUrl(origin?: string) {
 }
 
 export function signClientPortalSession(payload: Omit<ClientPortalSessionPayload, 'scope' | 'role'>) {
-  return jwt.sign({ ...payload, scope: 'client-dashboard', role: 'CLIENT' }, CLIENT_PORTAL_SECRET, {
+  return jwt.sign({ ...payload, scope: 'client-dashboard', role: 'CLIENT' }, getClientPortalSecret(), {
     expiresIn: '14d',
   });
 }
 
 export function signClientPortalImpersonation(payload: Omit<ClientPortalImpersonationPayload, 'scope'>) {
-  return jwt.sign({ ...payload, scope: 'client-impersonation' }, CLIENT_PORTAL_SECRET, {
+  return jwt.sign({ ...payload, scope: 'client-impersonation' }, getClientPortalSecret(), {
     expiresIn: '12h',
   });
 }
 
 export function verifyClientPortalSession(token: string) {
   try {
-    const decoded = jwt.verify(token, CLIENT_PORTAL_SECRET) as ClientPortalSessionPayload;
+    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalSessionPayload;
     return decoded.scope === 'client-dashboard' && decoded.role === 'CLIENT' ? decoded : null;
   } catch {
     return null;
@@ -84,7 +84,7 @@ export function verifyClientPortalSession(token: string) {
 
 export function verifyClientPortalImpersonation(token: string) {
   try {
-    const decoded = jwt.verify(token, CLIENT_PORTAL_SECRET) as ClientPortalImpersonationPayload;
+    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalImpersonationPayload;
     return decoded.scope === 'client-impersonation' && decoded.adminRole === 'ADMIN' ? decoded : null;
   } catch {
     return null;
@@ -92,14 +92,14 @@ export function verifyClientPortalImpersonation(token: string) {
 }
 
 export function signClientPortalMagicLink(payload: Omit<ClientPortalMagicLinkPayload, 'scope'>) {
-  return jwt.sign({ ...payload, scope: 'client-login' }, CLIENT_PORTAL_SECRET, {
+  return jwt.sign({ ...payload, scope: 'client-login' }, getClientPortalSecret(), {
     expiresIn: '20m',
   });
 }
 
 export function verifyClientPortalMagicLink(token: string) {
   try {
-    const decoded = jwt.verify(token, CLIENT_PORTAL_SECRET) as ClientPortalMagicLinkPayload;
+    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalMagicLinkPayload;
     return decoded.scope === 'client-login' ? decoded : null;
   } catch {
     return null;
