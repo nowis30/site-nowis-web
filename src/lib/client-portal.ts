@@ -15,13 +15,13 @@ export interface TenantPortalTokenPayload {
   fullName: string;
 }
 
-if (process.env.NODE_ENV === 'production' && !process.env.CLIENT_PORTAL_JWT_SECRET && !process.env.JWT_SECRET) {
-  throw new Error('[Portal Legacy] Au moins CLIENT_PORTAL_JWT_SECRET ou JWT_SECRET doit être défini en production.');
+function getClientPortalSecret() {
+  const secret = process.env.CLIENT_PORTAL_JWT_SECRET || process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production' && !secret) {
+    throw new Error('[Portal Legacy] Au moins CLIENT_PORTAL_JWT_SECRET ou JWT_SECRET doit être défini en production.');
+  }
+  return secret || 'dev-only-portal-secret-must-change';
 }
-const CLIENT_PORTAL_SECRET =
-  process.env.CLIENT_PORTAL_JWT_SECRET ||
-  process.env.JWT_SECRET ||
-  'dev-only-portal-secret-must-change';
 
 function trimTrailingSlash(value: string) {
   return value.endsWith('/') ? value.slice(0, -1) : value;
@@ -39,20 +39,20 @@ function getClientPortalBaseUrl(origin?: string) {
 }
 
 export function signClientPortalToken(payload: Omit<ClientPortalTokenPayload, 'scope'>): string {
-  return jwt.sign({ ...payload, scope: 'song-request-portal' }, CLIENT_PORTAL_SECRET, {
+  return jwt.sign({ ...payload, scope: 'song-request-portal' }, getClientPortalSecret(), {
     expiresIn: '180d',
   });
 }
 
 export function signTenantPortalToken(payload: Omit<TenantPortalTokenPayload, 'scope'>): string {
-  return jwt.sign({ ...payload, scope: 'tenant-portal' }, CLIENT_PORTAL_SECRET, {
+  return jwt.sign({ ...payload, scope: 'tenant-portal' }, getClientPortalSecret(), {
     expiresIn: '180d',
   });
 }
 
 export function verifyClientPortalToken(token: string): ClientPortalTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, CLIENT_PORTAL_SECRET) as ClientPortalTokenPayload;
+    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalTokenPayload;
     return decoded.scope === 'song-request-portal' ? decoded : null;
   } catch {
     return null;
@@ -61,7 +61,7 @@ export function verifyClientPortalToken(token: string): ClientPortalTokenPayload
 
 export function verifyTenantPortalToken(token: string): TenantPortalTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, CLIENT_PORTAL_SECRET) as TenantPortalTokenPayload;
+    const decoded = jwt.verify(token, getClientPortalSecret()) as TenantPortalTokenPayload;
     return decoded.scope === 'tenant-portal' ? decoded : null;
   } catch {
     return null;
