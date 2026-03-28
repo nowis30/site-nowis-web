@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { createCrmOtpCookie, signCrmOtpToken } from '@/features/crm/auth/session';
+import { createCrmOtpCookie, createCrmSessionCookie, signCrmOtpToken, signCrmToken } from '@/features/crm/auth/session';
 import { generateSmsOtpCode, getCrmOtpTargetPhone, sendSmsMessage } from '@/lib/sms';
 
 export async function POST(request: NextRequest) {
@@ -25,11 +25,20 @@ export async function POST(request: NextRequest) {
     }
 
     const otpTargetPhone = getCrmOtpTargetPhone();
-    if (!otpTargetPhone) {
-      return NextResponse.json(
-        { error: 'SMS OTP non configuré. Définis CRM_OTP_PHONE dans les variables d environnement.' },
-        { status: 500 },
-      );
+    const smsConfigured = Boolean(
+      otpTargetPhone &&
+      process.env.TWILIO_ACCOUNT_SID &&
+      process.env.TWILIO_AUTH_TOKEN &&
+      process.env.TWILIO_FROM_PHONE,
+    );
+
+    // Si Twilio n'est pas configuré, connexion directe (mode dégradé sans SMS)
+    if (!smsConfigured) {
+      console.warn('[CRM_LOGIN] Twilio non configuré – connexion sans SMS OTP (mode dégradé)');
+      const sessionToken = signCrmToken({ sub: user.id, role: user.role, email: user.email, fullName: user.fullName });
+      const response = NextResponse.json({ ok: true, redirectTo: '/crm' });
+      response.headers.set('Set-Cookie', createCrmSessionCookie(sessionToken));
+      return response;
     }
 
     const otpCode = generateSmsOtpCode();

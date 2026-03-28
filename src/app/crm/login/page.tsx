@@ -35,7 +35,10 @@ export default function CrmLoginPage() {
           return;
         }
 
-        throw new Error('Réponse inattendue du serveur.');
+  // Mode sans SMS (Twilio non configuré) : session déjà créée
+  router.push(data.redirectTo || '/crm');
+  router.refresh();
+  return;
       }
 
       const otpResponse = await fetch('/api/crm/auth/verify-sms', {
