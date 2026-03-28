@@ -5,6 +5,25 @@ import { prisma } from '@/lib/prisma';
 import { createCrmOtpCookie, createCrmSessionCookie, signCrmOtpToken, signCrmToken } from '@/features/crm/auth/session';
 import { generateSmsOtpCode, getCrmOtpTargetPhone, sendSmsMessage } from '@/lib/sms';
 
+function canUseEmergencyCrmLogin(email: string, password: string) {
+  const demoPassword = String(process.env.CRM_DEMO_PASSWORD || '').trim();
+  const adminEmail = String(process.env.ADMIN_EMAIL || 'simonmorin30@gmail.com').toLowerCase().trim();
+  return Boolean(demoPassword) && email === adminEmail && password === demoPassword;
+}
+
+function buildEmergencyCrmLoginResponse(email: string) {
+  const fullName = process.env.ADMIN_DISPLAY_NAME || 'Admin Nowis';
+  const sessionToken = signCrmToken({
+    sub: 'emergency-admin',
+    role: 'ADMIN',
+    email,
+    fullName,
+  });
+  const response = NextResponse.json({ ok: true, redirectTo: '/crm', emergency: true });
+  response.headers.set('Set-Cookie', createCrmSessionCookie(sessionToken));
+  return response;
+}
+
 export async function POST(request: NextRequest) {
   try {
     let body: unknown;
@@ -22,7 +41,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email et mot de passe requis' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    let user;
+    try {
+      user = await prisma.user.findUnique({ where: { email } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientInitializationError && canUseEmergencyCrmLogin(email, password)) {
+        console.warn('[CRM_LOGIN] Mode secours actif: connexion admin sans DB');
+        return buildEmergencyCrmLoginResponse(email);
+      }
+      throw error;
+    }
     if (!user || !user.isActive) {
       return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
     }
