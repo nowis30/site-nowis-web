@@ -8,7 +8,12 @@ import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { songRequestInputSchema } from '@/lib/validators/song-request';
 
-type SongRequestFormValues = z.input<typeof songRequestInputSchema>;
+const songRequestFormSchema = songRequestInputSchema.omit({
+  occasion: true,
+  details: true,
+});
+
+type SongRequestFormValues = z.input<typeof songRequestFormSchema>;
 
 type SongRequestSuccess = {
   message: string;
@@ -86,7 +91,6 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       language: 'Français',
       songType: '',
       tempo: 'MOYEN',
-      occasion: '',
       eventType: '',
       recipientName: '',
       specialMessage: '',
@@ -100,7 +104,6 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       structureChorus: '',
       structureBridge: '',
       fileUrl: '',
-      details: '',
       budget: undefined,
       desiredDeadline: undefined,
       consentToBeContacted: false,
@@ -117,7 +120,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<SongRequestFormValues>({
-    resolver: zodResolver(songRequestInputSchema),
+    resolver: zodResolver(songRequestFormSchema),
     defaultValues,
   });
 
@@ -125,7 +128,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
     setSuccessState(null);
     setSubmitError(null);
 
-    const payload: SongRequestFormValues = {
+    const payload: z.input<typeof songRequestInputSchema> = {
       ...values,
       occasion: values.eventType,
       details: values.description,
