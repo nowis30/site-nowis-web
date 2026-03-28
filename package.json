@@ -4,6 +4,7 @@
   "description": "NOWIS - Création de contenu IA (T-shirts, Musique Suno, Vidéos Revide.ai)",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
