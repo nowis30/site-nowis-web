@@ -4,7 +4,7 @@ import { FileText } from 'lucide-react';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { UploadFileForm } from '@/components/files/UploadFileForm';
-import { FileList } from '@/components/files/FileList';
+import { ClientDocumentsList } from '@/features/client-portal/components/ClientDocumentsList';
 
 type DocumentsTab = 'all' | 'contact' | 'song_requests';
 
@@ -77,7 +77,7 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
         {filteredDocuments.length === 0 ? (
           <EmptyState icon={<FileText size={18} />} title="Aucun document" description="Aucun document ne correspond à ce filtre pour le moment." />
         ) : (
-          <FileList
+          <ClientDocumentsList
             items={filteredDocuments.map((document) => ({
               id: document.id,
               filename: document.filename,
@@ -90,10 +90,6 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
               createdAt: document.createdAt.toISOString(),
             }))}
             emptyLabel="Aucun document"
-            canDelete
-            onDelete={async (id) => {
-              await fetch(`/api/client-portal/file-documents/${id}`, { method: 'DELETE' });
-            }}
           />
         )}
       </SectionCard>
