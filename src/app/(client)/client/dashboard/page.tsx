@@ -57,14 +57,23 @@ export default async function ClientDashboardPage() {
     ]);
 
     if (contact) {
-      documents = await prisma.fileDocument.findMany({
-        where: {
-          contactId: contact.id,
-          visibility: 'CLIENT_VISIBLE',
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-      });
+      try {
+        documents = await prisma.fileDocument.findMany({
+          where: {
+            contactId: contact.id,
+            visibility: 'CLIENT_VISIBLE',
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+          // Compatibilite temporaire: certaines DB n'ont pas encore la table file_documents.
+          documents = [];
+        } else {
+          throw error;
+        }
+      }
     }
   } catch (error) {
     const prismaCode = error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined;
