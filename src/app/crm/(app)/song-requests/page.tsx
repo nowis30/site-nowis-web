@@ -5,31 +5,44 @@ import { SongRequestsPage } from '@/features/crm/components/song-requests/SongRe
 export default async function CrmSongRequestsPage() {
   await requireCrmSession();
 
-  const items = await prisma.songRequest.findMany({
-    include: {
-      contact: {
-        select: { id: true, fullName: true, email: true },
+  try {
+    const items = await prisma.songRequest.findMany({
+      include: {
+        contact: {
+          select: { id: true, fullName: true, email: true },
+        },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 200,
-  });
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
 
-  return (
-    <SongRequestsPage
-      items={items.map((item) => ({
-        id: item.id,
+    const mappedItems = items.map((item) => {
+      if (!item.contact) {
+        console.error('[SONG_REQUESTS_PAGE] Missing contact for song request:', item.id);
+        return null;
+      }
+      return {
+        id: String(item.id),
         title: item.title ?? 'Demande de chanson',
         language: item.language ?? 'Non précisée',
         theme: item.theme ?? 'Non précisé',
-        fullName: item.fullName,
-        email: item.email,
-        songType: item.songType,
-        eventType: item.eventType ?? item.occasion,
-        status: item.status,
+        fullName: item.fullName || '',
+        email: item.email || '',
+        songType: item.songType || '',
+        eventType: item.eventType ?? item.occasion ?? '',
+        status: String(item.status),
         createdAt: item.createdAt.toISOString(),
-        contact: item.contact,
-      }))}
-    />
-  );
+        contact: {
+          id: String(item.contact.id),
+          fullName: item.contact.fullName || '',
+          email: item.contact.email || null,
+        },
+      };
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
+
+    return <SongRequestsPage items={mappedItems} />;
+  } catch (error) {
+    console.error('[SONG_REQUESTS_PAGE_ERROR]', error);
+    throw error;
+  }
 }

@@ -1,7 +1,6 @@
 import { verifyTenantPortalToken } from '@/lib/client-portal';
 import { prisma } from '@/lib/prisma';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
-import { TenantTaskRequestForm } from '@/features/crm/components/tenant-portal/TenantTaskRequestForm';
 import { TenantFileUploadForm, TenantPortalDeleteFileButton } from '@/features/crm/components/tenant-portal/TenantFileUploadForm';
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
 import { TenantMaintenanceRequestForm } from '@/features/crm/components/tenant-portal/TenantMaintenanceRequestForm';
@@ -36,6 +35,9 @@ const TASK_PRIORITY_LABELS: Record<string, string> = {
   MEDIUM: 'Moyenne',
   HIGH: 'Haute',
 };
+
+const BOOKING_BASE_URL = process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL?.trim() || 'https://cal.com/simon-nowis-morin/30min';
+const BOOKING_URL = BOOKING_BASE_URL.includes('?') ? `${BOOKING_BASE_URL}&embed=true` : `${BOOKING_BASE_URL}?embed=true`;
 
 export default async function TenantPortalPage({ params }: PageProps) {
   const session = verifyTenantPortalToken(params.token);
@@ -344,7 +346,20 @@ export default async function TenantPortalPage({ params }: PageProps) {
               </div>
             </div>
 
-            <TenantTaskRequestForm token={params.token} />
+            <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4">
+              <p className="text-xs uppercase tracking-wide text-cyan-200">Rendez-vous</p>
+              <p className="mt-2 text-sm text-cyan-100">
+                Pour planifier un échange, utilisez uniquement les plages horaires libres du calendrier.
+              </p>
+              <a
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex rounded-xl bg-cyan-300 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-200"
+              >
+                Prendre rendez-vous
+              </a>
+            </div>
           </div>
         </section>
 

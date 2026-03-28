@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { verifyClientPortalToken } from '@/lib/client-portal';
 import { prisma } from '@/lib/prisma';
-import { ClientTaskRequestForm } from '@/features/crm/components/client-portal/ClientTaskRequestForm';
 import { ClientFileUploadForm, ClientPortalDeleteFileButton } from '@/features/crm/components/client-portal/ClientFileUploadForm';
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
 import { PortalMessageForm } from '@/features/crm/components/portals/PortalMessageForm';
@@ -38,6 +37,9 @@ const INVOICE_STATUS_LABELS: Record<string, string> = {
   OVERDUE: 'En retard',
   CANCELLED: 'Annulée',
 };
+
+const BOOKING_BASE_URL = process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL?.trim() || 'https://cal.com/simon-nowis-morin/30min';
+const BOOKING_URL = BOOKING_BASE_URL.includes('?') ? `${BOOKING_BASE_URL}&embed=true` : `${BOOKING_BASE_URL}?embed=true`;
 
 function formatCurrency(value: number | null) {
   if (value === null) return '—';
@@ -390,7 +392,20 @@ export default async function ClientPortalPage({ params }: PageProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <ClientTaskRequestForm token={params.token} songRequestId={request.id} />
+                  <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                    <p className="text-xs uppercase tracking-wide text-emerald-200">Rendez-vous</p>
+                    <p className="mt-2 text-sm text-emerald-100">
+                      Pour planifier un échange, utilisez uniquement les plages horaires libres du calendrier.
+                    </p>
+                    <a
+                      href={BOOKING_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-300"
+                    >
+                      Prendre rendez-vous
+                    </a>
+                  </div>
                   <ClientFileUploadForm token={params.token} songRequestId={request.id} />
                   <PortalMessageForm
                     actionUrl="/api/client-portal/messages"
