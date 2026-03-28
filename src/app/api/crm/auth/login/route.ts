@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { createCrmOtpCookie, createCrmSessionCookie, signCrmOtpToken, signCrmToken } from '@/features/crm/auth/session';
 import { generateSmsOtpCode, getCrmOtpTargetPhone, sendSmsMessage } from '@/lib/sms';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const email = String(body?.email || '').toLowerCase().trim();
-    const password = String(body?.password || '');
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Corps de requete JSON invalide' }, { status: 400 });
+    }
+
+    const payload = (body && typeof body === 'object') ? (body as { email?: string; password?: string }) : {};
+    const email = String(payload.email || '').toLowerCase().trim();
+    const password = String(payload.password || '');
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email et mot de passe requis' }, { status: 400 });
@@ -19,7 +27,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
     }
 
-    const validPassword = await bcrypt.compare(password, user.passwordHash);
+    // Certains comptes historiques peuvent avoir un hash invalide: on repond 401 au lieu d'un 500.
+    let validPassword = false;
+    try {
+      validPassword = await bcrypt.compare(password, user.passwordHash);
+    } catch {
+      return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
+    }
+
     if (!validPassword) {
       return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
     }
@@ -64,6 +79,12 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('crm auth login error', error);
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return NextResponse.json({ error: 'Base de donnees indisponible' }, { status: 503 });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json({ error: 'Erreur base de donnees' }, { status: 500 });
+    }
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
