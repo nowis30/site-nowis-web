@@ -14,85 +14,130 @@ export default async function CrmDashboardPage() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const next24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  const [
-    contacts,
-    openCases,
-    properties,
-    units,
-    activeTenants,
-    openMaintenance,
-    closedCasesCount,
-    vacantUnits,
-    recentCases,
-    // New data
-    todayAppointments,
-    overdueTasks,
-    recentActivities,
-    pendingInvoices,
-    overdueInvoices,
-    newContactsThisMonth,
-    openPortalNotifications,
-    clientFollowUpTasks,
-  ] = await Promise.all([
-    prisma.contact.count(),
-    prisma.caseRecord.count({ where: { status: { in: ["OPEN", "IN_PROGRESS", "ON_HOLD"] } } }),
-    prisma.property.count(),
-    prisma.unit.count(),
-    prisma.tenant.count({ where: { isActive: true } }),
-    prisma.maintenanceTicket.count({ where: { status: { in: ["OPEN", "IN_PROGRESS"] } } }),
-    prisma.caseRecord.count({ where: { status: "CLOSED" } }),
-    prisma.unit.count({ where: { status: "VACANT" } }),
-    prisma.caseRecord.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      select: { id: true, title: true, status: true, type: true, referenceCode: true },
-    }),
-    // New queries
-    prisma.appointment.findMany({
-      where: { startAt: { gte: today, lt: tomorrow }, status: { not: "CANCELLED" } },
-      include: { contact: { select: { fullName: true } } },
-      orderBy: { startAt: "asc" },
-    }),
-    prisma.task.findMany({
-      where: { status: { not: "DONE" }, dueDate: { lt: today } },
-      orderBy: { dueDate: "asc" },
-      take: 5,
-    }),
-    prisma.activity.findMany({
-      take: 6,
-      orderBy: { createdAt: "desc" },
-      include: { contact: { select: { fullName: true } } },
-    }),
-    prisma.invoice.count({ where: { status: "SENT" } }),
-    prisma.invoice.count({ where: { status: "OVERDUE" } }),
-    prisma.contact.count({
-      where: { createdAt: { gte: new Date(new Date().setDate(1)) } },
-    }),
-    prisma.communication.count({
-      where: {
-        direction: 'INBOUND',
-        OR: [{ channel: 'portal' }, { channel: { startsWith: 'portal-' } }],
-        handledAt: null,
-      },
-    }),
-    prisma.task.findMany({
-      where: {
-        status: { not: 'DONE' },
-        title: 'Contacter le client sous 24h',
-        dueDate: { lte: next24Hours },
-      },
-      orderBy: { dueDate: 'asc' },
-      take: 6,
-    }),
-  ]);
+  let contacts = 0;
+  let openCases = 0;
+  let properties = 0;
+  let units = 0;
+  let activeTenants = 0;
+  let openMaintenance = 0;
+  let closedCasesCount = 0;
+  let vacantUnits = 0;
+  let recentCases: Array<{ id: string; title: string; status: string; type: string; referenceCode: string }> = [];
+  let todayAppointments: Array<{ id: string; title: string; type: string; startAt: Date; contact: { fullName: string } | null }> = [];
+  let overdueTasks: Array<{ id: string; title: string; dueDate: Date | null }> = [];
+  let recentActivities: Array<{ id: string; type: string; title: string; createdAt: Date; contact: { fullName: string } | null }> = [];
+  let pendingInvoices = 0;
+  let overdueInvoices = 0;
+  let newContactsThisMonth = 0;
+  let openPortalNotifications = 0;
+  let clientFollowUpTasks: Array<{ id: string; title: string; description: string | null; linkedId: string | null; dueDate: Date | null }> = [];
+  let followUpContacts: Array<{ id: string; fullName: string }> = [];
+  let dbUnavailable = false;
 
-  const followUpContactIds = Array.from(new Set(clientFollowUpTasks.map((task) => task.linkedId).filter(Boolean))) as string[];
-  const followUpContacts = followUpContactIds.length > 0
-    ? await prisma.contact.findMany({
-        where: { id: { in: followUpContactIds } },
-        select: { id: true, fullName: true },
-      })
-    : [];
+  try {
+    [
+      contacts,
+      openCases,
+      properties,
+      units,
+      activeTenants,
+      openMaintenance,
+      closedCasesCount,
+      vacantUnits,
+      recentCases,
+      todayAppointments,
+      overdueTasks,
+      recentActivities,
+      pendingInvoices,
+      overdueInvoices,
+      newContactsThisMonth,
+      openPortalNotifications,
+      clientFollowUpTasks,
+    ] = await Promise.all([
+      prisma.contact.count(),
+      prisma.caseRecord.count({ where: { status: { in: ["OPEN", "IN_PROGRESS", "ON_HOLD"] } } }),
+      prisma.property.count(),
+      prisma.unit.count(),
+      prisma.tenant.count({ where: { isActive: true } }),
+      prisma.maintenanceTicket.count({ where: { status: { in: ["OPEN", "IN_PROGRESS"] } } }),
+      prisma.caseRecord.count({ where: { status: "CLOSED" } }),
+      prisma.unit.count({ where: { status: "VACANT" } }),
+      prisma.caseRecord.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, title: true, status: true, type: true, referenceCode: true },
+      }),
+      prisma.appointment.findMany({
+        where: { startAt: { gte: today, lt: tomorrow }, status: { not: "CANCELLED" } },
+        include: { contact: { select: { fullName: true } } },
+        orderBy: { startAt: "asc" },
+      }),
+      prisma.task.findMany({
+        where: { status: { not: "DONE" }, dueDate: { lt: today } },
+        orderBy: { dueDate: "asc" },
+        take: 5,
+      }),
+      prisma.activity.findMany({
+        take: 6,
+        orderBy: { createdAt: "desc" },
+        include: { contact: { select: { fullName: true } } },
+      }),
+      prisma.invoice.count({ where: { status: "SENT" } }),
+      prisma.invoice.count({ where: { status: "OVERDUE" } }),
+      prisma.contact.count({
+        where: { createdAt: { gte: new Date(new Date().setDate(1)) } },
+      }),
+      prisma.communication.count({
+        where: {
+          direction: 'INBOUND',
+          OR: [{ channel: 'portal' }, { channel: { startsWith: 'portal-' } }],
+          handledAt: null,
+        },
+      }),
+      prisma.task.findMany({
+        where: {
+          status: { not: 'DONE' },
+          title: 'Contacter le client sous 24h',
+          dueDate: { lte: next24Hours },
+        },
+        orderBy: { dueDate: 'asc' },
+        take: 6,
+      }),
+    ]);
+
+    const followUpContactIds = Array.from(new Set(clientFollowUpTasks.map((task) => task.linkedId).filter(Boolean))) as string[];
+    followUpContacts = followUpContactIds.length > 0
+      ? await prisma.contact.findMany({
+          where: { id: { in: followUpContactIds } },
+          select: { id: true, fullName: true },
+        })
+      : [];
+  } catch (error) {
+    dbUnavailable = true;
+    console.error('[CRM_DASHBOARD_DB_UNAVAILABLE]', error);
+  }
+
+  if (dbUnavailable) {
+    return (
+      <section className="space-y-5">
+        <div className="rounded-2xl border border-red-800/50 bg-red-950/20 p-6">
+          <h2 className="text-xl font-semibold text-white">CRM temporairement indisponible</h2>
+          <p className="mt-2 text-sm text-red-200">
+            La base de donnees ne repond pas pour le moment. La session est valide, mais les donnees CRM ne peuvent pas etre chargees.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/crm/login" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">
+              Revenir a la connexion
+            </Link>
+            <Link href="/crm/dashboard" className="rounded-lg border border-red-700/60 bg-red-950/30 px-3 py-2 text-sm text-red-200 hover:bg-red-950/50">
+              Reessayer
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const followUpContactMap = new Map(followUpContacts.map((contact) => [contact.id, contact.fullName]));
 
   const kpis = [
