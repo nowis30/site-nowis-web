@@ -1,6 +1,7 @@
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, ListToolbar, PageHeader, SectionCard } from '@/features/client-portal/components/ui';
 import { FileText } from 'lucide-react';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { UploadFileForm } from '@/components/files/UploadFileForm';
 import { FileList } from '@/components/files/FileList';
@@ -22,14 +23,24 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
     return <div className="crm-surface p-8 text-sm text-slate-300">Aucun dossier client disponible.</div>;
   }
 
-  const documents = await prisma.fileDocument.findMany({
-    where: {
-      contactId: contact.id,
-      visibility: 'CLIENT_VISIBLE',
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 100,
-  });
+  let documents = [] as Awaited<ReturnType<typeof prisma.fileDocument.findMany>>;
+
+  try {
+    documents = await prisma.fileDocument.findMany({
+      where: {
+        contactId: contact.id,
+        visibility: 'CLIENT_VISIBLE',
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      documents = [];
+    } else {
+      throw error;
+    }
+  }
 
   const filteredDocuments = documents.filter((document) => {
     if (tab === 'contact') return !document.songRequestId;
