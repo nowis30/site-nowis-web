@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
+import type { FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
@@ -118,6 +119,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
     handleSubmit,
     reset,
     setValue,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<SongRequestFormValues>({
     resolver: zodResolver(songRequestFormSchema),
@@ -128,31 +130,47 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
     setSuccessState(null);
     setSubmitError(null);
 
-    const payload: z.input<typeof songRequestInputSchema> = {
-      ...values,
-      occasion: values.eventType,
-      details: values.description,
-    };
+    try {
+      const payload: z.input<typeof songRequestInputSchema> = {
+        ...values,
+        occasion: values.eventType,
+        details: values.description,
+      };
 
-    const response = await fetch('/api/site/song-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+      const response = await fetch('/api/site/song-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await response.json().catch(() => null);
+      const data = await response.json().catch(() => null);
 
-    if (!response.ok) {
-      setSubmitError(data?.error ?? 'Impossible d’envoyer la demande. Merci de réessayer.');
-      return;
+      if (!response.ok) {
+        setSubmitError(data?.error ?? 'Impossible d’envoyer la demande. Merci de réessayer.');
+        return;
+      }
+
+      setSuccessState({
+        message: 'Merci! Votre demande a été envoyée. Nous allons vous recontacter rapidement.',
+        clientPortalUrl: typeof data?.clientPortalUrl === 'string' ? data.clientPortalUrl : undefined,
+      });
+      setUploadedFileName(null);
+      reset({ ...defaultValues, consentToBeContacted: false });
+    } catch {
+      setSubmitError('Connexion impossible au serveur. Vérifiez votre réseau puis réessayez.');
     }
+  }, (invalid: FieldErrors<SongRequestFormValues>) => {
+    const firstKey = Object.keys(invalid)[0] as keyof SongRequestFormValues | undefined;
+    const firstError = firstKey ? invalid[firstKey] : undefined;
+    const message = firstError && typeof firstError === 'object' && 'message' in firstError && typeof firstError.message === 'string'
+      ? firstError.message
+      : 'Certains champs obligatoires sont incomplets.';
 
-    setSuccessState({
-      message: 'Merci! Votre demande a été envoyée. Nous allons vous recontacter rapidement.',
-      clientPortalUrl: typeof data?.clientPortalUrl === 'string' ? data.clientPortalUrl : undefined,
-    });
-    setUploadedFileName(null);
-    reset({ ...defaultValues, consentToBeContacted: false });
+    setSubmitError(`Formulaire incomplet: ${message}`);
+    if (firstKey) {
+      setFocus(firstKey);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   async function handleFileUpload(file: File) {
