@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { ContactWorkspace } from '@/features/crm/components/contacts/ContactWorkspace';
 import { TimelineItem } from '@/components/crm/timeline';
-import { ActivityType } from '@prisma/client';
+import { ActivityType, Prisma } from '@prisma/client';
 
 interface PageProps {
   params: { id: string };
@@ -27,6 +27,10 @@ export default async function ContactDetailPage({ params }: PageProps) {
     TASK: 'task',
   };
 
+  function isMissingTable(error: unknown) {
+    return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021';
+  }
+
   const [contact, tasks, files, properties, messages] = await Promise.all([
     prisma.contact.findUnique({
       where: { id: params.id },
@@ -40,6 +44,28 @@ export default async function ContactDetailPage({ params }: PageProps) {
         communications: { orderBy: { sentAt: 'desc' }, take: 30 },
         outboundEmails: { orderBy: { sentAt: 'desc' }, take: 30 },
       },
+    }).catch((error) => {
+      if (isMissingTable(error)) {
+        return prisma.contact.findUnique({
+          where: { id: params.id },
+          include: {
+            cases: { orderBy: { createdAt: 'desc' } },
+            appointments: { include: { property: { select: { id: true, name: true } } }, orderBy: { startAt: 'desc' }, take: 20 },
+            invoices: { orderBy: { issueDate: 'desc' } },
+            activities: { include: { user: { select: { fullName: true } } }, orderBy: { createdAt: 'desc' }, take: 40 },
+            tenantProfile: { include: { unit: { include: { property: true } }, leases: { orderBy: { startDate: 'desc' }, take: 10 } } },
+            communications: { orderBy: { sentAt: 'desc' }, take: 30 },
+          },
+        }).then((contactWithoutOptionalModules) => {
+          if (!contactWithoutOptionalModules) return null;
+          return {
+            ...contactWithoutOptionalModules,
+            songRequests: [],
+            outboundEmails: [],
+          };
+        });
+      }
+      throw error;
     }),
     prisma.task.findMany({
       where: {
@@ -54,6 +80,9 @@ export default async function ContactDetailPage({ params }: PageProps) {
     prisma.fileDocument.findMany({
       where: { contactId: params.id },
       orderBy: { createdAt: 'desc' },
+    }).catch((error) => {
+      if (isMissingTable(error)) return [];
+      throw error;
     }),
     prisma.property.findMany({
       select: { id: true, name: true, code: true },
