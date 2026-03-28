@@ -2,6 +2,21 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
+function ensurePostgresSsl(url: string): string {
+  if (!url) return url;
+  if (!(url.startsWith('postgres://') || url.startsWith('postgresql://'))) return url;
+
+  try {
+    const parsed = new URL(url);
+    if (!parsed.searchParams.has('sslmode')) {
+      parsed.searchParams.set('sslmode', 'require');
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 function readDatabaseUrl(): string | undefined {
   const candidates = [
     process.env.DATABASE_URL,
@@ -13,7 +28,9 @@ function readDatabaseUrl(): string | undefined {
 
   for (const value of candidates) {
     const trimmed = String(value || '').trim();
-    if (trimmed) return trimmed;
+    if (trimmed) {
+      return process.env.NODE_ENV === 'production' ? ensurePostgresSsl(trimmed) : trimmed;
+    }
   }
 
   return undefined;
