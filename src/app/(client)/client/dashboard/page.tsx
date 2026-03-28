@@ -1,9 +1,32 @@
 import Link from 'next/link';
+import { Prisma } from '@prisma/client';
 import { CalendarClock, FileText, Inbox, MessagesSquare } from 'lucide-react';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, PortalStatCard, QuickActions, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
 import { safeListMessages } from '@/lib/messages-store';
 import { prisma } from '@/lib/prisma';
+
+const contactDashboardInclude = {
+  tenantProfile: {
+    include: {
+      unit: { include: { property: true } },
+      leases: { orderBy: { startDate: 'desc' as const }, take: 5 },
+      payments: { orderBy: { dueDate: 'asc' as const }, take: 8 },
+    },
+  },
+  appointments: {
+    where: { status: { not: 'CANCELLED' as const } },
+    orderBy: { startAt: 'asc' as const },
+    take: 8,
+  },
+  invoices: { orderBy: { dueDate: 'asc' as const }, take: 8 },
+  activities: { orderBy: { createdAt: 'desc' as const }, take: 12 },
+  songRequests: { orderBy: { createdAt: 'desc' as const }, take: 6 },
+} satisfies Prisma.ContactInclude;
+
+type ContactDashboardRecord = Prisma.ContactGetPayload<{
+  include: typeof contactDashboardInclude;
+}>;
 
 function formatDate(value: Date | null | undefined) {
   if (!value) return '—';
@@ -23,42 +46,59 @@ function formatMoney(value: number | string | null | undefined) {
 export default async function ClientDashboardPage() {
   const session = await requireClientPortalSession();
 
-  const [contact, messages] = await Promise.all([
-    prisma.contact.findUnique({
-    where: { id: session.contactId },
-    include: {
-      tenantProfile: {
-        include: {
-          unit: { include: { property: true } },
-          leases: { orderBy: { startDate: 'desc' }, take: 5 },
-          payments: { orderBy: { dueDate: 'asc' }, take: 8 },
+  let contact: ContactDashboardRecord | null = null;
+  let messages: Awaited<ReturnType<typeof safeListMessages>> = [];
+  let documents: Awaited<ReturnType<typeof prisma.fileDocument.findMany>> = [];
+
+  try {
+    [contact, messages] = await Promise.all([
+      prisma.contact.findUnique({ where: { id: session.contactId }, include: contactDashboardInclude }),
+      safeListMessages(session.contactId),
+    ]);
+
+    if (contact) {
+      documents = await prisma.fileDocument.findMany({
+        where: {
+          contactId: contact.id,
+          visibility: 'CLIENT_VISIBLE',
         },
-      },
-      appointments: {
-        where: { status: { not: 'CANCELLED' } },
-        orderBy: { startAt: 'asc' },
-        take: 8,
-      },
-      invoices: { orderBy: { dueDate: 'asc' }, take: 8 },
-      activities: { orderBy: { createdAt: 'desc' }, take: 12 },
-      songRequests: { orderBy: { createdAt: 'desc' }, take: 6 },
-    },
-    }),
-    safeListMessages(session.contactId),
-  ]);
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      });
+    }
+  } catch (error) {
+    const prismaCode = error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined;
+    console.error('[CLIENT_DASHBOARD]', {
+      message: 'Failed to load client dashboard data',
+      contactId: session.contactId,
+      errorName: error instanceof Error ? error.name : 'UnknownError',
+      prismaCode,
+      safeMessage: error instanceof Error ? error.message : 'Unexpected error',
+    });
+
+    return (
+      <section className="space-y-4">
+        <div className="rounded-2xl border border-amber-700/50 bg-amber-950/20 p-6">
+          <h2 className="text-lg font-semibold text-white">Espace client temporairement indisponible</h2>
+          <p className="mt-2 text-sm text-amber-100">
+            Une erreur serveur est survenue pendant le chargement de votre tableau de bord. Réessayez dans quelques instants.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/client/dashboard" className="rounded-lg border border-amber-500/60 px-3 py-2 text-sm text-amber-100 hover:bg-amber-500/15">
+              Réessayer
+            </Link>
+            <Link href="/client/messages" className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800/60">
+              Ouvrir mes messages
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!contact) {
     return <div className="crm-surface p-8 text-sm text-slate-300">Votre dossier n'est pas disponible.</div>;
   }
-
-  const documents = await prisma.fileDocument.findMany({
-    where: {
-      contactId: contact.id,
-      visibility: 'CLIENT_VISIBLE',
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-  });
 
   const nextPayment = contact.tenantProfile?.payments.find((payment) => payment.status === 'PENDING' || payment.status === 'LATE') || null;
   const unreadPortalMessages = messages.filter((item) => item.senderType === 'ADMIN' && !item.isRead).length;

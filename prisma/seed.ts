@@ -146,6 +146,11 @@ async function main() {
     },
   });
 
+  await prisma.user.update({
+    where: { id: tenantUser.id },
+    data: { contactId: tenantContact.id },
+  });
+
   const tenant = await prisma.tenant.create({
     data: {
       contactId: tenantContact.id,
