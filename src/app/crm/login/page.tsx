@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
 
 export default function CrmLoginPage() {
   const router = useRouter();
@@ -25,9 +26,9 @@ export default function CrmLoginPage() {
           body: JSON.stringify({ email, password }),
         });
 
-        const data = await response.json();
+        const data = await readApiJson(response);
         if (!response.ok) {
-          throw new Error(data.error || 'Connexion impossible');
+          throw new Error(getApiErrorMessage(data, 'Connexion impossible'));
         }
 
         if (data.requiresOtp) {
@@ -47,9 +48,9 @@ export default function CrmLoginPage() {
         body: JSON.stringify({ code: otpCode }),
       });
 
-      const otpData = await otpResponse.json();
+      const otpData = await readApiJson(otpResponse);
       if (!otpResponse.ok) {
-        throw new Error(otpData.error || 'Vérification SMS impossible');
+        throw new Error(getApiErrorMessage(otpData, 'Vérification SMS impossible'));
       }
 
       router.push('/crm/dashboard');
@@ -65,7 +66,7 @@ export default function CrmLoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-slate-950 p-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
         <h1 className="text-2xl font-semibold text-white">Connexion CRM</h1>
-        <p className="mt-1 text-sm text-slate-400">Accès sécurisé au back-office immobilier.</p>
+        <p className="mt-1 text-sm text-slate-400">Accès sécurisé au back-office Nowis.</p>
         <p className="mt-2 text-xs text-slate-500">
           Cet accès est réservé aux utilisateurs internes autorisés.
         </p>

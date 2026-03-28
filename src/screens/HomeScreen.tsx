@@ -208,7 +208,7 @@ export const HomeScreen = async () => {
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Connexion</p>
             <h3 className="mt-4 font-display text-4xl leading-[1.05]">Choisis ton espace et connecte-toi en quelques secondes.</h3>
             <p className="mt-4 text-base leading-8 text-slate-200 md:text-lg">
-              L’espace utilisateur permet aux propriétaires d’accéder à leurs logements et à leur suivi. L’accès CRM est réservé aux membres internes qui gèrent l’activité et les dossiers.
+              L'espace client te permet de suivre tes projets, tes rendez-vous et tes échanges avec Nowis. L'accès CRM est réservé aux membres internes qui gèrent l'activité.
             </p>
 
             <div className="mt-8 grid gap-4">
@@ -228,7 +228,7 @@ export const HomeScreen = async () => {
               <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Espace utilisateur</p>
                 <p className="mt-2 text-sm leading-7 text-slate-200">
-                  Connexion pour consulter votre espace propriétaire, vos logements et vos informations personnelles.
+                  Connexion pour consulter ton espace client Nowis, tes demandes de chanson et tes échanges.
                 </p>
                 <Link
                   href="/connexion"

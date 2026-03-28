@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
+import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
 
 export default function ConnexionPage() {
   const router = useRouter();
@@ -36,9 +37,9 @@ export default function ConnexionPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      const data = await response.json();
+      const data = await readApiJson(response);
       if (!response.ok) {
-        throw new Error(data.error || 'Impossible de se connecter.');
+        throw new Error(getApiErrorMessage(data, 'Impossible de se connecter.'));
       }
       router.replace(data.redirectTo || '/client/dashboard');
     } catch (err) {

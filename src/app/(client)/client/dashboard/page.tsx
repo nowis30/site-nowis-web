@@ -80,29 +80,29 @@ export default async function ClientDashboardPage() {
             { label: 'Voir mes demandes de chanson', description: 'Historique et statuts', href: '/client/song-requests' },
             { label: 'Voir mes rendez-vous', description: 'Planning à venir et passé', href: '/client/appointments' },
             { label: 'M\'envoyer un message', description: 'Contacter directement Nowis', href: '/client/messages' },
-            { label: 'Télécharger mes documents', description: 'Baux, factures, pièces', href: '/client/documents' },
+            { label: 'Télécharger mes documents', description: 'Contrats, factures et fichiers partagés', href: '/client/documents' },
           ]}
         />
       </SectionCard>
 
       <div className="grid gap-4 md:grid-cols-4">
         <PortalStatCard
-          label="Dossier"
-          value={contact.tenantProfile?.unit ? contact.tenantProfile.unit.unitNumber : 'Client'}
-          hint={contact.tenantProfile?.unit?.property?.name || 'Suivi personnalisé'}
+          label="Profil"
+          value="Client"
+          hint={contact.fullName || 'Suivi personnalisé'}
         />
         <PortalStatCard
           label="Prochain paiement"
           value={nextPayment ? formatMoney(Number(nextPayment.amount)) : '—'}
           hint={nextPayment ? `Échéance ${formatDate(nextPayment.dueDate)}` : 'Aucun paiement en attente'}
         />
-        <PortalStatCard label="Documents" value={documents.length} hint="Bail, factures et pièces de dossier" />
+        <PortalStatCard label="Documents" value={documents.length} hint="Contrats, factures et fichiers partagés" />
         <PortalStatCard label="Rendez-vous" value={contact.appointments.length} hint="Événements planifiés avec Nowis" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
         <div className="space-y-6">
-          <SectionCard title="Résumé du dossier" subtitle="Coordonnées et affectation actuelle">
+          <SectionCard title="Résumé du dossier" subtitle="Coordonnées et informations de contact">
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
                 <p className="text-xs text-slate-500">Email</p>
@@ -111,14 +111,6 @@ export default async function ClientDashboardPage() {
               <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
                 <p className="text-xs text-slate-500">Téléphone</p>
                 <p className="mt-2 text-sm text-white">{contact.phone || '—'}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-                <p className="text-xs text-slate-500">Immeuble</p>
-                <p className="mt-2 text-sm text-white">{contact.tenantProfile?.unit?.property?.name || '—'}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-                <p className="text-xs text-slate-500">Unité</p>
-                <p className="mt-2 text-sm text-white">{contact.tenantProfile?.unit?.unitNumber || '—'}</p>
               </div>
             </div>
           </SectionCard>

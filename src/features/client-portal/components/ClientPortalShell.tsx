@@ -24,7 +24,7 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
 
   async function logout() {
     await fetch('/api/client-auth/logout', { method: 'POST' });
-    router.push('/client');
+    router.push('/connexion');
     router.refresh();
   }
 

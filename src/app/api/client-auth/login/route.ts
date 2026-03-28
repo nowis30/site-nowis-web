@@ -2,17 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 import { comparePassword } from '@/lib/auth';
+import { buildErrorPayload, ensureAuthConfig, logApiDiagnostic } from '@/lib/api-diagnostics';
 import { prisma } from '@/lib/prisma';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
 import { clientLoginSchema } from '@/features/client-portal/auth/validators';
 
+function errorResponse(
+  code: 'DB_INIT' | 'DB_SCHEMA' | 'CONFIG_MISSING' | 'AUTH_FAIL' | 'USER_DATA_INVALID' | 'UNKNOWN',
+  message: string,
+  status: number,
+) {
+  return NextResponse.json(buildErrorPayload(code, message), { status });
+}
+
 export async function POST(request: NextRequest) {
+  const config = ensureAuthConfig('client');
+  if (!config.ok) {
+    logApiDiagnostic('[CLIENT_AUTH_LOGIN]', 'CONFIG_MISSING', 'Missing login config', undefined, {
+      missing: config.missing,
+    });
+    return NextResponse.json(config.payload, { status: 500 });
+  }
+
   try {
     let rawBody: unknown;
     try {
       rawBody = await request.json();
     } catch {
-      return NextResponse.json({ error: 'Corps de requete JSON invalide' }, { status: 400 });
+      return errorResponse('UNKNOWN', 'Invalid JSON body', 400);
     }
 
     const payload = clientLoginSchema.parse(rawBody);
@@ -33,19 +50,26 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!user || !user.contact) {
-      return NextResponse.json({ error: 'Email ou mot de passe invalide.' }, { status: 401 });
+    if (!user) {
+      return errorResponse('AUTH_FAIL', 'Invalid credentials', 401);
+    }
+
+    if (!user.contactId || !user.contact) {
+      logApiDiagnostic('[CLIENT_AUTH_LOGIN]', 'USER_DATA_INVALID', 'User account is missing contact linkage', undefined, {
+        userId: user.id,
+      });
+      return errorResponse('USER_DATA_INVALID', 'User account data is inconsistent', 500);
     }
 
     let isValid = false;
     try {
       isValid = await comparePassword(payload.password, user.passwordHash);
     } catch {
-      return NextResponse.json({ error: 'Email ou mot de passe invalide.' }, { status: 401 });
+      return errorResponse('AUTH_FAIL', 'Invalid credentials', 401);
     }
 
     if (!isValid) {
-      return NextResponse.json({ error: 'Email ou mot de passe invalide.' }, { status: 401 });
+      return errorResponse('AUTH_FAIL', 'Invalid credentials', 401);
     }
 
     const sessionToken = signClientPortalSession({
@@ -60,18 +84,20 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientInitializationError) {
-      return NextResponse.json({ error: 'Service temporairement indisponible. Reessayez dans un instant.' }, { status: 503 });
+      logApiDiagnostic('[CLIENT_AUTH_LOGIN]', 'DB_INIT', 'Database initialization failed', error);
+      return errorResponse('DB_INIT', 'Database initialization failed', 503);
     }
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return NextResponse.json({ error: 'Erreur base de donnees' }, { status: 500 });
+      logApiDiagnostic('[CLIENT_AUTH_LOGIN]', 'DB_SCHEMA', 'Database schema query failed', error);
+      return errorResponse('DB_SCHEMA', 'Database schema query failed', 500);
     }
 
     if (error instanceof ZodError) {
-      return NextResponse.json({ error: 'Donnees invalides', details: error.issues }, { status: 400 });
+      return errorResponse('UNKNOWN', 'Invalid request payload', 400);
     }
 
-    console.error('[CLIENT_AUTH_LOGIN]', error);
-    return NextResponse.json({ error: 'Connexion impossible pour le moment.' }, { status: 500 });
+    logApiDiagnostic('[CLIENT_AUTH_LOGIN]', 'UNKNOWN', 'Unexpected login error', error);
+    return errorResponse('UNKNOWN', 'Unexpected server error', 500);
   }
 }
