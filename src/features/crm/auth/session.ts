@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export const CRM_COOKIE_NAME = 'crm_session';
+export const CRM_OTP_COOKIE_NAME = 'crm_otp';
 
 export type CrmRole = 'ADMIN' | 'ASSISTANT' | 'TENANT';
 
@@ -11,6 +12,10 @@ export interface CrmTokenPayload {
   role: CrmRole;
   email: string;
   fullName: string;
+}
+
+interface CrmOtpPayload extends CrmTokenPayload {
+  otpCode: string;
 }
 
 function getJwtSecret() {
@@ -44,9 +49,26 @@ export function clearCrmSessionCookie(): string {
   return `${CRM_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0;${isProd ? ' Secure;' : ''}`;
 }
 
+export function createCrmOtpCookie(token: string): string {
+  const isProd = process.env.NODE_ENV === 'production';
+  const maxAge = 60 * 10; // 10 minutes
+  return `${CRM_OTP_COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge};${isProd ? ' Secure;' : ''}`;
+}
+
+export function clearCrmOtpCookie(): string {
+  const isProd = process.env.NODE_ENV === 'production';
+  return `${CRM_OTP_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0;${isProd ? ' Secure;' : ''}`;
+}
+
 export function getTokenFromCookie(cookie?: string): string | null {
   if (!cookie) return null;
   const match = cookie.match(new RegExp(`${CRM_COOKIE_NAME}=([^;]+)`));
+  return match ? match[1] : null;
+}
+
+export function getOtpTokenFromCookie(cookie?: string): string | null {
+  if (!cookie) return null;
+  const match = cookie.match(new RegExp(`${CRM_OTP_COOKIE_NAME}=([^;]+)`));
   return match ? match[1] : null;
 }
 
@@ -54,6 +76,18 @@ export function getCrmSessionFromCookieHeader(cookie?: string): CrmTokenPayload 
   const token = getTokenFromCookie(cookie);
   if (!token) return null;
   return verifyCrmToken(token);
+}
+
+export function signCrmOtpToken(payload: CrmOtpPayload): string {
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: '10m' });
+}
+
+export function verifyCrmOtpToken(token: string): CrmOtpPayload | null {
+  try {
+    return jwt.verify(token, getJwtSecret()) as CrmOtpPayload;
+  } catch {
+    return null;
+  }
 }
 
 export async function getCrmSessionServer(): Promise<CrmTokenPayload | null> {

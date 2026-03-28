@@ -2,22 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 
 export default function ConnexionPage() {
   const router = useRouter();
-  const { user, loading, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [externalErrorCode, setExternalErrorCode] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) {
-      router.replace('/proprietaire');
-    }
-  }, [loading, user, router]);
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    setExternalErrorCode(params.get('error'));
+  }, []);
+
+  const externalErrorMessage =
+    externalErrorCode === 'invalid-link'
+      ? 'Le lien de connexion est invalide ou expiré.'
+      : externalErrorCode === 'account-not-found'
+        ? "Aucun compte client n'est relié à ce lien."
+        : null;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,8 +31,16 @@ export default function ConnexionPage() {
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
-      router.replace('/proprietaire');
+      const response = await fetch('/api/client-auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Impossible de se connecter.');
+      }
+      router.replace(data.redirectTo || '/client/dashboard');
     } catch (err) {
       setError((err as Error).message || 'Impossible de se connecter.');
     } finally {
@@ -39,8 +53,14 @@ export default function ConnexionPage() {
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion utilisateur</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Accédez à votre espace propriétaire pour gérer vos logements.
+          Connectez-vous à votre espace utilisateur Nowis pour suivre vos projets et échanges.
         </p>
+
+        {externalErrorMessage ? (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            {externalErrorMessage}
+          </div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

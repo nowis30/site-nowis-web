@@ -1,5 +1,5 @@
-import { ClientRegisterCard } from '@/features/client-portal/components/public/ClientRegisterCard';
+import { redirect } from 'next/navigation';
 
 export default function PublicClientRegisterPage() {
-  return <ClientRegisterCard />;
+  redirect('/inscription');
 }

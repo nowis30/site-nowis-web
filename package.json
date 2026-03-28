@@ -12,6 +12,7 @@
     "prisma:migrate:init": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/20260323_init/migration.sql",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "crm:reset-password": "tsx scripts/reset-crm-password.ts",
     "sync:youtube": "node scripts/sync-youtube.js",
     "sync:spotify": "node scripts/sync-spotify.js",
     "sync:songs": "node scripts/sync-songs.js"

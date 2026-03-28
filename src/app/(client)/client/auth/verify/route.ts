@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const payload = verifyClientPortalMagicLink(token);
 
   if (!payload) {
-    return NextResponse.redirect(new URL('/client?error=invalid-link', request.url));
+    return NextResponse.redirect(new URL('/connexion?error=invalid-link', request.url));
   }
 
   // Vérifier que le contact existe encore et n'est pas archivé
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (!contact) {
-    return NextResponse.redirect(new URL('/client?error=account-not-found', request.url));
+    return NextResponse.redirect(new URL('/connexion?error=account-not-found', request.url));
   }
 
   const sessionToken = signClientPortalSession({

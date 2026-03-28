@@ -7,6 +7,8 @@ export default function CrmLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpStep, setOtpStep] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,15 +18,35 @@ export default function CrmLoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/crm/auth/login', {
+      if (!otpStep) {
+        const response = await fetch('/api/crm/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Connexion impossible');
+        }
+
+        if (data.requiresOtp) {
+          setOtpStep(true);
+          return;
+        }
+
+        throw new Error('Réponse inattendue du serveur.');
+      }
+
+      const otpResponse = await fetch('/api/crm/auth/verify-sms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ code: otpCode }),
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Connexion impossible');
+      const otpData = await otpResponse.json();
+      if (!otpResponse.ok) {
+        throw new Error(otpData.error || 'Vérification SMS impossible');
       }
 
       router.push('/crm/dashboard');
@@ -46,29 +68,52 @@ export default function CrmLoginPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          <label className="block">
-            <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-              placeholder="admin@crm.local"
-              required
-            />
-          </label>
+          {!otpStep ? (
+            <>
+              <label className="block">
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                  placeholder="simonmorin30@gmail.com"
+                  required
+                />
+              </label>
 
-          <label className="block">
-            <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Mot de passe</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-              placeholder="Votre mot de passe"
-              required
-            />
-          </label>
+              <label className="block">
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Mot de passe</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                  placeholder="Votre mot de passe"
+                  required
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+                Un code SMS a été envoyé. Entre le code pour finaliser la connexion.
+              </p>
+
+              <label className="block">
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Code SMS</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={otpCode}
+                  onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                  placeholder="123456"
+                  required
+                />
+              </label>
+            </>
+          )}
 
           {error ? <p className="text-sm text-red-300">{error}</p> : null}
 
@@ -77,8 +122,22 @@ export default function CrmLoginPage() {
             disabled={loading}
             className="w-full rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? 'Connexion...' : otpStep ? 'Valider le code SMS' : 'Se connecter'}
           </button>
+
+          {otpStep ? (
+            <button
+              type="button"
+              className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200"
+              onClick={() => {
+                setOtpStep(false);
+                setOtpCode('');
+                setError(null);
+              }}
+            >
+              Changer identifiants
+            </button>
+          ) : null}
         </form>
 
         <p className="mt-5 text-sm text-slate-400">

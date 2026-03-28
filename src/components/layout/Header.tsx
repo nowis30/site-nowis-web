@@ -18,7 +18,7 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { label: 'Accueil', href: '/' },
-  { label: 'Accès client', href: '/client' },
+  { label: 'Accès client', href: '/connexion' },
   { label: 'CRM', href: '/crm' },
   { label: 'Commander une chanson', href: '/commander-une-chanson' },
   { label: 'Artistes', href: '/artistes' },

@@ -213,15 +213,15 @@ export const HomeScreen = async () => {
 
             <div className="mt-8 grid gap-4">
               <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Acces client</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Nouveau client</p>
                 <p className="mt-2 text-sm leading-7 text-slate-200">
-                  Connexion directe pour consulter votre portail client, vos messages, vos documents et vos rendez-vous.
+                  Créez votre compte utilisateur pour accéder à votre espace client Nowis.
                 </p>
                 <Link
-                  href="/client"
+                  href="/inscription"
                   className="mt-4 inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
                 >
-                  Acces client
+                  Créer un compte
                 </Link>
               </div>
 

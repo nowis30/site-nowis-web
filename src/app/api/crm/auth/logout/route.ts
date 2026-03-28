@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { clearCrmSessionCookie } from '@/features/crm/auth/session';
+import { clearCrmOtpCookie, clearCrmSessionCookie } from '@/features/crm/auth/session';
 
 export async function POST() {
   const response = NextResponse.json({ ok: true });
-  response.headers.set('Set-Cookie', clearCrmSessionCookie());
+  response.headers.append('Set-Cookie', clearCrmSessionCookie());
+  response.headers.append('Set-Cookie', clearCrmOtpCookie());
   return response;
 }

@@ -1,24 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 
 export default function InscriptionPage() {
   const router = useRouter();
-  const { user, loading, register } = useAuth();
-  const [name, setName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace('/proprietaire');
-    }
-  }, [loading, user, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -26,8 +19,19 @@ export default function InscriptionPage() {
     setIsSubmitting(true);
 
     try {
-      await register(name, email, password);
-      router.replace('/proprietaire');
+      const response = await fetch('/api/client-auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, phone, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('Un compte existe déjà avec cet email. Essaie de te connecter.');
+        }
+        throw new Error(data.error || 'Impossible de créer le compte.');
+      }
+      router.replace(data.redirectTo || '/client/dashboard');
     } catch (err) {
       setError((err as Error).message || 'Impossible de créer le compte.');
     } finally {
@@ -40,16 +44,16 @@ export default function InscriptionPage() {
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Inscription</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Créez votre compte pour commencer à publier des logements et gérer vos réservations.
+          Créez votre compte utilisateur Nowis pour centraliser vos demandes, messages et suivis.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nom</label>
+            <label className="block text-sm font-medium text-gray-700">Nom complet</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               required
               className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
               placeholder="Prénom Nom"
@@ -69,6 +73,18 @@ export default function InscriptionPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700">Téléphone</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="+1 819 000 0000"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
             <input
               type="password"
@@ -76,7 +92,7 @@ export default function InscriptionPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              placeholder="••••••••"
+              placeholder="Min. 8 caractères, avec majuscule et chiffre"
             />
           </div>
 
