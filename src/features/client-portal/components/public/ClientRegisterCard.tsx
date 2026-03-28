@@ -70,12 +70,12 @@ export function ClientRegisterCard() {
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Acces client</p>
-            <h1 className="mt-1 text-3xl font-semibold text-white">Creer votre compte</h1>
+            <h1 className="mt-1 text-3xl font-semibold text-white">Creer votre acces</h1>
           </div>
         </div>
 
         <p className="text-sm leading-6 text-slate-300">
-          Votre inscription cree automatiquement votre fiche dans le CRM Nowis et vous donne un acces direct a votre portail client.
+          Cet acces fonctionne pour un client individuel, une ecole ou un organisme. Votre compte est relie a votre dossier Nowis pour suivre chansons, ateliers et echanges.
         </p>
 
         <form onSubmit={submit} className="mt-8 grid gap-4 md:grid-cols-2">
@@ -112,18 +112,18 @@ export function ClientRegisterCard() {
           </label>
 
           <label className="block md:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Adresse (optionnel)</span>
+            <span className="mb-2 block text-sm font-medium text-slate-200">Organisation ou ecole (optionnel)</span>
             <div className="flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3">
               <MapPin size={18} className="text-slate-500" />
-              <input value={form.address} onChange={(event) => updateField('address', event.target.value)} placeholder="Adresse ou unite" className="w-full bg-transparent text-sm text-white placeholder-slate-500" />
+              <input value={form.address} onChange={(event) => updateField('address', event.target.value)} placeholder="Nom de votre ecole, organisme ou structure" className="w-full bg-transparent text-sm text-white placeholder-slate-500" />
             </div>
           </label>
 
           <label className="block md:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-200">Message (optionnel)</span>
+            <span className="mb-2 block text-sm font-medium text-slate-200">Projet ou besoin (optionnel)</span>
             <div className="flex items-start gap-3 rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3">
               <MessageSquare size={18} className="mt-0.5 text-slate-500" />
-              <textarea value={form.message} onChange={(event) => updateField('message', event.target.value)} placeholder="Precisez votre situation ou votre demande" rows={4} className="w-full resize-none bg-transparent text-sm text-white placeholder-slate-500" />
+              <textarea value={form.message} onChange={(event) => updateField('message', event.target.value)} placeholder="Precisez votre projet musical, votre demande d'atelier ou votre contexte" rows={4} className="w-full resize-none bg-transparent text-sm text-white placeholder-slate-500" />
             </div>
           </label>
 

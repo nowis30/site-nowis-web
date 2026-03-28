@@ -36,7 +36,7 @@ export function CrmSidebar({ role, isOpen, onToggle }: CrmSidebarProps) {
         {isOpen ? (
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-400">CRM Nowis</p>
-            <h1 className="mt-0.5 text-base font-bold text-white">Gestion immobilière</h1>
+            <h1 className="mt-0.5 text-base font-bold text-white">Musique & ateliers</h1>
           </div>
         ) : null}
         <button

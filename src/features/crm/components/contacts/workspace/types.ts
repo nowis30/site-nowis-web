@@ -39,6 +39,7 @@ export type ContactTaskItem = {
   status: string;
   priority: string;
   dueDate: string | null;
+  href: string | null;
 };
 
 export type ContactAppointmentItem = {

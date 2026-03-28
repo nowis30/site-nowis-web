@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { verifyTenantPortalToken } from '@/lib/client-portal';
+import { buildIncomingMessageTaskDescription } from '@/lib/contact-message-tasks';
 import { sendPortalEventNotificationEmail } from '@/lib/email-service';
 import { isMissingMessagesTableError } from '@/lib/messages-store';
 
@@ -14,6 +15,7 @@ const tenantMessageSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const payload = tenantMessageSchema.parse(await request.json());
+    const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const session = verifyTenantPortalToken(payload.token);
 
     if (!session) {
@@ -29,22 +31,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Locataire introuvable' }, { status: 404 });
     }
 
-    const activity = await prisma.activity.create({
-      data: {
-        type: 'MESSAGE',
-        title: `Message locataire : ${payload.subject}`,
-        description: payload.message,
-        contactId: tenant.contactId,
-      },
-    });
+    const { activity, item } = await prisma.$transaction(async (tx) => {
+      const createdActivity = await tx.activity.create({
+        data: {
+          type: 'MESSAGE',
+          title: `Message locataire : ${payload.subject}`,
+          description: payload.message,
+          contactId: tenant.contactId,
+        },
+      });
 
-    const item = await prisma.message.create({
-      data: {
-        contactId: tenant.contactId,
-        senderType: 'CLIENT',
-        content: payload.message,
-        isRead: false,
-      },
+      const message = await tx.message.create({
+        data: {
+          contactId: tenant.contactId,
+          senderType: 'CLIENT',
+          content: payload.message,
+          isRead: false,
+        },
+      });
+
+      await tx.task.create({
+        data: {
+          title: `Repondre au message de ${session.fullName}`,
+          description: buildIncomingMessageTaskDescription(payload.message, message.id),
+          status: 'TODO',
+          priority: 'HIGH',
+          dueDate,
+          linkedType: 'CONTACT',
+          linkedId: tenant.contactId,
+        },
+      });
+
+      return { activity: createdActivity, item: message };
     });
 
     await sendPortalEventNotificationEmail({

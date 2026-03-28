@@ -1,0 +1,135 @@
+import Link from 'next/link';
+import { Prisma } from '@prisma/client';
+import { CalendarClock, Sparkles } from 'lucide-react';
+import { requireClientPortalSession } from '@/features/client-portal/auth/session';
+import { EmptyState, ListToolbar, PageHeader, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
+import { prisma } from '@/lib/prisma';
+
+function formatDate(value: Date | null | undefined) {
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium' }).format(value);
+}
+
+function formatDateTime(value: Date | null | undefined) {
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(value);
+}
+
+export default async function ClientWorkshopsPage() {
+  const session = await requireClientPortalSession();
+
+  let requests = [] as Array<{
+    id: string;
+    title: string;
+    workshopTheme: string;
+    status: string;
+    requestedDate: Date | null;
+    requestedTime: string | null;
+    format: string;
+    organization: { name: string };
+    appointments: Array<{ id: string; title: string; startAt: Date; status: string; location: string | null }>;
+  }>;
+
+  try {
+    requests = await prisma.workshopRequest.findMany({
+      where: {
+        OR: [
+          { contactId: session.contactId },
+          { organizationContact: { contactId: session.contactId } },
+        ],
+      },
+      include: {
+        organization: { select: { name: true } },
+        appointments: {
+          select: { id: true, title: true, startAt: true, status: true, location: true },
+          orderBy: { startAt: 'asc' },
+          take: 6,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021')) {
+      throw error;
+    }
+  }
+
+  return (
+    <section className="space-y-6">
+      <PageHeader title="Ateliers" subtitle="Suivez vos demandes d’atelier, les rendez-vous confirmés et les prochaines étapes avec Nowis." />
+
+      <SectionCard title="Actions" subtitle="Démarrer une nouvelle demande ou revenir au formulaire public.">
+        <ListToolbar
+          filters={[{ label: 'Toutes les demandes', href: '/client/workshops', active: true }]}
+          actions={[
+            { label: 'Demander un atelier', href: '/ateliers/demande' },
+            { label: 'Voir mes rendez-vous', href: '/client/appointments' },
+          ]}
+        />
+      </SectionCard>
+
+      <SectionCard title="Mes demandes d’atelier" subtitle="Historique des demandes et statut actuel.">
+        {requests.length === 0 ? (
+          <EmptyState icon={<Sparkles size={18} />} title="Aucune demande d’atelier" description="Vos demandes d’atelier apparaîtront ici dès leur création." />
+        ) : (
+          <div className="space-y-4">
+            {requests.map((request) => (
+              <article key={request.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4 sm:p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{request.title}</p>
+                    <p className="mt-1 text-sm text-slate-300">{request.organization.name} · {request.workshopTheme}</p>
+                  </div>
+                  <StatusBadge label={request.status} tone={request.status === 'COMPLETED' ? 'success' : request.status === 'CANCELLED' ? 'danger' : 'info'} />
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3 text-sm text-slate-300">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Date souhaitée</p>
+                    <p className="mt-1">{formatDate(request.requestedDate)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Plage</p>
+                    <p className="mt-1">{request.requestedTime || 'À confirmer'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Format</p>
+                    <p className="mt-1">{request.format}</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Rendez-vous liés</p>
+                  {request.appointments.length === 0 ? (
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4 text-sm text-slate-400">Aucun rendez-vous atelier confirmé pour le moment.</div>
+                  ) : request.appointments.map((appointment) => (
+                    <div key={appointment.id} className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-medium text-white">{appointment.title}</p>
+                        <StatusBadge label={appointment.status} tone={appointment.status === 'CONFIRMED' || appointment.status === 'DONE' ? 'success' : 'info'} />
+                      </div>
+                      <p className="mt-2 text-sm text-slate-300">{formatDateTime(appointment.startAt)}</p>
+                      {appointment.location ? <p className="mt-1 text-sm text-slate-400">{appointment.location}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </SectionCard>
+
+      <SectionCard title="Besoin d’ajuster un atelier" subtitle="Utilisez la messagerie sécurisée si vous devez changer un groupe, un objectif ou une date.">
+        <div className="rounded-2xl border border-primary-500/25 bg-primary-500/10 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <CalendarClock className="text-primary-200" size={18} />
+              <p className="text-sm text-primary-50">Pour toute mise à jour logistique, écrivez-nous depuis votre espace client. Une tâche de suivi sera automatiquement créée dans le CRM.</p>
+            </div>
+            <Link href="/client/messages" className="rounded-xl border border-primary-400/40 bg-primary-400/15 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-400/25">Ouvrir la messagerie</Link>
+          </div>
+        </div>
+      </SectionCard>
+    </section>
+  );
+}

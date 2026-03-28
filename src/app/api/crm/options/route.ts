@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   if (guard.error) return guard.error;
 
   try {
-    const [contacts, properties, units, tenants] = await Promise.all([
+    const [contacts, properties, units, tenants, organizations, organizationContacts] = await Promise.all([
       prisma.contact.findMany({
         orderBy: { fullName: 'asc' },
         select: { id: true, fullName: true, type: true },
@@ -25,6 +25,14 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         select: { id: true, contact: { select: { fullName: true } } },
       }),
+      prisma.organization.findMany({
+        orderBy: { name: 'asc' },
+        select: { id: true, name: true, type: true },
+      }).catch(() => []),
+      prisma.organizationContact.findMany({
+        orderBy: { fullName: 'asc' },
+        select: { id: true, fullName: true, organization: { select: { name: true } } },
+      }).catch(() => []),
     ]);
 
     return NextResponse.json({
@@ -32,12 +40,17 @@ export async function GET(request: NextRequest) {
       properties,
       units,
       tenants: tenants.map((tenant) => ({ id: tenant.id, fullName: tenant.contact.fullName })),
+      organizations,
+      organizationContacts: organizationContacts.map((item) => ({
+        id: item.id,
+        fullName: `${item.fullName}${item.organization?.name ? ` · ${item.organization.name}` : ''}`,
+      })),
     });
   } catch (error) {
     console.error('[CRM_OPTIONS_GET]', error);
     if (error instanceof Prisma.PrismaClientInitializationError) {
       return NextResponse.json(
-        { contacts: [], properties: [], units: [], tenants: [], dbUnavailable: true },
+        { contacts: [], properties: [], units: [], tenants: [], organizations: [], organizationContacts: [], dbUnavailable: true },
         { status: 200 },
       );
     }

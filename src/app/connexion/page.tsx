@@ -52,9 +52,9 @@ export default function ConnexionPage() {
   return (
     <div className="min-h-[calc(100vh-120px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion utilisateur</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion au portail client</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Connectez-vous à votre espace utilisateur Nowis pour suivre vos projets et échanges.
+          Connectez-vous pour suivre vos demandes de chanson, vos ateliers, vos rendez-vous et vos échanges avec Nowis.
         </p>
 
         {externalErrorMessage ? (
@@ -96,14 +96,14 @@ export default function ConnexionPage() {
         </form>
 
         <p className="mt-6 text-sm text-gray-600">
-          Pas encore de compte ?{' '}
+          Pas encore d'accès ?{' '}
           <a href="/inscription" className="text-primary-600 hover:underline">
-            Créer un compte
+            Créer mon accès
           </a>
         </p>
 
         <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-          Vous êtes un utilisateur interne ?{' '}
+          Vous faites partie de l’équipe Nowis ?{' '}
           <a href="/crm/login" className="font-medium text-primary-600 hover:underline">
             Accéder au CRM
           </a>

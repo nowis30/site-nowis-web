@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { prisma } from '@/lib/prisma';
+import { isIncomingMessageTask } from '@/lib/contact-message-tasks';
 import {
   isMissingMessagesTableError,
   safeCountUnreadClientMessages,
@@ -61,23 +62,51 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
     }
 
-    const message = await prisma.message.create({
-      data: {
-        contactId: contact.id,
-        senderType: 'ADMIN',
-        content: payload.content,
-        isRead: false,
-      },
-    });
+    const message = await prisma.$transaction(async (tx) => {
+      const createdMessage = await tx.message.create({
+        data: {
+          contactId: contact.id,
+          senderType: 'ADMIN',
+          content: payload.content,
+          isRead: false,
+        },
+      });
 
-    await prisma.activity.create({
-      data: {
-        type: 'MESSAGE',
-        title: 'Message envoyé au client',
-        description: payload.content,
-        contactId: contact.id,
-        userId: guard.session.sub,
-      },
+      await tx.activity.create({
+        data: {
+          type: 'MESSAGE',
+          title: 'Message envoye au client',
+          description: payload.content,
+          contactId: contact.id,
+          userId: guard.session.sub,
+        },
+      });
+
+      const openTasks = await tx.task.findMany({
+        where: {
+          linkedType: 'CONTACT',
+          linkedId: contact.id,
+          status: { not: 'DONE' },
+        },
+        select: {
+          id: true,
+          title: true,
+          linkedType: true,
+          linkedId: true,
+          description: true,
+        },
+      });
+
+      const taskIdsToClose = openTasks.filter(isIncomingMessageTask).map((item) => item.id);
+
+      if (taskIdsToClose.length > 0) {
+        await tx.task.updateMany({
+          where: { id: { in: taskIdsToClose } },
+          data: { status: 'DONE' },
+        });
+      }
+
+      return createdMessage;
     });
 
     return NextResponse.json({ item: message }, { status: 201 });

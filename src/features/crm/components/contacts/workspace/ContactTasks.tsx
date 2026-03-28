@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ContactTaskItem } from './types';
 import { formatDateTime } from './formatters';
 
@@ -15,6 +16,13 @@ export function ContactTasks({ tasks }: { tasks: ContactTaskItem[] }) {
             <span>Priorité {task.priority}</span>
             <span>{formatDateTime(task.dueDate)}</span>
           </div>
+          {task.href ? (
+            <div className="mt-4">
+              <Link href={task.href} className="text-sm font-medium text-primary-300 hover:text-primary-200">
+                Ouvrir le message
+              </Link>
+            </div>
+          ) : null}
         </article>
       ))}
     </div>

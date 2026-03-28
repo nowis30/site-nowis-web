@@ -86,10 +86,10 @@ export const HomeScreen = async () => {
           <div className="relative z-10">
             <p className="brand-chip">Chansons personnalisées</p>
             <h1 className="brand-metal-text mt-6 max-w-4xl font-display text-5xl leading-[0.95] md:text-7xl xl:text-[5.5rem]">
-              Offrez une chanson unique à quelqu’un que vous aimez
+              Création musicale sur mesure et ateliers créatifs pour enfants
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100 md:text-xl">
-              Je transforme vos souvenirs, vos mots et vos émotions en chanson personnalisée, pour créer un cadeau vrai, marquant et profondément humain.
+              Nowis réunit deux univers clairs : la chanson personnalisée pour les particuliers et les projets sensibles, puis les ateliers créatifs conçus pour les écoles, organismes et groupes d’enfants.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
@@ -99,20 +99,26 @@ export const HomeScreen = async () => {
                 Commander une chanson
               </Link>
               <Link
-                href={songSalesCtas.listen.href}
+                href="/ateliers/demande"
+                className="inline-flex items-center justify-center rounded-xl border border-amber-200/30 bg-amber-500/10 px-6 py-3.5 font-semibold text-white backdrop-blur-sm transition hover:bg-amber-500/20"
+              >
+                Demander un atelier
+              </Link>
+              <Link
+                href="/connexion"
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-slate-950/55 px-6 py-3.5 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/12"
               >
-                Écouter des exemples
+                Accès client
               </Link>
             </div>
             <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-4 backdrop-blur-md">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Pour qui</p>
-                <p className="mt-2 text-sm leading-6 text-slate-100">Mariage, anniversaire, naissance, hommage, amour, famille, projet personnel.</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Volet musique</p>
+                <p className="mt-2 text-sm leading-6 text-slate-100">Demandes de chanson, briefs créatifs, échanges, paroles, démos, MP3, PDF et suivi client complet.</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-4 backdrop-blur-md">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Pourquoi ça touche</p>
-                <p className="mt-2 text-sm leading-6 text-slate-100">Parce que la chanson part d’une histoire réelle, avec une vraie attention à ce que tu veux faire ressentir.</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">Volet ateliers</p>
+                <p className="mt-2 text-sm leading-6 text-slate-100">Ateliers créatifs pour écoles, camps et organismes avec réservation, rendez-vous, documents et suivi administratif.</p>
               </div>
             </div>
           </div>
@@ -143,6 +149,26 @@ export const HomeScreen = async () => {
               <p className="mt-3 text-lg leading-8 text-slate-100">{item}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-8 md:pb-12">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <article className="brand-card p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-300">Musique</p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white">Une demande de chanson claire, suivie et humaine</h2>
+            <p className="mt-4 text-base leading-7 text-slate-200">Le site et le portail client sont pensés pour recevoir un brief musical, échanger facilement, partager des documents et suivre l’avancement de la création.</p>
+            <Link href="/commander-une-chanson" className="mt-6 inline-flex rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">Commander une chanson</Link>
+          </article>
+          <article className="brand-card p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-300">Ateliers</p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white">Des ateliers créatifs pour écoles et organismes</h2>
+            <p className="mt-4 text-base leading-7 text-slate-200">Nowis propose aussi des ateliers pour enfants avec demandes d’intervention, prises de rendez-vous, créneaux du mardi et du jeudi, et suivi CRM côté organisation.</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/ateliers" className="inline-flex rounded-xl border border-white/10 bg-slate-950/45 px-5 py-3 font-semibold text-white transition hover:bg-white/10">Découvrir les ateliers</Link>
+              <Link href="/ateliers/demande" className="inline-flex rounded-xl border border-amber-200/30 bg-amber-500/10 px-5 py-3 font-semibold text-white transition hover:bg-amber-500/20">Demander un atelier</Link>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -208,14 +234,14 @@ export const HomeScreen = async () => {
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Connexion</p>
             <h3 className="mt-4 font-display text-4xl leading-[1.05]">Choisis ton espace et connecte-toi en quelques secondes.</h3>
             <p className="mt-4 text-base leading-8 text-slate-200 md:text-lg">
-              L'espace client te permet de suivre tes projets, tes rendez-vous et tes échanges avec Nowis. L'accès CRM est réservé aux membres internes qui gèrent l'activité.
+              Le portail client permet de suivre vos demandes de chanson, vos ateliers, vos rendez-vous, vos messages et vos documents. Le CRM reste réservé à l’équipe interne.
             </p>
 
             <div className="mt-8 grid gap-4">
               <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Nouveau client</p>
                 <p className="mt-2 text-sm leading-7 text-slate-200">
-                  Créez votre compte utilisateur pour accéder à votre espace client Nowis.
+                  Créez votre accès pour suivre un projet musical ou un dossier atelier.
                 </p>
                 <Link
                   href="/inscription"
@@ -226,9 +252,9 @@ export const HomeScreen = async () => {
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Espace utilisateur</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Portail client</p>
                 <p className="mt-2 text-sm leading-7 text-slate-200">
-                  Connexion pour consulter ton espace client Nowis, tes demandes de chanson et tes échanges.
+                  Connexion pour consulter vos demandes, vos échanges, vos rendez-vous et vos documents.
                 </p>
                 <Link
                   href="/connexion"
@@ -241,7 +267,7 @@ export const HomeScreen = async () => {
               <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-5 backdrop-blur-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Accès équipe CRM</p>
                 <p className="mt-2 text-sm leading-7 text-slate-200">
-                  Connexion interne pour les utilisateurs autorisés du back-office Nowis.
+                  Connexion interne pour gérer les clients, écoles, demandes, ateliers et suivis.
                 </p>
                 <Link
                   href="/crm/login"

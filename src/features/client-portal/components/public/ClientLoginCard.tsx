@@ -65,7 +65,7 @@ export function ClientLoginCard() {
         </div>
 
         <p className="text-sm leading-6 text-slate-300">
-          Connectez-vous avec votre email et votre mot de passe pour acceder directement a votre portail client Nowis.
+          Connectez-vous avec votre email et votre mot de passe pour acceder a votre portail client, que vous suiviez une chanson ou un atelier.
         </p>
 
         <form onSubmit={submit} className="mt-8 space-y-4">
@@ -112,7 +112,7 @@ export function ClientLoginCard() {
         </form>
 
         <div className="mt-8 flex flex-col gap-3 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
-          <p>Pas encore de compte client ?</p>
+          <p>Pas encore d'acces client ?</p>
           <Link href="/client/register" className="font-semibold text-primary-300 hover:text-primary-200">
             Creer mon acces
           </Link>

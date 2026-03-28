@@ -44,7 +44,7 @@ export default function InscriptionPage() {
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Inscription</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Créez votre compte utilisateur Nowis pour centraliser vos demandes, messages et suivis.
+          Créez votre accès Nowis pour centraliser vos demandes, ateliers, messages, rendez-vous et documents.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -99,7 +99,7 @@ export default function InscriptionPage() {
           {error && <div className="text-sm text-red-600">{error}</div>}
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Création en cours...' : 'Créer mon compte'}
+            {isSubmitting ? 'Création en cours...' : 'Créer mon accès'}
           </Button>
         </form>
 

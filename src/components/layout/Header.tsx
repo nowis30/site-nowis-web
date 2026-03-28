@@ -18,19 +18,17 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { label: 'Accueil', href: '/' },
+  { label: 'Commander une chanson', href: '/commander-une-chanson' },
+  { label: 'Ateliers', href: '/ateliers' },
   { label: 'Accès client', href: '/connexion' },
   { label: 'CRM', href: '/crm' },
-  { label: 'Commander une chanson', href: '/commander-une-chanson' },
-  { label: 'Artistes', href: '/artistes' },
-  { label: 'Exemples', href: '/musique' },
   { label: 'Contact', href: '/contact' },
 ];
 
 const resourceLinks: NavLink[] = [
-  { label: 'Musique', href: '/musique' },
-  { label: 'Vidéos', href: '/videos' },
+  { label: 'Exemples musicaux', href: '/musique' },
+  { label: 'Demande d’atelier', href: '/ateliers/demande' },
   { label: 'Services créatifs', href: '/services' },
-  { label: 'Assistant projet', href: '/assistant-projet' },
   { label: 'À propos', href: '/a-propos' },
 ];
 
@@ -90,7 +88,7 @@ export const Header: React.FC = () => {
             href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée."
             className="ml-2 rounded-xl bg-brand-warm px-5 py-2.5 text-sm font-semibold text-white shadow-fire transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
           >
-            Commander une chanson
+            Lancer mon projet
           </ContactPrefillLink>
         </div>
 
@@ -150,7 +148,7 @@ export const Header: React.FC = () => {
               className="m-4 rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white shadow-fire transition-all hover:brightness-110"
               onClick={() => setIsMenuOpen(false)}
             >
-              Commander une chanson
+              Lancer mon projet
             </ContactPrefillLink>
           </div>
         )}

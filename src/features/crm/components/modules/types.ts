@@ -13,7 +13,7 @@ export interface ModulePageConfig {
     type: 'text' | 'number' | 'select' | 'textarea' | 'date' | 'checkbox';
     required?: boolean;
     options?: Array<{ value: string; label: string }>;
-    sourceKey?: 'contacts' | 'properties' | 'units' | 'tenants';
+    sourceKey?: 'contacts' | 'properties' | 'units' | 'tenants' | 'organizations' | 'organizationContacts';
     sourceMapper?: {
       value: (item: GenericRecord) => string;
       label: (item: GenericRecord) => string;

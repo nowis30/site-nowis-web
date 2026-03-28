@@ -21,6 +21,8 @@ type CalendarEventItem = {
   propertyId: string | null;
   contactName: string | null;
   propertyName: string | null;
+  source?: 'appointment' | 'workshop_appointment' | 'workshop_availability';
+  organizationName?: string | null;
 };
 
 type OptionItem = { id: string; label: string };
@@ -33,6 +35,8 @@ const TYPE_COLORS: Record<string, string> = {
   INSPECTION: '#ea580c',
   DEADLINE: '#dc2626',
   REMINDER: '#64748b',
+  WORKSHOP: '#9333ea',
+  AVAILABILITY: '#0f766e',
 };
 
 function toLocalInputValue(value: string) {
@@ -116,6 +120,9 @@ export function CrmCalendarPage({
   const events = useMemo(
     () => filteredAppointments.map((item) => ({
       ...toEventInput(item),
+      editable: item.source !== 'workshop_appointment' && item.source !== 'workshop_availability',
+      startEditable: item.source !== 'workshop_appointment' && item.source !== 'workshop_availability',
+      durationEditable: item.source !== 'workshop_appointment' && item.source !== 'workshop_availability',
       classNames: item.id === selectedEventId ? ['ring-2', 'ring-primary-300'] : [],
     })),
     [filteredAppointments, selectedEventId],
@@ -138,6 +145,11 @@ export function CrmCalendarPage({
   }
 
   function openEditModal(item: CalendarEventItem) {
+    if (item.source === 'workshop_appointment' || item.source === 'workshop_availability') {
+      setSelectedEventId(item.id);
+      setModalOpen(false);
+      return;
+    }
     setSelectedEventId(item.id);
     setEditingId(item.id);
     setForm({
@@ -252,7 +264,7 @@ export function CrmCalendarPage({
 
   async function applyEventMove(change: EventChangeArg) {
     const current = appointments.find((entry) => entry.id === change.event.id);
-    if (!current || !change.event.start || !change.event.end) return;
+    if (!current || !change.event.start || !change.event.end || current.source === 'workshop_appointment' || current.source === 'workshop_availability') return;
 
     const payload = {
       title: current.title,
@@ -285,7 +297,7 @@ export function CrmCalendarPage({
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Planification</p>
           <h2 className="mt-2 text-3xl font-semibold text-white">Calendrier CRM</h2>
-          <p className="mt-2 text-sm text-slate-400">Vue mois, semaine et jour avec création, édition, suppression et déplacement des rendez-vous liés aux contacts et aux biens.</p>
+          <p className="mt-2 text-sm text-slate-400">Vue mois, semaine et jour avec rendez-vous CRM, rendez-vous atelier et plages de disponibilité du mardi et du jeudi.</p>
         </div>
         <button onClick={() => openCreateModal(new Date().toISOString())} className="rounded-2xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-500">
           Nouveau rendez-vous
@@ -338,9 +350,9 @@ export function CrmCalendarPage({
             {selectedEvent ? (
               <div className="mt-3 space-y-2 text-sm text-slate-300">
                 <p className="font-medium text-white">{selectedEvent.title}</p>
-                <p>{selectedEvent.contactName || 'Sans contact'}</p>
+                <p>{selectedEvent.organizationName || selectedEvent.contactName || 'Sans contact'}</p>
                 <p>{selectedEvent.status} · {selectedEvent.type}</p>
-                <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button>
+                {selectedEvent.source === 'appointment' || !selectedEvent.source ? <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button> : <p className="text-xs text-slate-500">Événement atelier synchronisé</p>}
               </div>
             ) : <p className="mt-3 text-sm text-slate-400">Cliquez un rendez-vous pour afficher le détail rapide.</p>}
           </div>
@@ -363,7 +375,9 @@ export function CrmCalendarPage({
             eventClick={(info: EventClickArg) => {
               const item = info.event.extendedProps as CalendarEventItem;
               setSelectedEventId(item.id);
-              openEditModal(item);
+              if (item.source === 'appointment' || !item.source) {
+                openEditModal(item);
+              }
             }}
             eventDrop={applyEventMove}
             eventResize={applyEventMove}

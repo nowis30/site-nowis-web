@@ -1,6 +1,5 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
-import Link from 'next/link';
 import { TasksPage } from '@/features/crm/components/tasks/TasksPage';
 
 export default async function CrmTasksPage() {
@@ -33,6 +32,8 @@ export default async function CrmTasksPage() {
       status: item.status as 'TODO' | 'IN_PROGRESS' | 'DONE',
       priority: item.priority as 'LOW' | 'MEDIUM' | 'HIGH',
       dueDate: item.dueDate?.toISOString() ?? null,
+      linkedType: item.linkedType,
+      linkedId: item.linkedId,
       caseRecord: item.caseRecord,
     };
   }

@@ -15,7 +15,7 @@ interface OptionItem {
   label: string;
 }
 
-type SourceKey = 'contacts' | 'properties' | 'units' | 'tenants';
+type SourceKey = 'contacts' | 'properties' | 'units' | 'tenants' | 'organizations' | 'organizationContacts';
 
 interface SourceMapper {
   value: (item: GenericRecord) => string;
@@ -80,6 +80,8 @@ export function EntityCrudPage({
     properties: [],
     units: [],
     tenants: [],
+    organizations: [],
+    organizationContacts: [],
   });
 
   useEffect(() => {
@@ -92,6 +94,8 @@ export function EntityCrudPage({
         properties: data.properties ?? [],
         units: data.units ?? [],
         tenants: data.tenants ?? [],
+        organizations: data.organizations ?? [],
+        organizationContacts: data.organizationContacts ?? [],
       });
     }
 

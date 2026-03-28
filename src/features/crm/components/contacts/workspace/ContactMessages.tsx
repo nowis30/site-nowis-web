@@ -17,10 +17,12 @@ function formatDateTime(value: string) {
 export function ContactMessages({
   contactId,
   initialMessages,
+  highlightedMessageId,
   onUnreadCountChange,
 }: {
   contactId: string;
   initialMessages: MessageItem[];
+  highlightedMessageId?: string | null;
   onUnreadCountChange?: (count: number) => void;
 }) {
   const [messages, setMessages] = useState<MessageItem[]>(initialMessages);
@@ -56,6 +58,17 @@ export function ContactMessages({
       active = false;
     };
   }, [contactId]);
+
+  useEffect(() => {
+    if (!highlightedMessageId) {
+      return;
+    }
+
+    const element = document.getElementById(`contact-message-${highlightedMessageId}`);
+    if (element) {
+      element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [highlightedMessageId, messages]);
 
   async function sendMessage(event: React.FormEvent) {
     event.preventDefault();
@@ -94,7 +107,7 @@ export function ContactMessages({
 
         <div className="mt-5 max-h-[28rem] space-y-3 overflow-y-auto pr-2">
           {messages.length === 0 ? <p className="text-sm text-slate-400">Aucun message pour ce contact.</p> : messages.map((item) => (
-            <article key={item.id} className={`rounded-2xl border p-4 ${item.senderType === 'ADMIN' ? 'ml-10 border-primary-500/40 bg-primary-500/10' : 'mr-10 border-slate-700 bg-slate-900/70'}`}>
+            <article id={`contact-message-${item.id}`} key={item.id} className={`rounded-2xl border p-4 ${item.senderType === 'ADMIN' ? 'ml-10 border-primary-500/40 bg-primary-500/10' : 'mr-10 border-slate-700 bg-slate-900/70'} ${highlightedMessageId === item.id ? 'ring-2 ring-amber-400/80 ring-offset-2 ring-offset-slate-950' : ''}`}>
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{item.senderType === 'ADMIN' ? 'Nowis' : 'Client'}</p>
                 <p className="text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>

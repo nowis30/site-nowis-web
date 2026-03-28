@@ -1,4 +1,5 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
+import { buildContactMessageTaskHref, extractIncomingMessageTaskMeta } from '@/lib/contact-message-tasks';
 import { safeListMessages } from '@/lib/messages-store';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
@@ -273,10 +274,14 @@ export default async function ContactDetailPage({ params }: PageProps) {
       tasks={tasks.map((item) => ({
         id: item.id,
         title: item.title,
-        description: item.description,
+        description: extractIncomingMessageTaskMeta(item.description).description,
         status: item.status,
         priority: item.priority,
         dueDate: item.dueDate?.toISOString() || null,
+        href: item.linkedType === 'CONTACT' ? (() => {
+          const { messageId } = extractIncomingMessageTaskMeta(item.description);
+          return messageId ? buildContactMessageTaskHref(contact.id, messageId) : null;
+        })() : null,
       }))}
       appointments={contact.appointments.map((item) => ({
         id: item.id,

@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Building2, Calendar, CheckSquare, Mail, MessageSquare, NotebookPen, Paperclip, Receipt, User2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Calendar, CheckSquare, Mail, MessageSquare, NotebookPen, Paperclip, Receipt, User2 } from 'lucide-react';
 import type { ContactWorkspaceProps } from './workspace/types';
 import { ContactHeader, type ContactActionType } from './workspace/ContactHeader';
 import { ContactSummary } from './workspace/ContactSummary';
@@ -12,7 +12,6 @@ import { ContactAppointments } from './workspace/ContactAppointments';
 import { ContactInvoices } from './workspace/ContactInvoices';
 import { ContactFilesPanel } from './workspace/ContactFilesPanel';
 import { ContactEmails } from './workspace/ContactEmails';
-import { ContactHousing } from './workspace/ContactHousing';
 import { ContactActionModal } from './workspace/ContactActionModal';
 import { ContactMessages } from './workspace/ContactMessages';
 import { ContactSongRequests } from './workspace/ContactSongRequests';
@@ -27,14 +26,21 @@ const TABS = [
   { id: 'emails', label: 'Emails', icon: Mail },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
   { id: 'song-requests', label: 'Demandes chanson', icon: Receipt },
-  { id: 'real-estate', label: 'Liens immobiliers', icon: Building2 },
 ] as const;
 
 export function ContactWorkspace({ contact, tasks, appointments, invoices, files, propertyOptions, timeline, unreadClientMessages, canImpersonate }: ContactWorkspaceProps) {
   const router = useRouter();
-  const [tab, setTab] = useState<(typeof TABS)[number]['id']>('summary');
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const highlightedMessageId = searchParams.get('message');
+  const initialTab = TABS.some((item) => item.id === requestedTab) ? requestedTab as (typeof TABS)[number]['id'] : 'summary';
+  const [tab, setTab] = useState<(typeof TABS)[number]['id']>(initialTab);
   const [action, setAction] = useState<ContactActionType | null>(null);
   const [unreadCount, setUnreadCount] = useState(unreadClientMessages);
+
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
 
   const stats = useMemo(() => ([
     { label: 'Tâches ouvertes', value: tasks.filter((item) => item.status !== 'DONE').length },
@@ -92,9 +98,8 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
           {tab === 'invoices' ? <ContactInvoices invoices={invoices} /> : null}
           {tab === 'files' ? <ContactFilesPanel contactId={contact.id} files={files} /> : null}
           {tab === 'emails' ? <ContactEmails contact={contact} /> : null}
-          {tab === 'messages' ? <ContactMessages contactId={contact.id} initialMessages={contact.messages} onUnreadCountChange={setUnreadCount} /> : null}
+          {tab === 'messages' ? <ContactMessages contactId={contact.id} initialMessages={contact.messages} highlightedMessageId={highlightedMessageId} onUnreadCountChange={setUnreadCount} /> : null}
           {tab === 'song-requests' ? <ContactSongRequests items={contact.songRequests} /> : null}
-          {tab === 'real-estate' ? <ContactHousing contact={contact} /> : null}
         </div>
       </div>
 

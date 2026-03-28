@@ -8,9 +8,11 @@ import {
   casesConfig,
   contactsConfig,
   maintenanceConfig,
+  organizationsConfig,
   propertiesConfig,
   tenantsConfig,
   unitsConfig,
+  workshopRequestsConfig,
 } from '@/features/crm/config/module-config';
 
 const moduleConfigs = {
@@ -20,6 +22,8 @@ const moduleConfigs = {
   units: unitsConfig,
   tenants: tenantsConfig,
   maintenance: maintenanceConfig,
+  organizations: organizationsConfig,
+  workshopRequests: workshopRequestsConfig,
 };
 
 const detailBasePaths: Record<string, string> = {
@@ -29,11 +33,13 @@ const detailBasePaths: Record<string, string> = {
   units: '/crm/units',
   tenants: '/crm/tenants',
   maintenance: '/crm/maintenance',
+  organizations: '/crm/organizations',
+  workshopRequests: '/crm/workshop-requests',
 };
 
 interface ModulePageProps {
   role: CrmRole;
-  moduleKey: Extract<CrmModuleKey, 'contacts' | 'cases' | 'properties' | 'units' | 'tenants' | 'maintenance'>;
+  moduleKey: Extract<CrmModuleKey, 'contacts' | 'cases' | 'properties' | 'units' | 'tenants' | 'maintenance' | 'organizations' | 'workshopRequests'>;
 }
 
 export function ModulePage({ role, moduleKey }: ModulePageProps) {

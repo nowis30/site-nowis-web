@@ -21,6 +21,20 @@ enum ContactType {
   LOCATAIRE_PROSPECT
 }
 
+enum OrganizationType {
+  SCHOOL
+  COMMUNITY_ORG
+  DAYCARE
+  CAMP
+  OTHER
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  LEAD
+  INACTIVE
+}
+
 enum InquiryStatus {
   NEW
   QUALIFIED
@@ -143,6 +157,34 @@ enum ActivityType {
   TASK
 }
 
+enum WorkshopAudienceType {
+  PRESCHOOL
+  ELEMENTARY
+  TEENS
+  MIXED
+}
+
+enum WorkshopFormat {
+  IN_PERSON
+  VIRTUAL
+  HYBRID
+}
+
+enum WorkshopRequestStatus {
+  NEW
+  CONTACTED
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum WorkshopAppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  DONE
+}
+
 enum SongRequestStatus {
   NEW
   CONTACTED
@@ -156,6 +198,7 @@ enum SongRequestStatus {
 
 enum LinkedType {
   CONTACT
+  ORGANIZATION
   INQUIRY
   CASE
   PROPERTY
@@ -168,6 +211,8 @@ enum LinkedType {
   INVOICE
   ACTIVITY
   SONG_REQUEST
+  WORKSHOP_REQUEST
+  WORKSHOP_APPOINTMENT
 }
 
 enum FileVisibility {
@@ -228,12 +273,132 @@ model Contact {
   activities      Activity[]
   fileDocuments   FileDocument[]
   songRequests    SongRequest[]
+  organizationLinks OrganizationContact[]
+  workshopRequests WorkshopRequest[]
+  workshopAppointments WorkshopAppointment[]
   outboundEmails  OutboundEmail[]
   userAccount     User?
 
   @@index([type])
   @@index([fullName])
   @@map("contacts")
+}
+
+model Organization {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  name                String
+  type                OrganizationType      @default(OTHER)
+  email               String?
+  phone               String?
+  address             String?
+  city                String?
+  notes               String?
+  status              OrganizationStatus    @default(LEAD)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  contacts            OrganizationContact[]
+  workshopRequests    WorkshopRequest[]
+  workshopAppointments WorkshopAppointment[]
+
+  @@index([name])
+  @@index([status])
+  @@map("organizations")
+}
+
+model OrganizationContact {
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @db.Uuid
+  contactId      String?       @db.Uuid
+  fullName       String
+  role           String?
+  email          String?
+  phone          String?
+  isPrimary      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contact        Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  workshopRequests WorkshopRequest[]
+  workshopAppointments WorkshopAppointment[]
+
+  @@index([organizationId])
+  @@index([contactId])
+  @@map("organization_contacts")
+}
+
+model WorkshopRequest {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  organizationId        String                 @db.Uuid
+  contactId             String?                @db.Uuid
+  organizationContactId String?                @db.Uuid
+  title                 String
+  audienceType          WorkshopAudienceType   @default(MIXED)
+  ageRange              String?
+  estimatedParticipants Int?
+  requestedDate         DateTime?
+  requestedTime         String?
+  preferredDays         String[]
+  format                WorkshopFormat         @default(IN_PERSON)
+  location              String?
+  workshopTheme         String
+  objectives            String
+  notes                 String?
+  status                WorkshopRequestStatus  @default(NEW)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  organization          Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contact               Contact?               @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  organizationContact   OrganizationContact?   @relation(fields: [organizationContactId], references: [id], onDelete: SetNull)
+  appointments          WorkshopAppointment[]
+
+  @@index([organizationId])
+  @@index([contactId])
+  @@index([status])
+  @@map("workshop_requests")
+}
+
+model WorkshopAvailability {
+  id         String   @id @default(uuid()) @db.Uuid
+  weekday    Int
+  startTime  String
+  endTime    String
+  isActive   Boolean  @default(true)
+  capacity   Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([weekday, isActive])
+  @@map("workshop_availabilities")
+}
+
+model WorkshopAppointment {
+  id                    String                     @id @default(uuid()) @db.Uuid
+  workshopRequestId     String                     @db.Uuid
+  organizationId        String                     @db.Uuid
+  contactId             String?                    @db.Uuid
+  organizationContactId String?                    @db.Uuid
+  title                 String
+  description           String?
+  startAt               DateTime
+  endAt                 DateTime
+  status                WorkshopAppointmentStatus  @default(PENDING)
+  location              String?
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  workshopRequest       WorkshopRequest            @relation(fields: [workshopRequestId], references: [id], onDelete: Cascade)
+  organization          Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contact               Contact?                   @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  organizationContact   OrganizationContact?       @relation(fields: [organizationContactId], references: [id], onDelete: SetNull)
+
+  @@index([workshopRequestId])
+  @@index([organizationId])
+  @@index([contactId])
+  @@index([startAt])
+  @@map("workshop_appointments")
 }
 
 model Message {

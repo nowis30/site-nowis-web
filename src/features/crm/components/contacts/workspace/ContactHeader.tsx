@@ -43,9 +43,8 @@ export function ContactHeader({
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <h1 className="text-4xl font-semibold text-white">{contact.fullName}</h1>
             <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-3 py-1 text-sm text-primary-200">{contact.type}</span>
-            {contact.tenantProfile ? <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-200">Locataire lié</span> : null}
           </div>
-          <p className="mt-3 text-sm leading-6 text-slate-300">Dossier complet centralisé avec activité, tâches, rendez-vous, factures, documents, emails et liens immobiliers. Le contenu reste dans une zone de lecture propre, sans compression ni panneau caché.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">Dossier complet centralisé avec activité, tâches, rendez-vous, factures, documents, emails, messages et demandes créatives. Le contenu reste lisible, direct et orienté suivi client.</p>
           <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-400">
             {contact.email ? <span>{contact.email}</span> : null}
             {contact.phone ? <span>{contact.phone}</span> : null}
@@ -68,14 +67,6 @@ export function ContactHeader({
           <button onClick={() => onAction('invoice')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter facture</button>
           <button onClick={() => onAction('appointment')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter rendez-vous</button>
           <button onClick={() => onAction('song-request')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Créer demande chanson</button>
-          <button
-            onClick={() => onAction('lease')}
-            disabled={!contact.tenantProfile?.unit}
-            title={!contact.tenantProfile?.unit ? 'Ce contact doit être associé à une unité locative avant de créer un bail.' : undefined}
-            className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Plus size={15} className="mb-2" /> Ajouter bail
-          </button>
         </div>
       </div>
 

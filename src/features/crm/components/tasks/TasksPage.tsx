@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { CheckSquare, Plus, AlertCircle, Clock, FolderOpen } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { extractIncomingMessageTaskMeta, getIncomingMessageTaskHref } from '@/lib/contact-message-tasks';
 
 type Task = {
   id: string;
@@ -11,6 +13,8 @@ type Task = {
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   dueDate: string | null;
+  linkedType: string | null;
+  linkedId: string | null;
   caseRecord: { title: string; referenceCode: string } | null;
 };
 
@@ -28,6 +32,8 @@ function isOverdue(task: Task) {
 
 function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
   const [loading, setLoading] = useState(false);
+  const { description } = extractIncomingMessageTaskMeta(task.description);
+  const messageHref = getIncomingMessageTaskHref(task);
 
   async function changeStatus(status: Task['status']) {
     setLoading(true);
@@ -56,7 +62,7 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
         </button>
         <div className="flex-1 min-w-0">
           <p className={`text-sm font-medium ${task.status === 'DONE' ? 'line-through text-slate-500' : 'text-white'}`}>{task.title}</p>
-          {task.description && <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{task.description}</p>}
+          {description && <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{description}</p>}
         </div>
         <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0 ${PRIORITY_COLORS[task.priority]}`}>
           {PRIORITY_LABELS[task.priority]}
@@ -75,6 +81,11 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
             <FolderOpen size={11} />
             {task.caseRecord.referenceCode}
           </span>
+        )}
+        {messageHref && (
+          <Link href={messageHref} className="text-xs text-primary-300 hover:text-primary-200">
+            Ouvrir le message
+          </Link>
         )}
         {task.status !== 'DONE' && (
           <div className="ml-auto flex gap-2">

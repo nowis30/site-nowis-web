@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { buildIncomingMessageTaskDescription } from '@/lib/contact-message-tasks';
 import { verifyClientPortalToken } from '@/lib/client-portal';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { sendPortalEventNotificationEmail } from '@/lib/email-service';
@@ -51,27 +52,44 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
     if (session) {
       const payload = sessionMessageSchema.parse(body);
 
-      const item = await prisma.message.create({
-        data: {
-          contactId: session.contactId,
-          senderType: 'CLIENT',
-          content: payload.message,
-          isRead: false,
-        },
-      });
+      const item = await prisma.$transaction(async (tx) => {
+        const message = await tx.message.create({
+          data: {
+            contactId: session.contactId,
+            senderType: 'CLIENT',
+            content: payload.message,
+            isRead: false,
+          },
+        });
 
-      await prisma.activity.create({
-        data: {
-          type: 'MESSAGE',
-          title: 'Message client reçu',
-          description: payload.message,
-          contactId: session.contactId,
-        },
+        await tx.activity.create({
+          data: {
+            type: 'MESSAGE',
+            title: 'Message client recu',
+            description: payload.message,
+            contactId: session.contactId,
+          },
+        });
+
+        await tx.task.create({
+          data: {
+            title: `Repondre au message de ${session.fullName}`,
+            description: buildIncomingMessageTaskDescription(payload.message, message.id),
+            status: 'TODO',
+            priority: 'HIGH',
+            dueDate,
+            linkedType: 'CONTACT',
+            linkedId: session.contactId,
+          },
+        });
+
+        return message;
       });
 
       await sendPortalEventNotificationEmail({
@@ -106,23 +124,40 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const activity = await prisma.activity.create({
-      data: {
-        type: 'MESSAGE',
-        title: `Message client : ${payload.subject}`,
-        description: payload.message,
-        contactId: legacySession.contactId,
-        songRequestId: payload.songRequestId || null,
-      },
-    });
+    const { activity, item } = await prisma.$transaction(async (tx) => {
+      const createdActivity = await tx.activity.create({
+        data: {
+          type: 'MESSAGE',
+          title: `Message client : ${payload.subject}`,
+          description: payload.message,
+          contactId: legacySession.contactId,
+          songRequestId: payload.songRequestId || null,
+        },
+      });
 
-    const item = await prisma.message.create({
-      data: {
-        contactId: legacySession.contactId,
-        senderType: 'CLIENT',
-        content: payload.message,
-        isRead: false,
-      },
+      const message = await tx.message.create({
+        data: {
+          contactId: legacySession.contactId,
+          senderType: 'CLIENT',
+          content: payload.message,
+          isRead: false,
+        },
+      });
+
+      await tx.task.create({
+        data: {
+          title: `Repondre au message de ${legacySession.fullName}`,
+          description: buildIncomingMessageTaskDescription(payload.message, message.id),
+          status: 'TODO',
+          priority: 'HIGH',
+          dueDate,
+          linkedType: 'CONTACT',
+          linkedId: legacySession.contactId,
+          songRequestId: payload.songRequestId || null,
+        },
+      });
+
+      return { activity: createdActivity, item: message };
     });
 
     await sendPortalEventNotificationEmail({

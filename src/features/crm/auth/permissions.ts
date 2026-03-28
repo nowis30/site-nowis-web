@@ -5,6 +5,7 @@ export type CrmAction = 'read' | 'create' | 'update' | 'delete';
 export type CrmModuleKey =
   | 'dashboard'
   | 'contacts'
+  | 'organizations'
   | 'cases'
   | 'properties'
   | 'units'
@@ -16,11 +17,14 @@ export type CrmModuleKey =
   | 'invoices'
   | 'activities'
   | 'songRequests'
+  | 'workshopRequests'
+  | 'settings'
   | 'notifications';
 
 const ADMIN_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   dashboard:    ['read'],
   contacts:     ['read', 'create', 'update', 'delete'],
+  organizations:['read', 'create', 'update', 'delete'],
   cases:        ['read', 'create', 'update', 'delete'],
   properties:   ['read', 'create', 'update', 'delete'],
   units:        ['read', 'create', 'update', 'delete'],
@@ -32,12 +36,15 @@ const ADMIN_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   invoices:     ['read', 'create', 'update', 'delete'],
   activities:   ['read', 'create', 'update', 'delete'],
   songRequests: ['read', 'create', 'update', 'delete'],
+  workshopRequests: ['read', 'create', 'update', 'delete'],
+  settings: ['read', 'create', 'update', 'delete'],
   notifications: ['read'],
 };
 
 const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   dashboard:    ['read'],
   contacts:     ['read', 'create', 'update'],
+  organizations:['read', 'create', 'update'],
   cases:        ['read', 'create', 'update'],
   properties:   ['read', 'create', 'update'],
   units:        ['read', 'create', 'update'],
@@ -49,12 +56,15 @@ const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   invoices:     ['read', 'create', 'update'],
   activities:   ['read', 'create'],
   songRequests: ['read', 'create', 'update'],
+  workshopRequests: ['read', 'create', 'update'],
+  settings: ['read', 'create', 'update'],
   notifications: ['read'],
 };
 
 const TENANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   dashboard:    ['read'],
   contacts:     [],
+  organizations: [],
   cases:        [],
   properties:   [],
   units:        ['read'],
@@ -66,6 +76,8 @@ const TENANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   invoices:     ['read'],
   activities:   [],
   songRequests: [],
+  workshopRequests: [],
+  settings: [],
   notifications: [],
 };
 
