@@ -76,6 +76,19 @@ export default async function ContactDetailPage({ params }: PageProps) {
         ],
       },
       orderBy: [{ status: 'asc' }, { dueDate: 'asc' }],
+    }).catch((error) => {
+      if (isMissingTable(error)) {
+        return prisma.task.findMany({
+          where: {
+            OR: [
+              { linkedType: 'CONTACT', linkedId: params.id },
+              { caseRecord: { contactId: params.id } },
+            ],
+          },
+          orderBy: [{ status: 'asc' }, { dueDate: 'asc' }],
+        });
+      }
+      throw error;
     }),
     prisma.fileDocument.findMany({
       where: { contactId: params.id },
