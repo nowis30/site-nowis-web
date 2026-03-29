@@ -31,6 +31,8 @@ function getS3Client() {
       secretAccessKey: requireEnv('S3_SECRET_ACCESS_KEY'),
     },
     forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+    requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED',
   });
 
   return s3Client;

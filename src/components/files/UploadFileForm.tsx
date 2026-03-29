@@ -81,7 +81,14 @@ export function UploadFileForm({
         if (directUploadResponse.status === 413) {
           throw new Error(`Fichier trop volumineux. Taille max: ${formatBytes(clientMaxSize)}.`);
         }
-        throw new Error('Upload direct vers le stockage impossible');
+
+        const storageError = await directUploadResponse.text().catch(() => '');
+        const condensedStorageError = storageError.replace(/\s+/g, ' ').trim();
+        throw new Error(
+          condensedStorageError
+            ? `Upload stockage refuse (${directUploadResponse.status}). ${condensedStorageError}`
+            : `Upload stockage refuse (${directUploadResponse.status}).`,
+        );
       }
 
       const payload: Record<string, unknown> = {
