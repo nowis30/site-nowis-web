@@ -107,10 +107,14 @@ Intègre un service d'email (Resend, SendGrid) pour les réservations.
 npm run dev                # Serveur local sur port 3000
 npm run lint              # Vérifier le code
 npm run type-check        # Vérifier les types TypeScript
+npm run quality:quick     # Vérification rapide (types + build)
 
 # Production
 npm run build             # Build optimisé
 npm start                 # Serveur production
+npm run prisma:migrate:deploy  # Appliquer migrations en prod
+npm run tasks:backfill-types   # Backfill robuste des tâches legacy
+npm run crm:release:tasks      # Pipeline complet migration + backfill + quality
 
 # Déploiement
 vercel                    # Déployer sur Vercel (recommandé)

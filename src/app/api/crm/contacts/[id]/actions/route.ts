@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 const baseSchema = z.object({
   action: z.enum(['note', 'task', 'invoice', 'appointment', 'lease', 'song-request']),
@@ -69,18 +70,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       if (!payload.title || payload.title.trim().length < 2) {
         return NextResponse.json({ error: 'Titre requis' }, { status: 400 });
       }
-      const task = await prisma.task.create({
-        data: {
+        const taskCreateData: Prisma.TaskUncheckedCreateInput = {
           title: payload.title.trim(),
           description: payload.description?.trim() || null,
+          type: 'FOLLOW_UP',
           status: 'TODO',
           priority: payload.priority || 'MEDIUM',
           dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
           linkedType: 'CONTACT',
           linkedId: contact.id,
           createdById: guard.session.sub,
-        },
-      });
+      };
+      const task = await prisma.task.create({ data: taskCreateData });
       await prisma.activity.create({
         data: {
           type: 'TASK',
@@ -193,18 +194,20 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         },
       });
 
-      await prisma.task.create({
-        data: {
+        const songTaskData: Prisma.TaskUncheckedCreateInput = {
           title: `Analyser demande chanson - ${contact.fullName}`,
           description: payload.description.trim(),
+          type: 'SONG',
+          payload: { songRequestId: songRequest.id },
           status: 'TODO',
           priority: 'MEDIUM',
           linkedType: 'SONG_REQUEST',
           linkedId: songRequest.id,
           songRequestId: songRequest.id,
           createdById: guard.session.sub,
-        },
-      });
+      };
+
+      await prisma.task.create({ data: songTaskData });
 
       return NextResponse.json({ item: songRequest }, { status: 201 });
     }

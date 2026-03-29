@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-normalization';
 
 export const contactInputSchema = z.object({
   type: z.enum(['PROSPECT', 'CLIENT', 'PARTENAIRE', 'PROPRIETAIRE', 'LOCATAIRE_PROSPECT']),
@@ -104,9 +105,46 @@ export const activityInputSchema = z.object({
 export const taskInputSchema = z.object({
   title: z.string().min(2).max(200),
   description: z.string().max(2000).optional(),
+  type: z.enum(['CALL', 'EMAIL', 'SONG', 'FOLLOW_UP']).default('FOLLOW_UP'),
+  payload: z.unknown().optional(),
   status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).default('TODO'),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
   dueDate: z.string().datetime().optional().or(z.literal('')),
   caseId: z.string().uuid().optional().or(z.literal('')),
   songRequestId: z.string().uuid().optional().or(z.literal('')),
+}).superRefine((value, ctx) => {
+  const type = coerceTaskType(value.type);
+  const payload = coerceTaskPayload(value.payload);
+
+  if (!payload) {
+    return;
+  }
+
+  const stringField = (field: string) => {
+    const raw = payload[field];
+    return typeof raw === 'string' ? raw : undefined;
+  };
+
+  if (type === 'CALL') {
+    const email = stringField('email');
+    if (email && !z.string().email().safeParse(email).success) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['payload', 'email'], message: 'Email invalide pour une tâche CALL' });
+    }
+  }
+
+  if (type === 'EMAIL') {
+    const email = stringField('email');
+    if (email && !z.string().email().safeParse(email).success) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['payload', 'email'], message: 'Email invalide pour une tâche EMAIL' });
+    }
+  }
+}).transform((value) => {
+  const normalizedType = coerceTaskType(value.type);
+  const normalizedPayload = coerceTaskPayload(value.payload);
+
+  return {
+    ...value,
+    type: normalizedType,
+    payload: normalizedPayload,
+  };
 });

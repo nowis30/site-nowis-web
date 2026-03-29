@@ -1,6 +1,7 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { TasksPage } from '@/features/crm/components/tasks/TasksPage';
+import { coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-normalization';
 
 export default async function CrmTasksPage() {
   await requireCrmSession();
@@ -29,6 +30,8 @@ export default async function CrmTasksPage() {
       id: item.id,
       title: item.title,
       description: item.description,
+      type: coerceTaskType(item.type),
+      payload: coerceTaskPayload(item.payload),
       status: item.status as 'TODO' | 'IN_PROGRESS' | 'DONE',
       priority: item.priority as 'LOW' | 'MEDIUM' | 'HIGH',
       dueDate: item.dueDate?.toISOString() ?? null,

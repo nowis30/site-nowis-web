@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { taskInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-normalization';
 import { z } from 'zod';
 
 const taskStatusFilterSchema = z.enum(['TODO', 'IN_PROGRESS', 'DONE']);
@@ -24,7 +25,13 @@ export async function GET(request: NextRequest) {
     take: 200,
   });
 
-  return NextResponse.json({ items });
+  return NextResponse.json({
+    items: items.map((item) => ({
+      ...item,
+      type: coerceTaskType(item.type),
+      payload: coerceTaskPayload(item.payload),
+    })),
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -37,6 +44,8 @@ export async function POST(request: NextRequest) {
       data: {
         title: payload.title.trim(),
         description: normalizeOptionalString(payload.description),
+        type: payload.type,
+        payload: payload.payload ?? undefined,
         status: payload.status,
         priority: payload.priority,
         dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
@@ -45,8 +54,17 @@ export async function POST(request: NextRequest) {
         createdById: guard.session.sub,
       },
     });
-    return NextResponse.json({ item }, { status: 201 });
-  } catch {
+    return NextResponse.json({
+      item: {
+        ...item,
+        type: coerceTaskType(item.type),
+        payload: coerceTaskPayload(item.payload),
+      },
+    }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Données invalides', details: error.issues }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
   }
 }

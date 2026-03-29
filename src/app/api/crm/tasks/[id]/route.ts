@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { taskInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-normalization';
+import { z } from 'zod';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'tasks', 'update');
@@ -14,6 +16,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       data: {
         title: payload.title.trim(),
         description: normalizeOptionalString(payload.description),
+        type: payload.type,
+        payload: payload.payload ?? undefined,
         status: payload.status,
         priority: payload.priority,
         dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
@@ -21,8 +25,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         songRequestId: payload.songRequestId || null,
       },
     });
-    return NextResponse.json({ item });
-  } catch {
+    return NextResponse.json({
+      item: {
+        ...item,
+        type: coerceTaskType(item.type),
+        payload: coerceTaskPayload(item.payload),
+      },
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Données invalides', details: error.issues }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
   }
 }

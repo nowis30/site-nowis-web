@@ -67,6 +67,13 @@ enum TaskPriority {
   HIGH
 }
 
+enum TaskType {
+  CALL
+  EMAIL
+  SONG
+  FOLLOW_UP
+}
+
 enum PropertyType {
   RESIDENTIAL
   COMMERCIAL
@@ -480,6 +487,8 @@ model Task {
   id             String       @id @default(uuid()) @db.Uuid
   title          String
   description    String?
+  type           TaskType     @default(FOLLOW_UP)
+  payload        Json?
   status         TaskStatus   @default(TODO)
   priority       TaskPriority @default(MEDIUM)
   dueDate        DateTime?

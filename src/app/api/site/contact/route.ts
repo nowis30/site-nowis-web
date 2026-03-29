@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
 // Endpoint public : permet aux formulaires du site de créer un contact et une activité
 // Optionnellement protégé par un token secret côté site
@@ -91,15 +92,16 @@ export async function POST(request: NextRequest) {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 2); // 48h
 
-      await prisma.task.create({
-        data: {
+        const followUpTaskData: Prisma.TaskUncheckedCreateInput = {
           title: `Suivi : ${data.fullName} (${formLabel})`,
           description: `Contact reçu via le formulaire "${formLabel}" le ${new Date().toLocaleDateString('fr-CA')}.${data.message ? `\n\nMessage : ${data.message.slice(0, 300)}` : ''}`,
+          type: 'FOLLOW_UP',
           status: 'TODO',
           priority: 'MEDIUM',
           dueDate,
-        },
-      });
+      };
+
+      await prisma.task.create({ data: followUpTaskData });
     }
 
     return NextResponse.json({
