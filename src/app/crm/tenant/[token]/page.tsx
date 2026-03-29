@@ -5,6 +5,7 @@ import { TenantFileUploadForm, TenantPortalDeleteFileButton } from '@/features/c
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
 import { TenantMaintenanceRequestForm } from '@/features/crm/components/tenant-portal/TenantMaintenanceRequestForm';
 import { PortalMessageForm } from '@/features/crm/components/portals/PortalMessageForm';
+import { getBookingEmbedUrl } from '@/lib/booking-link';
 
 interface PageProps {
   params: { token: string };
@@ -36,8 +37,7 @@ const TASK_PRIORITY_LABELS: Record<string, string> = {
   HIGH: 'Haute',
 };
 
-const BOOKING_BASE_URL = process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL?.trim() || 'https://cal.com/simon-nowis-morin/30min';
-const BOOKING_URL = BOOKING_BASE_URL.includes('?') ? `${BOOKING_BASE_URL}&embed=true` : `${BOOKING_BASE_URL}?embed=true`;
+const BOOKING_URL = getBookingEmbedUrl();
 
 export default async function TenantPortalPage({ params }: PageProps) {
   const session = verifyTenantPortalToken(params.token);

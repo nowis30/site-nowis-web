@@ -3,6 +3,7 @@ import { requireClientPortalSession } from '@/features/client-portal/auth/sessio
 import { EmptyState, ListToolbar, PageHeader, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
 import { CalendarClock } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
+import { getBookingEmbedUrl } from '@/lib/booking-link';
 
 type AppointmentsTab = 'all' | 'upcoming' | 'past';
 
@@ -14,8 +15,7 @@ function formatDateTime(value: Date) {
   return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(value);
 }
 
-const BOOKING_BASE_URL = process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL?.trim() || 'https://cal.com/simon-nowis-morin/30min';
-const BOOKING_URL = BOOKING_BASE_URL.includes('?') ? `${BOOKING_BASE_URL}&embed=true` : `${BOOKING_BASE_URL}?embed=true`;
+const BOOKING_URL = getBookingEmbedUrl();
 
 export default async function ClientAppointmentsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await requireClientPortalSession();

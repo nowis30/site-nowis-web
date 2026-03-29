@@ -8,16 +8,13 @@
 
 import React from 'react';
 import { SectionTitle } from '@/components/ui';
+import { getBookingEmbedUrl } from '@/lib/booking-link';
 
 export const BookingScreen: React.FC = () => {
-  // Configuration Cal.com depuis .env.local
-  const CAL_URL = process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL || 'https://cal.com/simon-nowis-morin/30min';
   const BOOKING_EMAIL = 'simonmorin@nowis.store';
 
-  // Extraire l'URL iframe de Cal.com (ajouter ?embed=true)
-  const iframeUrl = CAL_URL.includes('?') 
-    ? `${CAL_URL}&embed=true`
-    : `${CAL_URL}?embed=true`;
+  // URL d'iframe Cal.com centralisee
+  const iframeUrl = getBookingEmbedUrl();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 md:py-24 space-y-12">

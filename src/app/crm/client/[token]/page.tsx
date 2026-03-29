@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { ClientFileUploadForm, ClientPortalDeleteFileButton } from '@/features/crm/components/client-portal/ClientFileUploadForm';
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
 import { PortalMessageForm } from '@/features/crm/components/portals/PortalMessageForm';
+import { getBookingEmbedUrl } from '@/lib/booking-link';
 
 interface PageProps {
   params: { token: string };
@@ -38,8 +39,7 @@ const INVOICE_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Annulée',
 };
 
-const BOOKING_BASE_URL = process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL?.trim() || 'https://cal.com/simon-nowis-morin/30min';
-const BOOKING_URL = BOOKING_BASE_URL.includes('?') ? `${BOOKING_BASE_URL}&embed=true` : `${BOOKING_BASE_URL}?embed=true`;
+const BOOKING_URL = getBookingEmbedUrl();
 
 function formatCurrency(value: number | null) {
   if (value === null) return '—';
