@@ -7,13 +7,13 @@ import { coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-nor
 import { z } from 'zod';
 
 const taskUpdateSchema = z.object({
-  title: z.string().min(2).max(200).optional(),
-  description: z.string().max(2000).optional().nullable(),
+  title: z.string().trim().min(1).max(5000).optional(),
+  description: z.string().max(20000).optional().nullable(),
   type: z.enum(['CALL', 'EMAIL', 'SONG', 'FOLLOW_UP']).optional(),
   payload: z.unknown().optional(),
   status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
-  dueDate: z.string().datetime().optional().or(z.literal('')),
+  dueDate: z.string().trim().optional().or(z.literal('')),
   caseId: z.string().uuid().optional().or(z.literal('')),
   songRequestId: z.string().uuid().optional().or(z.literal('')),
 });
@@ -34,7 +34,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (has('payload')) data.payload = coerceTaskPayload(payload.payload) ?? Prisma.JsonNull;
     if (has('status') && payload.status) data.status = payload.status;
     if (has('priority') && payload.priority) data.priority = payload.priority;
-    if (has('dueDate')) data.dueDate = payload.dueDate ? new Date(payload.dueDate) : null;
+    if (has('dueDate')) {
+      if (!payload.dueDate) {
+        data.dueDate = null;
+      } else {
+        const parsedDate = new Date(payload.dueDate);
+        if (!Number.isNaN(parsedDate.getTime())) {
+          data.dueDate = parsedDate;
+        }
+      }
+    }
     if (has('caseId')) data.caseId = payload.caseId || null;
     if (has('songRequestId')) data.songRequestId = payload.songRequestId || null;
 

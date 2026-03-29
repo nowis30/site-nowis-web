@@ -79,12 +79,7 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
     await fetch(`/api/crm/tasks/${task.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: normalizedType,
-        payload: payload ?? undefined,
-        title: task.title, description: task.description, status,
-        priority: task.priority, dueDate: task.dueDate, caseId: task.caseRecord?.title ? undefined : undefined,
-      }),
+      body: JSON.stringify({ status }),
     });
     setLoading(false);
     onUpdate();
