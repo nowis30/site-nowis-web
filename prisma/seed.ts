@@ -1,4 +1,4 @@
-import { PrismaClient, ContactType, CaseType, CaseStatus, UserRole, UnitStatus, LeaseStatus, PaymentStatus, MaintenancePriority, MaintenanceStatus, InquiryStatus, CommunicationDirection, LinkedType, TaskPriority, TaskStatus, AppointmentType, AppointmentStatus, InvoiceStatus, ActivityType, SongRequestStatus } from '@prisma/client';
+﻿import { PrismaClient, ContactType, CaseType, CaseStatus, UserRole, InquiryStatus, CommunicationDirection, LinkedType, TaskPriority, TaskStatus, AppointmentType, AppointmentStatus, InvoiceStatus, ActivityType, SongRequestStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -8,13 +8,6 @@ async function main() {
   await prisma.activity.deleteMany();
   await prisma.appointment.deleteMany();
   await prisma.invoice.deleteMany();
-  await prisma.legacyMaintenanceUpdate.deleteMany();
-  await prisma.legacyMaintenanceTicket.deleteMany();
-  await prisma.legacyPayment.deleteMany();
-  await prisma.legacyLease.deleteMany();
-  await prisma.legacyTenant.deleteMany();
-  await prisma.legacyUnit.deleteMany();
-  await prisma.legacyProperty.deleteMany();
   await prisma.communication.deleteMany();
   await prisma.document.deleteMany();
   await prisma.task.deleteMany();
@@ -45,10 +38,10 @@ async function main() {
     },
   });
 
-  const tenantUser = await prisma.user.create({
+  const portalUser = await prisma.user.create({
     data: {
-      email: 'locataire@crm.local',
-      fullName: 'Locataire Démo',
+      email: 'client@crm.local',
+      fullName: 'Client Demo',
       role: UserRole.PORTAL_USER,
       passwordHash,
     },
@@ -61,7 +54,7 @@ async function main() {
         fullName: 'Marie Tremblay',
         email: 'marie.tremblay@email.ca',
         phone: '+1 514 555 1122',
-        source: 'Site web',
+        source: 'website',
         tags: ['VIP'],
       },
     }),
@@ -71,8 +64,8 @@ async function main() {
         fullName: 'Jonathan Gagnon',
         email: 'jonathan.gagnon@email.ca',
         phone: '+1 514 555 9988',
-        source: 'Facebook Ads',
-        tags: ['Chaud'],
+        source: 'facebook-ads',
+        tags: ['hot'],
       },
     }),
     prisma.contact.create({
@@ -81,8 +74,8 @@ async function main() {
         fullName: 'Sophie Bouchard',
         email: 'sophie.bouchard@email.ca',
         phone: '+1 438 555 7788',
-        source: 'Référence',
-        tags: ['Propriétaire'],
+        source: 'referral',
+        tags: ['partner'],
       },
     }),
     prisma.contact.create({
@@ -91,123 +84,28 @@ async function main() {
         fullName: 'Antoine Roy',
         email: 'antoine.roy@email.ca',
         phone: '+1 581 555 4545',
-        source: 'Kijiji',
-        tags: ['3½'],
+        source: 'web-form',
+        tags: ['participant'],
       },
     }),
   ]);
 
-  const [clientContact, prospectContact, ownerContact, tenantProspectContact] = contacts;
-
-  const property = await prisma.legacyProperty.create({
-    data: {
-      code: 'MTL-001',
-      name: 'Résidence du Parc',
-      addressLine1: '1234 Rue du Parc',
-      city: 'Montréal',
-      province: 'QC',
-      postalCode: 'H2X 1Y1',
-      totalUnits: 12,
-    },
-  });
-
-  const unitA = await prisma.legacyUnit.create({
-    data: {
-      propertyId: property.id,
-      unitNumber: '201',
-      bedrooms: 2,
-      bathrooms: 1,
-      areaSqft: 820,
-      monthlyRent: 1450,
-      status: UnitStatus.OCCUPIED,
-    },
-  });
-
-  const unitB = await prisma.legacyUnit.create({
-    data: {
-      propertyId: property.id,
-      unitNumber: '305',
-      bedrooms: 1,
-      bathrooms: 1,
-      areaSqft: 610,
-      monthlyRent: 1195,
-      status: UnitStatus.VACANT,
-    },
-  });
-
-  const tenantContact = await prisma.contact.create({
-    data: {
-      type: ContactType.CLIENT,
-      fullName: tenantUser.fullName,
-      email: tenantUser.email,
-      phone: '+1 514 555 3030',
-      source: 'Portail locataire',
-      tags: ['Locataire actif'],
-    },
-  });
+  const [clientContact, prospectContact, organizationContact, participantContact] = contacts;
 
   await prisma.user.update({
-    where: { id: tenantUser.id },
-    data: { contactId: tenantContact.id },
-  });
-
-  const tenant = await prisma.legacyTenant.create({
-    data: {
-      contactId: tenantContact.id,
-      unitId: unitA.id,
-      moveInDate: new Date('2025-07-01'),
-      emergencyContact: 'Claire Roy',
-      emergencyPhone: '+1 514 555 5656',
-    },
-  });
-
-  const lease = await prisma.legacyLease.create({
-    data: {
-      leaseNumber: 'BAIL-2025-0001',
-      tenantId: tenant.id,
-      unitId: unitA.id,
-      startDate: new Date('2025-07-01'),
-      endDate: new Date('2026-06-30'),
-      rentAmount: 1450,
-      securityDeposit: 1450,
-      status: LeaseStatus.ACTIVE,
-      signedAt: new Date('2025-06-20'),
-    },
-  });
-
-  await prisma.legacyPayment.createMany({
-    data: [
-      {
-        leaseId: lease.id,
-        tenantId: tenant.id,
-        unitId: unitA.id,
-        amount: 1450,
-        dueDate: new Date('2026-02-01'),
-        paidDate: new Date('2026-02-02'),
-        status: PaymentStatus.PAID,
-        method: 'Interac',
-      },
-      {
-        leaseId: lease.id,
-        tenantId: tenant.id,
-        unitId: unitA.id,
-        amount: 1450,
-        dueDate: new Date('2026-03-01'),
-        status: PaymentStatus.PENDING,
-        method: 'Interac',
-      },
-    ],
+    where: { id: portalUser.id },
+    data: { contactId: clientContact.id },
   });
 
   const caseRecord = await prisma.caseRecord.create({
     data: {
-      title: 'Suivi dossier location Antoine Roy',
-      type: CaseType.LEGACY_HOUSING,
+      title: 'Suivi onboarding client',
+      type: CaseType.CLIENT,
       status: CaseStatus.IN_PROGRESS,
-      contactId: tenantProspectContact.id,
+      contactId: clientContact.id,
       ownerUserId: assistant.id,
       referenceCode: 'DOS-2026-0001',
-      description: 'Qualification du prospect et planification visite logement 305.',
+      description: 'Qualification et suivi des besoins client.',
     },
   });
 
@@ -216,21 +114,21 @@ async function main() {
       {
         caseId: caseRecord.id,
         authorUserId: assistant.id,
-        content: 'Prospect intéressé, revenus validés, visite prévue vendredi.',
+        content: 'Premier contact realise, besoins clarifies.',
       },
       {
         caseId: caseRecord.id,
         authorUserId: admin.id,
-        content: 'Préparer proposition de bail si visite concluante.',
+        content: 'Priorite haute pour proposition commerciale.',
       },
     ],
   });
 
   await prisma.inquiry.create({
     data: {
-      subject: 'Demande de logement 3½',
-      message: 'Bonjour, je souhaite visiter un 3½ à Montréal.',
-      source: 'Formulaire site',
+      subject: 'Demande de renseignements',
+      message: 'Bonjour, je souhaite en savoir plus sur vos services.',
+      source: 'website',
       status: InquiryStatus.QUALIFIED,
       contactId: prospectContact.id,
       caseId: caseRecord.id,
@@ -240,8 +138,8 @@ async function main() {
   await prisma.task.createMany({
     data: [
       {
-        title: 'Appeler le prospect Antoine Roy',
-        description: 'Confirmer la visite du logement 305.',
+        title: 'Appeler le client',
+        description: 'Confirmer les details du besoin.',
         status: TaskStatus.TODO,
         priority: TaskPriority.HIGH,
         dueDate: new Date('2026-03-24T16:00:00Z'),
@@ -252,14 +150,14 @@ async function main() {
         linkedId: caseRecord.id,
       },
       {
-        title: 'Vérifier le paiement de mars',
-        description: 'Relancer le locataire si non reçu au 5 du mois.',
+        title: 'Envoyer recap email',
+        description: 'Envoyer un resume des prochaines etapes.',
         status: TaskStatus.IN_PROGRESS,
         priority: TaskPriority.MEDIUM,
         assignedToId: assistant.id,
         createdById: admin.id,
-        linkedType: LinkedType.LEGACY_LEASE,
-        linkedId: lease.id,
+        linkedType: LinkedType.CONTACT,
+        linkedId: clientContact.id,
       },
     ],
   });
@@ -267,48 +165,18 @@ async function main() {
   await prisma.document.createMany({
     data: [
       {
-        fileName: 'piece-identite-antoine.pdf',
-        fileUrl: '/crm/documents/piece-identite-antoine.pdf',
+        fileName: 'brief-client.pdf',
+        fileUrl: '/crm/documents/brief-client.pdf',
         linkedType: LinkedType.CASE,
         linkedId: caseRecord.id,
         uploadedById: assistant.id,
       },
       {
-        fileName: 'bail-2025-0001-signe.pdf',
-        fileUrl: '/crm/documents/bail-2025-0001-signe.pdf',
-        linkedType: LinkedType.LEGACY_LEASE,
-        linkedId: lease.id,
+        fileName: 'proposition-initiale.pdf',
+        fileUrl: '/crm/documents/proposition-initiale.pdf',
+        linkedType: LinkedType.CONTACT,
+        linkedId: clientContact.id,
         uploadedById: admin.id,
-      },
-    ],
-  });
-
-  const maintenanceTicket = await prisma.legacyMaintenanceTicket.create({
-    data: {
-      propertyId: property.id,
-      unitId: unitA.id,
-      tenantId: tenant.id,
-      title: 'Fuite sous évier cuisine',
-      description: 'Écoulement lent et eau au sol.',
-      priority: MaintenancePriority.HIGH,
-      status: MaintenanceStatus.IN_PROGRESS,
-      reportedByUserId: tenantUser.id,
-    },
-  });
-
-  await prisma.legacyMaintenanceUpdate.createMany({
-    data: [
-      {
-        maintenanceTicketId: maintenanceTicket.id,
-        authorUserId: assistant.id,
-        message: 'Plombier planifié pour demain 9h.',
-        status: MaintenanceStatus.IN_PROGRESS,
-      },
-      {
-        maintenanceTicketId: maintenanceTicket.id,
-        authorUserId: admin.id,
-        message: 'Pièce remplacée, vérifier absence de fuite sous 48h.',
-        status: MaintenanceStatus.RESOLVED,
       },
     ],
   });
@@ -319,44 +187,24 @@ async function main() {
         contactId: prospectContact.id,
         userId: assistant.id,
         channel: 'EMAIL',
-        subject: 'Confirmation de visite',
-        body: 'Votre visite est confirmée vendredi à 17h.',
+        subject: 'Confirmation de rendez-vous',
+        body: 'Votre rendez-vous est confirme.',
         direction: CommunicationDirection.OUTBOUND,
         linkedType: LinkedType.CASE,
         linkedId: caseRecord.id,
       },
       {
-        legacyTenantId: tenant.id,
-        userId: tenantUser.id,
+        contactId: participantContact.id,
+        userId: portalUser.id,
         channel: 'PORTAL',
-        body: 'Demande de maintenance soumise via portail.',
+        body: 'Message recu via portail client.',
         direction: CommunicationDirection.INBOUND,
-        linkedType: LinkedType.LEGACY_MAINTENANCE_TICKET,
-        linkedId: maintenanceTicket.id,
+        linkedType: LinkedType.CONTACT,
+        linkedId: participantContact.id,
       },
     ],
   });
 
-  console.log('✅ Seed CRM généré avec succès');
-  console.log('Comptes démo: admin@crm.local, assistant@crm.local, locataire@crm.local');
-  console.log(`Mot de passe démo: ${demoPassword}`);
-
-  await prisma.legacyUnit.update({
-    where: { id: unitB.id },
-    data: { status: UnitStatus.VACANT },
-  });
-
-  await prisma.contact.update({
-    where: { id: clientContact.id },
-    data: { notes: `Client prioritaire pour les biens de ${property.city}.` },
-  });
-
-  await prisma.contact.update({
-    where: { id: ownerContact.id },
-    data: { notes: 'Propriétaire actif sur 2 immeubles potentiels.' },
-  });
-
-  // ── Demandes de chanson (site → CRM) ──────────────────────────────────────
   const songRequestBaseDate = new Date();
 
   const songRequestOne = await prisma.songRequest.create({
@@ -365,12 +213,12 @@ async function main() {
       fullName: clientContact.fullName,
       email: clientContact.email ?? 'marie.tremblay@email.ca',
       phone: clientContact.phone ?? '+1 514 555 1122',
-      songType: 'Chanson anniversaire',
-      occasion: '40e anniversaire',
-      recipientName: 'Éric Tremblay',
-      style: 'Pop acoustique',
-      mood: 'Émotive',
-      details: 'Je veux une chanson personnalisée avec les souvenirs de famille et un refrain marquant.',
+      songType: 'Birthday song',
+      occasion: '40th birthday',
+      recipientName: 'Eric Tremblay',
+      style: 'Acoustic pop',
+      mood: 'Emotive',
+      details: 'Custom song request from website.',
       budget: 250,
       desiredDeadline: new Date(songRequestBaseDate.getTime() + 12 * 24 * 60 * 60 * 1000),
       source: 'website',
@@ -378,117 +226,54 @@ async function main() {
     },
   });
 
-  const songRequestTwo = await prisma.songRequest.create({
-    data: {
-      contactId: prospectContact.id,
-      fullName: prospectContact.fullName,
-      email: prospectContact.email ?? 'jonathan.gagnon@email.ca',
-      phone: prospectContact.phone ?? '+1 514 555 9988',
-      songType: 'Chanson hommage',
-      occasion: 'Hommage familial',
-      recipientName: 'Louise Gagnon',
-      style: 'Ballade piano',
-      mood: 'Sincère',
-      details: 'Projet délicat pour souligner un souvenir important et transmettre un message de gratitude.',
-      budget: 400,
-      desiredDeadline: new Date(songRequestBaseDate.getTime() + 20 * 24 * 60 * 60 * 1000),
-      source: 'website',
-      status: SongRequestStatus.CONTACTED,
-    },
-  });
-
   await prisma.activity.createMany({
     data: [
       {
         type: ActivityType.FORM_SUBMISSION,
-        title: 'Demande de chanson reçue',
-        description: `Soumission via site web. Voir: /crm/song-requests/${songRequestOne.id}`,
+        title: 'New song request',
+        description: `Submission from website: /crm/song-requests/${songRequestOne.id}`,
         contactId: clientContact.id,
         songRequestId: songRequestOne.id,
         userId: assistant.id,
       },
       {
-        type: ActivityType.FORM_SUBMISSION,
-        title: 'Demande de chanson reçue',
-        description: `Soumission via site web. Voir: /crm/song-requests/${songRequestTwo.id}`,
-        contactId: prospectContact.id,
-        songRequestId: songRequestTwo.id,
-        userId: assistant.id,
-      },
-    ],
-  });
-
-  await prisma.task.createMany({
-    data: [
-      {
-        title: 'Faire le suivi de la demande de chanson',
-        description: `Contacter ${clientContact.fullName} pour cadrer la chanson anniversaire.`,
-        status: TaskStatus.TODO,
-        priority: TaskPriority.MEDIUM,
-        dueDate: new Date(songRequestBaseDate.getTime() + 2 * 24 * 60 * 60 * 1000),
-        assignedToId: assistant.id,
-        createdById: admin.id,
-        songRequestId: songRequestOne.id,
-        linkedType: LinkedType.SONG_REQUEST,
-        linkedId: songRequestOne.id,
-      },
-      {
-        title: 'Préparer la soumission de chanson hommage',
-        description: `Préparer proposition budgétaire pour ${prospectContact.fullName}.`,
-        status: TaskStatus.IN_PROGRESS,
-        priority: TaskPriority.HIGH,
-        dueDate: new Date(songRequestBaseDate.getTime() + 3 * 24 * 60 * 60 * 1000),
-        assignedToId: assistant.id,
-        createdById: admin.id,
-        songRequestId: songRequestTwo.id,
-        linkedType: LinkedType.SONG_REQUEST,
-        linkedId: songRequestTwo.id,
-      },
-    ],
-  });
-
-  // ── Rendez-vous ────────────────────────────────────────────────────────────
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const in3days = new Date(today);
-  in3days.setDate(in3days.getDate() + 3);
-
-  await prisma.appointment.createMany({
-    data: [
-      {
-        title: 'Visite logement 305',
-        description: 'Visite du 3½ vacant.',
-        startAt: tomorrow,
-        endAt: new Date(tomorrow.getTime() + 60 * 60 * 1000),
-        type: AppointmentType.VISIT,
-        status: AppointmentStatus.CONFIRMED,
-        contactId: tenantProspectContact.id,
-        legacyPropertyId: property.id,
-        userId: assistant.id,
-      },
-      {
-        title: 'Appel suivi - Antoine Roy',
-        startAt: in3days,
-        endAt: new Date(in3days.getTime() + 20 * 60 * 1000),
-        type: AppointmentType.CALL,
-        status: AppointmentStatus.PENDING,
-        contactId: tenantProspectContact.id,
-        userId: assistant.id,
-      },
-      {
-        title: 'Inspection maintenance logement 201',
-        startAt: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000),
-        endAt: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        type: AppointmentType.INSPECTION,
-        status: AppointmentStatus.PENDING,
-        legacyPropertyId: property.id,
+        type: ActivityType.NOTE,
+        title: 'Organization follow-up',
+        description: 'Initial outreach to organization contact.',
+        contactId: organizationContact.id,
         userId: admin.id,
       },
     ],
   });
 
-  // ── Factures ────────────────────────────────────────────────────────────────
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  await prisma.appointment.createMany({
+    data: [
+      {
+        title: 'Client call',
+        description: 'Discovery call.',
+        startAt: tomorrow,
+        endAt: new Date(tomorrow.getTime() + 60 * 60 * 1000),
+        type: AppointmentType.CALL,
+        status: AppointmentStatus.CONFIRMED,
+        contactId: clientContact.id,
+        userId: assistant.id,
+      },
+      {
+        title: 'Internal review',
+        startAt: new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000),
+        endAt: new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000),
+        type: AppointmentType.MEETING,
+        status: AppointmentStatus.PENDING,
+        contactId: participantContact.id,
+        userId: admin.id,
+      },
+    ],
+  });
+
   await prisma.invoice.createMany({
     data: [
       {
@@ -498,7 +283,7 @@ async function main() {
         dueDate: new Date('2026-03-01'),
         amount: 2500,
         status: InvoiceStatus.PAID,
-        description: 'Consultation immobilière - février 2026',
+        description: 'Monthly service package - February 2026',
       },
       {
         number: 'FAC-2026-0002',
@@ -507,75 +292,19 @@ async function main() {
         dueDate: new Date('2026-03-31'),
         amount: 2500,
         status: InvoiceStatus.SENT,
-        description: 'Consultation immobilière - mars 2026',
-      },
-      {
-        number: 'FAC-2026-0003',
-        contactId: prospectContact.id,
-        issueDate: today,
-        dueDate: new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000),
-        amount: 1500,
-        status: InvoiceStatus.DRAFT,
-        description: 'Proposition bail - 3½ logement 305',
+        description: 'Monthly service package - March 2026',
       },
     ],
   });
 
-  // ── Activités ───────────────────────────────────────────────────────────────
-  await prisma.activity.createMany({
-    data: [
-      {
-        type: ActivityType.NOTE,
-        title: 'Prospect très intéressé',
-        description: 'Antoine Roy a posé beaucoup de questions sur les services.',
-        contactId: tenantProspectContact.id,
-        userId: assistant.id,
-      },
-      {
-        type: ActivityType.EMAIL,
-        title: 'Email reçu : Question sur la disponibilité',
-        description: 'Contact demande si les logements sont disponibles immédiatement.',
-        contactId: prospectContact.id,
-        userId: assistant.id,
-      },
-      {
-        type: ActivityType.CALL,
-        title: 'Appel avec le client',
-        description: 'Confirmation des dates de visite et discussion sur le bail.',
-        contactId: clientContact.id,
-        userId: admin.id,
-      },
-      {
-        type: ActivityType.FORM,
-        title: 'Formulaire soumis : Demande de renseignements',
-        description: 'Client a rempli le formulaire de demande de renseignements depuis le site.',
-        contactId: prospectContact.id,
-        userId: assistant.id,
-      },
-      {
-        type: ActivityType.APPOINTMENT,
-        title: 'RDV confirmé pour demain',
-        description: 'Visite du logement 305 à 17h.',
-        contactId: tenantProspectContact.id,
-        userId: assistant.id,
-      },
-      {
-        type: ActivityType.PAYMENT,
-        title: 'Paiement reçu',
-        description: 'Loyer de mars reçu - confirmé et enregistré.',
-        contactId: tenantContact.id,
-        userId: assistant.id,
-      },
-    ],
-  });
-
-  console.log('✅ Rendez-vous, factures et activités créés');
-
+  console.log('Seed generated successfully');
+  console.log('Demo accounts: admin@crm.local, assistant@crm.local, client@crm.local');
+  console.log(`Demo password: ${demoPassword}`);
 }
 
 main()
   .catch((error) => {
-    console.error('❌ Erreur seed Prisma', error);
+    console.error('Prisma seed failed', error);
     process.exit(1);
   })
   .finally(async () => {

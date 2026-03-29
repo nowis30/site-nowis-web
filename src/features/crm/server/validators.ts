@@ -13,7 +13,7 @@ export const contactInputSchema = z.object({
 
 export const caseInputSchema = z.object({
   title: z.string().min(3, 'Le titre doit avoir au minimum 3 caractères').max(180, 'Le titre ne peut pas dépasser 180 caractères'),
-  type: z.enum(['CLIENT', 'LEGACY_HOUSING', 'SUPPORT', 'LEGACY_MAINTENANCE']),
+  type: z.enum(['CLIENT', 'SUPPORT']),
   status: z.enum(['OPEN', 'IN_PROGRESS', 'ON_HOLD', 'CLOSED']).default('OPEN'),
   referenceCode: z.string().min(3, 'La référence doit avoir au minimum 3 caractères').max(50, 'La référence ne peut pas dépasser 50 caractères').regex(/^[A-Z0-9\-]+$/, 'La référence doit contenir uniquement des chiffres, lettres et tirets'),
   description: z.string().max(5000, 'La description ne peut pas dépasser 5000 caractères').optional(),

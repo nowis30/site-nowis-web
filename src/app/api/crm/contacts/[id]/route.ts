@@ -45,13 +45,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   if (guard.error) return guard.error;
 
   try {
-    const contact = await prisma.contact.findUnique({
-      where: { id: params.id },
-      select: {
-        id: true,
-        legacyTenantProfile: { select: { id: true } },
-      },
-    });
+    const contact = await prisma.contact.findUnique({ where: { id: params.id }, select: { id: true } });
 
     if (!contact) {
       return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
@@ -63,7 +57,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     ]);
 
     const blockers: string[] = [];
-    if (contact.legacyTenantProfile) blockers.push('archive legacy logement');
     if (invoiceCount > 0) blockers.push(`${invoiceCount} facture(s)`);
     if (songRequestCount > 0) blockers.push(`${songRequestCount} demande(s) chanson`);
 

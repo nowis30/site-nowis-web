@@ -49,8 +49,6 @@ const statusMap: Record<string, { label: string; color: string }> = {
   OTHER: { label: 'Autre', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
 
   // Autres types
-  LEGACY_HOUSING: { label: 'Archive logement', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
-  LEGACY_MAINTENANCE: { label: 'Archive maintenance', color: 'bg-rose-500/20 text-rose-200 border-rose-400/30' },
   SUPPORT: { label: 'Support', color: 'bg-rose-500/20 text-rose-200 border-rose-400/30' },
 
   // Priorités

@@ -64,7 +64,7 @@ export const contactsConfig: ModulePageConfig = {
 
 export const casesConfig: ModulePageConfig = {
   title: 'Dossiers',
-  description: 'Suivi commercial, support et archive des anciens cas logement.',
+  description: 'Suivi commercial et support.',
   endpoint: '/api/crm/cases',
   defaultValues: {
     title: '',
@@ -83,9 +83,7 @@ export const casesConfig: ModulePageConfig = {
       required: true,
       options: [
         { value: 'CLIENT', label: 'Client' },
-        { value: 'LEGACY_HOUSING', label: 'Archive logement' },
         { value: 'SUPPORT', label: 'Support' },
-        { value: 'LEGACY_MAINTENANCE', label: 'Archive maintenance' },
       ],
     },
     {
