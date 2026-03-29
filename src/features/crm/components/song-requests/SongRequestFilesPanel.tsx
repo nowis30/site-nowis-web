@@ -39,6 +39,7 @@ export function SongRequestFilesPanel({ songRequestId, contactId, files, mode }:
         emptyLabel="Aucun fichier lie a cette demande."
         canDelete
         onDelete={handleDelete}
+        downloadPrefix={mode === 'admin' ? '/api/crm/file-documents' : '/api/client-portal/file-documents'}
       />
     </div>
   );

@@ -30,9 +30,10 @@ interface FileListProps {
   emptyLabel: string;
   canDelete?: boolean;
   onDelete?: (id: string) => Promise<void>;
+  downloadPrefix?: string;
 }
 
-export function FileList({ items, emptyLabel, canDelete = false, onDelete }: FileListProps) {
+export function FileList({ items, emptyLabel, canDelete = false, onDelete, downloadPrefix = '/api/crm/file-documents' }: FileListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
@@ -67,10 +68,10 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete }: Fil
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <a href={item.url} target="_blank" rel="noreferrer" className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white">
+              <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white">
                 <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir</span>
               </a>
-              <a href={item.url} download className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white">
+              <a href={`${downloadPrefix}/${item.id}/download`} download={item.originalName} className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white">
                 <span className="inline-flex items-center gap-1.5"><Download size={13} />Telecharger</span>
               </a>
               {canDelete ? (

@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { sanitizeFileBaseName } from '@/lib/file-documents';
 
@@ -78,6 +78,24 @@ export async function createPresignedUploadUrl(
     size: file.size,
     expiresInSeconds,
   };
+}
+
+export async function createPresignedDownloadUrl(
+  storageKey: string,
+  options?: { expiresInSeconds?: number; fileName?: string },
+) {
+  const bucket = requireEnv('S3_BUCKET');
+  const client = getS3Client();
+
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: storageKey,
+    ResponseContentDisposition: options?.fileName
+      ? `attachment; filename="${sanitizeFileBaseName(options.fileName)}"`
+      : undefined,
+  });
+
+  return getSignedUrl(client, command, { expiresIn: options?.expiresInSeconds ?? 300 });
 }
 
 export async function assertStoredObjectMetadata(storageKey: string, expected: { mimeType: string; size: number }) {
