@@ -38,10 +38,10 @@ export const FILE_CATEGORY_OPTIONS = [
   'text',
 ] as const;
 
-export const DEFAULT_MAX_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024;
+export const DEFAULT_MAX_UPLOAD_SIZE_BYTES = 250 * 1024 * 1024;
 
 export function getMaxUploadSizeBytes() {
-  const raw = Number(process.env.MAX_FILE_UPLOAD_BYTES ?? DEFAULT_MAX_UPLOAD_SIZE_BYTES);
+  const raw = Number(process.env.MAX_FILE_UPLOAD_BYTES ?? process.env.NEXT_PUBLIC_MAX_FILE_UPLOAD_BYTES ?? DEFAULT_MAX_UPLOAD_SIZE_BYTES);
   return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_MAX_UPLOAD_SIZE_BYTES;
 }
 
