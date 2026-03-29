@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto';
+import { UserRole } from '@prisma/client';
 import { hashPassword } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildClientPortalPath, signClientPortalToken } from '@/lib/client-portal';
@@ -91,7 +92,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
 
     const linkedUser = await tx.user.findFirst({
       where: {
-        role: 'TENANT',
+        role: UserRole.PORTAL_USER,
         isActive: true,
         OR: [
           { contactId: contact.id },
@@ -109,7 +110,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
           email: normalizedEmail,
           fullName: input.fullName,
           passwordHash: throwawayPasswordHash,
-          role: 'TENANT',
+          role: UserRole.PORTAL_USER,
           isActive: true,
           contactId: contact.id,
         },

@@ -11,7 +11,6 @@ export function ContactAppointments({ appointments }: { appointments: ContactApp
             <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300">{item.status}</span>
           </div>
           <p className="mt-3 text-sm text-slate-300">{formatDateTime(item.startAt)} → {formatDateTime(item.endAt)}</p>
-          {item.property ? <p className="mt-2 text-sm text-slate-400">Bien lié: {item.property.name}</p> : null}
           {item.description ? <p className="mt-3 text-sm text-slate-400">{item.description}</p> : null}
         </article>
       ))}

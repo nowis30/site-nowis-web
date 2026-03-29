@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { ZodError } from 'zod';
 import { comparePassword } from '@/lib/auth';
 import { buildErrorPayload, ensureAuthConfig, logApiDiagnostic } from '@/lib/api-diagnostics';
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findFirst({
       where: {
         email: { equals: email },
-        role: 'TENANT',
+        role: UserRole.PORTAL_USER,
         isActive: true,
       },
       include: {

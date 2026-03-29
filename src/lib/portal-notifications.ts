@@ -27,7 +27,7 @@ export function getPortalNotificationLabel(channel: string) {
 export function getPortalNotificationHref(item: {
   linkedType: string;
   linkedId: string;
-  tenantId: string | null;
+  legacyTenantId: string | null;
   contactId: string | null;
 }) {
   switch (item.linkedType) {

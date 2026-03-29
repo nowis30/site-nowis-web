@@ -45,7 +45,6 @@ export type ContactAppointmentItem = {
   endAt: string;
   type: string;
   status: string;
-  property: { id: string; name: string } | null;
 };
 
 export type ContactInvoiceItem = {

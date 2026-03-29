@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { ZodError } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
           email,
           fullName: payload.fullName,
           passwordHash,
-          role: 'TENANT',
+          role: UserRole.PORTAL_USER,
           isActive: true,
           contactId: contact.id,
         },

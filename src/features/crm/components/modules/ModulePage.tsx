@@ -7,21 +7,13 @@ import { EntityCrudPage } from '@/features/crm/components/modules/EntityCrudPage
 import {
   casesConfig,
   contactsConfig,
-  maintenanceConfig,
   organizationsConfig,
-  propertiesConfig,
-  tenantsConfig,
-  unitsConfig,
   workshopRequestsConfig,
 } from '@/features/crm/config/module-config';
 
 const moduleConfigs = {
   contacts: contactsConfig,
   cases: casesConfig,
-  properties: propertiesConfig,
-  units: unitsConfig,
-  tenants: tenantsConfig,
-  maintenance: maintenanceConfig,
   organizations: organizationsConfig,
   workshopRequests: workshopRequestsConfig,
 };
@@ -29,17 +21,13 @@ const moduleConfigs = {
 const detailBasePaths: Record<string, string> = {
   contacts: '/crm/contacts',
   cases: '/crm/cases',
-  properties: '/crm/properties',
-  units: '/crm/units',
-  tenants: '/crm/tenants',
-  maintenance: '/crm/maintenance',
   organizations: '/crm/organizations',
   workshopRequests: '/crm/workshop-requests',
 };
 
 interface ModulePageProps {
   role: CrmRole;
-  moduleKey: Extract<CrmModuleKey, 'contacts' | 'cases' | 'properties' | 'units' | 'tenants' | 'maintenance' | 'organizations' | 'workshopRequests'>;
+  moduleKey: Extract<CrmModuleKey, 'contacts' | 'cases' | 'organizations' | 'workshopRequests'>;
 }
 
 export function ModulePage({ role, moduleKey }: ModulePageProps) {

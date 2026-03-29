@@ -10,15 +10,15 @@ datasource db {
 enum UserRole {
   ADMIN
   ASSISTANT
-  TENANT
+  PORTAL_USER @map("TENANT")
 }
 
 enum ContactType {
   PROSPECT
   CLIENT
   PARTENAIRE
-  PROPRIETAIRE
-  LOCATAIRE_PROSPECT
+  ORGANIZATION @map("PROPRIETAIRE")
+  PARTICIPANT  @map("LOCATAIRE_PROSPECT")
 }
 
 enum OrganizationType {
@@ -43,9 +43,9 @@ enum InquiryStatus {
 
 enum CaseType {
   CLIENT
-  LOCATION
+  LEGACY_HOUSING     @map("LOCATION")
   SUPPORT
-  MAINTENANCE
+  LEGACY_MAINTENANCE @map("MAINTENANCE")
 }
 
 enum CaseStatus {
@@ -208,12 +208,12 @@ enum LinkedType {
   ORGANIZATION
   INQUIRY
   CASE
-  PROPERTY
-  UNIT
-  TENANT
-  LEASE
-  PAYMENT
-  MAINTENANCE_TICKET
+  LEGACY_PROPERTY           @map("PROPERTY")
+  LEGACY_UNIT               @map("UNIT")
+  LEGACY_TENANT             @map("TENANT")
+  LEGACY_LEASE              @map("LEASE")
+  LEGACY_PAYMENT            @map("PAYMENT")
+  LEGACY_MAINTENANCE_TICKET @map("MAINTENANCE_TICKET")
   APPOINTMENT
   INVOICE
   ACTIVITY
@@ -244,8 +244,8 @@ model User {
   authoredNotes              CaseNote[]
   uploadedDocuments          Document[]           @relation("DocumentUploadedBy")
   uploadedFileDocuments      FileDocument[]       @relation("FileDocumentUploadedBy")
-  reportedMaintenanceTickets MaintenanceTicket[]  @relation("MaintenanceTicketReportedBy")
-  maintenanceUpdates         MaintenanceUpdate[]
+  legacyMaintenanceTickets   LegacyMaintenanceTicket[] @relation("MaintenanceTicketReportedBy")
+  legacyMaintenanceUpdates   LegacyMaintenanceUpdate[]
   communications             Communication[]       @relation("CommunicationUser")
   handledCommunications      Communication[]       @relation("CommunicationHandledBy")
   appointments               Appointment[]
@@ -272,7 +272,7 @@ model Contact {
 
   inquiries       Inquiry[]
   cases           CaseRecord[]
-  tenantProfile   Tenant?
+  legacyTenantProfile LegacyTenant?
   communications  Communication[]
   messages        Message[]
   appointments    Appointment[]
@@ -557,7 +557,7 @@ model FileDocument {
   @@map("file_documents")
 }
 
-model Property {
+model LegacyProperty {
   id                 String               @id @default(uuid()) @db.Uuid
   code               String               @unique
   name               String
@@ -575,15 +575,15 @@ model Property {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
-  units              Unit[]
-  maintenanceTickets MaintenanceTicket[]
+  units              LegacyUnit[]
+  maintenanceTickets LegacyMaintenanceTicket[]
   appointments       Appointment[]
 
   @@index([name])
   @@map("properties")
 }
 
-model Unit {
+model LegacyUnit {
   id                 String               @id @default(uuid()) @db.Uuid
   propertyId         String               @db.Uuid
   unitNumber         String
@@ -597,18 +597,18 @@ model Unit {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
-  property           Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  tenants            Tenant[]
-  leases             Lease[]
-  payments           Payment[]
-  maintenanceTickets MaintenanceTicket[]
+  property           LegacyProperty       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenants            LegacyTenant[]
+  leases             LegacyLease[]
+  payments           LegacyPayment[]
+  maintenanceTickets LegacyMaintenanceTicket[]
 
   @@unique([propertyId, unitNumber])
   @@index([propertyId])
   @@map("units")
 }
 
-model Tenant {
+model LegacyTenant {
   id                 String               @id @default(uuid()) @db.Uuid
   contactId          String               @unique @db.Uuid
   unitId             String?              @db.Uuid
@@ -621,17 +621,17 @@ model Tenant {
   updatedAt          DateTime             @updatedAt
 
   contact            Contact              @relation(fields: [contactId], references: [id], onDelete: Restrict)
-  unit               Unit?                @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  leases             Lease[]
-  payments           Payment[]
-  maintenanceTickets MaintenanceTicket[]
+  unit               LegacyUnit?          @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  leases             LegacyLease[]
+  payments           LegacyPayment[]
+  maintenanceTickets LegacyMaintenanceTicket[]
   communications     Communication[]
 
   @@index([unitId])
   @@map("tenants")
 }
 
-model Lease {
+model LegacyLease {
   id                  String               @id @default(uuid()) @db.Uuid
   leaseNumber         String               @unique
   tenantId            String               @db.Uuid
@@ -646,16 +646,16 @@ model Lease {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
-  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  unit                Unit                 @relation(fields: [unitId], references: [id], onDelete: Restrict)
-  payments            Payment[]
+  tenant              LegacyTenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  unit                LegacyUnit           @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  payments            LegacyPayment[]
 
   @@index([tenantId])
   @@index([unitId])
   @@map("leases")
 }
 
-model Payment {
+model LegacyPayment {
   id                  String               @id @default(uuid()) @db.Uuid
   leaseId             String               @db.Uuid
   tenantId            String               @db.Uuid
@@ -670,9 +670,9 @@ model Payment {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
-  lease               Lease                @relation(fields: [leaseId], references: [id], onDelete: Restrict)
-  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  unit                Unit                 @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  lease               LegacyLease          @relation(fields: [leaseId], references: [id], onDelete: Restrict)
+  tenant              LegacyTenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  unit                LegacyUnit           @relation(fields: [unitId], references: [id], onDelete: Restrict)
 
   @@index([leaseId])
   @@index([tenantId])
@@ -680,7 +680,7 @@ model Payment {
   @@map("payments")
 }
 
-model MaintenanceTicket {
+model LegacyMaintenanceTicket {
   id                  String               @id @default(uuid()) @db.Uuid
   propertyId          String               @db.Uuid
   unitId              String?              @db.Uuid
@@ -695,11 +695,11 @@ model MaintenanceTicket {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
-  property            Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  unit                Unit?                @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  tenant              Tenant?              @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  property            LegacyProperty       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unit                LegacyUnit?          @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  tenant              LegacyTenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   reportedBy          User?                @relation("MaintenanceTicketReportedBy", fields: [reportedByUserId], references: [id], onDelete: SetNull)
-  updates             MaintenanceUpdate[]
+  updates             LegacyMaintenanceUpdate[]
 
   @@index([propertyId])
   @@index([unitId])
@@ -707,7 +707,7 @@ model MaintenanceTicket {
   @@map("maintenance_tickets")
 }
 
-model MaintenanceUpdate {
+model LegacyMaintenanceUpdate {
   id                  String               @id @default(uuid()) @db.Uuid
   maintenanceTicketId String               @db.Uuid
   authorUserId        String?              @db.Uuid
@@ -715,7 +715,7 @@ model MaintenanceUpdate {
   status              MaintenanceStatus?
   createdAt           DateTime             @default(now())
 
-  maintenanceTicket   MaintenanceTicket    @relation(fields: [maintenanceTicketId], references: [id], onDelete: Cascade)
+  maintenanceTicket   LegacyMaintenanceTicket @relation(fields: [maintenanceTicketId], references: [id], onDelete: Cascade)
   author              User?                @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
 
   @@index([maintenanceTicketId])
@@ -725,7 +725,7 @@ model MaintenanceUpdate {
 model Communication {
   id             String                 @id @default(uuid()) @db.Uuid
   contactId      String?                @db.Uuid
-  tenantId       String?                @db.Uuid
+  legacyTenantId String?                @db.Uuid @map("tenantId")
   userId         String?                @db.Uuid
   handledById    String?                @db.Uuid
   channel        String
@@ -739,12 +739,12 @@ model Communication {
   createdAt      DateTime               @default(now())
 
   contact        Contact?               @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  tenant         Tenant?                @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  legacyTenant   LegacyTenant?          @relation(fields: [legacyTenantId], references: [id], onDelete: SetNull)
   user           User?                  @relation("CommunicationUser", fields: [userId], references: [id], onDelete: SetNull)
   handledBy      User?                  @relation("CommunicationHandledBy", fields: [handledById], references: [id], onDelete: SetNull)
 
   @@index([contactId])
-  @@index([tenantId])
+  @@index([legacyTenantId])
   @@index([handledAt])
   @@index([handledById])
   @@index([linkedType, linkedId])
@@ -760,13 +760,13 @@ model Appointment {
   type        AppointmentType   @default(MEETING)
   status      AppointmentStatus @default(PENDING)
   contactId   String?           @db.Uuid
-  propertyId  String?           @db.Uuid
+  legacyPropertyId String?      @db.Uuid @map("propertyId")
   userId      String?           @db.Uuid
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
   contact     Contact?          @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  property    Property?         @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  legacyProperty LegacyProperty? @relation(fields: [legacyPropertyId], references: [id], onDelete: SetNull)
   user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([contactId])
@@ -800,7 +800,7 @@ model Activity {
   title         String
   description   String?
   contactId     String?      @db.Uuid
-  propertyId    String?      @db.Uuid
+  legacyPropertyId String?   @db.Uuid @map("propertyId")
   appointmentId String?      @db.Uuid
   invoiceId     String?      @db.Uuid
   songRequestId String?      @db.Uuid

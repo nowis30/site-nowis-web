@@ -18,9 +18,7 @@ type CalendarEventItem = {
   type: string;
   status: string;
   contactId: string | null;
-  propertyId: string | null;
   contactName: string | null;
-  propertyName: string | null;
   source?: 'appointment' | 'workshop_appointment' | 'workshop_availability';
   organizationName?: string | null;
 };
@@ -258,9 +256,7 @@ export function CrmCalendarPage({
           type: item.type,
           status: item.status,
           contactId: item.contactId,
-          propertyId: null,
           contactName,
-          propertyName: null,
         }].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
       });
       setSelectedEventId(item.id);

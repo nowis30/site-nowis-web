@@ -238,7 +238,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
         endAt: item.endAt.toISOString(),
         type: item.type,
         status: item.status,
-        property: null,
       }))}
       invoices={contact.invoices.map((item) => ({
         id: item.id,

@@ -1,5 +1,5 @@
 ﻿import { randomBytes } from 'crypto';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -105,11 +105,11 @@ export async function POST(request: NextRequest) {
             },
           });
 
-      // ── 3. TENANT user auto-link ──────────────────────────────────────────
+      // ── 3. Portal user auto-link ──────────────────────────────────────────
       // Find by email. If missing, create. Either way keep contactId in sync.
       let linkedUser = await tx.user.findFirst({
         where: {
-          role: 'TENANT',
+          role: UserRole.PORTAL_USER,
           isActive: true,
           email: { equals: sessionEmail, mode: 'insensitive' },
         },
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
             email: sessionEmail,
             fullName: payload.contactName || session.fullName,
             passwordHash: throwawayPasswordHash,
-            role: 'TENANT',
+            role: UserRole.PORTAL_USER,
             isActive: true,
             contactId: contact.id,
           },

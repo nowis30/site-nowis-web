@@ -19,7 +19,7 @@ function printUsage() {
   console.log('  --email <value>       User email (default: admin@crm.local)');
   console.log('  --password <value>    New password (default: CRM_DEMO_PASSWORD env var)');
   console.log('  --create              Create user as ADMIN if missing');
-  console.log('  --role <value>        Role to force (ADMIN, ASSISTANT, TENANT)');
+  console.log('  --role <value>        Role to force (ADMIN, ASSISTANT, PORTAL_USER)');
   console.log('  --keep-status         Do not force isActive=true on update');
   console.log('  --help                Show this help');
 }
@@ -84,7 +84,7 @@ function parseArgs(argv: string[]): CliOptions {
   const roleRaw = String(args.get('role') ?? 'ADMIN').trim().toUpperCase();
 
   if (!Object.values(UserRole).includes(roleRaw as UserRole)) {
-    throw new Error('Invalid role. Use ADMIN, ASSISTANT or TENANT.');
+    throw new Error('Invalid role. Use ADMIN, ASSISTANT or PORTAL_USER.');
   }
 
   const role = roleRaw as UserRole;

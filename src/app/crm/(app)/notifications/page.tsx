@@ -53,7 +53,7 @@ export default async function CrmNotificationsPage({ searchParams }: PageProps) 
       take: 50,
       include: {
         contact: { select: { id: true, fullName: true, email: true } },
-        tenant: { select: { id: true } },
+        legacyTenant: { select: { id: true } },
         handledBy: { select: { fullName: true } },
       },
     }),
@@ -90,7 +90,7 @@ export default async function CrmNotificationsPage({ searchParams }: PageProps) 
             const href = getPortalNotificationHref({
               linkedType: notification.linkedType,
               linkedId: notification.linkedId,
-              tenantId: notification.tenantId,
+              legacyTenantId: notification.legacyTenantId,
               contactId: notification.contactId,
             });
 

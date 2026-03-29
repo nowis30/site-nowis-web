@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 export const CRM_COOKIE_NAME = 'crm_session';
 export const CRM_OTP_COOKIE_NAME = 'crm_otp';
 
-export type CrmRole = 'ADMIN' | 'ASSISTANT' | 'TENANT';
+export type CrmRole = 'ADMIN' | 'ASSISTANT' | 'PORTAL_USER';
 
 export interface CrmTokenPayload {
   sub: string;

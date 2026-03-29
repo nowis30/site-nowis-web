@@ -7,10 +7,6 @@ export type CrmModuleKey =
   | 'contacts'
   | 'organizations'
   | 'cases'
-  | 'properties'
-  | 'units'
-  | 'tenants'
-  | 'maintenance'
   | 'documents'
   | 'tasks'
   | 'appointments'
@@ -26,10 +22,6 @@ const ADMIN_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   contacts:     ['read', 'create', 'update', 'delete'],
   organizations:['read', 'create', 'update', 'delete'],
   cases:        ['read', 'create', 'update', 'delete'],
-  properties:   ['read', 'create', 'update', 'delete'],
-  units:        ['read', 'create', 'update', 'delete'],
-  tenants:      ['read', 'create', 'update', 'delete'],
-  maintenance:  ['read', 'create', 'update', 'delete'],
   documents:    ['read', 'create', 'update', 'delete'],
   tasks:        ['read', 'create', 'update', 'delete'],
   appointments: ['read', 'create', 'update', 'delete'],
@@ -46,10 +38,6 @@ const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   contacts:     ['read', 'create', 'update'],
   organizations:['read', 'create', 'update'],
   cases:        ['read', 'create', 'update'],
-  properties:   ['read', 'create', 'update'],
-  units:        ['read', 'create', 'update'],
-  tenants:      ['read', 'create', 'update'],
-  maintenance:  ['read', 'create', 'update'],
   documents:    ['read', 'create', 'update'],
   tasks:        ['read', 'create', 'update'],
   appointments: ['read', 'create', 'update'],
@@ -61,15 +49,11 @@ const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   notifications: ['read'],
 };
 
-const TENANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
+const PORTAL_USER_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   dashboard:    ['read'],
   contacts:     [],
   organizations: [],
   cases:        [],
-  properties:   [],
-  units:        ['read'],
-  tenants:      ['read'],
-  maintenance:  ['read', 'create'],
   documents:    ['read'],
   tasks:        [],
   appointments: ['read'],
@@ -84,7 +68,7 @@ const TENANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
 const ROLE_PERMISSIONS: Record<CrmRole, Record<CrmModuleKey, CrmAction[]>> = {
   ADMIN: ADMIN_PERMISSIONS,
   ASSISTANT: ASSISTANT_PERMISSIONS,
-  TENANT: TENANT_PERMISSIONS,
+  PORTAL_USER: PORTAL_USER_PERMISSIONS,
 };
 
 export function can(role: CrmRole, module: CrmModuleKey, action: CrmAction): boolean {

@@ -13,13 +13,13 @@ async function main() {
   console.log('=== UserRole enum values ===');
   console.log(roles.map(r => r.enumlabel).join(', '));
 
-  // Vérifier les utilisateurs avec role=TENANT
+  // Vérifier les utilisateurs legacy encore stockés avec la valeur DB TENANT
   const tenantUsers = await prisma.$queryRaw<Array<{email: string, role: string, isActive: boolean, contactId: string | null}>>`
     SELECT email, role::text, "isActive", "contactId" FROM users WHERE role::text = 'TENANT' LIMIT 10
   `;
-  console.log('\n=== TENANT users ===');
+  console.log('\n=== legacy TENANT users (mapped to PORTAL_USER) ===');
   if (tenantUsers.length === 0) {
-    console.log('(aucun utilisateur TENANT trouvé)');
+    console.log('(aucun utilisateur legacy TENANT trouvé)');
   } else {
     tenantUsers.forEach(u => console.log(`  ${u.email} | isActive=${u.isActive} | contactId=${u.contactId}`));
   }

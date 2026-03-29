@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         type: payload.type,
         status: payload.status,
         contactId: payload.contactId || null,
-        propertyId: null,
+        legacyPropertyId: null,
       },
     });
     return NextResponse.json({ item });

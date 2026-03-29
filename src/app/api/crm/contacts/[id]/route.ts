@@ -49,7 +49,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id: params.id },
       select: {
         id: true,
-        tenantProfile: { select: { id: true } },
+        legacyTenantProfile: { select: { id: true } },
       },
     });
 
@@ -63,7 +63,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     ]);
 
     const blockers: string[] = [];
-    if (contact.tenantProfile) blockers.push('archive legacy logement');
+    if (contact.legacyTenantProfile) blockers.push('archive legacy logement');
     if (invoiceCount > 0) blockers.push(`${invoiceCount} facture(s)`);
     if (songRequestCount > 0) blockers.push(`${songRequestCount} demande(s) chanson`);
 

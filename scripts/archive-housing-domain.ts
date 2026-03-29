@@ -4,9 +4,9 @@ import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const HOUSING_LINKED_TYPES = ['PROPERTY', 'UNIT', 'TENANT', 'LEASE', 'PAYMENT', 'MAINTENANCE_TICKET'] as const;
-const LEGACY_CONTACT_TYPES = ['PROPRIETAIRE', 'LOCATAIRE_PROSPECT'] as const;
-const LEGACY_CASE_TYPES = ['LOCATION', 'MAINTENANCE'] as const;
+const HOUSING_LINKED_TYPES = ['LEGACY_PROPERTY', 'LEGACY_UNIT', 'LEGACY_TENANT', 'LEGACY_LEASE', 'LEGACY_PAYMENT', 'LEGACY_MAINTENANCE_TICKET'] as const;
+const LEGACY_CONTACT_TYPES = ['ORGANIZATION', 'PARTICIPANT'] as const;
+const LEGACY_CASE_TYPES = ['LEGACY_HOUSING', 'LEGACY_MAINTENANCE'] as const;
 
 function serializeForJson<T>(value: T): T {
   return JSON.parse(
@@ -56,19 +56,19 @@ async function main() {
     appointmentsLinkedProperties,
     activitiesLinkedProperties,
   ] = await Promise.all([
-    prisma.property.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
-    prisma.unit.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
-    prisma.tenant.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
-    prisma.lease.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
-    prisma.payment.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
-    prisma.maintenanceTicket.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
-    prisma.maintenanceUpdate.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    prisma.legacyProperty.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    prisma.legacyUnit.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    prisma.legacyTenant.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    prisma.legacyLease.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    prisma.legacyPayment.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    prisma.legacyMaintenanceTicket.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    prisma.legacyMaintenanceUpdate.findMany({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
     prisma.contact.findMany({
       where: { type: { in: [...LEGACY_CONTACT_TYPES] } },
       orderBy: [{ updatedAt: 'asc' }, { id: 'asc' }],
     }),
     prisma.user.findMany({
-      where: { role: 'TENANT' },
+      where: { role: 'PORTAL_USER' },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     }),
     prisma.caseRecord.findMany({
@@ -86,18 +86,18 @@ async function main() {
     prisma.communication.findMany({
       where: {
         OR: [
-          { tenantId: { not: null } },
+          { legacyTenantId: { not: null } },
           { linkedType: { in: [...HOUSING_LINKED_TYPES] } },
         ],
       },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     }),
     prisma.appointment.findMany({
-      where: { propertyId: { not: null } },
+      where: { legacyPropertyId: { not: null } },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     }),
     prisma.activity.findMany({
-      where: { propertyId: { not: null } },
+      where: { legacyPropertyId: { not: null } },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     }),
   ]);
@@ -128,7 +128,7 @@ async function main() {
       linkedTypes: HOUSING_LINKED_TYPES,
       contactTypes: LEGACY_CONTACT_TYPES,
       caseTypes: LEGACY_CASE_TYPES,
-      userRoles: ['TENANT'],
+      userRoles: ['PORTAL_USER'],
     },
     nextSteps: [
       'Verifier le contenu archive avant tout drop Prisma ulterieur.',

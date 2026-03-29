@@ -8,13 +8,13 @@ async function main() {
   await prisma.activity.deleteMany();
   await prisma.appointment.deleteMany();
   await prisma.invoice.deleteMany();
-  await prisma.maintenanceUpdate.deleteMany();
-  await prisma.maintenanceTicket.deleteMany();
-  await prisma.payment.deleteMany();
-  await prisma.lease.deleteMany();
-  await prisma.tenant.deleteMany();
-  await prisma.unit.deleteMany();
-  await prisma.property.deleteMany();
+  await prisma.legacyMaintenanceUpdate.deleteMany();
+  await prisma.legacyMaintenanceTicket.deleteMany();
+  await prisma.legacyPayment.deleteMany();
+  await prisma.legacyLease.deleteMany();
+  await prisma.legacyTenant.deleteMany();
+  await prisma.legacyUnit.deleteMany();
+  await prisma.legacyProperty.deleteMany();
   await prisma.communication.deleteMany();
   await prisma.document.deleteMany();
   await prisma.task.deleteMany();
@@ -49,7 +49,7 @@ async function main() {
     data: {
       email: 'locataire@crm.local',
       fullName: 'Locataire Démo',
-      role: UserRole.TENANT,
+      role: UserRole.PORTAL_USER,
       passwordHash,
     },
   });
@@ -77,7 +77,7 @@ async function main() {
     }),
     prisma.contact.create({
       data: {
-        type: ContactType.PROPRIETAIRE,
+        type: ContactType.ORGANIZATION,
         fullName: 'Sophie Bouchard',
         email: 'sophie.bouchard@email.ca',
         phone: '+1 438 555 7788',
@@ -87,7 +87,7 @@ async function main() {
     }),
     prisma.contact.create({
       data: {
-        type: ContactType.LOCATAIRE_PROSPECT,
+        type: ContactType.PARTICIPANT,
         fullName: 'Antoine Roy',
         email: 'antoine.roy@email.ca',
         phone: '+1 581 555 4545',
@@ -99,7 +99,7 @@ async function main() {
 
   const [clientContact, prospectContact, ownerContact, tenantProspectContact] = contacts;
 
-  const property = await prisma.property.create({
+  const property = await prisma.legacyProperty.create({
     data: {
       code: 'MTL-001',
       name: 'Résidence du Parc',
@@ -111,7 +111,7 @@ async function main() {
     },
   });
 
-  const unitA = await prisma.unit.create({
+  const unitA = await prisma.legacyUnit.create({
     data: {
       propertyId: property.id,
       unitNumber: '201',
@@ -123,7 +123,7 @@ async function main() {
     },
   });
 
-  const unitB = await prisma.unit.create({
+  const unitB = await prisma.legacyUnit.create({
     data: {
       propertyId: property.id,
       unitNumber: '305',
@@ -151,7 +151,7 @@ async function main() {
     data: { contactId: tenantContact.id },
   });
 
-  const tenant = await prisma.tenant.create({
+  const tenant = await prisma.legacyTenant.create({
     data: {
       contactId: tenantContact.id,
       unitId: unitA.id,
@@ -161,7 +161,7 @@ async function main() {
     },
   });
 
-  const lease = await prisma.lease.create({
+  const lease = await prisma.legacyLease.create({
     data: {
       leaseNumber: 'BAIL-2025-0001',
       tenantId: tenant.id,
@@ -175,7 +175,7 @@ async function main() {
     },
   });
 
-  await prisma.payment.createMany({
+  await prisma.legacyPayment.createMany({
     data: [
       {
         leaseId: lease.id,
@@ -202,7 +202,7 @@ async function main() {
   const caseRecord = await prisma.caseRecord.create({
     data: {
       title: 'Suivi dossier location Antoine Roy',
-      type: CaseType.LOCATION,
+      type: CaseType.LEGACY_HOUSING,
       status: CaseStatus.IN_PROGRESS,
       contactId: tenantProspectContact.id,
       ownerUserId: assistant.id,
@@ -258,7 +258,7 @@ async function main() {
         priority: TaskPriority.MEDIUM,
         assignedToId: assistant.id,
         createdById: admin.id,
-        linkedType: LinkedType.LEASE,
+        linkedType: LinkedType.LEGACY_LEASE,
         linkedId: lease.id,
       },
     ],
@@ -276,14 +276,14 @@ async function main() {
       {
         fileName: 'bail-2025-0001-signe.pdf',
         fileUrl: '/crm/documents/bail-2025-0001-signe.pdf',
-        linkedType: LinkedType.LEASE,
+        linkedType: LinkedType.LEGACY_LEASE,
         linkedId: lease.id,
         uploadedById: admin.id,
       },
     ],
   });
 
-  const maintenanceTicket = await prisma.maintenanceTicket.create({
+  const maintenanceTicket = await prisma.legacyMaintenanceTicket.create({
     data: {
       propertyId: property.id,
       unitId: unitA.id,
@@ -296,7 +296,7 @@ async function main() {
     },
   });
 
-  await prisma.maintenanceUpdate.createMany({
+  await prisma.legacyMaintenanceUpdate.createMany({
     data: [
       {
         maintenanceTicketId: maintenanceTicket.id,
@@ -326,12 +326,12 @@ async function main() {
         linkedId: caseRecord.id,
       },
       {
-        tenantId: tenant.id,
+        legacyTenantId: tenant.id,
         userId: tenantUser.id,
         channel: 'PORTAL',
         body: 'Demande de maintenance soumise via portail.',
         direction: CommunicationDirection.INBOUND,
-        linkedType: LinkedType.MAINTENANCE_TICKET,
+        linkedType: LinkedType.LEGACY_MAINTENANCE_TICKET,
         linkedId: maintenanceTicket.id,
       },
     ],
@@ -341,7 +341,7 @@ async function main() {
   console.log('Comptes démo: admin@crm.local, assistant@crm.local, locataire@crm.local');
   console.log(`Mot de passe démo: ${demoPassword}`);
 
-  await prisma.unit.update({
+  await prisma.legacyUnit.update({
     where: { id: unitB.id },
     data: { status: UnitStatus.VACANT },
   });
@@ -464,7 +464,7 @@ async function main() {
         type: AppointmentType.VISIT,
         status: AppointmentStatus.CONFIRMED,
         contactId: tenantProspectContact.id,
-        propertyId: property.id,
+        legacyPropertyId: property.id,
         userId: assistant.id,
       },
       {
@@ -482,7 +482,7 @@ async function main() {
         endAt: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
         type: AppointmentType.INSPECTION,
         status: AppointmentStatus.PENDING,
-        propertyId: property.id,
+        legacyPropertyId: property.id,
         userId: admin.id,
       },
     ],

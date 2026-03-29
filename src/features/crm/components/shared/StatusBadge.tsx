@@ -40,8 +40,8 @@ const statusMap: Record<string, { label: string; color: string }> = {
   PROSPECT: { label: 'Prospect', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
   CLIENT: { label: 'Client', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
   PARTENAIRE: { label: 'Partenaire', color: 'bg-purple-500/20 text-purple-200 border-purple-400/30' },
-  PROPRIETAIRE: { label: 'Organisation', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/30' },
-  LOCATAIRE_PROSPECT: { label: 'Participant', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
+  ORGANIZATION: { label: 'Organisation', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/30' },
+  PARTICIPANT: { label: 'Participant', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
   SCHOOL: { label: 'École', color: 'bg-sky-500/20 text-sky-200 border-sky-400/30' },
   COMMUNITY_ORG: { label: 'Organisme', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },
   DAYCARE: { label: 'Garderie', color: 'bg-pink-500/20 text-pink-200 border-pink-400/30' },
@@ -49,7 +49,8 @@ const statusMap: Record<string, { label: string; color: string }> = {
   OTHER: { label: 'Autre', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
 
   // Autres types
-  LOCATION: { label: 'Location', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
+  LEGACY_HOUSING: { label: 'Archive logement', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
+  LEGACY_MAINTENANCE: { label: 'Archive maintenance', color: 'bg-rose-500/20 text-rose-200 border-rose-400/30' },
   SUPPORT: { label: 'Support', color: 'bg-rose-500/20 text-rose-200 border-rose-400/30' },
 
   // Priorités
@@ -72,7 +73,7 @@ const statusMap: Record<string, { label: string; color: string }> = {
   // Roles
   ADMIN: { label: 'Administrateur', color: 'bg-red-500/20 text-red-200 border-red-400/30' },
   ASSISTANT: { label: 'Assistant', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
-  TENANT: { label: 'Client portail', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
+  PORTAL_USER: { label: 'Client portail', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
 
   // Property
   RESIDENTIAL: { label: 'Résidentiel', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },

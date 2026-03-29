@@ -40,7 +40,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
   ]);
 
   const nextAvailabilityEvents = workshopAvailabilities.flatMap((item) => {
-    const events = [] as Array<{ id: string; title: string; description: string | null; startAt: string; endAt: string; type: string; status: string; contactId: null; propertyId: null; contactName: null; propertyName: null; source: 'workshop_availability'; organizationName: null }>;
+    const events = [] as Array<{ id: string; title: string; description: string | null; startAt: string; endAt: string; type: string; status: string; contactId: null; contactName: null; source: 'workshop_availability'; organizationName: null }>;
     const now = new Date();
     const jsWeekday = item.weekday % 7;
 
@@ -62,9 +62,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
         type: 'AVAILABILITY',
         status: 'ACTIVE',
         contactId: null,
-        propertyId: null,
         contactName: null,
-        propertyName: null,
         source: 'workshop_availability',
         organizationName: null,
       });
@@ -83,9 +81,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       type: item.type,
       status: item.status,
       contactId: item.contactId,
-      propertyId: null,
       contactName: item.contact?.fullName || null,
-      propertyName: null,
       source: 'appointment' as const,
       organizationName: null,
     })),
@@ -98,9 +94,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       type: 'WORKSHOP',
       status: item.status,
       contactId: item.contactId,
-      propertyId: null,
       contactName: item.contact?.fullName || null,
-      propertyName: null,
       source: 'workshop_appointment' as const,
       organizationName: item.organization?.name || null,
     })),
