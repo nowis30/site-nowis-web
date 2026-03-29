@@ -68,13 +68,85 @@ const processSteps = [
   },
 ];
 
+interface HomeScreenOverrides {
+  hero?: {
+    eyebrow?: string;
+    title?: string;
+    description?: string;
+    primaryCta?: { label?: string; href?: string };
+    secondaryCta?: { label?: string; href?: string };
+    image?: {
+      src?: string | null;
+      altText?: string;
+      focalX?: number;
+      focalY?: number;
+      zoom?: number;
+      fit?: 'cover' | 'contain';
+      aspectRatio?: 'auto' | '16/9' | '4/3' | '1/1';
+    };
+  };
+  emotionStatements?: string[];
+  processSteps?: Array<{ title: string; description: string }>;
+  trustReasons?: Array<{ title: string; description: string }>;
+}
+
 function buildExampleHref(title: string) {
   const message = `Bonjour, j’aime beaucoup l’exemple « ${title} ». Je veux une chanson personnalisée dans le même esprit pour mon histoire.`;
   return `/contact?projectType=chanson&message=${encodeURIComponent(message)}`;
 }
 
-export const HomeScreen = async () => {
+export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverrides } = {}) => {
   const songs = await getHomeSongs(4);
+
+  const heroImage = {
+    src: overrides?.hero?.image?.src || '/hero.jpg',
+    altText: overrides?.hero?.image?.altText || 'Nowis Morin, artiste principal de Création Nowis',
+    focalX: typeof overrides?.hero?.image?.focalX === 'number' ? overrides.hero.image.focalX : 50,
+    focalY: typeof overrides?.hero?.image?.focalY === 'number' ? overrides.hero.image.focalY : 50,
+    zoom: typeof overrides?.hero?.image?.zoom === 'number' ? overrides.hero.image.zoom : 1,
+    fit: overrides?.hero?.image?.fit === 'contain' ? 'contain' : 'cover',
+    aspectRatio: overrides?.hero?.image?.aspectRatio || 'auto',
+  };
+
+  const heroImageRatioStyle =
+    heroImage.aspectRatio === '16/9'
+      ? { aspectRatio: '16 / 9' }
+      : heroImage.aspectRatio === '4/3'
+        ? { aspectRatio: '4 / 3' }
+        : heroImage.aspectRatio === '1/1'
+          ? { aspectRatio: '1 / 1' }
+          : undefined;
+
+  const heroContent = {
+    eyebrow: overrides?.hero?.eyebrow || 'Chansons personnalisées',
+    title: overrides?.hero?.title || 'Création musicale sur mesure et ateliers créatifs pour enfants',
+    description:
+      overrides?.hero?.description ||
+      'Nowis réunit deux univers clairs : la chanson personnalisée pour les particuliers et les projets sensibles, puis les ateliers créatifs conçus pour les écoles, organismes et groupes d’enfants.',
+    primaryCta: {
+      label: overrides?.hero?.primaryCta?.label || 'Demander une chanson (portail)',
+      href: overrides?.hero?.primaryCta?.href || songSalesCtas.order.href,
+    },
+    secondaryCta: {
+      label: overrides?.hero?.secondaryCta?.label || 'Demander un atelier (portail)',
+      href: overrides?.hero?.secondaryCta?.href || '/connexion?next=%2Fclient%2Fworkshops%2Fnouveau',
+    },
+  };
+
+  const emotionContent =
+    overrides?.emotionStatements && overrides.emotionStatements.length >= 3
+      ? overrides.emotionStatements.slice(0, 3)
+      : emotionStatements;
+
+  const processContent =
+    overrides?.processSteps && overrides.processSteps.length >= 3
+      ? overrides.processSteps.slice(0, 3)
+      : processSteps;
+
+  const trustContent =
+    overrides?.trustReasons && overrides.trustReasons.length >= 2
+      ? overrides.trustReasons
+      : trustReasons;
 
   return (
     <div className="relative overflow-hidden bg-transparent text-slate-100">
@@ -84,25 +156,25 @@ export const HomeScreen = async () => {
         <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(rgba(255,255,255,0.55)_0.7px,transparent_0.7px)] [background-size:22px_22px]" />
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-[1.02fr_0.98fr] md:items-center md:py-24 lg:py-28">
           <div className="relative z-10">
-            <p className="brand-chip">Chansons personnalisées</p>
+            <p className="brand-chip">{heroContent.eyebrow}</p>
             <h1 className="brand-metal-text mt-6 max-w-4xl font-display text-5xl leading-[0.95] md:text-7xl xl:text-[5.5rem]">
-              Création musicale sur mesure et ateliers créatifs pour enfants
+              {heroContent.title}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100 md:text-xl">
-              Nowis réunit deux univers clairs : la chanson personnalisée pour les particuliers et les projets sensibles, puis les ateliers créatifs conçus pour les écoles, organismes et groupes d’enfants.
+              {heroContent.description}
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
-                href={songSalesCtas.order.href}
+                href={heroContent.primaryCta.href}
                 className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3.5 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
               >
-                Demander une chanson (portail)
+                {heroContent.primaryCta.label}
               </Link>
               <Link
-                href="/connexion?next=%2Fclient%2Fworkshops%2Fnouveau"
+                href={heroContent.secondaryCta.href}
                 className="inline-flex items-center justify-center rounded-xl border border-amber-200/30 bg-amber-500/10 px-6 py-3.5 font-semibold text-white backdrop-blur-sm transition hover:bg-amber-500/20"
               >
-                Demander un atelier (portail)
+                {heroContent.secondaryCta.label}
               </Link>
               <Link
                 href="/connexion"
@@ -127,8 +199,22 @@ export const HomeScreen = async () => {
             <div className="brand-panel p-4 md:p-5">
               <div className="absolute -left-6 top-10 hidden h-24 w-24 rounded-full bg-primary-500/20 blur-3xl md:block" />
               <div className="absolute -right-6 bottom-16 hidden h-28 w-28 rounded-full bg-secondary-500/20 blur-3xl md:block" />
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] border border-primary-200/20 bg-[radial-gradient(circle_at_center,_rgba(96,165,250,0.16),_transparent_45%),linear-gradient(180deg,#07101f_0%,#10182d_100%)]">
-                <Image src="/hero.jpg" alt="Nowis Morin, artiste principal de Création Nowis" fill className="object-cover object-center brightness-[0.72] contrast-[1.05]" priority />
+              <div className="relative overflow-hidden rounded-[1.5rem] border border-primary-200/20 bg-[radial-gradient(circle_at_center,_rgba(96,165,250,0.16),_transparent_45%),linear-gradient(180deg,#07101f_0%,#10182d_100%)]" style={heroImageRatioStyle}>
+                <div className={heroImage.aspectRatio === 'auto' ? 'relative aspect-[4/5]' : 'relative h-full min-h-[320px]'}>
+                  <Image
+                    src={heroImage.src}
+                    alt={heroImage.altText}
+                    fill
+                    className="brightness-[0.72] contrast-[1.05]"
+                    style={{
+                      objectFit: heroImage.fit === 'contain' ? 'contain' : 'cover',
+                      objectPosition: `${heroImage.focalX}% ${heroImage.focalY}%`,
+                      transform: `scale(${heroImage.zoom})`,
+                      transformOrigin: `${heroImage.focalX}% ${heroImage.focalY}%`,
+                    }}
+                    priority
+                  />
+                </div>
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.24)_38%,rgba(5,8,22,0.88)_100%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(79,70,229,0.18),transparent_30%)]" />
               </div>
@@ -143,7 +229,7 @@ export const HomeScreen = async () => {
 
       <section className="mx-auto max-w-6xl px-6 py-14 md:py-18">
         <div className="grid gap-4 rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,rgba(8,12,24,0.84),rgba(18,27,48,0.74))] p-6 shadow-card backdrop-blur-md md:grid-cols-3 md:p-8">
-          {emotionStatements.map((item, index) => (
+          {emotionContent.map((item, index) => (
             <article key={item} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-5">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">{index === 0 ? 'Émotion' : index === 1 ? 'Message' : 'Transformation'}</p>
               <p className="mt-3 text-lg leading-8 text-slate-100">{item}</p>
@@ -182,7 +268,7 @@ export const HomeScreen = async () => {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {processSteps.map((step, index) => (
+          {processContent.map((step, index) => (
             <article key={step.title} className="brand-card p-8">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-warm text-lg font-bold text-white shadow-fire">
                 {index + 1}
@@ -320,7 +406,7 @@ export const HomeScreen = async () => {
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {trustReasons.map((reason) => (
+          {trustContent.map((reason) => (
             <article key={reason.title} className="brand-card p-7">
               <h3 className="font-display text-3xl leading-[1.08] text-white">{reason.title}</h3>
               <p className="mt-4 text-base leading-7 text-slate-200">{reason.description}</p>

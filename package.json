@@ -4,11 +4,13 @@
   "description": "NOWIS - Création de contenu IA (T-shirts, Musique Suno, Vidéos Revide.ai)",
   "scripts": {
     "dev": "next dev",
+    "dev:local": "next dev -p 3000",
     "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "test:contract": "tsx scripts/admin-runtime-contract.test.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate:init": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/20260323_init/migration.sql",
     "prisma:migrate:deploy": "prisma migrate deploy",

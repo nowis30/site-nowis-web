@@ -88,6 +88,58 @@ export function SongHowItWorksSection({ theme = 'dark' }: { theme?: 'light' | 'd
   );
 }
 
+type SongHowItWorksSectionData = {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  steps?: Array<{ step: string; title: string; description: string }>;
+};
+
+export function SongHowItWorksSectionWithData({
+  theme = 'dark',
+  data,
+}: {
+  theme?: 'light' | 'dark';
+  data?: SongHowItWorksSectionData;
+}) {
+  const sectionText = theme === 'dark' ? 'text-white' : 'text-slate-950';
+  const cardClass = theme === 'dark'
+    ? 'brand-card p-8'
+    : 'rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm';
+  const labelClass = theme === 'dark' ? 'text-primary-300' : 'text-primary-600';
+  const bodyClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
+
+  const steps = data?.steps && data.steps.length > 0 ? data.steps : songProcessSteps;
+
+  return (
+    <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <SectionHeader
+        eyebrow={data?.eyebrow || 'Comment ça fonctionne'}
+        title={data?.title || 'Une commande simple, claire et guidée du début à la fin'}
+        description={data?.description || 'Le processus reste volontairement direct pour que l’offre soit facile à comprendre et rapide à lancer.'}
+        theme={theme}
+      />
+
+      <ol className="mt-10 grid list-none gap-6 lg:grid-cols-3">
+        {steps.map((item, index) => (
+          <li key={`${item.step}-${index}`} className={cardClass}>
+            <div className="flex items-center gap-4">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-warm text-lg font-bold text-white shadow-fire">
+                {index + 1}
+              </span>
+              <div>
+                <p className={`text-sm font-semibold uppercase tracking-[0.24em] ${labelClass}`}>{item.step}</p>
+              </div>
+            </div>
+            <h3 className={`mt-6 font-display text-3xl leading-[1.08] ${sectionText}`}>{item.title}</h3>
+            <p className={`mt-4 text-base leading-7 ${bodyClass}`}>{item.description}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 type SongPackagesSectionProps = {
   eyebrow?: string;
   title?: string;
@@ -281,6 +333,118 @@ export function SongFinalCtaSection() {
           className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-primary-500/10"
         >
           {songSalesCtas.talk.label}
+        </ContactPrefillLink>
+      </div>
+    </section>
+  );
+}
+
+type SongPackagesSectionData = {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  packages?: typeof songPackages;
+};
+
+export function SongPackagesSectionWithData({
+  data,
+  showCardCta = false,
+}: {
+  data?: SongPackagesSectionData;
+  showCardCta?: boolean;
+}) {
+  const packs = data?.packages && data.packages.length > 0 ? data.packages : songPackages;
+
+  return (
+    <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <SectionHeader
+        eyebrow={data?.eyebrow || 'Niveaux d’accompagnement'}
+        title={data?.title || 'Plusieurs façons d’aborder un projet sur mesure'}
+        description={data?.description || 'Le cœur du service reste la création d’une chanson personnalisée, avec un accompagnement ajusté à la nature du projet et à l’émotion recherchée.'}
+        theme="light"
+      />
+
+      <div className="mt-10 grid gap-6 xl:grid-cols-3">
+        {packs.map((pack) => (
+          <article
+            key={pack.name}
+            className={[
+              'relative rounded-[2rem] border p-8 shadow-card transition backdrop-blur-sm',
+              pack.featured
+                ? 'border-primary-200 bg-primary-50/70 ring-2 ring-primary-200 xl:-translate-y-1'
+                : 'border-slate-200 bg-white',
+            ].join(' ')}
+          >
+            {pack.badge ? (
+              <p className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-700">
+                {pack.badge}
+              </p>
+            ) : null}
+            <div className="mt-4 space-y-4">
+              <div>
+                <h3 className="font-display text-3xl leading-[1.08] text-slate-950">{pack.name}</h3>
+                <p className="mt-3 text-base leading-7 text-slate-600">{pack.description}</p>
+              </div>
+              <p className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">{pack.note}</p>
+            </div>
+
+            <ul className="mt-6 space-y-3 text-sm leading-6 text-slate-700">
+              {pack.features.map((feature) => (
+                <li key={feature} className="flex gap-3">
+                  <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-warm text-xs font-bold text-white">
+                    ✓
+                  </span>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            {showCardCta ? (
+              <Link
+                href={songSalesCtas.order.href}
+                className="mt-8 inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              >
+                {songSalesCtas.order.label}
+              </Link>
+            ) : null}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type SongFinalCtaData = {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+};
+
+export function SongFinalCtaSectionWithData({ data }: { data?: SongFinalCtaData }) {
+  const primary = data?.primaryCta || { label: 'Commander une chanson', href: '#commande' };
+  const secondary = data?.secondaryCta || { label: songSalesCtas.talk.label, href: songSalesCtas.talk.href };
+
+  return (
+    <section className="brand-shell rounded-[2rem] p-8 text-white shadow-card md:p-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">{data?.eyebrow || 'Prêt à lancer la demande'}</p>
+      <h2 className="mt-4 font-display text-4xl leading-[1.05] md:text-5xl">{data?.title || 'Un projet musical simple à lancer, sans complication'}</h2>
+      <p className="mt-4 max-w-3xl text-base leading-8 text-slate-200 md:text-lg">
+        {data?.description || 'Si tu veux passer à l’action, tu peux lancer directement la demande ou commencer par m’expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.'}
+      </p>
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+        <Link
+          href={primary.href}
+          className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+        >
+          {primary.label}
+        </Link>
+        <ContactPrefillLink
+          href={secondary.href}
+          className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-primary-500/10"
+        >
+          {secondary.label}
         </ContactPrefillLink>
       </div>
     </section>

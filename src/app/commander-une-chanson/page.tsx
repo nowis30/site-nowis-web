@@ -2,18 +2,61 @@ import Link from 'next/link';
 import { ClientPortalRequestGate } from '@/components/marketing/ClientPortalRequestGate';
 import { PageHero } from '@/components/marketing/PageHero';
 import {
-  SongHowItWorksSection,
-  SongFinalCtaSection,
+  SongHowItWorksSectionWithData,
+  SongFinalCtaSectionWithData,
   SongGuaranteeBlock,
-  SongPackagesSection,
+  SongPackagesSectionWithData,
   SongPortfolioBlock,
   SongProjectTypesSection,
   SongVideoExtrasSection,
   WhyNowisSection,
 } from '@/components/marketing/SongSalesSections';
 import { legalLinks } from '@/data/legal';
-import { portfolioDisclosure, songSalesCtas } from '@/data/songSales';
+import { portfolioDisclosure, songPackages, songProcessSteps, songSalesCtas } from '@/data/songSales';
 import { buildMetadata } from '@/lib/seo';
+import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
+
+const DEFAULT_SONG_PAGE_CONTENT = {
+  hero: {
+    eyebrow: 'Chanson personnalisee',
+    title: 'Une chanson sur mesure a partir de votre histoire',
+    description: 'Je cree des chansons personnalisees a partir de vos paroles, de vos souvenirs ou d un moment important de votre vie.',
+    primaryCta: { label: songSalesCtas.order.label, href: '#acces-portail' },
+    secondaryCta: { label: songSalesCtas.listen.label, href: songSalesCtas.listen.href },
+  },
+  how: {
+    title: 'Une commande simple, claire et guidee du debut a la fin',
+    description: 'Le processus reste volontairement direct pour que l offre soit facile a comprendre et rapide a lancer.',
+  },
+  packages: {
+    eyebrow: 'Niveaux d accompagnement',
+    title: 'Trois facons d aborder votre chanson sur mesure',
+    description:
+      'Selon votre point de depart, je peux mettre un texte en chanson, construire une chanson complete a partir d une histoire ou accompagner une demande plus personnelle avec plus de delicatesse.',
+  },
+  final: {
+    title: 'Un projet musical simple a lancer, sans complication',
+    description:
+      'Si tu veux passer a l action, tu peux lancer directement la demande ou commencer par m expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.',
+    primaryCta: { label: 'Commander une chanson', href: '#commande' },
+    secondaryCta: { label: songSalesCtas.talk.label, href: songSalesCtas.talk.href },
+  },
+};
+
+function pickText(adminValue: string | null | undefined, fallback: string) {
+  if (typeof adminValue !== 'string') return fallback;
+  const value = adminValue.trim();
+  return value.length > 0 ? value : fallback;
+}
+
+function pickHref(adminValue: string | null | undefined, fallback: string) {
+  if (typeof adminValue !== 'string') return fallback;
+  const value = adminValue.trim();
+  if (!value) return fallback;
+  return value.startsWith('/') || value.startsWith('#') || value.startsWith('https://') || value.startsWith('http://')
+    ? value
+    : fallback;
+}
 
 export const metadata = buildMetadata({
   title: 'Commander une chanson | Création Nowis',
@@ -24,24 +67,135 @@ export const metadata = buildMetadata({
 });
 
 export default async function CommanderUneChansonPage() {
+  const runtimePayload = await getAdminRuntimePayload();
+  const adminPage = getAdminPage(runtimePayload, 'commander-une-chanson');
+
+  const heroSection = getAdminSection(adminPage, 'song.hero');
+  const howSection = getAdminSection(adminPage, 'song.how-it-works');
+  const packagesSection = getAdminSection(adminPage, 'song.packages');
+  const finalSection = getAdminSection(adminPage, 'song.final-cta');
+
+  const heroEnabled = heroSection?.isActive ?? false;
+  const howEnabled = howSection?.isActive ?? false;
+  const packagesEnabled = packagesSection?.isActive ?? false;
+  const finalEnabled = finalSection?.isActive ?? false;
+  const heroStyle = getAdminSectionVisualStyle(heroSection);
+
+  const heroEyebrow = heroEnabled
+    ? pickText(getAdminBlockValue(heroSection, 'eyebrow'), DEFAULT_SONG_PAGE_CONTENT.hero.eyebrow)
+    : DEFAULT_SONG_PAGE_CONTENT.hero.eyebrow;
+  const heroTitle = heroEnabled
+    ? pickText(heroSection?.title, DEFAULT_SONG_PAGE_CONTENT.hero.title)
+    : DEFAULT_SONG_PAGE_CONTENT.hero.title;
+  const heroDescription = heroEnabled
+    ? pickText(heroSection?.description, DEFAULT_SONG_PAGE_CONTENT.hero.description)
+    : DEFAULT_SONG_PAGE_CONTENT.hero.description;
+  const heroPrimaryLabel = heroEnabled
+    ? pickText(heroSection?.ctaLabel, DEFAULT_SONG_PAGE_CONTENT.hero.primaryCta.label)
+    : DEFAULT_SONG_PAGE_CONTENT.hero.primaryCta.label;
+  const heroPrimaryHref = heroEnabled
+    ? pickHref(heroSection?.ctaHref, DEFAULT_SONG_PAGE_CONTENT.hero.primaryCta.href)
+    : DEFAULT_SONG_PAGE_CONTENT.hero.primaryCta.href;
+  const heroSecondaryLabel = heroEnabled
+    ? pickText(getAdminBlockValue(heroSection, 'secondaryCta.label'), DEFAULT_SONG_PAGE_CONTENT.hero.secondaryCta.label)
+    : DEFAULT_SONG_PAGE_CONTENT.hero.secondaryCta.label;
+  const heroSecondaryHref = heroEnabled
+    ? pickHref(getAdminBlockValue(heroSection, 'secondaryCta.href'), DEFAULT_SONG_PAGE_CONTENT.hero.secondaryCta.href)
+    : DEFAULT_SONG_PAGE_CONTENT.hero.secondaryCta.href;
+
+  const howSteps = [1, 2, 3].map((index) => {
+    const fallback = songProcessSteps[index - 1];
+    return {
+      step: howEnabled
+        ? pickText(getAdminBlockValue(howSection, `step${index}.label`), fallback?.step || `Etape ${index}`)
+        : fallback?.step || `Etape ${index}`,
+      title: howEnabled
+        ? pickText(getAdminBlockValue(howSection, `step${index}.title`), fallback?.title || '')
+        : fallback?.title || '',
+      description: howEnabled
+        ? pickText(getAdminBlockValue(howSection, `step${index}.text`), fallback?.description || '')
+        : fallback?.description || '',
+    };
+  });
+
+  const howTitle = howEnabled
+    ? pickText(howSection?.title, DEFAULT_SONG_PAGE_CONTENT.how.title)
+    : DEFAULT_SONG_PAGE_CONTENT.how.title;
+  const howDescription = howEnabled
+    ? pickText(howSection?.description, DEFAULT_SONG_PAGE_CONTENT.how.description)
+    : DEFAULT_SONG_PAGE_CONTENT.how.description;
+
+  const packageOverrides = [1, 2, 3].map((index) => {
+    const fallback = songPackages[index - 1];
+    return {
+      ...fallback,
+      name: packagesEnabled
+        ? pickText(getAdminBlockValue(packagesSection, `item${index}.title`), fallback?.name || '')
+        : fallback?.name || '',
+      description: packagesEnabled
+        ? pickText(getAdminBlockValue(packagesSection, `item${index}.text`), fallback?.description || '')
+        : fallback?.description || '',
+    };
+  });
+
+  const packagesTitle = packagesEnabled
+    ? pickText(packagesSection?.title, DEFAULT_SONG_PAGE_CONTENT.packages.title)
+    : DEFAULT_SONG_PAGE_CONTENT.packages.title;
+  const packagesDescription = packagesEnabled
+    ? pickText(packagesSection?.description, DEFAULT_SONG_PAGE_CONTENT.packages.description)
+    : DEFAULT_SONG_PAGE_CONTENT.packages.description;
+
+  const finalTitle = finalEnabled
+    ? pickText(finalSection?.title, DEFAULT_SONG_PAGE_CONTENT.final.title)
+    : DEFAULT_SONG_PAGE_CONTENT.final.title;
+  const finalDescription = finalEnabled
+    ? pickText(finalSection?.description, DEFAULT_SONG_PAGE_CONTENT.final.description)
+    : DEFAULT_SONG_PAGE_CONTENT.final.description;
+  const finalPrimaryLabel = finalEnabled
+    ? pickText(finalSection?.ctaLabel, DEFAULT_SONG_PAGE_CONTENT.final.primaryCta.label)
+    : DEFAULT_SONG_PAGE_CONTENT.final.primaryCta.label;
+  const finalPrimaryHref = finalEnabled
+    ? pickHref(finalSection?.ctaHref, DEFAULT_SONG_PAGE_CONTENT.final.primaryCta.href)
+    : DEFAULT_SONG_PAGE_CONTENT.final.primaryCta.href;
+  const finalSecondaryLabel = finalEnabled
+    ? pickText(getAdminBlockValue(finalSection, 'cta2.label'), DEFAULT_SONG_PAGE_CONTENT.final.secondaryCta.label)
+    : DEFAULT_SONG_PAGE_CONTENT.final.secondaryCta.label;
+  const finalSecondaryHref = finalEnabled
+    ? pickHref(getAdminBlockValue(finalSection, 'cta2.href'), DEFAULT_SONG_PAGE_CONTENT.final.secondaryCta.href)
+    : DEFAULT_SONG_PAGE_CONTENT.final.secondaryCta.href;
+
   return (
     <div className="bg-slate-50 text-slate-900">
       <PageHero
-        eyebrow="Chanson personnalisée"
-        title="Une chanson sur mesure à partir de votre histoire"
-        description="Je crée des chansons personnalisées à partir de vos paroles, de vos souvenirs ou d’un moment important de votre vie."
-        primaryCta={{ label: songSalesCtas.order.label, href: '#acces-portail' }}
-        secondaryCta={{ label: songSalesCtas.listen.label, href: songSalesCtas.listen.href }}
+        eyebrow={heroEyebrow}
+        title={heroTitle}
+        description={heroDescription}
+        primaryCta={{ label: heroPrimaryLabel, href: heroPrimaryHref }}
+        secondaryCta={{
+          label: heroSecondaryLabel,
+          href: heroSecondaryHref,
+        }}
+        style={heroStyle}
       />
 
       <SongProjectTypesSection />
 
-      <SongHowItWorksSection theme="light" />
+      <SongHowItWorksSectionWithData
+        theme="light"
+        data={{
+          title: howTitle,
+          description: howDescription,
+          steps: howSteps,
+        }}
+      />
 
-      <SongPackagesSection
-        eyebrow="Niveaux d’accompagnement"
-        title="Trois façons d’aborder votre chanson sur mesure"
-        description="Selon votre point de départ, je peux mettre un texte en chanson, construire une chanson complète à partir d’une histoire ou accompagner une demande plus personnelle avec plus de délicatesse."
+      <SongPackagesSectionWithData
+        data={{
+          eyebrow: DEFAULT_SONG_PAGE_CONTENT.packages.eyebrow,
+          title: packagesTitle,
+          description: packagesDescription,
+          packages: packageOverrides,
+        }}
       />
 
       <SongVideoExtrasSection theme="light" />
@@ -56,7 +210,20 @@ export default async function CommanderUneChansonPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
-        <SongFinalCtaSection />
+        <SongFinalCtaSectionWithData
+          data={{
+            title: finalTitle,
+            description: finalDescription,
+            primaryCta: {
+              label: finalPrimaryLabel,
+              href: finalPrimaryHref,
+            },
+            secondaryCta: {
+              label: finalSecondaryLabel,
+              href: finalSecondaryHref,
+            },
+          }}
+        />
       </section>
 
       <section id="acces-portail" className="mx-auto grid max-w-7xl gap-10 px-6 pb-16 lg:grid-cols-[1.05fr_0.95fr] md:pb-20">
