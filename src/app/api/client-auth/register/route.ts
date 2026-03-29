@@ -131,7 +131,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof ZodError) {
-      return NextResponse.json({ error: 'Donnees invalides', details: error.issues }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: error.issues[0]?.message || 'Donnees invalides',
+          code: 'VALIDATION_ERROR',
+          details: error.issues,
+        },
+        { status: 400 },
+      );
     }
 
     console.error('[CLIENT_AUTH_REGISTER]', error);

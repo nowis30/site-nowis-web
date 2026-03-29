@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
+import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
 
 export default function InscriptionPage() {
   const router = useRouter();
@@ -16,18 +17,36 @@ export default function InscriptionPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    const parsed = clientRegisterSchema.safeParse({
+      fullName,
+      email,
+      phone,
+      password,
+      address: '',
+      message: '',
+    });
+
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message || 'Formulaire invalide.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const response = await fetch('/api/client-auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, phone, password }),
+        body: JSON.stringify(parsed.data),
       });
       const data = await response.json();
       if (!response.ok) {
         if (response.status === 409) {
           throw new Error('Un compte existe déjà avec cet email. Essaie de te connecter.');
+        }
+        if (response.status === 400 && Array.isArray(data?.details) && data.details.length > 0) {
+          throw new Error(data.details[0]?.message || data.error || 'Impossible de créer le compte.');
         }
         throw new Error(data.error || 'Impossible de créer le compte.');
       }
