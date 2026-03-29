@@ -85,7 +85,7 @@ export const Header: React.FC = () => {
           </div>
 
           <ContactPrefillLink
-            href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée."
+            href="/inscription"
             className="ml-2 rounded-xl bg-brand-warm px-5 py-2.5 text-sm font-semibold text-white shadow-fire transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
           >
             Lancer mon projet
@@ -144,7 +144,7 @@ export const Header: React.FC = () => {
             </div>
 
             <ContactPrefillLink
-              href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée."
+              href="/inscription"
               className="m-4 rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white shadow-fire transition-all hover:brightness-110"
               onClick={() => setIsMenuOpen(false)}
             >
