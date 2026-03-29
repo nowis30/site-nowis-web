@@ -59,11 +59,11 @@ export default async function ClientWorkshopsPage() {
     <section className="space-y-6">
       <PageHeader title="Ateliers" subtitle="Suivez vos demandes d’atelier, les rendez-vous confirmés et les prochaines étapes avec Nowis." />
 
-      <SectionCard title="Actions" subtitle="Démarrer une nouvelle demande ou revenir au formulaire public.">
+      <SectionCard title="Actions" subtitle="Démarrer une nouvelle demande d'atelier depuis votre portail sécurisé.">
         <ListToolbar
           filters={[{ label: 'Toutes les demandes', href: '/client/workshops', active: true }]}
           actions={[
-            { label: 'Demander un atelier', href: '/ateliers/demande' },
+            { label: 'Demander un atelier', href: '/client/workshops/nouveau' },
             { label: 'Voir mes rendez-vous', href: '/client/appointments' },
           ]}
         />

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         {
           error: "Connexion requise pour envoyer une demande d'atelier.",
           code: 'AUTH_REQUIRED',
-          loginUrl: buildAuthRedirect('/ateliers/demande'),
+          loginUrl: buildAuthRedirect('/client/workshops/nouveau'),
         },
         { status: 401 },
       );

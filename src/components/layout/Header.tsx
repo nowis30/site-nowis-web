@@ -18,16 +18,16 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { label: 'Accueil', href: '/' },
-  { label: 'Commander une chanson', href: '/commander-une-chanson' },
+  { label: 'Demandes client', href: '/commander-une-chanson' },
   { label: 'Ateliers', href: '/ateliers' },
-  { label: 'Accès client', href: '/connexion' },
-  { label: 'CRM', href: '/crm' },
+  { label: 'Connexion', href: '/connexion' },
+  { label: 'Inscription', href: '/inscription' },
   { label: 'Contact', href: '/contact' },
 ];
 
 const resourceLinks: NavLink[] = [
   { label: 'Exemples musicaux', href: '/musique' },
-  { label: 'Demande d’atelier', href: '/ateliers/demande' },
+  { label: 'Demande d’atelier (compte requis)', href: '/ateliers/demande' },
   { label: 'Services créatifs', href: '/services' },
   { label: 'À propos', href: '/a-propos' },
 ];
@@ -88,7 +88,7 @@ export const Header: React.FC = () => {
             href="/inscription"
             className="ml-2 rounded-xl bg-brand-warm px-5 py-2.5 text-sm font-semibold text-white shadow-fire transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
           >
-            Lancer mon projet
+            Creer mon compte
           </ContactPrefillLink>
         </div>
 
@@ -148,7 +148,7 @@ export const Header: React.FC = () => {
               className="m-4 rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white shadow-fire transition-all hover:brightness-110"
               onClick={() => setIsMenuOpen(false)}
             >
-              Lancer mon projet
+              Creer mon compte
             </ContactPrefillLink>
           </div>
         )}

@@ -8,8 +8,8 @@ export default function AteliersPage() {
         <h1 className="mt-4 font-display text-5xl leading-[0.96] text-white md:text-6xl">Des ateliers sensibles, vivants et structurés pour les écoles et organismes</h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-200">Les ateliers Nowis invitent les enfants et les jeunes à créer, imaginer, écrire, chanter et prendre confiance. Le format s’adapte à votre réalité : classe, groupe parascolaire, camp, centre communautaire ou projet ponctuel.</p>
         <div className="mt-8 flex flex-wrap gap-4">
-          <Link href="/ateliers/demande" className="rounded-xl bg-brand-warm px-6 py-3.5 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">Demander un atelier</Link>
-          <Link href="/connexion" className="rounded-xl border border-white/10 bg-slate-950/50 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10">Accès client</Link>
+          <Link href="/connexion?next=%2Fclient%2Fworkshops%2Fnouveau" className="rounded-xl bg-brand-warm px-6 py-3.5 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">Se connecter pour demander un atelier</Link>
+          <Link href="/inscription?next=%2Fclient%2Fworkshops%2Fnouveau" className="rounded-xl border border-white/10 bg-slate-950/50 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10">Créer un compte client</Link>
         </div>
       </section>
 
@@ -43,7 +43,7 @@ export default function AteliersPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-200">Prêt à réserver</p>
           <h2 className="mt-4 text-3xl font-semibold text-white">Présentez votre contexte et votre créneau souhaité</h2>
           <p className="mt-4 text-sm leading-7 text-slate-200">Vous pouvez demander un atelier, proposer un créneau du mardi ou du jeudi, ou simplement ouvrir la discussion.</p>
-          <Link href="/ateliers/demande" className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Demander un atelier</Link>
+          <Link href="/ateliers/demande" className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Accéder à la procédure de demande</Link>
         </div>
       </section>
     </main>

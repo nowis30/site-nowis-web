@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { SongRequestForm } from '@/components/forms/SongRequestForm';
+import { ClientPortalRequestGate } from '@/components/marketing/ClientPortalRequestGate';
 import { PageHero } from '@/components/marketing/PageHero';
 import {
   SongHowItWorksSection,
@@ -23,14 +23,14 @@ export const metadata = buildMetadata({
   keywords: ['Commander une chanson', 'chanson personnalisée Québec', 'projet musical sur mesure', 'Création Nowis'],
 });
 
-export default function CommanderUneChansonPage() {
+export default async function CommanderUneChansonPage() {
   return (
     <div className="bg-slate-50 text-slate-900">
       <PageHero
         eyebrow="Chanson personnalisée"
         title="Une chanson sur mesure à partir de votre histoire"
         description="Je crée des chansons personnalisées à partir de vos paroles, de vos souvenirs ou d’un moment important de votre vie."
-        primaryCta={{ label: songSalesCtas.order.label, href: '#commande' }}
+        primaryCta={{ label: songSalesCtas.order.label, href: '#acces-portail' }}
         secondaryCta={{ label: songSalesCtas.listen.label, href: songSalesCtas.listen.href }}
       />
 
@@ -59,7 +59,7 @@ export default function CommanderUneChansonPage() {
         <SongFinalCtaSection />
       </section>
 
-      <section id="commande" className="mx-auto grid max-w-7xl gap-10 px-6 pb-16 lg:grid-cols-[1.05fr_0.95fr] md:pb-20">
+      <section id="acces-portail" className="mx-auto grid max-w-7xl gap-10 px-6 pb-16 lg:grid-cols-[1.05fr_0.95fr] md:pb-20">
         <div>
           <div className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Commande</p>
@@ -81,9 +81,9 @@ export default function CommanderUneChansonPage() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">Avant l’envoi</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">Nouveau processus</p>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                La garantie satisfaction s’applique selon les conditions du projet. Les détails sur les paiements, les délais, les révisions, les annulations et les droits d’utilisation sont expliqués dans les pages légales ci-dessous.
+                Les demandes ne se font plus sur le site public. Pour envoyer une demande de chanson, vous devez passer par le portail client sécurisé.
               </p>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                 <Link href={legalLinks.terms} className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-100">
@@ -98,10 +98,10 @@ export default function CommanderUneChansonPage() {
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
-              href="#commande"
+              href="#acces-portail"
               className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-6 py-3 font-semibold text-white transition hover:bg-slate-800"
             >
-              Commander une chanson
+              Voir la procedure
             </Link>
             <Link
               href={songSalesCtas.talk.href}
@@ -112,7 +112,7 @@ export default function CommanderUneChansonPage() {
           </div>
         </div>
 
-        <SongRequestForm />
+        <ClientPortalRequestGate nextPath="/client/song-requests/nouveau" showBackToPortal />
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">

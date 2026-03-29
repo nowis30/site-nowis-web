@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
+import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { buildAuthRedirect } from '@/lib/safe-next';
 
-// Endpoint public : permet aux formulaires du site de créer un contact et une activité
-// Optionnellement protégé par un token secret côté site
+// Endpoint désormais protégé: les créations ne sont possibles qu'avec session portail.
 
 const SITE_SECRET = process.env.SITE_INTEGRATION_SECRET;
 
@@ -29,28 +30,49 @@ const contactFormSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const data = contactFormSchema.parse(body);
+    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    if (!session) {
+      return NextResponse.json(
+        {
+          error: 'Connexion requise pour envoyer une demande.',
+          code: 'AUTH_REQUIRED',
+          loginUrl: buildAuthRedirect('/client/dashboard'),
+        },
+        { status: 401 },
+      );
+    }
 
-    // Vérification du secret si configuré
-    if (SITE_SECRET && data.secret !== SITE_SECRET) {
+    const body = await request.json();
+    const data = contactFormSchema.parse({
+      ...body,
+      email: session.email,
+      fullName: body?.fullName || session.fullName,
+    });
+
+    if (SITE_SECRET && data.secret && data.secret !== SITE_SECRET) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
     const formLabel = data.formLabel ?? `Formulaire ${data.formType}`;
-    const contactType = data.formType === 'rental' ? 'LOCATAIRE_PROSPECT' : 'PROSPECT';
     const source = data.source ?? 'site-web';
 
     // Vérifier si le contact existe déjà (par email)
-    let contact = data.email
-      ? await prisma.contact.findFirst({ where: { email: data.email } })
-      : null;
+    let contact = await prisma.contact.findFirst({
+      where: data.email
+        ? {
+            OR: [
+              { id: session.contactId },
+              { email: data.email },
+            ],
+          }
+        : { id: session.contactId },
+    });
 
     if (!contact) {
       // Créer le contact
       contact = await prisma.contact.create({
         data: {
-          type: contactType,
+          type: 'CLIENT',
           fullName: data.fullName.trim(),
           email: data.email || null,
           phone: data.phone || null,

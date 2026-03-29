@@ -6,7 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
 import { workshopRequestFormSchema, type WorkshopRequestFormInput } from '@/features/workshops/schemas';
 
-export function WorkshopRequestForm() {
+interface WorkshopRequestFormProps {
+  accountEmail: string;
+  accountFullName: string;
+  accountPhone?: string;
+}
+
+export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhone = '' }: WorkshopRequestFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -18,6 +24,9 @@ export function WorkshopRequestForm() {
   } = useForm<WorkshopRequestFormInput>({
     resolver: zodResolver(workshopRequestFormSchema),
     defaultValues: {
+      contactName: accountFullName,
+      email: accountEmail,
+      phone: accountPhone,
       organizationType: 'SCHOOL',
       audienceType: 'ELEMENTARY',
       format: 'IN_PERSON',
@@ -34,6 +43,10 @@ export function WorkshopRequestForm() {
     });
 
     const data = await response.json().catch(() => null);
+    if (response.status === 401 && typeof data?.loginUrl === 'string') {
+      window.location.href = data.loginUrl;
+      return;
+    }
     if (!response.ok) {
       setServerError(data?.error || 'Impossible d’envoyer la demande.');
       return;
@@ -81,7 +94,8 @@ export function WorkshopRequestForm() {
         </label>
         <label>
           <span className="mb-2 block text-sm font-medium text-white">Email</span>
-          <input type="email" {...register('email')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+          <input type="email" {...register('email')} readOnly className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200" />
+          <p className="mt-2 text-xs text-slate-400">Email de votre compte client (utilise pour lier automatiquement votre dossier).</p>
           {errors.email ? <p className="mt-2 text-xs text-red-300">{errors.email.message}</p> : null}
         </label>
         <label>

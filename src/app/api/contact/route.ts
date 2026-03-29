@@ -1,6 +1,8 @@
 import nodemailer from 'nodemailer';
 import { NextRequest, NextResponse } from 'next/server';
 import { legalConfig } from '@/data/legal';
+import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { buildAuthRedirect } from '@/lib/safe-next';
 import { prisma } from '@/lib/prisma';
 import { buildIncomingMessageTaskDescription } from '@/lib/contact-message-tasks';
 
@@ -15,21 +17,35 @@ function getFormLabel(kind: unknown, projectType: unknown) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    if (!session) {
+      return NextResponse.json(
+        {
+          error: 'Connexion requise pour envoyer une demande depuis le site.',
+          code: 'AUTH_REQUIRED',
+          loginUrl: buildAuthRedirect('/client/dashboard'),
+        },
+        { status: 401 },
+      );
+    }
+
     const data = await request.json();
     const { name, email, phone, projectType, message, kind, portfolioConsent } = data;
+    const normalizedEmail = session.email.trim().toLowerCase();
+    const resolvedName = normalizeOptionalString(name) ?? session.fullName;
 
-    if (!name || !email || !message) {
+    if (!resolvedName || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const typeLabel = kind === 'testimonial' ? 'Témoignage' : 'Message';
-    const subject = `Nouveau ${typeLabel} - ${name} (${projectType || 'Sans type'})`;
+    const subject = `Nouveau ${typeLabel} - ${resolvedName} (${projectType || 'Sans type'})`;
     const formLabel = getFormLabel(kind, projectType);
     const dueDate = new Date(Date.now() + 48 * 60 * 60 * 1000);
     const body = `
 Type: ${typeLabel}
-Nom: ${name}
-Email: ${email}
+Nom: ${resolvedName}
+Email: ${normalizedEmail}
   Téléphone: ${phone || 'Non renseigné'}
 Type de projet: ${projectType || 'Non précisé'}
 
@@ -41,7 +57,12 @@ Consentement portfolio: ${portfolioConsent === 'accept' ? 'Accord donné' : port
 
     const contact = await prisma.$transaction(async (tx) => {
       const existingContact = await tx.contact.findFirst({
-        where: { email },
+        where: {
+          OR: [
+            { id: session.contactId },
+            { email: normalizedEmail },
+          ],
+        },
         select: { id: true, fullName: true, email: true, phone: true, companyName: true, notes: true },
       });
 
@@ -49,7 +70,8 @@ Consentement portfolio: ${portfolioConsent === 'accept' ? 'Accord donné' : port
         ? await tx.contact.update({
             where: { id: existingContact.id },
             data: {
-              fullName: name.trim(),
+              fullName: resolvedName,
+              email: normalizedEmail,
               phone: normalizeOptionalString(phone) ?? existingContact.phone,
               source: 'site-contact',
               notes: existingContact.notes || normalizeOptionalString(message),
@@ -57,9 +79,9 @@ Consentement portfolio: ${portfolioConsent === 'accept' ? 'Accord donné' : port
           })
         : await tx.contact.create({
             data: {
-              type: 'PROSPECT',
-              fullName: name.trim(),
-              email: email.trim(),
+              type: 'CLIENT',
+              fullName: resolvedName,
+              email: normalizedEmail,
               phone: normalizeOptionalString(phone),
               source: 'site-contact',
               notes: normalizeOptionalString(message),
@@ -96,7 +118,7 @@ Consentement portfolio: ${portfolioConsent === 'accept' ? 'Accord donné' : port
 
       await tx.task.create({
         data: {
-          title: `Repondre au message de ${name.trim()}`,
+          title: `Repondre au message de ${resolvedName}`,
           description: buildIncomingMessageTaskDescription(message.trim(), createdMessage.id),
           status: 'TODO',
           priority: 'HIGH',
@@ -140,7 +162,7 @@ Consentement portfolio: ${portfolioConsent === 'accept' ? 'Accord donné' : port
     }
 
     // No SMTP configured: log and return success for local development
-    console.log('Contact form submission (no SMTP configured):', { name, email, phone, projectType, message, portfolioConsent });
+    console.log('Contact form submission (no SMTP configured):', { name: resolvedName, email: normalizedEmail, phone, projectType, message, portfolioConsent });
 
     return NextResponse.json({ ok: true, contactId: contact.id });
   } catch (error) {

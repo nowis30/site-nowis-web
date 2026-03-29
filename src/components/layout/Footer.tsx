@@ -85,12 +85,12 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link href="/commander-une-chanson" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Commander une chanson
+                  Demandes client
                 </Link>
               </li>
               <li>
-                <Link href="/artistes" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Artistes
+                <Link href="/ateliers" className="text-slate-300 hover:text-primary-100 transition-colors">
+                  Ateliers
                 </Link>
               </li>
               <li>
@@ -104,13 +104,18 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/videos" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Vidéos IA
+                <Link href="/connexion" className="text-slate-300 hover:text-primary-100 transition-colors">
+                  Connexion client
                 </Link>
               </li>
               <li>
                 <Link href="/a-propos" className="text-slate-300 hover:text-primary-100 transition-colors">
                   À propos
+                </Link>
+              </li>
+              <li>
+                <Link href="/inscription" className="text-slate-300 hover:text-primary-100 transition-colors">
+                  Inscription client
                 </Link>
               </li>
               <li>

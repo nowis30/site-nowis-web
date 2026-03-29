@@ -1,4 +1,4 @@
-import { ContactForm } from '@/components/ContactForm';
+import { ClientPortalRequestGate } from '@/components/marketing/ClientPortalRequestGate';
 import { PageHero } from '@/components/marketing/PageHero';
 import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
@@ -12,41 +12,34 @@ export const metadata = buildMetadata({
   keywords: ['Contact Création Nowis', 'commander une chanson Québec', 'projet créatif musique'],
 });
 
-export default function ContactPage({
-  searchParams,
-}: {
-  searchParams?: { name?: string; email?: string; projectType?: string; message?: string };
-}) {
-  const initialName = typeof searchParams?.name === 'string' ? searchParams.name : '';
-  const initialEmail = typeof searchParams?.email === 'string' ? searchParams.email : '';
-  const initialProjectType = typeof searchParams?.projectType === 'string' ? searchParams.projectType : '';
-  const initialMessage = typeof searchParams?.message === 'string' ? searchParams.message : '';
-
+export default function ContactPage() {
   return (
     <div className="bg-slate-50">
       <PageHero
         eyebrow="Contact"
         title="Parle-moi de ta chanson ou de ton projet créatif"
-        description="La priorité reste la chanson personnalisée. Tu peux aussi me parler d’une option visuelle, d’une capsule vidéo IA ou d’un besoin créatif plus large."
+        description="Le site public reste une vitrine. Les nouvelles demandes se font maintenant uniquement depuis le portail client securise."
       />
 
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr]">
-        <ContactForm
-          initialName={initialName}
-          initialEmail={initialEmail}
-          initialProjectType={initialProjectType}
-          initialMessage={initialMessage}
-          showPortfolioConsent
-        />
+        <ClientPortalRequestGate nextPath="/client/dashboard" />
 
         <div className="space-y-6">
           <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
             <h2 className="text-2xl font-bold">Contact direct</h2>
             <p className="mt-4 text-slate-300">Pour une demande rapide, une collaboration ou une idée à clarifier :</p>
             <ul className="mt-6 space-y-3 text-slate-200">
-              <li>📧 <a href={`mailto:${legalConfig.contactEmail}`} className="hover:underline">{legalConfig.contactEmail}</a></li>
-              <li>📞 <a href={legalConfig.contactPhoneHref} className="hover:underline">{legalConfig.contactPhone}</a></li>
+              <li>Email: <a href={`mailto:${legalConfig.contactEmail}`} className="hover:underline">{legalConfig.contactEmail}</a></li>
+              <li>Telephone: <a href={legalConfig.contactPhoneHref} className="hover:underline">{legalConfig.contactPhone}</a></li>
             </ul>
+            <div className="mt-6 flex flex-col gap-3">
+              <a href="/connexion?next=%2Fclient%2Fsong-requests%2Fnouveau" className="rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+                Se connecter pour une demande chanson
+              </a>
+              <a href="/connexion?next=%2Fclient%2Fworkshops%2Fnouveau" className="rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+                Se connecter pour une demande atelier
+              </a>
+            </div>
           </div>
 
           <div className="rounded-3xl bg-white p-8 shadow-sm">

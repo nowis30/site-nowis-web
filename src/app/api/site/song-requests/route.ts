@@ -4,26 +4,35 @@ import { submitSongRequestFromWebsite } from '@/lib/actions/song-request';
 import { buildClientPortalUrl } from '@/lib/client-portal';
 import { songRequestInputSchema } from '@/lib/validators/song-request';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
-
-const SITE_SECRET = process.env.SITE_INTEGRATION_SECRET;
+import { buildAuthRedirect } from '@/lib/safe-next';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
-    if (SITE_SECRET && body?.secret !== SITE_SECRET) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    if (!session) {
+      return NextResponse.json(
+        {
+          error: 'Connexion requise pour envoyer une demande.',
+          code: 'AUTH_REQUIRED',
+          loginUrl: buildAuthRedirect('/client/song-requests/nouveau'),
+        },
+        { status: 401 },
+      );
     }
 
-    const parsed = songRequestInputSchema.parse(body);
+    const parsed = songRequestInputSchema.parse({
+      ...body,
+      email: session.email,
+    });
 
     if (parsed.antiSpam && parsed.antiSpam.length > 0) {
       return NextResponse.json({ error: 'Requête rejetée' }, { status: 400 });
     }
 
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
     const result = await submitSongRequestFromWebsite(parsed, {
-      contactId: session?.contactId,
+      contactId: session.contactId,
     });
 
     return NextResponse.json({

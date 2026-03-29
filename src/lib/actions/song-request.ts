@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+import { hashPassword } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildClientPortalPath, signClientPortalToken } from '@/lib/client-portal';
 import { SongRequestInput } from '@/lib/validators/song-request';
@@ -54,6 +56,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
   const normalizedDeadline = normalizeDeadline(input.desiredDeadline);
   const followUpDaysRaw = Number(process.env.SONG_REQUEST_FOLLOWUP_DAYS ?? '2');
   const followUpDays = Number.isFinite(followUpDaysRaw) && followUpDaysRaw > 0 ? followUpDaysRaw : 2;
+  const throwawayPasswordHash = await hashPassword(randomBytes(32).toString('hex'));
 
   return prisma.$transaction(async (tx) => {
     const existingContact = options?.contactId
@@ -84,6 +87,40 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
           tags: ['song-request'],
         },
       });
+    }
+
+    const linkedUser = await tx.user.findFirst({
+      where: {
+        role: 'TENANT',
+        isActive: true,
+        OR: [
+          { contactId: contact.id },
+          { email: { equals: normalizedEmail, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true, contactId: true },
+    });
+
+    let ensuredUser = linkedUser;
+
+    if (!ensuredUser) {
+      ensuredUser = await tx.user.create({
+        data: {
+          email: normalizedEmail,
+          fullName: input.fullName,
+          passwordHash: throwawayPasswordHash,
+          role: 'TENANT',
+          isActive: true,
+          contactId: contact.id,
+        },
+        select: { id: true, contactId: true },
+      });
+    } else if (!ensuredUser.contactId || ensuredUser.contactId !== contact.id) {
+      await tx.user.update({
+        where: { id: ensuredUser.id },
+        data: { contactId: contact.id },
+      });
+      ensuredUser = { ...ensuredUser, contactId: contact.id };
     }
 
     const songRequest = await tx.songRequest.create({
@@ -134,6 +171,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
         description: summary,
         contactId: contact.id,
         songRequestId: songRequest.id,
+        userId: ensuredUser.id,
       },
     });
 
@@ -150,6 +188,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
         songRequestId: songRequest.id,
         linkedType: 'SONG_REQUEST',
         linkedId: songRequest.id,
+        createdById: ensuredUser.id,
       },
     });
 
@@ -166,6 +205,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
       songRequestId: songRequest.id,
       activityId: activity.id,
       taskId: task.id,
+      userId: ensuredUser.id,
       clientPortalPath,
     };
   });

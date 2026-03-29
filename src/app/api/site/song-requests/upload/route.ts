@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { persistUploadedFile } from '@/lib/uploaded-file';
+import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { buildAuthRedirect } from '@/lib/safe-next';
 
 export const runtime = 'nodejs';
-
-const SITE_SECRET = process.env.SITE_INTEGRATION_SECRET;
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
-    const secret = String(formData.get('secret') || '');
+    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
-    if (SITE_SECRET && SITE_SECRET !== secret) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    if (!session) {
+      return NextResponse.json(
+        {
+          error: 'Connexion requise pour envoyer un fichier.',
+          code: 'AUTH_REQUIRED',
+          loginUrl: buildAuthRedirect('/client/song-requests/nouveau'),
+        },
+        { status: 401 },
+      );
     }
 
     if (!(file instanceof File)) {

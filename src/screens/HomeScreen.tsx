@@ -96,13 +96,13 @@ export const HomeScreen = async () => {
                 href={songSalesCtas.order.href}
                 className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3.5 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
               >
-                Commander une chanson
+                Demander une chanson (portail)
               </Link>
               <Link
-                href="/ateliers/demande"
+                href="/connexion?next=%2Fclient%2Fworkshops%2Fnouveau"
                 className="inline-flex items-center justify-center rounded-xl border border-amber-200/30 bg-amber-500/10 px-6 py-3.5 font-semibold text-white backdrop-blur-sm transition hover:bg-amber-500/20"
               >
-                Demander un atelier
+                Demander un atelier (portail)
               </Link>
               <Link
                 href="/connexion"
@@ -158,7 +158,7 @@ export const HomeScreen = async () => {
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-300">Musique</p>
             <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white">Une demande de chanson claire, suivie et humaine</h2>
             <p className="mt-4 text-base leading-7 text-slate-200">Le site et le portail client sont pensés pour recevoir un brief musical, échanger facilement, partager des documents et suivre l’avancement de la création.</p>
-            <Link href="/commander-une-chanson" className="mt-6 inline-flex rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">Commander une chanson</Link>
+            <Link href="/commander-une-chanson" className="mt-6 inline-flex rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">Voir la procedure de demande</Link>
           </article>
           <article className="brand-card p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-300">Ateliers</p>
@@ -166,7 +166,7 @@ export const HomeScreen = async () => {
             <p className="mt-4 text-base leading-7 text-slate-200">Nowis propose aussi des ateliers pour enfants avec demandes d’intervention, prises de rendez-vous, créneaux du mardi et du jeudi, et suivi CRM côté organisation.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/ateliers" className="inline-flex rounded-xl border border-white/10 bg-slate-950/45 px-5 py-3 font-semibold text-white transition hover:bg-white/10">Découvrir les ateliers</Link>
-              <Link href="/ateliers/demande" className="inline-flex rounded-xl border border-amber-200/30 bg-amber-500/10 px-5 py-3 font-semibold text-white transition hover:bg-amber-500/20">Demander un atelier</Link>
+              <Link href="/ateliers/demande" className="inline-flex rounded-xl border border-amber-200/30 bg-amber-500/10 px-5 py-3 font-semibold text-white transition hover:bg-amber-500/20">Acceder a la demande via portail</Link>
             </div>
           </article>
         </div>
