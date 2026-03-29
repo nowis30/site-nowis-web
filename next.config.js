@@ -5,6 +5,12 @@ const nextConfig = {
   // Optimize images
   images: {
     domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'localhost', '127.0.0.1', 'nowis.store', 'nowis-admin.vercel.app'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.public.blob.vercel-storage.com',
+      },
+    ],
     unoptimized: false,
   },
   // Host and path redirects
