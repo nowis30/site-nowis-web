@@ -64,13 +64,18 @@ export function UploadFileForm({
         throw new Error(presignData?.error || 'Preparation upload impossible');
       }
 
-      const directUploadResponse = await fetch(presignData.uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': file.type || 'application/octet-stream',
-        },
-        body: file,
-      });
+      let directUploadResponse: Response;
+      try {
+        directUploadResponse = await fetch(presignData.uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type || 'application/octet-stream',
+          },
+          body: file,
+        });
+      } catch {
+        throw new Error('Upload bloque par la configuration CORS du bucket S3. Autorisez nowis.store en PUT/OPTIONS sur le bucket.');
+      }
 
       if (!directUploadResponse.ok) {
         if (directUploadResponse.status === 413) {

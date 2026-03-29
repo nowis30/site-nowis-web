@@ -21,7 +21,7 @@ function getS3Client() {
   if (s3Client) return s3Client;
 
   const region = process.env.S3_REGION || 'auto';
-  const endpoint = process.env.S3_ENDPOINT;
+  const endpoint = process.env.S3_ENDPOINT?.trim() || undefined;
 
   s3Client = new S3Client({
     region,
@@ -62,8 +62,6 @@ export async function createPresignedUploadUrl(
     Bucket: bucket,
     Key: storageKey,
     ContentType: file.mimeType || 'application/octet-stream',
-    ContentLength: file.size,
-    ContentDisposition: `inline; filename="${sanitizeFileBaseName(file.originalName || 'file')}"`,
   });
 
   const uploadUrl = await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
