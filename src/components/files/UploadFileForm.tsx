@@ -100,6 +100,9 @@ export function UploadFileForm({
 
       const data = await response.json().catch(() => null);
       if (!response.ok) {
+        if (response.status === 415) {
+          throw new Error('Client non a jour detecte. Rechargez la page (Ctrl+F5) puis reessayez.');
+        }
         if (response.status === 413) {
           throw new Error(`Fichier trop volumineux. Taille max: ${formatBytes(clientMaxSize)}.`);
         }

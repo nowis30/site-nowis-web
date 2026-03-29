@@ -3,8 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { FILE_VISIBILITY_DB } from '@/lib/file-documents';
-import { assertStoredObjectMetadata, storeFileInPersistentStorage } from '@/lib/file-storage';
-import { uploadFileMetadataSchema, validateUploadFile } from '@/lib/validators/file-document';
+import { assertStoredObjectMetadata } from '@/lib/file-storage';
 
 const finalizeUploadSchema = z.object({
   contactId: z.string().uuid().optional(),
@@ -61,95 +60,22 @@ export async function POST(request: NextRequest) {
   try {
     const contentType = request.headers.get('content-type') || '';
 
-    if (contentType.includes('application/json')) {
-      const payload = finalizeUploadSchema.parse(await request.json());
-      let contactId = payload.contactId ?? null;
-
-      if (payload.songRequestId) {
-        const songRequest = await prisma.songRequest.findUnique({
-          where: { id: payload.songRequestId },
-          select: { id: true, contactId: true },
-        });
-        if (!songRequest) {
-          return NextResponse.json({ error: 'Demande de chanson introuvable' }, { status: 404 });
-        }
-        if (contactId && contactId !== songRequest.contactId) {
-          return NextResponse.json({ error: 'Le contact et la demande ne correspondent pas' }, { status: 400 });
-        }
-        contactId = songRequest.contactId;
-      }
-
-      if (!contactId) {
-        return NextResponse.json({ error: 'Le contact est obligatoire' }, { status: 400 });
-      }
-
-      const contact = await prisma.contact.findUnique({ where: { id: contactId }, select: { id: true } });
-      if (!contact) {
-        return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
-      }
-
-      await assertStoredObjectMetadata(payload.file.storageKey, {
-        mimeType: payload.file.mimeType,
-        size: payload.file.size,
-      });
-
-      const item = await prisma.fileDocument.create({
-        data: {
-          contactId,
-          songRequestId: payload.songRequestId ?? null,
-          uploadedByUserId: guard.session.sub,
-          filename: payload.file.filename,
-          originalName: payload.file.originalName,
-          mimeType: payload.file.mimeType,
-          size: payload.file.size,
-          storageKey: payload.file.storageKey,
-          url: payload.file.url,
-          category: payload.category,
-          visibility: FILE_VISIBILITY_DB[payload.visibility],
+    if (!contentType.includes('application/json')) {
+      return NextResponse.json(
+        {
+          error: 'Upload direct requis. Merci de mettre a jour l application puis reessayer.',
+          hint: 'Le client doit utiliser /presign puis un PUT direct vers le stockage.',
         },
-        include: { uploadedByUser: { select: { id: true, fullName: true } } },
-      });
-
-      await prisma.activity.create({
-        data: {
-          type: 'FILE',
-          title: payload.songRequestId ? 'Document ajoute a la demande de chanson' : 'Fichier depose',
-          description: [
-            `Nom: ${payload.file.originalName}`,
-            `Categorie: ${payload.category}`,
-            `Visibilite: ${payload.visibility}`,
-            payload.songRequestId ? `Demande chanson: ${payload.songRequestId}` : null,
-          ].filter(Boolean).join('\n'),
-          contactId,
-          songRequestId: payload.songRequestId ?? null,
-          userId: guard.session.sub,
-        },
-      });
-
-      return NextResponse.json({ item }, { status: 201 });
+        { status: 415 },
+      );
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file');
+    const payload = finalizeUploadSchema.parse(await request.json());
+    let contactId = payload.contactId ?? null;
 
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: 'Aucun fichier recu.' }, { status: 400 });
-    }
-
-    validateUploadFile(file);
-
-    const parsedMeta = uploadFileMetadataSchema.parse({
-      contactId: formData.get('contactId') || undefined,
-      songRequestId: formData.get('songRequestId') || undefined,
-      category: formData.get('category') || 'document',
-      visibility: formData.get('visibility') || 'client_visible',
-    });
-
-    let contactId = parsedMeta.contactId ?? null;
-
-    if (parsedMeta.songRequestId) {
+    if (payload.songRequestId) {
       const songRequest = await prisma.songRequest.findUnique({
-        where: { id: parsedMeta.songRequestId },
+        where: { id: payload.songRequestId },
         select: { id: true, contactId: true },
       });
       if (!songRequest) {
@@ -170,21 +96,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
     }
 
-    const stored = await storeFileInPersistentStorage(file, { folder: 'crm-files' });
+    await assertStoredObjectMetadata(payload.file.storageKey, {
+      mimeType: payload.file.mimeType,
+      size: payload.file.size,
+    });
 
     const item = await prisma.fileDocument.create({
       data: {
         contactId,
-        songRequestId: parsedMeta.songRequestId ?? null,
+        songRequestId: payload.songRequestId ?? null,
         uploadedByUserId: guard.session.sub,
-        filename: stored.filename,
-        originalName: stored.originalName,
-        mimeType: stored.mimeType,
-        size: stored.size,
-        storageKey: stored.storageKey,
-        url: stored.url,
-        category: parsedMeta.category,
-        visibility: FILE_VISIBILITY_DB[parsedMeta.visibility],
+        filename: payload.file.filename,
+        originalName: payload.file.originalName,
+        mimeType: payload.file.mimeType,
+        size: payload.file.size,
+        storageKey: payload.file.storageKey,
+        url: payload.file.url,
+        category: payload.category,
+        visibility: FILE_VISIBILITY_DB[payload.visibility],
       },
       include: { uploadedByUser: { select: { id: true, fullName: true } } },
     });
@@ -192,15 +121,15 @@ export async function POST(request: NextRequest) {
     await prisma.activity.create({
       data: {
         type: 'FILE',
-        title: parsedMeta.songRequestId ? 'Document ajoute a la demande de chanson' : 'Fichier depose',
+        title: payload.songRequestId ? 'Document ajoute a la demande de chanson' : 'Fichier depose',
         description: [
-          `Nom: ${stored.originalName}`,
-          `Categorie: ${parsedMeta.category}`,
-          `Visibilite: ${parsedMeta.visibility}`,
-          parsedMeta.songRequestId ? `Demande chanson: ${parsedMeta.songRequestId}` : null,
+          `Nom: ${payload.file.originalName}`,
+          `Categorie: ${payload.category}`,
+          `Visibilite: ${payload.visibility}`,
+          payload.songRequestId ? `Demande chanson: ${payload.songRequestId}` : null,
         ].filter(Boolean).join('\n'),
         contactId,
-        songRequestId: parsedMeta.songRequestId ?? null,
+        songRequestId: payload.songRequestId ?? null,
         userId: guard.session.sub,
       },
     });
