@@ -46,6 +46,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation invalide', details: error.issues }, { status: 400 });
     }
 
+    if (error instanceof Error) {
+      if (error.message.startsWith('Type de fichier non autorise') || error.message.startsWith('Fichier trop volumineux')) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+
+      if (error.message.startsWith('Variable manquante:')) {
+        return NextResponse.json(
+          {
+            error: 'Configuration stockage incomplète sur le serveur.',
+            code: 'STORAGE_CONFIG_MISSING',
+            detail: error.message,
+          },
+          { status: 503 },
+        );
+      }
+    }
+
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Generation URL upload impossible' }, { status: 500 });
   }
 }
