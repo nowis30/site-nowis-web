@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { sanitizeFileBaseName } from '@/lib/file-documents';
 
 function requireEnv(name: string) {
@@ -45,6 +46,59 @@ function buildStorageKey(folder: string, originalName: string) {
   const month = String(now.getUTCMonth() + 1).padStart(2, '0');
   const safeName = sanitizeFileBaseName(originalName);
   return `${folder}/${year}/${month}/${Date.now()}-${randomUUID()}-${safeName}`;
+}
+
+export async function createPresignedUploadUrl(
+  file: { originalName: string; mimeType: string; size: number },
+  options?: { folder?: string; expiresInSeconds?: number },
+) {
+  const bucket = requireEnv('S3_BUCKET');
+  const folder = options?.folder || 'crm-files';
+  const expiresInSeconds = options?.expiresInSeconds ?? 900;
+  const storageKey = buildStorageKey(folder, file.originalName || 'file');
+  const client = getS3Client();
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: storageKey,
+    ContentType: file.mimeType || 'application/octet-stream',
+    ContentLength: file.size,
+    ContentDisposition: `inline; filename="${sanitizeFileBaseName(file.originalName || 'file')}"`,
+  });
+
+  const uploadUrl = await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+
+  return {
+    uploadUrl,
+    storageKey,
+    url: `${getPublicBaseUrl()}/${encodeURI(storageKey)}`,
+    filename: storageKey.split('/').pop() || storageKey,
+    originalName: file.originalName || 'file',
+    mimeType: file.mimeType || 'application/octet-stream',
+    size: file.size,
+    expiresInSeconds,
+  };
+}
+
+export async function assertStoredObjectMetadata(storageKey: string, expected: { mimeType: string; size: number }) {
+  const response = await getS3Client().send(
+    new HeadObjectCommand({
+      Bucket: requireEnv('S3_BUCKET'),
+      Key: storageKey,
+    }),
+  );
+
+  const actualSize = Number(response.ContentLength || 0);
+  const actualType = String(response.ContentType || '').toLowerCase();
+  const expectedType = String(expected.mimeType || '').toLowerCase();
+
+  if (actualSize !== expected.size) {
+    throw new Error('Fichier invalide: taille differente de celle attendue.');
+  }
+
+  if (expectedType && actualType && actualType !== expectedType) {
+    throw new Error('Fichier invalide: type MIME different de celui attendu.');
+  }
 }
 
 export async function storeFileInPersistentStorage(file: File, options?: { folder?: string }) {

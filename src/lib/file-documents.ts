@@ -45,6 +45,11 @@ export function getMaxUploadSizeBytes() {
   return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_MAX_UPLOAD_SIZE_BYTES;
 }
 
+export function getClientMaxUploadSizeBytes() {
+  const raw = Number(process.env.NEXT_PUBLIC_MAX_FILE_UPLOAD_BYTES ?? DEFAULT_MAX_UPLOAD_SIZE_BYTES);
+  return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_MAX_UPLOAD_SIZE_BYTES;
+}
+
 export function formatBytes(size: number) {
   if (size < 1024) return `${size} o`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} Ko`;

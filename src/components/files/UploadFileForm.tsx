@@ -2,7 +2,12 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ALLOWED_UPLOAD_EXTENSIONS, FILE_CATEGORY_OPTIONS } from '@/lib/file-documents';
+import {
+  ALLOWED_UPLOAD_EXTENSIONS,
+  FILE_CATEGORY_OPTIONS,
+  formatBytes,
+  getClientMaxUploadSizeBytes,
+} from '@/lib/file-documents';
 
 interface UploadFileFormProps {
   endpoint: string;
@@ -30,31 +35,74 @@ export function UploadFileForm({
   const [visibility, setVisibility] = useState<'admin_only' | 'client_visible'>('client_visible');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const clientMaxSize = getClientMaxUploadSizeBytes();
 
   async function handleFile(file: File) {
+    if (file.size > clientMaxSize) {
+      setError(`Fichier trop volumineux. Taille max: ${formatBytes(clientMaxSize)}.`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     setUploading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('category', category);
+      const presignResponse = await fetch(`${endpoint}/presign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          size: file.size,
+        }),
+      });
+
+      const presignData = await presignResponse.json().catch(() => null);
+      if (!presignResponse.ok) {
+        throw new Error(presignData?.error || 'Preparation upload impossible');
+      }
+
+      const directUploadResponse = await fetch(presignData.uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+        },
+        body: file,
+      });
+
+      if (!directUploadResponse.ok) {
+        if (directUploadResponse.status === 413) {
+          throw new Error(`Fichier trop volumineux. Taille max: ${formatBytes(clientMaxSize)}.`);
+        }
+        throw new Error('Upload direct vers le stockage impossible');
+      }
+
+      const payload: Record<string, unknown> = {
+        category,
+        file: presignData.file,
+      };
+
       if (allowVisibility) {
-        formData.append('visibility', visibility);
+        payload.visibility = visibility;
       }
 
       Object.entries(extraFields || {}).forEach(([key, value]) => {
-        if (value) formData.append(key, value);
+        if (value) payload[key] = value;
       });
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json().catch(() => null);
       if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error(`Fichier trop volumineux. Taille max: ${formatBytes(clientMaxSize)}.`);
+        }
         throw new Error(data?.error || 'Upload impossible');
       }
 
@@ -121,7 +169,7 @@ export function UploadFileForm({
             if (file) handleFile(file);
           }}
         />
-        <span className="text-xs text-slate-500">{ALLOWED_UPLOAD_EXTENSIONS.join(', ')} (max 25 Mo)</span>
+        <span className="text-xs text-slate-500">{ALLOWED_UPLOAD_EXTENSIONS.join(', ')} (max {formatBytes(clientMaxSize)})</span>
       </div>
 
       {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}

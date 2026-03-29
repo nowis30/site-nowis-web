@@ -23,3 +23,14 @@ export function validateUploadFile(file: File) {
     throw new Error(`Fichier trop volumineux. Taille max: ${formatBytes(maxSize)}.`);
   }
 }
+
+export function validateUploadDescriptor(descriptor: { mimeType: string; size: number }) {
+  if (!ALLOWED_UPLOAD_MIME_TYPES.includes(descriptor.mimeType as (typeof ALLOWED_UPLOAD_MIME_TYPES)[number])) {
+    throw new Error('Type de fichier non autorise. Formats: MP3, WAV, M4A, MP4, PDF, TXT, DOC, DOCX.');
+  }
+
+  const maxSize = getMaxUploadSizeBytes();
+  if (descriptor.size > maxSize) {
+    throw new Error(`Fichier trop volumineux. Taille max: ${formatBytes(maxSize)}.`);
+  }
+}
