@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
 const baseSchema = z.object({
-  action: z.enum(['note', 'task', 'invoice', 'appointment', 'lease', 'song-request']),
+  action: z.enum(['note', 'task', 'invoice', 'appointment', 'song-request']),
   title: z.string().trim().max(200).optional(),
   description: z.string().trim().max(4000).optional(),
   songTitle: z.string().trim().max(160).optional(),
@@ -25,14 +25,6 @@ const baseSchema = z.object({
   appointmentStart: z.string().datetime().optional(),
   appointmentEnd: z.string().datetime().optional(),
   appointmentType: z.enum(['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER']).optional(),
-  propertyId: z.string().uuid().optional().or(z.literal('')),
-  leaseNumber: z.string().trim().max(80).optional(),
-  leaseStart: z.string().datetime().optional(),
-  leaseEnd: z.string().datetime().optional(),
-  rentAmount: z.coerce.number().optional(),
-  securityDeposit: z.coerce.number().optional(),
-  frequency: z.string().trim().max(40).optional(),
-  leaseStatus: z.enum(['DRAFT', 'ACTIVE', 'ENDED', 'TERMINATED']).optional(),
 });
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -43,7 +35,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const payload = baseSchema.parse(await request.json());
     const contact = await prisma.contact.findUnique({
       where: { id: params.id },
-      include: { tenantProfile: { select: { id: true, unitId: true } } },
     });
 
     if (!contact) {
@@ -135,7 +126,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           type: payload.appointmentType || 'MEETING',
           status: 'PENDING',
           contactId: contact.id,
-          propertyId: payload.propertyId || null,
           userId: guard.session.sub,
         },
       });
@@ -212,36 +202,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ item: songRequest }, { status: 201 });
     }
 
-    if (!contact.tenantProfile?.id || !contact.tenantProfile.unitId) {
-      return NextResponse.json({ error: 'Aucun profil locataire rattaché pour créer un bail' }, { status: 400 });
-    }
-    if (!payload.leaseNumber || !payload.leaseStart || !payload.leaseEnd || payload.rentAmount === undefined) {
-      return NextResponse.json({ error: 'Numéro, dates et loyer requis' }, { status: 400 });
-    }
-
-    const lease = await prisma.lease.create({
-      data: {
-        leaseNumber: payload.leaseNumber.trim(),
-        tenantId: contact.tenantProfile.id,
-        unitId: contact.tenantProfile.unitId,
-        startDate: new Date(payload.leaseStart),
-        endDate: new Date(payload.leaseEnd),
-        rentAmount: payload.rentAmount,
-        securityDeposit: payload.securityDeposit,
-        frequency: payload.frequency?.trim() || 'MONTHLY',
-        status: payload.leaseStatus || 'ACTIVE',
-      },
-    });
-    await prisma.activity.create({
-      data: {
-        type: 'NOTE',
-        title: `Bail créé: ${lease.leaseNumber}`,
-        description: payload.description?.trim() || `Bail du ${lease.startDate.toISOString()} au ${lease.endDate.toISOString()}.`,
-        contactId: contact.id,
-        userId: guard.session.sub,
-      },
-    });
-    return NextResponse.json({ item: lease }, { status: 201 });
+    return NextResponse.json({ error: 'Action non supportée' }, { status: 400 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Données invalides', details: error.issues }, { status: 400 });

@@ -94,7 +94,7 @@ export async function sendMaintenanceAlertEmail(title: string, recipient: string
           <p style="margin: 5px 0 0 0;">Priorité: <strong>${priority}</strong></p>
         </div>
         <p><strong>${title}</strong></p>
-        <p><a href="https://app.nowis.store/crm/maintenance" style="background: ${priorityColor}; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Voir les détails</a></p>
+        <p><a href="https://app.nowis.store/crm/dashboard" style="background: ${priorityColor}; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Voir le CRM</a></p>
         <hr style="border: none; border-top: 1px solid #e5e7eb;" />
         <p style="font-size: 12px; color: #6b7280;">CRM NOWIS</p>
       </div>

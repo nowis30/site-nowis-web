@@ -5,10 +5,12 @@ import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
+import { sanitizeNextPath } from '@/lib/safe-next';
 
 export async function POST(request: NextRequest) {
   try {
     const payload = clientRegisterSchema.parse(await request.json());
+    const redirectTo = sanitizeNextPath(payload.next, '/client/dashboard');
     const email = payload.email.toLowerCase();
 
     const existingUser = await prisma.user.findFirst({
@@ -32,7 +34,6 @@ export async function POST(request: NextRequest) {
     const result = await prisma.$transaction(async (tx) => {
       const existingContact = await tx.contact.findFirst({
         where: { email: { equals: email, mode: 'insensitive' } },
-        include: { tenantProfile: { select: { id: true } } },
       });
 
       const baseNotes = [
@@ -52,7 +53,6 @@ export async function POST(request: NextRequest) {
               tags: Array.from(new Set([...(existingContact.tags || []), 'portal-client', 'website'])),
               notes: baseNotes || null,
             },
-            include: { tenantProfile: { select: { id: true } } },
           })
         : await tx.contact.create({
             data: {
@@ -64,7 +64,6 @@ export async function POST(request: NextRequest) {
               tags: ['portal-client', 'website'],
               notes: baseNotes || null,
             },
-            include: { tenantProfile: { select: { id: true } } },
           });
 
       const user = await tx.user.create({
@@ -108,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     const sessionToken = signClientPortalSession({
       contactId: result.contact.id,
-      tenantId: result.contact.tenantProfile?.id || null,
+      tenantId: null,
       email,
       fullName: result.contact.fullName,
     });
@@ -116,7 +115,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       ok: true,
       message: 'Compte client cree avec succes.',
-      redirectTo: '/client/dashboard',
+      redirectTo,
       user: {
         id: result.user.id,
         email: result.user.email,

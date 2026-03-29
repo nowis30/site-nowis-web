@@ -1,20 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { buildDefaultInvoiceNumber, buildDefaultLeaseNumber } from './formatters';
-import type { ContactPropertyOption, ContactWorkspaceContact } from './types';
+import { buildDefaultInvoiceNumber } from './formatters';
+import type { ContactWorkspaceContact } from './types';
 import type { ContactActionType } from './ContactHeader';
 
 export function ContactActionModal({
   action,
   contact,
-  propertyOptions,
   onClose,
   onSaved,
 }: {
   action: ContactActionType;
   contact: ContactWorkspaceContact;
-  propertyOptions: ContactPropertyOption[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -40,14 +38,6 @@ export function ContactActionModal({
     appointmentStart: '',
     appointmentEnd: '',
     appointmentType: 'MEETING',
-    propertyId: contact.tenantProfile?.unit?.property?.id || '',
-    leaseNumber: buildDefaultLeaseNumber(contact.id),
-    leaseStart: '',
-    leaseEnd: '',
-    rentAmount: contact.tenantProfile?.leases[0]?.rentAmount ? String(contact.tenantProfile.leases[0].rentAmount) : '',
-    securityDeposit: '',
-    frequency: 'MONTHLY',
-    leaseStatus: 'ACTIVE',
   });
 
   async function submit(event: React.FormEvent) {
@@ -79,14 +69,6 @@ export function ContactActionModal({
           appointmentStart: form.appointmentStart ? new Date(form.appointmentStart).toISOString() : undefined,
           appointmentEnd: form.appointmentEnd ? new Date(form.appointmentEnd).toISOString() : undefined,
           appointmentType: form.appointmentType,
-          propertyId: form.propertyId,
-          leaseNumber: form.leaseNumber,
-          leaseStart: form.leaseStart ? new Date(form.leaseStart).toISOString() : undefined,
-          leaseEnd: form.leaseEnd ? new Date(form.leaseEnd).toISOString() : undefined,
-          rentAmount: form.rentAmount,
-          securityDeposit: form.securityDeposit,
-          frequency: form.frequency,
-          leaseStatus: form.leaseStatus,
         }),
       });
       const data = await response.json().catch(() => null);
@@ -107,13 +89,13 @@ export function ContactActionModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Action rapide</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">{action === 'note' ? 'Ajouter une note' : action === 'task' ? 'Ajouter une tâche' : action === 'invoice' ? 'Ajouter une facture' : action === 'appointment' ? 'Ajouter un rendez-vous' : action === 'song-request' ? 'Créer une demande chanson' : 'Ajouter un bail'}</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-white">{action === 'note' ? 'Ajouter une note' : action === 'task' ? 'Ajouter une tâche' : action === 'invoice' ? 'Ajouter une facture' : action === 'appointment' ? 'Ajouter un rendez-vous' : 'Créer une demande chanson'}</h3>
           </div>
           <button type="button" onClick={onClose} className="text-sm text-slate-400 hover:text-white">Fermer</button>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {action !== 'lease' && action !== 'invoice' && action !== 'song-request' ? (
+          {action !== 'invoice' && action !== 'song-request' ? (
             <label className={action === 'note' ? 'md:col-span-2' : ''}>
               <span className="mb-2 block text-sm text-slate-300">Titre</span>
               <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
@@ -208,42 +190,6 @@ export function ContactActionModal({
                 <select value={form.appointmentType} onChange={(event) => setForm((current) => ({ ...current, appointmentType: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
                   {['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER'].map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Bien lié</span>
-                <select value={form.propertyId} onChange={(event) => setForm((current) => ({ ...current, propertyId: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  <option value="">Aucun</option>
-                  {propertyOptions.map((property) => <option key={property.id} value={property.id}>{property.label}</option>)}
-                </select>
-              </label>
-            </>
-          ) : null}
-
-          {action === 'lease' ? (
-            <>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Numéro de bail</span>
-                <input value={form.leaseNumber} onChange={(event) => setForm((current) => ({ ...current, leaseNumber: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Loyer</span>
-                <input type="number" min="0" step="0.01" value={form.rentAmount} onChange={(event) => setForm((current) => ({ ...current, rentAmount: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Début</span>
-                <input type="datetime-local" value={form.leaseStart} onChange={(event) => setForm((current) => ({ ...current, leaseStart: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Fin</span>
-                <input type="datetime-local" value={form.leaseEnd} onChange={(event) => setForm((current) => ({ ...current, leaseEnd: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Dépôt de sécurité</span>
-                <input type="number" min="0" step="0.01" value={form.securityDeposit} onChange={(event) => setForm((current) => ({ ...current, securityDeposit: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Fréquence</span>
-                <input value={form.frequency} onChange={(event) => setForm((current) => ({ ...current, frequency: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
               </label>
             </>
           ) : null}

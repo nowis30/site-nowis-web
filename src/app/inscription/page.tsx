@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
+import { sanitizeNextPath } from '@/lib/safe-next';
 
 export default function InscriptionPage() {
   const router = useRouter();
@@ -13,6 +15,13 @@ export default function InscriptionPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nextPath, setNextPath] = useState('/client/dashboard');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,7 +47,7 @@ export default function InscriptionPage() {
       const response = await fetch('/api/client-auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify({ ...parsed.data, next: nextPath }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -63,8 +72,14 @@ export default function InscriptionPage() {
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Inscription</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Créez votre accès Nowis pour centraliser vos demandes, ateliers, messages, rendez-vous et documents.
+          Creez votre acces Nowis pour envoyer vos demandes de chanson ou d'atelier, puis suivre messages, rendez-vous et documents.
         </p>
+
+        {nextPath !== '/client/dashboard' ? (
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+            Creez votre compte pour continuer vers la page demandee.
+          </div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -123,10 +138,10 @@ export default function InscriptionPage() {
         </form>
 
         <p className="mt-6 text-sm text-gray-600">
-          Vous avez déjà un compte ?{' '}
-          <a href="/connexion" className="text-primary-600 hover:underline">
+          Vous avez deja un compte ?{' '}
+          <Link href={`/connexion?next=${encodeURIComponent(nextPath)}`} className="text-primary-600 hover:underline">
             Se connecter
-          </a>
+          </Link>
         </p>
       </div>
     </div>

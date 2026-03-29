@@ -11,11 +11,6 @@ export type ContactWorkspaceContact = {
   tags: string[];
   notes: string | null;
   createdAt: string;
-  tenantProfile: {
-    id: string;
-    unit: { id: string; unitNumber: string; property: { id: string; name: string; code: string } | null } | null;
-    leases: Array<{ id: string; leaseNumber: string; startDate: string; endDate: string; rentAmount: string | number; status: string }>;
-  } | null;
   communications: Array<{ id: string; subject: string | null; body: string; channel: string; direction: string; sentAt: string }>;
   messages: Array<{ id: string; senderType: 'ADMIN' | 'CLIENT'; content: string; createdAt: string; isRead: boolean }>;
   outboundEmails: Array<{ id: string; recipientEmail: string; subject: string; messagePreview: string; sentAt: string; openedAt: string | null }>;
@@ -75,15 +70,12 @@ export type ContactFileItem = {
   visibility: 'ADMIN_ONLY' | 'CLIENT_VISIBLE';
 };
 
-export type ContactPropertyOption = { id: string; label: string };
-
 export type ContactWorkspaceProps = {
   contact: ContactWorkspaceContact;
   tasks: ContactTaskItem[];
   appointments: ContactAppointmentItem[];
   invoices: ContactInvoiceItem[];
   files: ContactFileItem[];
-  propertyOptions: ContactPropertyOption[];
   timeline: TimelineItem[];
   unreadClientMessages: number;
   canImpersonate: boolean;

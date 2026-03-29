@@ -19,6 +19,7 @@ export interface ClientPortalSessionPayload {
   scope: 'client-dashboard';
   role: 'CLIENT';
   contactId: string;
+  // Legacy field kept for backward-compatible tokens during housing domain deprecation.
   tenantId: string | null;
   email: string;
   fullName: string;
@@ -42,6 +43,7 @@ export interface ClientPortalEffectiveSession extends ClientPortalSessionPayload
 interface ClientPortalMagicLinkPayload {
   scope: 'client-login';
   contactId: string;
+  // Legacy field kept for backward-compatible tokens during housing domain deprecation.
   tenantId: string | null;
   email: string;
   fullName: string;
@@ -150,7 +152,6 @@ export async function getClientPortalSessionServer() {
           id: true,
           fullName: true,
           email: true,
-          tenantProfile: { select: { id: true } },
         },
       });
 
@@ -159,7 +160,7 @@ export async function getClientPortalSessionServer() {
           scope: 'client-dashboard',
           role: 'CLIENT',
           contactId: contact.id,
-          tenantId: contact.tenantProfile?.id ?? null,
+          tenantId: null,
           email: contact.email || `contact+${contact.id}@nowis.local`,
           fullName: contact.fullName,
           impersonation: {

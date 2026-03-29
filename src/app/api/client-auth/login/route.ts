@@ -6,6 +6,7 @@ import { buildErrorPayload, ensureAuthConfig, logApiDiagnostic } from '@/lib/api
 import { prisma } from '@/lib/prisma';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
 import { clientLoginSchema } from '@/features/client-portal/auth/validators';
+import { sanitizeNextPath } from '@/lib/safe-next';
 
 function errorResponse(
   code: 'DB_INIT' | 'DB_SCHEMA' | 'CONFIG_MISSING' | 'AUTH_FAIL' | 'USER_DATA_INVALID' | 'UNKNOWN',
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
 
     const payload = clientLoginSchema.parse(rawBody);
     const email = payload.email.toLowerCase();
+    const redirectTo = sanitizeNextPath(payload.next, '/client/dashboard');
 
     const user = await prisma.user.findFirst({
       where: {
@@ -42,11 +44,7 @@ export async function POST(request: NextRequest) {
         isActive: true,
       },
       include: {
-        contact: {
-          include: {
-            tenantProfile: { select: { id: true } },
-          },
-        },
+        contact: true,
       },
     });
 
@@ -74,12 +72,12 @@ export async function POST(request: NextRequest) {
 
     const sessionToken = signClientPortalSession({
       contactId: user.contact.id,
-      tenantId: user.contact.tenantProfile?.id || null,
+      tenantId: null,
       email: user.email,
       fullName: user.contact.fullName,
     });
 
-    const response = NextResponse.json({ ok: true, redirectTo: '/client/dashboard' });
+    const response = NextResponse.json({ ok: true, redirectTo });
     response.headers.append('Set-Cookie', createClientPortalSessionCookie(sessionToken));
     return response;
   } catch (error) {

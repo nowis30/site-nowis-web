@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         type: payload.type,
         status: payload.status,
         contactId: payload.contactId || null,
-        propertyId: payload.propertyId || null,
+        propertyId: null,
         userId: guard.session.sub,
       },
     });

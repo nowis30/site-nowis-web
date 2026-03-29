@@ -1,14 +1,5 @@
-/**
- * Page Jeux - Accès aux applications de jeux NOWIS
- */
+import { redirect } from 'next/navigation';
 
-import { JeuxScreen } from '@/screens/JeuxScreen';
-
-export const metadata = {
-  title: 'Jeux – NOWIS',
-  description: 'Découvre Héritier Millionnaire, le jeu NOWIS de finances personnelles, immobilier, bourse, quiz et mini-jeux, avec un accès rapide depuis le site.',
-};
-
-export default function JeuxPage() {
-  return <JeuxScreen />;
+export default function Page() {
+  redirect('/videos');
 }

@@ -16,12 +16,7 @@ export default async function CrmDashboardPage() {
 
   let contacts = 0;
   let openCases = 0;
-  let properties = 0;
-  let units = 0;
-  let activeTenants = 0;
-  let openMaintenance = 0;
   let closedCasesCount = 0;
-  let vacantUnits = 0;
   let recentCases: Array<{ id: string; title: string; status: string; type: string; referenceCode: string }> = [];
   let todayAppointments: Array<{ id: string; title: string; type: string; startAt: Date; contact: { fullName: string } | null }> = [];
   let overdueTasks: Array<{ id: string; title: string; dueDate: Date | null }> = [];
@@ -38,12 +33,7 @@ export default async function CrmDashboardPage() {
     [
       contacts,
       openCases,
-      properties,
-      units,
-      activeTenants,
-      openMaintenance,
       closedCasesCount,
-      vacantUnits,
       recentCases,
       todayAppointments,
       overdueTasks,
@@ -56,12 +46,7 @@ export default async function CrmDashboardPage() {
     ] = await Promise.all([
       prisma.contact.count(),
       prisma.caseRecord.count({ where: { status: { in: ["OPEN", "IN_PROGRESS", "ON_HOLD"] } } }),
-      prisma.property.count(),
-      prisma.unit.count(),
-      prisma.tenant.count({ where: { isActive: true } }),
-      prisma.maintenanceTicket.count({ where: { status: { in: ["OPEN", "IN_PROGRESS"] } } }),
       prisma.caseRecord.count({ where: { status: "CLOSED" } }),
-      prisma.unit.count({ where: { status: "VACANT" } }),
       prisma.caseRecord.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -144,9 +129,6 @@ export default async function CrmDashboardPage() {
     { label: "Contacts", value: contacts, sub: `+${newContactsThisMonth} ce mois`, href: "/crm/contacts", color: "from-blue-500/20", icon: "👥" },
     { label: "Dossiers ouverts", value: openCases, sub: `${closedCasesCount} fermés`, href: "/crm/cases", color: "from-amber-500/20", icon: "📁" },
     { label: "Factures en attente", value: pendingInvoices, sub: overdueInvoices > 0 ? `⚠ ${overdueInvoices} en retard` : "À jour", href: "/crm/invoices", color: overdueInvoices > 0 ? "from-red-500/20" : "from-emerald-500/20", icon: "🧾" },
-    { label: "Locataires actifs", value: activeTenants, sub: `${vacantUnits} logements vacants`, href: "/crm/tenants", color: "from-cyan-500/20", icon: "🏠" },
-    { label: "Immeubles", value: properties, sub: `${units} logements au total`, href: "/crm/properties", color: "from-purple-500/20", icon: "🏢" },
-    { label: "Maintenance", value: openMaintenance, sub: "tickets ouverts", href: "/crm/maintenance", color: openMaintenance > 0 ? "from-red-500/20" : "from-slate-500/20", icon: "🔧" },
     { label: "RDV aujourd'hui", value: todayAppointments.length, sub: "rendez-vous planifiés", href: "/crm/calendar", color: "from-indigo-500/20", icon: "📅" },
     { label: "Tâches en retard", value: overdueTasks.length, sub: "nécessitent attention", href: "/crm/tasks", color: overdueTasks.length > 0 ? "from-red-500/20" : "from-slate-500/20", icon: "✅" },
   ];
@@ -367,8 +349,8 @@ export default async function CrmDashboardPage() {
           <h3 className="font-semibold text-white text-sm mb-4">Statistiques</h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between rounded-lg bg-slate-800/40 px-3 py-2">
-              <span className="text-slate-400">Taux d'occupation</span>
-              <span className="font-semibold text-emerald-400">{units > 0 ? Math.round(((units - vacantUnits) / units) * 100) : 0}%</span>
+              <span className="text-slate-400">Suivi des dossiers</span>
+              <span className="font-semibold text-emerald-400">{openCases}</span>
             </div>
             <div className="flex justify-between rounded-lg bg-slate-800/40 px-3 py-2">
               <span className="text-slate-400">Résolution dossiers</span>
@@ -379,8 +361,8 @@ export default async function CrmDashboardPage() {
               <span className={`font-semibold ${pendingInvoices > 0 ? "text-yellow-400" : "text-emerald-400"}`}>{pendingInvoices}</span>
             </div>
             <div className="flex justify-between rounded-lg bg-slate-800/40 px-3 py-2">
-              <span className="text-slate-400">Maintenance active</span>
-              <span className={openMaintenance > 0 ? "font-semibold text-red-400" : "font-semibold text-emerald-400"}>{openMaintenance}</span>
+              <span className="text-slate-400">Tâches en retard</span>
+              <span className={overdueTasks.length > 0 ? "font-semibold text-red-400" : "font-semibold text-emerald-400"}>{overdueTasks.length}</span>
             </div>
           </div>
         </div>
@@ -389,7 +371,7 @@ export default async function CrmDashboardPage() {
       {/* Upload */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
         <h3 className="font-semibold text-white text-sm mb-1">Documents rapides</h3>
-        <p className="mb-4 text-xs text-slate-400">Importez des pièces liées aux dossiers ou baux (PDF, Word, images). Max 10 Mo.</p>
+        <p className="mb-4 text-xs text-slate-400">Importez des pièces liées aux dossiers clients (PDF, Word, images). Max 10 Mo.</p>
         <DashboardUploader />
       </div>
     </section>

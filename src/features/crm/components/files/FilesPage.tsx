@@ -17,9 +17,15 @@ type FileItem = {
 };
 
 const LINKED_TYPE_LABELS: Record<string, string> = {
-  CONTACT: 'Contact', CASE: 'Dossier', PROPERTY: 'Immeuble',
-  UNIT: 'Logement', TENANT: 'Locataire', INQUIRY: 'Demande',
-  MAINTENANCE_TICKET: 'Maintenance', LEASE: 'Bail', PAYMENT: 'Paiement',
+  CONTACT: 'Contact',
+  CASE: 'Dossier',
+  INQUIRY: 'Demande',
+  APPOINTMENT: 'Rendez-vous',
+  INVOICE: 'Facture',
+  ACTIVITY: 'Activité',
+  SONG_REQUEST: 'Chanson',
+  WORKSHOP_REQUEST: 'Demande atelier',
+  WORKSHOP_APPOINTMENT: 'Rendez-vous atelier',
 };
 
 function formatSize(bytes: number | null) {
@@ -88,7 +94,7 @@ export function FilesPage({ files }: FilesPageProps) {
         <div className="text-center py-16 text-slate-500">
           <Paperclip size={40} className="mx-auto mb-3 opacity-30" />
           <p>Aucun fichier trouvé</p>
-          <p className="text-xs mt-1">Les fichiers sont attachés depuis les fiches contacts, dossiers et biens</p>
+          <p className="text-xs mt-1">Les fichiers sont attachés depuis les fiches contacts, dossiers, rendez-vous et demandes.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

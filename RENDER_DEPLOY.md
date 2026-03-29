@@ -74,9 +74,9 @@ Le projet inclut maintenant une route ` /api/uploads/[fileName] ` qui lit les im
 4. Lancer un **Manual Deploy** ou laisser l'auto-deploy se déclencher après le push.
 5. Tester:
    - connexion/inscription
-   - dépôt d'annonce
    - upload d'image
-   - page publique logement
+   - portail client (connexion + demandes)
+   - CRM (contacts, tâches, calendrier)
    - formulaire contact
 
 ## 6. Limitation actuelle

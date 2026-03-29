@@ -19,14 +19,13 @@ export async function POST(request: NextRequest) {
         id: true,
         fullName: true,
         email: true,
-        tenantProfile: { select: { id: true } },
       },
     });
 
     if (contact?.email) {
       const token = signClientPortalMagicLink({
         contactId: contact.id,
-        tenantId: contact.tenantProfile?.id || null,
+        tenantId: null,
         email: contact.email,
         fullName: contact.fullName,
       });

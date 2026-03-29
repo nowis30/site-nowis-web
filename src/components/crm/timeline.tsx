@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { Activity, Building2, Calendar, CheckSquare, CreditCard, FileText, Mail, MessageSquare, Music4, NotebookPen, Paperclip, Phone } from 'lucide-react';
+import { Activity, Calendar, CheckSquare, CreditCard, FileText, Mail, MessageSquare, Music4, NotebookPen, Paperclip, Phone } from 'lucide-react';
 
 export interface TimelineItem {
   id: string;
-  kind: 'note' | 'call' | 'message' | 'email' | 'invoice' | 'payment' | 'appointment' | 'task' | 'file' | 'lease' | 'song-request' | 'activity';
+  kind: 'note' | 'call' | 'message' | 'email' | 'invoice' | 'payment' | 'appointment' | 'task' | 'file' | 'song-request' | 'activity';
   title: string;
   description?: string | null;
   date: string;
@@ -22,7 +22,6 @@ const ICONS = {
   appointment: Calendar,
   task: CheckSquare,
   file: Paperclip,
-  lease: Building2,
   'song-request': Music4,
   activity: Activity,
 } as const;
@@ -37,7 +36,6 @@ const COLORS = {
   appointment: 'border-violet-500/30 bg-violet-500/10 text-violet-200',
   task: 'border-orange-500/30 bg-orange-500/10 text-orange-200',
   file: 'border-slate-500/30 bg-slate-500/10 text-slate-200',
-  lease: 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-200',
   'song-request': 'border-pink-500/30 bg-pink-500/10 text-pink-200',
   activity: 'border-slate-500/30 bg-slate-500/10 text-slate-200',
 } as const;

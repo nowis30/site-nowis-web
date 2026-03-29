@@ -14,11 +14,13 @@ export const clientRegisterSchema = z.object({
   password: strongPassword,
   address: z.string().trim().max(240, 'L\'adresse est trop longue').optional().or(z.literal('')),
   message: z.string().trim().max(2000, 'Le message est trop long').optional().or(z.literal('')),
+  next: z.string().trim().optional().or(z.literal('')),
 });
 
 export const clientLoginSchema = z.object({
   email: z.string().trim().toLowerCase().email('Adresse email invalide'),
   password: z.string().min(1, 'Le mot de passe est requis'),
+  next: z.string().trim().optional().or(z.literal('')),
 });
 
 export type ClientRegisterInput = z.infer<typeof clientRegisterSchema>;

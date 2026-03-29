@@ -145,6 +145,11 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
 
       const data = await response.json().catch(() => null);
 
+      if (response.status === 401 && typeof data?.loginUrl === 'string') {
+        window.location.href = data.loginUrl;
+        return;
+      }
+
       if (!response.ok) {
         setSubmitError(data?.error ?? 'Impossible d’envoyer la demande. Merci de réessayer.');
         return;
@@ -184,6 +189,10 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
         body: formData,
       });
       const data = await response.json();
+      if (response.status === 401 && typeof data?.loginUrl === 'string') {
+        window.location.href = data.loginUrl;
+        return;
+      }
       if (!response.ok) {
         throw new Error(data.error || 'Upload impossible');
       }

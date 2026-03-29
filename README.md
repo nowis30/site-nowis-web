@@ -113,6 +113,8 @@ npm run quality:quick     # Vérification rapide (types + build)
 npm run build             # Build optimisé
 npm start                 # Serveur production
 npm run prisma:migrate:deploy  # Appliquer migrations en prod
+npm run db:archive:housing      # Export JSON du domaine immobilier legacy
+npm run db:deprecate:housing:safe # Archive puis applique la migration non destructive
 npm run tasks:backfill-types   # Backfill robuste des tâches legacy
 npm run crm:release:tasks      # Pipeline complet migration + backfill + quality
 

@@ -7,14 +7,6 @@ export interface ClientPortalTokenPayload {
   fullName: string;
 }
 
-export interface TenantPortalTokenPayload {
-  scope: 'tenant-portal';
-  tenantId: string;
-  contactId: string;
-  email: string;
-  fullName: string;
-}
-
 function getClientPortalSecret() {
   const secret = process.env.CLIENT_PORTAL_JWT_SECRET || process.env.JWT_SECRET;
   if (process.env.NODE_ENV === 'production' && !secret) {
@@ -44,12 +36,6 @@ export function signClientPortalToken(payload: Omit<ClientPortalTokenPayload, 's
   });
 }
 
-export function signTenantPortalToken(payload: Omit<TenantPortalTokenPayload, 'scope'>): string {
-  return jwt.sign({ ...payload, scope: 'tenant-portal' }, getClientPortalSecret(), {
-    expiresIn: '180d',
-  });
-}
-
 export function verifyClientPortalToken(token: string): ClientPortalTokenPayload | null {
   try {
     const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalTokenPayload;
@@ -59,31 +45,12 @@ export function verifyClientPortalToken(token: string): ClientPortalTokenPayload
   }
 }
 
-export function verifyTenantPortalToken(token: string): TenantPortalTokenPayload | null {
-  try {
-    const decoded = jwt.verify(token, getClientPortalSecret()) as TenantPortalTokenPayload;
-    return decoded.scope === 'tenant-portal' ? decoded : null;
-  } catch {
-    return null;
-  }
-}
-
 export function buildClientPortalPath(token: string): string {
   return `/crm/client/${token}`;
-}
-
-export function buildTenantPortalPath(token: string): string {
-  return `/crm/tenant/${token}`;
 }
 
 export function buildClientPortalUrl(token: string, origin?: string): string {
   const baseUrl = getClientPortalBaseUrl(origin);
 
   return `${baseUrl}${buildClientPortalPath(token)}`;
-}
-
-export function buildTenantPortalUrl(token: string, origin?: string): string {
-  const baseUrl = getClientPortalBaseUrl(origin);
-
-  return `${baseUrl}${buildTenantPortalPath(token)}`;
 }

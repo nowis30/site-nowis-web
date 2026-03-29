@@ -1,55 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { normalizeIsoDate, normalizeOptionalString, tenantInputSchema } from '@/features/crm/server/validators';
+﻿import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'tenants', 'read');
-  if (guard.error) return guard.error;
+const RESPONSE = {
+  error: 'Feature removed',
+  code: 'FEATURE_REMOVED',
+  message: 'This housing endpoint has been retired. Use client portal and CRM music/workshop flows.',
+};
 
-  const q = request.nextUrl.searchParams.get('q')?.trim();
-  const items = await prisma.tenant.findMany({
-    where: q
-      ? {
-          OR: [
-            { contact: { fullName: { contains: q, mode: 'insensitive' } } },
-            { unit: { unitNumber: { contains: q, mode: 'insensitive' } } },
-          ],
-        }
-      : undefined,
-    include: {
-      contact: { select: { id: true, fullName: true, email: true } },
-      unit: { select: { id: true, unitNumber: true, property: { select: { name: true } } } },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  return NextResponse.json({ items });
+export function GET() {
+  return NextResponse.json(RESPONSE, { status: 410 });
 }
 
-export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'tenants', 'create');
-  if (guard.error) return guard.error;
+export function POST() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-  try {
-    const payload = tenantInputSchema.parse(await request.json());
-    const item = await prisma.tenant.create({
-      data: {
-        contactId: payload.contactId,
-        unitId: normalizeOptionalString(payload.unitId),
-        emergencyContact: normalizeOptionalString(payload.emergencyContact),
-        emergencyPhone: normalizeOptionalString(payload.emergencyPhone),
-        moveInDate: normalizeIsoDate(payload.moveInDate),
-        moveOutDate: normalizeIsoDate(payload.moveOutDate),
-        isActive: payload.isActive,
-      },
-      include: {
-        contact: { select: { id: true, fullName: true, email: true } },
-        unit: { select: { id: true, unitNumber: true, property: { select: { name: true } } } },
-      },
-    });
-    return NextResponse.json({ item }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
-  }
+export function PUT() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
+
+export function PATCH() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
+
+export function DELETE() {
+  return NextResponse.json(RESPONSE, { status: 410 });
 }

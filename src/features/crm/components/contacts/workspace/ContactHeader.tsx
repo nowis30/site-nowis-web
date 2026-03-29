@@ -3,7 +3,7 @@ import { ArrowLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
 import type { ContactWorkspaceContact } from './types';
 
-export type ContactActionType = 'note' | 'task' | 'invoice' | 'appointment' | 'lease' | 'song-request';
+export type ContactActionType = 'note' | 'task' | 'invoice' | 'appointment' | 'song-request';
 
 export function ContactHeader({
   contact,

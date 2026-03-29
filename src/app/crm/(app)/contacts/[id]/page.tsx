@@ -32,16 +32,15 @@ export default async function ContactDetailPage({ params }: PageProps) {
     return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021';
   }
 
-  const [contact, tasks, files, properties, messages] = await Promise.all([
+  const [contact, tasks, files, messages] = await Promise.all([
     prisma.contact.findUnique({
       where: { id: params.id },
       include: {
         cases: { orderBy: { createdAt: 'desc' } },
-        appointments: { include: { property: { select: { id: true, name: true } } }, orderBy: { startAt: 'desc' }, take: 20 },
+        appointments: { orderBy: { startAt: 'desc' }, take: 20 },
         invoices: { orderBy: { issueDate: 'desc' } },
         activities: { include: { user: { select: { fullName: true } } }, orderBy: { createdAt: 'desc' }, take: 40 },
         songRequests: { orderBy: { createdAt: 'desc' }, take: 20 },
-        tenantProfile: { include: { unit: { include: { property: true } }, leases: { orderBy: { startDate: 'desc' }, take: 10 } } },
         communications: { orderBy: { sentAt: 'desc' }, take: 30 },
         outboundEmails: { orderBy: { sentAt: 'desc' }, take: 30 },
       },
@@ -51,10 +50,9 @@ export default async function ContactDetailPage({ params }: PageProps) {
           where: { id: params.id },
           include: {
             cases: { orderBy: { createdAt: 'desc' } },
-            appointments: { include: { property: { select: { id: true, name: true } } }, orderBy: { startAt: 'desc' }, take: 20 },
+            appointments: { orderBy: { startAt: 'desc' }, take: 20 },
             invoices: { orderBy: { issueDate: 'desc' } },
             activities: { include: { user: { select: { fullName: true } } }, orderBy: { createdAt: 'desc' }, take: 40 },
-            tenantProfile: { include: { unit: { include: { property: true } }, leases: { orderBy: { startDate: 'desc' }, take: 10 } } },
             communications: { orderBy: { sentAt: 'desc' }, take: 30 },
           },
         }).then((contactWithoutOptionalModules) => {
@@ -98,23 +96,10 @@ export default async function ContactDetailPage({ params }: PageProps) {
       if (isMissingTable(error)) return [];
       throw error;
     }),
-    prisma.property.findMany({
-      select: { id: true, name: true, code: true },
-      orderBy: { name: 'asc' },
-      take: 100,
-    }),
     safeListMessages(params.id),
   ]);
 
   if (!contact) notFound();
-
-  const payments = contact.tenantProfile
-    ? await prisma.payment.findMany({
-        where: { tenantId: contact.tenantProfile.id },
-        orderBy: { dueDate: 'desc' },
-        take: 20,
-      })
-    : [];
 
   const timeline: TimelineItem[] = [
     ...contact.activities.map((item) => ({
@@ -164,24 +149,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
       href: `/crm/invoices/${item.id}`,
       meta: new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(item.amount)),
     })),
-    ...payments.map((item) => ({
-      id: `payment-${item.id}`,
-      kind: 'payment' as const,
-      title: `Paiement ${new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(item.amount))}`,
-      description: item.notes,
-      date: item.paidDate?.toISOString() || item.dueDate.toISOString(),
-      badge: item.status,
-      meta: item.reference || null,
-    })),
-    ...(contact.tenantProfile?.leases.map((item) => ({
-      id: `lease-${item.id}`,
-      kind: 'lease' as const,
-      title: `Bail ${item.leaseNumber}`,
-      description: `Loyer ${new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(item.rentAmount))}`,
-      date: item.startDate.toISOString(),
-      badge: item.status,
-      meta: `${item.startDate.toLocaleDateString('fr-CA')} → ${item.endDate.toLocaleDateString('fr-CA')}`,
-    })) || []),
     ...contact.songRequests.map((item) => ({
       id: `song-${item.id}`,
       kind: 'song-request' as const,
@@ -216,26 +183,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
         tags: contact.tags,
         notes: contact.notes,
         createdAt: contact.createdAt.toISOString(),
-        tenantProfile: contact.tenantProfile ? {
-          id: contact.tenantProfile.id,
-          unit: contact.tenantProfile.unit ? {
-            id: contact.tenantProfile.unit.id,
-            unitNumber: contact.tenantProfile.unit.unitNumber,
-            property: contact.tenantProfile.unit.property ? {
-              id: contact.tenantProfile.unit.property.id,
-              name: contact.tenantProfile.unit.property.name,
-              code: contact.tenantProfile.unit.property.code,
-            } : null,
-          } : null,
-          leases: contact.tenantProfile.leases.map((lease) => ({
-            id: lease.id,
-            leaseNumber: lease.leaseNumber,
-            startDate: lease.startDate.toISOString(),
-            endDate: lease.endDate.toISOString(),
-            rentAmount: lease.rentAmount.toString(),
-            status: lease.status,
-          })),
-        } : null,
         communications: contact.communications.map((item) => ({
           id: item.id,
           subject: item.subject,
@@ -291,7 +238,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
         endAt: item.endAt.toISOString(),
         type: item.type,
         status: item.status,
-        property: item.property,
+        property: null,
       }))}
       invoices={contact.invoices.map((item) => ({
         id: item.id,
@@ -313,7 +260,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
         category: item.category,
         visibility: item.visibility,
       }))}
-      propertyOptions={properties.map((item) => ({ id: item.id, label: `${item.name} (${item.code})` }))}
       timeline={timeline}
       unreadClientMessages={messages.filter((item) => item.senderType === 'CLIENT' && !item.isRead).length}
       canImpersonate={session.role === 'ADMIN'}

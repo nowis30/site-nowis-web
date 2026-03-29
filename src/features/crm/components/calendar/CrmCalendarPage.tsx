@@ -35,7 +35,6 @@ type CalendarPrefill = {
   type?: string;
   status?: string;
   contactId?: string;
-  propertyId?: string;
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -82,12 +81,10 @@ function toEventInput(item: CalendarEventItem): EventInput {
 export function CrmCalendarPage({
   initialAppointments,
   contacts,
-  properties,
   initialPrefill,
 }: {
   initialAppointments: CalendarEventItem[];
   contacts: OptionItem[];
-  properties: OptionItem[];
   initialPrefill?: CalendarPrefill;
 }) {
   const [appointments, setAppointments] = useState(initialAppointments);
@@ -108,7 +105,6 @@ export function CrmCalendarPage({
     type: 'MEETING',
     status: 'PENDING',
     contactId: '',
-    propertyId: '',
   });
   const [prefillApplied, setPrefillApplied] = useState(false);
 
@@ -162,7 +158,6 @@ export function CrmCalendarPage({
       type: initialPrefill.type || 'MEETING',
       status: initialPrefill.status || 'PENDING',
       contactId: initialPrefill.contactId || '',
-      propertyId: initialPrefill.propertyId || '',
     });
     setError(null);
     setModalOpen(true);
@@ -179,7 +174,6 @@ export function CrmCalendarPage({
       type: 'MEETING',
       status: 'PENDING',
       contactId: '',
-      propertyId: '',
     });
     setError(null);
     setModalOpen(true);
@@ -201,7 +195,6 @@ export function CrmCalendarPage({
       type: item.type,
       status: item.status,
       contactId: item.contactId || '',
-      propertyId: item.propertyId || '',
     });
     setError(null);
     setModalOpen(true);
@@ -239,7 +232,6 @@ export function CrmCalendarPage({
       type: form.type,
       status: form.status,
       contactId: form.contactId,
-      propertyId: form.propertyId,
     };
 
     try {
@@ -257,7 +249,6 @@ export function CrmCalendarPage({
       setAppointments((current) => {
         const next = current.filter((entry) => entry.id !== item.id);
         const contactName = contacts.find((entry) => entry.id === (item.contactId || form.contactId))?.label || null;
-        const propertyName = properties.find((entry) => entry.id === (item.propertyId || form.propertyId))?.label || null;
         return [...next, {
           id: item.id,
           title: item.title,
@@ -267,9 +258,9 @@ export function CrmCalendarPage({
           type: item.type,
           status: item.status,
           contactId: item.contactId,
-          propertyId: item.propertyId,
+          propertyId: null,
           contactName,
-          propertyName,
+          propertyName: null,
         }].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
       });
       setSelectedEventId(item.id);
@@ -315,7 +306,6 @@ export function CrmCalendarPage({
       type: current.type,
       status: current.status,
       contactId: current.contactId || '',
-      propertyId: current.propertyId || '',
     };
 
     const response = await fetch(`/api/crm/appointments/${current.id}`, {
@@ -467,13 +457,6 @@ export function CrmCalendarPage({
                 <select value={form.contactId} onChange={(event) => setForm((current) => ({ ...current, contactId: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
                   <option value="">Aucun</option>
                   {contacts.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-                </select>
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Bien</span>
-                <select value={form.propertyId} onChange={(event) => setForm((current) => ({ ...current, propertyId: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  <option value="">Aucun</option>
-                  {properties.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
                 </select>
               </label>
               <label className="md:col-span-2">

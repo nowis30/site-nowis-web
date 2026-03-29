@@ -1,7 +1,5 @@
-import { requireCrmSession } from '@/features/crm/auth/session';
-import { ModulePage } from '@/features/crm/components/modules/ModulePage';
+﻿import { redirect } from 'next/navigation';
 
-export default async function TenantsPage() {
-  const session = await requireCrmSession();
-  return <ModulePage role={session.role} moduleKey="tenants" />;
+export default function Page() {
+  redirect('/crm/dashboard');
 }

@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
@@ -27,6 +27,7 @@ const navLinks: NavLink[] = [
 
 const resourceLinks: NavLink[] = [
   { label: 'Exemples musicaux', href: '/musique' },
+  { label: 'Vidéos', href: '/videos' },
   { label: 'Demande d’atelier (compte requis)', href: '/ateliers/demande' },
   { label: 'Services créatifs', href: '/services' },
   { label: 'À propos', href: '/a-propos' },
@@ -34,6 +35,19 @@ const resourceLinks: NavLink[] = [
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+  const resourcesMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!resourcesMenuRef.current?.contains(event.target as Node)) {
+        setIsResourcesOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07101f]/72 backdrop-blur-2xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/60">
@@ -61,21 +75,25 @@ export const Header: React.FC = () => {
             </Link>
           ))}
 
-          <div className="group relative">
+          <div ref={resourcesMenuRef} className="relative">
             <button
               type="button"
+              onClick={() => setIsResourcesOpen((current) => !current)}
               className="inline-flex items-center gap-2 text-sm font-medium text-slate-100 transition-colors duration-200 hover:text-primary-100"
+              aria-expanded={isResourcesOpen}
+              aria-haspopup="menu"
             >
               Ressources
-              <svg className="h-4 w-4 transition-transform duration-200 group-hover:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <svg className={`h-4 w-4 transition-transform duration-200 ${isResourcesOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clipRule="evenodd" />
               </svg>
             </button>
-            <div className="invisible absolute right-0 top-full z-50 mt-4 w-72 rounded-2xl border border-white/10 bg-[#09101f]/92 p-3 opacity-0 shadow-card backdrop-blur-2xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+            <div className={`${isResourcesOpen ? 'visible opacity-100 translate-y-0' : 'invisible -translate-y-1 opacity-0'} absolute right-0 top-full z-50 mt-4 w-72 rounded-2xl border border-white/10 bg-[#09101f]/92 p-3 shadow-card backdrop-blur-2xl transition-all duration-200`}>
               {resourceLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={() => setIsResourcesOpen(false)}
                   className="block rounded-xl px-4 py-3 text-sm text-slate-100 transition-colors hover:bg-primary-500/12 hover:text-primary-100"
                 >
                   {link.label}

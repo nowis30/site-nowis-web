@@ -7,13 +7,6 @@ import { safeListMessages } from '@/lib/messages-store';
 import { prisma } from '@/lib/prisma';
 
 const contactDashboardInclude = {
-  tenantProfile: {
-    include: {
-      unit: { include: { property: true } },
-      leases: { orderBy: { startDate: 'desc' as const }, take: 5 },
-      payments: { orderBy: { dueDate: 'asc' as const }, take: 8 },
-    },
-  },
   appointments: {
     where: { status: { not: 'CANCELLED' as const } },
     orderBy: { startAt: 'asc' as const },
@@ -109,12 +102,12 @@ export default async function ClientDashboardPage() {
     return <div className="crm-surface p-8 text-sm text-slate-300">Votre dossier n'est pas disponible.</div>;
   }
 
-  const nextPayment = contact.tenantProfile?.payments.find((payment) => payment.status === 'PENDING' || payment.status === 'LATE') || null;
   const unreadPortalMessages = messages.filter((item) => item.senderType === 'ADMIN' && !item.isRead).length;
   const upcomingAppointments = contact.appointments.filter((appointment) => appointment.startAt >= new Date());
   const recentMessages = messages.slice(0, 5);
   const recentDocuments = documents.slice(0, 5);
   const recentSongRequests = contact.songRequests.slice(0, 5);
+  const nextAppointment = upcomingAppointments[0] || null;
 
   return (
     <section className="space-y-6">
@@ -141,12 +134,12 @@ export default async function ClientDashboardPage() {
           hint={contact.fullName || 'Suivi personnalisé'}
         />
         <PortalStatCard
-          label="Prochain paiement"
-          value={nextPayment ? formatMoney(Number(nextPayment.amount)) : '—'}
-          hint={nextPayment ? `Échéance ${formatDate(nextPayment.dueDate)}` : 'Aucun paiement en attente'}
+          label="Prochain rendez-vous"
+          value={nextAppointment ? formatDate(nextAppointment.startAt) : '—'}
+          hint={nextAppointment ? nextAppointment.title : 'Aucun rendez-vous planifié'}
         />
         <PortalStatCard label="Documents" value={documents.length} hint="Contrats, factures et fichiers partagés" />
-        <PortalStatCard label="Rendez-vous" value={contact.appointments.length} hint="Événements planifiés avec Nowis" />
+        <PortalStatCard label="Demandes" value={contact.songRequests.length} hint="Demandes créatives suivies dans le portail" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
@@ -230,17 +223,10 @@ export default async function ClientDashboardPage() {
         <div className="space-y-6">
           <SectionCard title="Prochaines étapes" subtitle="Éléments à suivre dans votre dossier">
             <div className="mt-6 space-y-3">
-              {nextPayment ? (
-                <article className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-                  <p className="text-sm font-medium text-white">Prochain paiement</p>
-                  <p className="mt-2 text-sm text-slate-300">{formatMoney(Number(nextPayment.amount))} · échéance {formatDate(nextPayment.dueDate)}</p>
-                </article>
-              ) : (
-                <article className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-                  <p className="text-sm font-medium text-white">Paiements</p>
-                  <p className="mt-2 text-sm text-slate-300">Aucun paiement en attente.</p>
-                </article>
-              )}
+              <article className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
+                <p className="text-sm font-medium text-white">Messages non lus</p>
+                <p className="mt-2 text-sm text-slate-300">{unreadPortalMessages > 0 ? `${unreadPortalMessages} message(s) Nowis à lire.` : 'Aucun message en attente.'}</p>
+              </article>
 
               {recentSongRequests.length > 0 ? (
                 <article className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">

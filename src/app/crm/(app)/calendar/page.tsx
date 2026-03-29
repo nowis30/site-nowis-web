@@ -6,11 +6,10 @@ import { CrmCalendarPage } from '@/features/crm/components/calendar/CrmCalendarP
 export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   await requireCrmSession();
 
-  const [appointments, contacts, properties, workshopAppointments, workshopAvailabilities] = await Promise.all([
+  const [appointments, contacts, workshopAppointments, workshopAvailabilities] = await Promise.all([
     prisma.appointment.findMany({
       include: {
         contact: { select: { fullName: true } },
-        property: { select: { name: true } },
       },
       orderBy: { startAt: 'asc' },
     }),
@@ -18,11 +17,6 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       orderBy: { fullName: 'asc' },
       select: { id: true, fullName: true },
       take: 300,
-    }),
-    prisma.property.findMany({
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, code: true },
-      take: 200,
     }),
     prisma.workshopAppointment.findMany({
       include: {
@@ -89,9 +83,9 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       type: item.type,
       status: item.status,
       contactId: item.contactId,
-      propertyId: item.propertyId,
+      propertyId: null,
       contactName: item.contact?.fullName || null,
-      propertyName: item.property?.name || null,
+      propertyName: null,
       source: 'appointment' as const,
       organizationName: null,
     })),
@@ -142,7 +136,6 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
     <CrmCalendarPage
       initialAppointments={initialAppointments}
       contacts={contacts.map((item) => ({ id: item.id, label: item.fullName }))}
-      properties={properties.map((item) => ({ id: item.id, label: `${item.name} (${item.code})` }))}
       initialPrefill={initialPrefill}
     />
   );

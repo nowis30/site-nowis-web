@@ -1,30 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { verifyTenantPortalToken } from '@/lib/client-portal';
+﻿import { NextResponse } from 'next/server';
 
-const tenantTaskSchema = z.object({
-  token: z.string().trim().min(1),
-});
+const RESPONSE = {
+  error: 'Feature removed',
+  code: 'FEATURE_REMOVED',
+  message: 'This housing endpoint has been retired. Use client portal and CRM music/workshop flows.',
+};
 
-export async function POST(request: NextRequest) {
-  try {
-    const payload = tenantTaskSchema.parse(await request.json());
-    const session = verifyTenantPortalToken(payload.token);
+export function GET() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-    if (!session) {
-      return NextResponse.json({ error: 'Lien locataire invalide' }, { status: 401 });
-    }
+export function POST() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-    return NextResponse.json(
-      { error: 'La creation de tache depuis le portail locataire est desactivee. Utilisez la messagerie ou la prise de rendez-vous.' },
-      { status: 403 },
-    );
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Donnees invalides', details: error.issues }, { status: 400 });
-    }
+export function PUT() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-    console.error('[TENANT_PORTAL_TASK_CREATE_DISABLED]', error);
-    return NextResponse.json({ error: 'Operation impossible' }, { status: 500 });
-  }
+export function PATCH() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
+
+export function DELETE() {
+  return NextResponse.json(RESPONSE, { status: 410 });
 }

@@ -28,7 +28,7 @@ const TABS = [
   { id: 'song-requests', label: 'Demandes chanson', icon: Receipt },
 ] as const;
 
-export function ContactWorkspace({ contact, tasks, appointments, invoices, files, propertyOptions, timeline, unreadClientMessages, canImpersonate }: ContactWorkspaceProps) {
+export function ContactWorkspace({ contact, tasks, appointments, invoices, files, timeline, unreadClientMessages, canImpersonate }: ContactWorkspaceProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get('tab');
@@ -103,7 +103,7 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
         </div>
       </div>
 
-      {action ? <ContactActionModal action={action} contact={contact} propertyOptions={propertyOptions} onClose={() => setAction(null)} onSaved={() => { setAction(null); router.refresh(); }} /> : null}
+      {action ? <ContactActionModal action={action} contact={contact} onClose={() => setAction(null)} onSaved={() => { setAction(null); router.refresh(); }} /> : null}
     </section>
   );
 }

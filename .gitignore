@@ -31,3 +31,4 @@ coverage/
 *.local
 .vercel
 tsconfig.tsbuildinfo
+archive/housing-domain/

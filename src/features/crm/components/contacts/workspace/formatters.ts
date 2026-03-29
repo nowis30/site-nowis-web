@@ -15,7 +15,3 @@ export function formatMoney(value: string | number) {
 export function buildDefaultInvoiceNumber(contactId: string) {
   return `INV-${contactId.slice(0, 4).toUpperCase()}-${Date.now().toString().slice(-6)}`;
 }
-
-export function buildDefaultLeaseNumber(contactId: string) {
-  return `LEA-${contactId.slice(0, 4).toUpperCase()}-${Date.now().toString().slice(-5)}`;
-}

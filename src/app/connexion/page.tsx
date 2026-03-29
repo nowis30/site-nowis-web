@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
+import { sanitizeNextPath } from '@/lib/safe-next';
 
 export default function ConnexionPage() {
   const router = useRouter();
@@ -12,11 +14,13 @@ export default function ConnexionPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [externalErrorCode, setExternalErrorCode] = useState<string | null>(null);
+  const [nextPath, setNextPath] = useState('/client/dashboard');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     setExternalErrorCode(params.get('error'));
+    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
   }, []);
 
   const externalErrorMessage =
@@ -35,7 +39,7 @@ export default function ConnexionPage() {
       const response = await fetch('/api/client-auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, next: nextPath }),
       });
       const data = await readApiJson(response);
       if (!response.ok) {
@@ -54,8 +58,14 @@ export default function ConnexionPage() {
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion au portail client</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Connectez-vous pour suivre vos demandes de chanson, vos ateliers, vos rendez-vous et vos échanges avec Nowis.
+          Connectez-vous pour envoyer une demande de chanson ou d'atelier, puis suivre vos rendez-vous et echanges avec Nowis.
         </p>
+
+        {nextPath !== '/client/dashboard' ? (
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+            Connexion requise pour continuer vers la page demandee.
+          </div>
+        ) : null}
 
         {externalErrorMessage ? (
           <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -96,18 +106,15 @@ export default function ConnexionPage() {
         </form>
 
         <p className="mt-6 text-sm text-gray-600">
-          Pas encore d'accès ?{' '}
-          <a href="/inscription" className="text-primary-600 hover:underline">
+          Pas encore d'acces ?{' '}
+          <Link href={`/inscription?next=${encodeURIComponent(nextPath)}`} className="text-primary-600 hover:underline">
             Créer mon accès
-          </a>
+          </Link>
         </p>
 
-        <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-          Vous faites partie de l’équipe Nowis ?{' '}
-          <a href="/crm/login" className="font-medium text-primary-600 hover:underline">
-            Accéder au CRM
-          </a>
-        </div>
+        <p className="mt-3 text-sm text-gray-600">
+          Espace equipe interne: <Link href="/crm/login" className="font-medium text-primary-600 hover:underline">connexion CRM</Link>
+        </p>
       </div>
     </div>
   );

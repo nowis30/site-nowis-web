@@ -9,7 +9,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
   const item = await prisma.appointment.findUnique({
     where: { id: params.id },
-    include: { contact: true, property: true },
+    include: { contact: true },
   });
   if (!item) return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
   return NextResponse.json({ item });
@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         type: payload.type,
         status: payload.status,
         contactId: payload.contactId || null,
-        propertyId: payload.propertyId || null,
+        propertyId: null,
       },
     });
     return NextResponse.json({ item });

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         title: payload.title.trim(),
         description: normalizeOptionalString(payload.description),
         contactId: payload.contactId || null,
-        propertyId: payload.propertyId || null,
+        propertyId: null,
         userId: guard.session.sub,
       },
     });

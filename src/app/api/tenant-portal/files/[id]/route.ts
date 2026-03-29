@@ -1,44 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { verifyTenantPortalToken } from '@/lib/client-portal';
-import { deleteStoredFileByUrl } from '@/lib/uploaded-file';
+﻿import { NextResponse } from 'next/server';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const token = request.nextUrl.searchParams.get('token') || '';
-  const session = verifyTenantPortalToken(token);
+const RESPONSE = {
+  error: 'Feature removed',
+  code: 'FEATURE_REMOVED',
+  message: 'This housing endpoint has been retired. Use client portal and CRM music/workshop flows.',
+};
 
-  if (!session) {
-    return NextResponse.json({ error: 'Lien locataire invalide' }, { status: 401 });
-  }
+export function GET() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-  const tenant = await prisma.tenant.findFirst({
-    where: { id: session.tenantId, contactId: session.contactId },
-    select: { id: true, contactId: true },
-  });
+export function POST() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-  if (!tenant) {
-    return NextResponse.json({ error: 'Locataire introuvable' }, { status: 404 });
-  }
+export function PUT() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-  const item = await prisma.document.findFirst({
-    where: { id: params.id, linkedType: 'TENANT', linkedId: tenant.id },
-    select: { id: true, fileName: true, fileUrl: true },
-  });
+export function PATCH() {
+  return NextResponse.json(RESPONSE, { status: 410 });
+}
 
-  if (!item) {
-    return NextResponse.json({ error: 'Document introuvable' }, { status: 404 });
-  }
-
-  await prisma.document.delete({ where: { id: item.id } });
-  await deleteStoredFileByUrl(item.fileUrl);
-  await prisma.activity.create({
-    data: {
-      type: 'FILE',
-      title: `Document supprimé par le locataire : ${item.fileName}`,
-      description: 'Suppression depuis le portail locataire.',
-      contactId: tenant.contactId,
-    },
-  });
-
-  return NextResponse.json({ ok: true });
+export function DELETE() {
+  return NextResponse.json(RESPONSE, { status: 410 });
 }
