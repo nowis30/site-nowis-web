@@ -20,6 +20,31 @@ function formatDate(value: Date | null | undefined) {
   return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium' }).format(value);
 }
 
+function buildCalendarCreateHref(item: WorkshopRequestDetailRecord) {
+  const start = item.requestedDate ? new Date(item.requestedDate) : new Date();
+  if (!item.requestedDate) {
+    start.setDate(start.getDate() + 1);
+  }
+  start.setHours(9, 0, 0, 0);
+  const end = new Date(start);
+  end.setHours(end.getHours() + 1);
+
+  const params = new URLSearchParams({
+    title: `Atelier - ${item.organization.name}`,
+    description: `Suivi de la demande atelier: ${item.workshopTheme}`,
+    type: 'WORKSHOP',
+    status: 'PENDING',
+    startAt: start.toISOString(),
+    endAt: end.toISOString(),
+  });
+
+  if (item.contactId) {
+    params.set('contactId', item.contactId);
+  }
+
+  return `/crm/calendar?${params.toString()}`;
+}
+
 export default async function WorkshopRequestDetailPage({ params }: { params: { id: string } }) {
   await requireCrmSession();
 
@@ -41,6 +66,8 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
   }
 
   if (!item) notFound();
+
+  const calendarCreateHref = buildCalendarCreateHref(item);
 
   return (
     <section className="space-y-6">
@@ -78,7 +105,12 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
       />
 
       <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-        <h3 className="text-lg font-semibold text-white">Rendez-vous atelier</h3>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-white">Rendez-vous atelier</h3>
+          <Link href={calendarCreateHref} className="rounded-xl border border-primary-500/40 bg-primary-500/10 px-3 py-2 text-xs font-medium text-primary-300 hover:bg-primary-500/20">
+            Ajouter au calendrier
+          </Link>
+        </div>
         <div className="mt-4 space-y-3">
           {item.appointments.length === 0 ? <p className="text-sm text-slate-400">Aucun rendez-vous atelier lié pour le moment.</p> : item.appointments.map((appointment: WorkshopRequestDetailRecord['appointments'][number]) => (
             <article key={appointment.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -26,6 +26,17 @@ type CalendarEventItem = {
 };
 
 type OptionItem = { id: string; label: string };
+
+type CalendarPrefill = {
+  title?: string;
+  description?: string;
+  startAt?: string;
+  endAt?: string;
+  type?: string;
+  status?: string;
+  contactId?: string;
+  propertyId?: string;
+};
 
 const TYPE_COLORS: Record<string, string> = {
   VISIT: '#2563eb',
@@ -72,10 +83,12 @@ export function CrmCalendarPage({
   initialAppointments,
   contacts,
   properties,
+  initialPrefill,
 }: {
   initialAppointments: CalendarEventItem[];
   contacts: OptionItem[];
   properties: OptionItem[];
+  initialPrefill?: CalendarPrefill;
 }) {
   const [appointments, setAppointments] = useState(initialAppointments);
   const [modalOpen, setModalOpen] = useState(false);
@@ -97,6 +110,7 @@ export function CrmCalendarPage({
     contactId: '',
     propertyId: '',
   });
+  const [prefillApplied, setPrefillApplied] = useState(false);
 
   const visibleContacts = useMemo(
     () => contacts.filter((item) => item.label.toLowerCase().includes(contactSearch.toLowerCase())),
@@ -127,6 +141,33 @@ export function CrmCalendarPage({
     })),
     [filteredAppointments, selectedEventId],
   );
+
+  useEffect(() => {
+    if (!initialPrefill || prefillApplied) return;
+
+    const nowIso = new Date().toISOString();
+    const safeStart = initialPrefill.startAt && !Number.isNaN(new Date(initialPrefill.startAt).getTime())
+      ? initialPrefill.startAt
+      : nowIso;
+    const safeEnd = initialPrefill.endAt && !Number.isNaN(new Date(initialPrefill.endAt).getTime())
+      ? initialPrefill.endAt
+      : defaultEnd(safeStart);
+
+    setEditingId(null);
+    setForm({
+      title: initialPrefill.title || '',
+      description: initialPrefill.description || '',
+      startAt: toLocalInputValue(safeStart),
+      endAt: toLocalInputValue(safeEnd),
+      type: initialPrefill.type || 'MEETING',
+      status: initialPrefill.status || 'PENDING',
+      contactId: initialPrefill.contactId || '',
+      propertyId: initialPrefill.propertyId || '',
+    });
+    setError(null);
+    setModalOpen(true);
+    setPrefillApplied(true);
+  }, [initialPrefill, prefillApplied]);
 
   function openCreateModal(startAt: string) {
     setEditingId(null);

@@ -3,7 +3,7 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { CrmCalendarPage } from '@/features/crm/components/calendar/CrmCalendarPage';
 
-export default async function CalendarPage() {
+export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   await requireCrmSession();
 
   const [appointments, contacts, properties, workshopAppointments, workshopAvailabilities] = await Promise.all([
@@ -113,11 +113,37 @@ export default async function CalendarPage() {
     ...nextAvailabilityEvents,
   ].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 
+  const getParam = (key: string) => {
+    const value = searchParams?.[key];
+    return typeof value === 'string' ? value : undefined;
+  };
+
+  const prefillStart = getParam('startAt');
+  const prefillEnd = getParam('endAt');
+  const prefillTitle = getParam('title');
+  const prefillDescription = getParam('description');
+  const prefillContactId = getParam('contactId');
+  const prefillType = getParam('type');
+  const prefillStatus = getParam('status');
+
+  const initialPrefill = prefillTitle || prefillContactId || prefillStart
+    ? {
+        title: prefillTitle,
+        description: prefillDescription,
+        startAt: prefillStart,
+        endAt: prefillEnd,
+        type: prefillType,
+        status: prefillStatus,
+        contactId: prefillContactId,
+      }
+    : undefined;
+
   return (
     <CrmCalendarPage
       initialAppointments={initialAppointments}
       contacts={contacts.map((item) => ({ id: item.id, label: item.fullName }))}
       properties={properties.map((item) => ({ id: item.id, label: `${item.name} (${item.code})` }))}
+      initialPrefill={initialPrefill}
     />
   );
 }

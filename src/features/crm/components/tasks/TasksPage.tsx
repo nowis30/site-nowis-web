@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { CheckSquare, Plus, AlertCircle, Clock, FolderOpen, Phone, Mail, Music2, ArrowUpRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckSquare, Plus, AlertCircle, Clock, FolderOpen, Phone, Mail, Music2, ArrowUpRight, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { extractIncomingMessageTaskMeta, getIncomingMessageTaskHref } from '@/lib/contact-message-tasks';
 import { TaskPayloadRecord, TaskType, coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-normalization';
@@ -83,6 +83,18 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
     });
     setLoading(false);
     onUpdate();
+  }
+
+  async function deleteTask() {
+    const ok = window.confirm('Supprimer cette tâche ?');
+    if (!ok) return;
+    setLoading(true);
+    try {
+      await fetch(`/api/crm/tasks/${task.id}`, { method: 'DELETE' });
+      onUpdate();
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -203,8 +215,17 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
         </div>
       ) : null}
 
-      {task.status !== 'DONE' && (
-        <div className="flex flex-wrap gap-2 pl-7">
+      <div className="flex flex-wrap gap-2 pl-7">
+        <button
+          type="button"
+          onClick={deleteTask}
+          disabled={loading}
+          className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 disabled:opacity-60"
+        >
+          <span className="inline-flex items-center gap-1.5"><Trash2 size={12} /> Supprimer</span>
+        </button>
+        {task.status !== 'DONE' && (
+          <>
           {task.status === 'TODO' && (
             <button type="button" onClick={() => changeStatus('IN_PROGRESS')} disabled={loading} className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3 py-1.5 text-xs font-medium text-yellow-300 hover:bg-yellow-500/20 disabled:opacity-60">
               Passer en cours
@@ -215,8 +236,9 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
               Marquer terminée
             </button>
           )}
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
