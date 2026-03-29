@@ -4,7 +4,7 @@ const nextConfig = {
   output: 'standalone',
   // Optimize images
   images: {
-    domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'localhost', '127.0.0.1', 'nowis.store'],
+    domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'localhost', '127.0.0.1', 'nowis.store', 'nowis-admin.vercel.app'],
     unoptimized: false,
   },
   // Host and path redirects
