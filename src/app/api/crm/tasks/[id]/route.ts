@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { requireApiPermission } from '@/features/crm/auth/api-guard';
+import { forbid, getApiSession, requireApiPermission, unauthorized } from '@/features/crm/auth/api-guard';
+import { can } from '@/features/crm/auth/permissions';
 import { normalizeOptionalString } from '@/features/crm/server/validators';
 import { coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-normalization';
 import { z } from 'zod';
@@ -67,8 +68,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'tasks', 'delete');
-  if (guard.error) return guard.error;
+  const session = getApiSession(request);
+  if (!session) {
+    return unauthorized();
+  }
+
+  if (!can(session.role, 'tasks', 'delete')) {
+    if (!can(session.role, 'tasks', 'update')) {
+      return forbid();
+    }
+    const task = await prisma.task.findUnique({
+      where: { id: params.id },
+      select: { status: true },
+    });
+    if (!task) {
+      return NextResponse.json({ error: 'Tâche introuvable' }, { status: 404 });
+    }
+    if (task.status !== 'DONE') {
+      return NextResponse.json(
+        { error: 'Suppression autorisée uniquement pour les tâches terminées' },
+        { status: 403 },
+      );
+    }
+  }
 
   await prisma.task.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });

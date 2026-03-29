@@ -90,7 +90,20 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
     if (!ok) return;
     setLoading(true);
     try {
-      await fetch(`/api/crm/tasks/${task.id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/crm/tasks/${task.id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        let message = 'Impossible de supprimer la tâche.';
+        try {
+          const body = await response.json();
+          if (body?.error && typeof body.error === 'string') {
+            message = body.error;
+          }
+        } catch {
+          // Ignore JSON parse errors and keep the default message.
+        }
+        window.alert(message);
+        return;
+      }
       onUpdate();
     } finally {
       setLoading(false);
