@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { S3ServiceException } from '@aws-sdk/client-s3';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { FILE_VISIBILITY_DB } from '@/lib/file-documents';
@@ -120,6 +121,24 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation invalide', details: error.issues }, { status: 400 });
+    }
+
+    if (error instanceof S3ServiceException) {
+      const status = error.$metadata?.httpStatusCode ?? 0;
+      if (status === 404 || error.name === 'NoSuchKey' || error.name === 'NotFound') {
+        return NextResponse.json(
+          { error: "Fichier introuvable dans le stockage. L'upload a peut-être échoué." },
+          { status: 422 },
+        );
+      }
+      if (status === 403 || error.name === 'AccessDenied') {
+        return NextResponse.json(
+          { error: 'Stockage non accessible. Contactez un administrateur.' },
+          { status: 503 },
+        );
+      }
+      console.error('[CLIENT_FILE_DOCUMENT_POST] S3 error', error.name, status, error.message);
+      return NextResponse.json({ error: `Erreur stockage (${error.name})` }, { status: 502 });
     }
 
     console.error('[CLIENT_FILE_DOCUMENT_POST]', error);
