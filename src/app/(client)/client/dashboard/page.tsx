@@ -230,14 +230,14 @@ export default async function ClientDashboardPage() {
 
               {recentSongRequests.length > 0 ? (
                 <article className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm font-medium text-white">Demandes de chanson récentes</p>
                     <Link href="/client/song-requests" className="text-xs font-medium text-primary-300 hover:text-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Voir tout</Link>
                   </div>
                   <div className="mt-3 space-y-2">
                     {recentSongRequests.slice(0, 3).map((request) => (
                       <div key={request.id} className="flex flex-col items-start gap-1 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                        <span className="truncate">{request.title || request.occasion}</span>
+                        <span className="max-w-full break-words">{request.title || request.occasion}</span>
                         <span className="text-xs text-slate-500">{formatDate(request.createdAt)}</span>
                       </div>
                     ))}

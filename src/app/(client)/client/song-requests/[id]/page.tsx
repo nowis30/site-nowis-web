@@ -103,23 +103,23 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
       <div className="grid gap-6 xl:grid-cols-2">
         <SectionCard title="Informations principales">
           <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Destinataire: <span className="font-medium text-slate-100">{request.recipientName}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Type: <span className="font-medium text-slate-100">{request.songType}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Occasion: <span className="font-medium text-slate-100">{request.occasion}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Style: <span className="font-medium text-slate-100">{request.style}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Ambiance: <span className="font-medium text-slate-100">{request.mood}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Langue: <span className="font-medium text-slate-100">{request.language || '—'}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Budget: <span className="font-medium text-slate-100">{request.budget ? Number(request.budget).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' }) : '—'}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Date souhaitée: <span className="font-medium text-slate-100">{request.desiredDeadline ? formatDate(request.desiredDeadline) : '—'}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Destinataire: <span className="font-medium text-slate-100">{request.recipientName}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Type: <span className="font-medium text-slate-100">{request.songType}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Occasion: <span className="font-medium text-slate-100">{request.occasion}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Style: <span className="font-medium text-slate-100">{request.style}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Ambiance: <span className="font-medium text-slate-100">{request.mood}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Langue: <span className="font-medium text-slate-100">{request.language || '—'}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Budget: <span className="font-medium text-slate-100">{request.budget ? Number(request.budget).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' }) : '—'}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Date souhaitée: <span className="font-medium text-slate-100">{request.desiredDeadline ? formatDate(request.desiredDeadline) : '—'}</span></p>
           </div>
         </SectionCard>
 
         <SectionCard title="Coordonnées de la demande">
           <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Nom: <span className="font-medium text-slate-100">{request.fullName}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Email: <span className="font-medium text-slate-100">{request.email}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Téléphone: <span className="font-medium text-slate-100">{request.phone}</span></p>
-            <p className="rounded-xl border border-slate-800 bg-slate-950/45 p-3">Créée le: <span className="font-medium text-slate-100">{formatDateTime(request.createdAt)}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Nom: <span className="font-medium text-slate-100">{request.fullName}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Email: <span className="font-medium break-all text-slate-100">{request.email}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Téléphone: <span className="font-medium text-slate-100">{request.phone}</span></p>
+            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Créée le: <span className="font-medium text-slate-100">{formatDateTime(request.createdAt)}</span></p>
           </div>
         </SectionCard>
       </div>

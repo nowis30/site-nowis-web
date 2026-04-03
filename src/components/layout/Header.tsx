@@ -9,6 +9,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 
 interface NavLink {
@@ -34,6 +35,7 @@ const resourceLinks: NavLink[] = [
 ];
 
 export const Header: React.FC = () => {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const resourcesMenuRef = useRef<HTMLDivElement | null>(null);
@@ -48,6 +50,23 @@ export const Header: React.FC = () => {
     document.addEventListener('mousedown', handlePointerDown);
     return () => document.removeEventListener('mousedown', handlePointerDown);
   }, []);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsResourcesOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      document.body.style.removeProperty('overflow');
+      return;
+    }
+
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.removeProperty('overflow');
+    };
+  }, [isMenuOpen]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07101f]/72 backdrop-blur-2xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/60">
@@ -112,9 +131,12 @@ export const Header: React.FC = () => {
 
         {/* Mobile Menu Button */}
         <button
+          type="button"
           className="md:hidden rounded-xl border border-white/10 p-2 text-slate-100 transition-colors hover:bg-white/10"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Menu mobile"
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-main-menu"
         >
           <svg
             className="w-6 h-6 text-white"
@@ -133,7 +155,7 @@ export const Header: React.FC = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="absolute top-full left-0 right-0 flex flex-col border-b border-white/10 bg-[#07101f]/94 shadow-card backdrop-blur-2xl md:hidden">
+          <div id="mobile-main-menu" className="absolute left-0 right-0 top-full z-[70] flex flex-col border-b border-white/10 bg-[#07101f]/94 shadow-card backdrop-blur-2xl md:hidden">
             {navLinks.map((link) => (
               <Link
                 key={link.href}

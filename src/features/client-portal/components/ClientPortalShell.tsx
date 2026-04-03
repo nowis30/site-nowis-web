@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ShieldCheck, LogOut } from 'lucide-react';
+import { ClientMobileBottomNav } from '@/features/client-portal/components/ClientMobileBottomNav';
 
 interface ClientPortalShellProps {
   session: {
@@ -35,7 +36,7 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <div className="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100 antialiased">
       {session?.impersonation?.active ? (
         <div className="border-b border-amber-500/40 bg-amber-500/15">
           <div className="mx-auto flex max-w-7xl flex-col items-start gap-3 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
@@ -75,8 +76,8 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
             </div>
           ) : null}
         </div>
-        <div className="mx-auto max-w-[88rem] px-4 pb-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Navigation portail client">
+        <div className="mx-auto hidden max-w-[88rem] px-4 pb-4 md:block md:px-6 lg:px-8">
+          <nav className="flex flex-wrap items-center gap-2 pb-1" aria-label="Navigation portail client">
           <Link href="/client/dashboard" aria-current={pathname === '/client/dashboard' ? 'page' : undefined} className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/dashboard' ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>Tableau de bord</Link>
           <Link href="/client/messages" aria-current={pathname === '/client/messages' ? 'page' : undefined} className={`inline-flex whitespace-nowrap items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/messages' ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>
             Messages
@@ -89,7 +90,8 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-[88rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">{children}</main>
+      <main className="mx-auto w-full max-w-[88rem] px-4 py-6 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 md:pb-8 lg:px-8">{children}</main>
+      <ClientMobileBottomNav unreadMessages={unreadMessages} />
     </div>
   );
 }
