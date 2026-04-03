@@ -60,13 +60,14 @@ export function ClientMobileBottomNav({ unreadMessages }: { unreadMessages: numb
               key={href}
               href={href}
               aria-current={isActive ? 'page' : undefined}
+              title={label}
               className={[
-                'relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60',
+                'relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 min-[375px]:flex-row min-[375px]:gap-1.5 min-[375px]:rounded-xl',
                 isActive ? 'bg-primary-500/14 text-primary-100' : 'text-slate-400 hover:bg-slate-900/80 hover:text-white',
               ].join(' ')}
             >
               <Icon size={18} strokeWidth={2.1} />
-              <span className="text-[10px] font-semibold leading-tight">{label}</span>
+              <span className="min-w-0 truncate text-[10px] font-semibold leading-tight min-[375px]:text-[11px]">{label}</span>
               {href === '/client/messages' && unreadMessages > 0 ? (
                 <span className="absolute right-2 top-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-slate-950">
                   {unreadMessages > 9 ? '9+' : unreadMessages}
