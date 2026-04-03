@@ -68,8 +68,20 @@ export const Header: React.FC = () => {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+        setIsResourcesOpen(false);
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07101f]/72 backdrop-blur-2xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/60">
+    <header className="sticky top-0 z-[90] border-b border-white/10 bg-[#07101f]/88 backdrop-blur-2xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/78">
       <nav className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo / Brand */}
         <Link href="/" className="flex items-center gap-3 text-white transition-colors hover:text-primary-200">
@@ -154,44 +166,62 @@ export const Header: React.FC = () => {
         </button>
 
         {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div id="mobile-main-menu" className="absolute left-0 right-0 top-full z-[70] flex flex-col border-b border-white/10 bg-[#07101f]/94 shadow-card backdrop-blur-2xl md:hidden">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="border-b border-white/10 px-6 py-4 text-slate-200 transition-colors hover:bg-primary-500/12 hover:text-primary-100 last:border-b-0"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+        {isMenuOpen ? (
+          <div className="fixed inset-0 top-[5.25rem] z-[95] md:hidden">
+            <button
+              type="button"
+              aria-label="Fermer le menu"
+              className="absolute inset-0 bg-black/70"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            <div
+              id="mobile-main-menu"
+              className="absolute inset-x-0 bottom-0 top-0 overflow-y-auto border-t border-white/10 bg-[#050816] px-5 pb-8 pt-5 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+            >
+              <div className="mx-auto flex max-w-md flex-col gap-3">
+                <div className="mb-1 rounded-2xl border border-primary-500/20 bg-primary-500/10 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-200">Navigation principale</p>
+                  <p className="mt-1 text-sm text-slate-300">Choisissez une section du site.</p>
+                </div>
 
-            <div className="border-b border-white/10 px-6 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Ressources</p>
-              <div className="mt-3 flex flex-col">
-                {resourceLinks.map((link) => (
+                {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="rounded-xl px-3 py-3 text-slate-200 transition-colors hover:bg-primary-500/12 hover:text-primary-100"
+                    className="rounded-2xl border border-white/10 bg-slate-900 px-5 py-4 text-base font-semibold text-white shadow-[0_8px_24px_rgba(2,6,23,0.28)] transition hover:border-primary-400/40 hover:bg-slate-800"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
                 ))}
+
+                <div className="mt-3 rounded-2xl border border-white/10 bg-slate-900/90 px-4 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">Ressources</p>
+                  <div className="mt-3 flex flex-col gap-2">
+                    {resourceLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="rounded-2xl border border-transparent bg-slate-950/70 px-4 py-3 text-sm font-medium text-slate-100 transition hover:border-primary-400/30 hover:bg-primary-500/10 hover:text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <ContactPrefillLink
+                  href="/inscription"
+                  className="mt-2 rounded-2xl bg-brand-warm px-6 py-4 text-center text-base font-semibold text-white shadow-fire transition-all hover:brightness-110"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Creer mon compte
+                </ContactPrefillLink>
               </div>
             </div>
-
-            <ContactPrefillLink
-              href="/inscription"
-              className="m-4 rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white shadow-fire transition-all hover:brightness-110"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Creer mon compte
-            </ContactPrefillLink>
           </div>
-        )}
+        ) : null}
       </nav>
     </header>
   );

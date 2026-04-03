@@ -49,7 +49,7 @@ export function ClientMobileBottomNav({ unreadMessages }: { unreadMessages: numb
   return (
     <nav
       aria-label="Navigation mobile du portail client"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-800/90 bg-slate-950/95 px-2 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.35rem)] shadow-[0_-10px_30px_rgba(2,6,23,0.45)] backdrop-blur md:hidden"
+      className="fixed inset-x-2 bottom-2 z-[70] rounded-[1.6rem] border border-slate-700/90 bg-slate-950/98 px-2 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.45rem)] shadow-[0_18px_45px_rgba(2,6,23,0.55)] backdrop-blur md:hidden"
     >
       <div className="grid grid-cols-6 gap-1">
         {navItems.map(({ href, label, matches, Icon }) => {
@@ -62,8 +62,8 @@ export function ClientMobileBottomNav({ unreadMessages }: { unreadMessages: numb
               aria-current={isActive ? 'page' : undefined}
               title={label}
               className={[
-                'relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 min-[375px]:flex-row min-[375px]:gap-1.5 min-[375px]:rounded-xl',
-                isActive ? 'bg-primary-500/14 text-primary-100' : 'text-slate-400 hover:bg-slate-900/80 hover:text-white',
+                'relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 min-[375px]:flex-row min-[375px]:gap-1.5 min-[375px]:rounded-xl',
+                isActive ? 'bg-primary-500/18 text-white shadow-[0_0_0_1px_rgba(96,165,250,0.18)_inset]' : 'text-slate-300 hover:bg-slate-900/80 hover:text-white',
               ].join(' ')}
             >
               <Icon size={18} strokeWidth={2.1} />
