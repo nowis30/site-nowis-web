@@ -58,7 +58,7 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
       {items.map((item) => (
         <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3.5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-white">{item.originalName}</p>
               <p className="mt-1 text-xs text-slate-400">
                 {item.category} · {item.mimeType} · {formatBytes(item.size)} · {formatDate(item.createdAt)}
@@ -66,6 +66,16 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
               <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-500">
                 {item.visibility === 'CLIENT_VISIBLE' ? 'Visible client' : 'Admin only'}
               </p>
+              {item.mimeType?.startsWith('audio/') ? (
+                <audio
+                  controls
+                  className="mt-3 w-full max-w-md"
+                  preload="none"
+                  src={`${downloadPrefix}/${item.id}/download`}
+                >
+                  Votre navigateur ne supporte pas la lecture audio.
+                </audio>
+              ) : null}
             </div>
             <div className="flex items-center gap-2">
               <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white">

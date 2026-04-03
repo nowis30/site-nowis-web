@@ -13,7 +13,7 @@ export async function GET(
 
   const doc = await prisma.fileDocument.findUnique({
     where: { id: params.id },
-    select: { id: true, storageKey: true, originalName: true },
+    select: { id: true, storageKey: true, originalName: true, mimeType: true },
   });
 
   if (!doc) {
@@ -21,9 +21,11 @@ export async function GET(
   }
 
   try {
+    const isAudio = doc.mimeType?.startsWith('audio/');
     const signedUrl = await createPresignedDownloadUrl(doc.storageKey, {
       fileName: doc.originalName,
       expiresInSeconds: 300,
+      disposition: isAudio ? 'inline' : 'attachment',
     });
     return NextResponse.redirect(signedUrl, { status: 302 });
   } catch (error) {
