@@ -82,7 +82,12 @@ export async function createPresignedUploadUrl(
 
 export async function createPresignedDownloadUrl(
   storageKey: string,
-  options?: { expiresInSeconds?: number; fileName?: string; disposition?: 'inline' | 'attachment' },
+  options?: {
+    expiresInSeconds?: number;
+    fileName?: string;
+    disposition?: 'inline' | 'attachment';
+    responseContentType?: string;
+  },
 ) {
   const bucket = requireEnv('S3_BUCKET');
   const client = getS3Client();
@@ -91,6 +96,7 @@ export async function createPresignedDownloadUrl(
   const command = new GetObjectCommand({
     Bucket: bucket,
     Key: storageKey,
+    ResponseContentType: options?.responseContentType || undefined,
     ResponseContentDisposition: options?.fileName
       ? `${disposition}; filename="${sanitizeFileBaseName(options.fileName)}"`
       : undefined,

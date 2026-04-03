@@ -4,6 +4,13 @@ import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { createPresignedDownloadUrl } from '@/lib/file-storage';
 
+const AUDIO_EXTENSIONS = ['.mp3', '.m4a', '.wav', '.aac', '.ogg'];
+
+function isAudioFileName(value: string) {
+  const name = value.toLowerCase();
+  return AUDIO_EXTENSIONS.some((ext) => name.endsWith(ext));
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
@@ -28,11 +35,12 @@ export async function GET(
   }
 
   try {
-    const isAudio = doc.mimeType?.startsWith('audio/');
+    const isAudio = doc.mimeType?.startsWith('audio/') || isAudioFileName(doc.originalName || '');
     const signedUrl = await createPresignedDownloadUrl(doc.storageKey, {
       fileName: doc.originalName,
       expiresInSeconds: 300,
       disposition: isAudio ? 'inline' : 'attachment',
+      responseContentType: doc.mimeType || undefined,
     });
     return NextResponse.redirect(signedUrl, { status: 302 });
   } catch (error) {
