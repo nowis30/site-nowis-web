@@ -10,7 +10,7 @@ interface SectionCardProps {
 
 export function SectionCard({ title, subtitle, actions, children, className }: SectionCardProps) {
   return (
-    <section className={`crm-surface rounded-3xl border border-slate-800/90 p-6 shadow-[0_8px_24px_rgba(2,6,23,0.22)] sm:p-7 ${className || ''}`.trim()}>
+    <section className={`crm-surface rounded-3xl border border-slate-800/90 p-5 shadow-[0_8px_24px_rgba(2,6,23,0.22)] sm:p-7 ${className || ''}`.trim()}>
       {title || subtitle || actions ? (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">

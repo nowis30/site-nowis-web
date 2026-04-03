@@ -77,7 +77,7 @@ export default async function ClientAppointmentsPage({ searchParams }: { searchP
               ) : (
                 upcoming.map((appointment) => (
                   <article key={appointment.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4 sm:p-5">
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm font-semibold text-white">{appointment.title}</p>
                       <StatusBadge label={appointment.status} tone={appointment.status === 'CONFIRMED' ? 'success' : 'info'} />
                     </div>
@@ -96,7 +96,7 @@ export default async function ClientAppointmentsPage({ searchParams }: { searchP
               ) : (
                 past.map((appointment) => (
                   <article key={appointment.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4 sm:p-5">
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm font-semibold text-white">{appointment.title}</p>
                       <StatusBadge label={appointment.status} tone="neutral" />
                     </div>

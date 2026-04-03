@@ -93,7 +93,7 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
           <div className="space-y-3">
             {filteredRequests.map((request) => (
               <article key={request.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4 sm:p-5">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm font-semibold text-white">{request.title || request.occasion}</p>
                   <StatusBadge label={statusLabels[request.status]} tone={statusTone(request.status)} />
                 </div>

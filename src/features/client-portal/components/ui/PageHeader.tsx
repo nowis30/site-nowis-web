@@ -9,7 +9,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ eyebrow = 'Portail client', title, subtitle, actions }: PageHeaderProps) {
   return (
-    <header className="crm-surface rounded-3xl border border-slate-800/90 p-6 shadow-[0_8px_24px_rgba(2,6,23,0.25)] sm:p-7">
+    <header className="crm-surface rounded-3xl border border-slate-800/90 p-5 shadow-[0_8px_24px_rgba(2,6,23,0.25)] sm:p-7">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">{eyebrow}</p>

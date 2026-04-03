@@ -121,8 +121,8 @@ export function ClientMessagesPanel({ initialItems }: { initialItems: ClientMess
           {visibleMessages.length === 0 ? (
             <EmptyState icon={<MessagesSquare size={18} />} title="Aucun message" description={view === 'unread' ? 'Aucun message non lu actuellement.' : 'Aucun message pour le moment.'} />
           ) : visibleMessages.map((item) => (
-            <article key={item.id} className={`max-w-[92%] rounded-2xl border p-4 sm:max-w-[85%] ${item.senderType === 'CLIENT' ? 'ml-auto border-primary-500/40 bg-primary-500/10' : 'mr-auto border-slate-700 bg-slate-900/70'}`}>
-              <div className="flex items-center justify-between gap-3">
+            <article key={item.id} className={`max-w-[96%] rounded-2xl border p-4 sm:max-w-[85%] ${item.senderType === 'CLIENT' ? 'ml-auto border-primary-500/40 bg-primary-500/10' : 'mr-auto border-slate-700 bg-slate-900/70'}`}>
+              <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{item.senderType === 'CLIENT' ? 'Vous' : 'Nowis'}</p>
                 <p className="text-xs text-slate-500">{formatDateTime(item.createdAt)}</p>
               </div>
@@ -133,7 +133,7 @@ export function ClientMessagesPanel({ initialItems }: { initialItems: ClientMess
         </div>
       </SectionCard>
 
-      <form id="reply" onSubmit={sendMessage} className="crm-surface rounded-3xl border border-slate-800/90 p-6 shadow-[0_8px_24px_rgba(2,6,23,0.2)] sm:p-7">
+      <form id="reply" onSubmit={sendMessage} className="crm-surface rounded-3xl border border-slate-800/90 p-5 shadow-[0_8px_24px_rgba(2,6,23,0.2)] sm:p-7">
         <label>
           <span className="mb-2 block text-sm font-medium text-slate-200">Votre réponse</span>
           <textarea value={content} onChange={(event) => setContent(event.target.value)} rows={4} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white transition placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60" placeholder="Écrire à l’équipe Nowis..." />

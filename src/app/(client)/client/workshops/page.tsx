@@ -104,7 +104,7 @@ export default async function ClientWorkshopsPage() {
                     <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4 text-sm text-slate-400">Aucun rendez-vous atelier confirmé pour le moment.</div>
                   ) : request.appointments.map((appointment) => (
                     <div key={appointment.id} className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4">
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm font-medium text-white">{appointment.title}</p>
                         <StatusBadge label={appointment.status} tone={appointment.status === 'CONFIRMED' || appointment.status === 'DONE' ? 'success' : 'info'} />
                       </div>
@@ -121,8 +121,8 @@ export default async function ClientWorkshopsPage() {
 
       <SectionCard title="Besoin d’ajuster un atelier" subtitle="Utilisez la messagerie sécurisée si vous devez changer un groupe, un objectif ou une date.">
         <div className="rounded-2xl border border-primary-500/25 bg-primary-500/10 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-start gap-3">
               <CalendarClock className="text-primary-200" size={18} />
               <p className="text-sm text-primary-50">Pour toute mise à jour logistique, écrivez-nous depuis votre espace client. Une tâche de suivi sera automatiquement créée dans le CRM.</p>
             </div>

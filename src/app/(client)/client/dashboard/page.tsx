@@ -167,8 +167,8 @@ export default async function ClientDashboardPage() {
                 <EmptyState icon={<FileText size={18} />} title="Aucun document disponible" description="Vos prochains documents apparaîtront ici." />
               ) : (
                 recentDocuments.map((document) => (
-                  <a key={document.id} href={document.url} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3 text-sm text-slate-200 transition hover:border-primary-500/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">
-                    <span>{document.originalName}</span>
+                  <a key={document.id} href={document.url} target="_blank" rel="noreferrer" className="flex flex-col items-start gap-2 rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3 text-sm text-slate-200 transition hover:border-primary-500/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="break-all">{document.originalName}</span>
                     <span className="text-xs text-slate-500">{formatDate(document.createdAt)}</span>
                   </a>
                 ))
@@ -206,7 +206,7 @@ export default async function ClientDashboardPage() {
                   isRead: true,
                 }))].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 12).map((entry) => (
                   <article key={entry.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm font-medium text-white">{entry.title}</p>
                       <span className="text-xs text-slate-500">{formatDateTime(entry.date)}</span>
                     </div>
@@ -236,7 +236,7 @@ export default async function ClientDashboardPage() {
                   </div>
                   <div className="mt-3 space-y-2">
                     {recentSongRequests.slice(0, 3).map((request) => (
-                      <div key={request.id} className="flex items-center justify-between gap-3 text-sm text-slate-300">
+                      <div key={request.id} className="flex flex-col items-start gap-1 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                         <span className="truncate">{request.title || request.occasion}</span>
                         <span className="text-xs text-slate-500">{formatDate(request.createdAt)}</span>
                       </div>
@@ -258,7 +258,7 @@ export default async function ClientDashboardPage() {
               ) : (
                 upcomingAppointments.slice(0, 5).map((appointment) => (
                   <div key={appointment.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm font-medium text-white">{appointment.title}</p>
                       <StatusBadge label={appointment.status} tone={appointment.status === 'CONFIRMED' ? 'success' : 'info'} />
                     </div>

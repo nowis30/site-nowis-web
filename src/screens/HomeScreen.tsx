@@ -90,6 +90,10 @@ interface HomeScreenOverrides {
   trustReasons?: Array<{ title: string; description: string }>;
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function buildExampleHref(title: string) {
   const message = `Bonjour, j’aime beaucoup l’exemple « ${title} ». Je veux une chanson personnalisée dans le même esprit pour mon histoire.`;
   return `/contact?projectType=chanson&message=${encodeURIComponent(message)}`;
@@ -98,12 +102,16 @@ function buildExampleHref(title: string) {
 export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverrides } = {}) => {
   const songs = await getHomeSongs(4);
 
+  const rawFocalX = typeof overrides?.hero?.image?.focalX === 'number' ? overrides.hero.image.focalX : 50;
+  const rawFocalY = typeof overrides?.hero?.image?.focalY === 'number' ? overrides.hero.image.focalY : 50;
+  const rawZoom = typeof overrides?.hero?.image?.zoom === 'number' ? overrides.hero.image.zoom : 1;
+
   const heroImage = {
     src: overrides?.hero?.image?.src || '/hero.jpg',
     altText: overrides?.hero?.image?.altText || 'Nowis Morin, artiste principal de Création Nowis',
-    focalX: typeof overrides?.hero?.image?.focalX === 'number' ? overrides.hero.image.focalX : 50,
-    focalY: typeof overrides?.hero?.image?.focalY === 'number' ? overrides.hero.image.focalY : 50,
-    zoom: typeof overrides?.hero?.image?.zoom === 'number' ? overrides.hero.image.zoom : 1,
+    focalX: clamp(rawFocalX, 0, 100),
+    focalY: clamp(rawFocalY, 0, 100),
+    zoom: clamp(rawZoom, 1, 2),
     fit: overrides?.hero?.image?.fit === 'contain' ? 'contain' : 'cover',
     aspectRatio: overrides?.hero?.image?.aspectRatio || 'auto',
   };
