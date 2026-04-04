@@ -167,7 +167,7 @@ export default async function ClientDashboardPage() {
                 <EmptyState icon={<FileText size={18} />} title="Aucun document disponible" description="Vos prochains documents apparaîtront ici." />
               ) : (
                 recentDocuments.map((document) => (
-                  <a key={document.id} href={document.url} target="_blank" rel="noreferrer" className="flex flex-col items-start gap-2 rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3 text-sm text-slate-200 transition hover:border-primary-500/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 sm:flex-row sm:items-center sm:justify-between">
+                  <a key={document.id} href={`/api/client-portal/file-documents/${document.id}/download`} target="_blank" rel="noreferrer" className="flex flex-col items-start gap-2 rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3 text-sm text-slate-200 transition hover:border-primary-500/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 sm:flex-row sm:items-center sm:justify-between">
                     <span className="break-all">{document.originalName}</span>
                     <span className="text-xs text-slate-500">{formatDate(document.createdAt)}</span>
                   </a>
