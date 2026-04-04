@@ -105,6 +105,38 @@ export async function createPresignedDownloadUrl(
   return getSignedUrl(client, command, { expiresIn: options?.expiresInSeconds ?? 300 });
 }
 
+export async function getObjectForProxy(
+  storageKey: string,
+  range?: string | null,
+): Promise<{
+  body: ReadableStream<Uint8Array> | null;
+  contentType?: string;
+  contentLength?: number;
+  contentRange?: string;
+  acceptRanges?: string;
+  status: 200 | 206;
+}> {
+  const bucket = requireEnv('S3_BUCKET');
+  const client = getS3Client();
+
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: storageKey,
+    ...(range ? { Range: range } : {}),
+  });
+
+  const response = await client.send(command);
+
+  return {
+    body: response.Body ? (response.Body.transformToWebStream() as ReadableStream<Uint8Array>) : null,
+    contentType: response.ContentType,
+    contentLength: response.ContentLength,
+    contentRange: response.ContentRange,
+    acceptRanges: response.AcceptRanges,
+    status: range ? 206 : 200,
+  };
+}
+
 export async function assertStoredObjectMetadata(storageKey: string, expected: { mimeType: string; size: number }) {
   const response = await getS3Client().send(
     new HeadObjectCommand({

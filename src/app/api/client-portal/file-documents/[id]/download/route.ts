@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { S3ServiceException } from '@aws-sdk/client-s3';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
-import { createPresignedDownloadUrl } from '@/lib/file-storage';
+import { getObjectForProxy } from '@/lib/file-storage';
+import { sanitizeFileBaseName } from '@/lib/file-documents';
 
 const AUDIO_EXTENSIONS = ['.mp3', '.m4a', '.wav', '.aac', '.ogg'];
 
@@ -20,7 +21,6 @@ export async function GET(
     return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
   }
 
-  // Enforce ownership: the file must belong to this contact and be client-visible
   const doc = await prisma.fileDocument.findFirst({
     where: {
       id: params.id,
@@ -35,18 +35,32 @@ export async function GET(
   }
 
   try {
+    const range = request.headers.get('range');
     const isAudio = doc.mimeType?.startsWith('audio/') || isAudioFileName(doc.originalName || '');
-    const signedUrl = await createPresignedDownloadUrl(doc.storageKey, {
-      fileName: doc.originalName,
-      expiresInSeconds: 300,
-      disposition: isAudio ? 'inline' : 'attachment',
-      responseContentType: doc.mimeType || undefined,
-    });
-    return NextResponse.redirect(signedUrl, { status: 302 });
+
+    const { body, contentType, contentLength, contentRange, acceptRanges, status } =
+      await getObjectForProxy(doc.storageKey, range ?? undefined);
+
+    const headers = new Headers();
+    headers.set('Content-Type', contentType || doc.mimeType || 'application/octet-stream');
+    if (contentLength !== undefined) {
+      headers.set('Content-Length', String(contentLength));
+    }
+    if (contentRange) {
+      headers.set('Content-Range', contentRange);
+    }
+    headers.set('Accept-Ranges', acceptRanges ?? 'bytes');
+    headers.set(
+      'Content-Disposition',
+      `${isAudio ? 'inline' : 'attachment'}; filename="${sanitizeFileBaseName(doc.originalName || 'file')}"`,
+    );
+    headers.set('Cache-Control', 'private, max-age=300');
+
+    return new NextResponse(body, { status, headers });
   } catch (error) {
     if (error instanceof S3ServiceException) {
-      const status = error.$metadata?.httpStatusCode ?? 0;
-      if (status === 403 || error.name === 'AccessDenied') {
+      const httpStatus = error.$metadata?.httpStatusCode ?? 0;
+      if (httpStatus === 403 || error.name === 'AccessDenied') {
         return NextResponse.json(
           { error: 'Fichier temporairement inaccessible. Contactez un administrateur.' },
           { status: 503 },
@@ -54,6 +68,6 @@ export async function GET(
       }
     }
     console.error('[CLIENT_FILE_DOWNLOAD]', error);
-    return NextResponse.json({ error: 'Impossible de générer le lien de téléchargement.' }, { status: 500 });
+    return NextResponse.json({ error: 'Impossible de télécharger le fichier.' }, { status: 500 });
   }
 }
