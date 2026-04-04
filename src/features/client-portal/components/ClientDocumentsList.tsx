@@ -20,5 +20,5 @@ export function ClientDocumentsList({ items, emptyLabel }: ClientDocumentsListPr
     router.refresh();
   }
 
-  return <FileList items={items} emptyLabel={emptyLabel} canDelete onDelete={handleDelete} />;
+  return <FileList items={items} emptyLabel={emptyLabel} canDelete onDelete={handleDelete} downloadPrefix="/api/client-portal/file-documents" />;
 }
