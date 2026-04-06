@@ -54,6 +54,28 @@ const TASK_TYPE_LABELS: Record<TaskType, string> = {
   FOLLOW_UP: 'Suivi',
 };
 
+function getLinkedResourceHref(task: Task): { href: string; label: string } | null {
+  if (!task.linkedType || !task.linkedId) return null;
+  switch (task.linkedType) {
+    case 'CONTACT':
+      return { href: `/crm/contacts/${task.linkedId}`, label: 'Voir le contact' };
+    case 'INVOICE':
+      return { href: `/crm/invoices/${task.linkedId}`, label: 'Voir la facture' };
+    case 'CASE':
+      return { href: `/crm/cases/${task.linkedId}`, label: 'Voir le dossier' };
+    case 'SONG_REQUEST':
+      return { href: `/crm/song-requests/${task.linkedId}`, label: 'Voir la demande' };
+    case 'ORGANIZATION':
+      return { href: `/crm/organizations/${task.linkedId}`, label: "Voir l'organisation" };
+    case 'WORKSHOP_REQUEST':
+      return { href: `/crm/workshop-requests/${task.linkedId}`, label: "Voir l'atelier" };
+    case 'APPOINTMENT':
+      return { href: `/crm/appointments/${task.linkedId}`, label: 'Voir le rendez-vous' };
+    default:
+      return null;
+  }
+}
+
 function parseTaskPayload(payload: unknown): TaskPayload | null {
   const normalized = coerceTaskPayload(payload);
   if (!normalized) return null;
@@ -73,6 +95,15 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
   const messageHref = getIncomingMessageTaskHref(task);
   const payload = parseTaskPayload(task.payload);
   const songRequestId = payload?.songRequestId || (task.linkedType === 'SONG_REQUEST' ? task.linkedId ?? undefined : undefined);
+  const linkedResource = (() => {
+    const res = getLinkedResourceHref(task);
+    if (!res) return null;
+    // Ne pas dupliquer si messageHref est déjà présent (lien vers contact messages)
+    if (messageHref && task.linkedType === 'CONTACT') return null;
+    // Ne pas dupliquer si le lien SONG est déjà affiché pour la même ressource
+    if (normalizedType === 'SONG' && task.linkedType === 'SONG_REQUEST' && songRequestId === task.linkedId) return null;
+    return res;
+  })();
 
   async function changeStatus(status: Task['status']) {
     setLoading(true);
@@ -179,6 +210,12 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
         {messageHref && (
           <Link href={messageHref} className="inline-flex items-center rounded-lg border border-primary-500/40 bg-primary-500/10 px-2.5 py-1.5 text-xs font-medium text-primary-300 hover:bg-primary-500/20">
             Ouvrir le message
+          </Link>
+        )}
+        {linkedResource && (
+          <Link href={linkedResource.href} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-500/40 bg-slate-800/60 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700/60">
+            <ArrowUpRight size={12} />
+            {linkedResource.label}
           </Link>
         )}
       </div>
