@@ -103,8 +103,8 @@ export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverride
   const songs = await getHomeSongs(4);
 
   const rawFocalX = typeof overrides?.hero?.image?.focalX === 'number' ? overrides.hero.image.focalX : 50;
-  const rawFocalY = typeof overrides?.hero?.image?.focalY === 'number' ? overrides.hero.image.focalY : 50;
-  const rawZoom = typeof overrides?.hero?.image?.zoom === 'number' ? overrides.hero.image.zoom : 1;
+  const rawFocalY = typeof overrides?.hero?.image?.focalY === 'number' ? overrides.hero.image.focalY : 35;
+  const rawZoom = typeof overrides?.hero?.image?.zoom === 'number' ? overrides.hero.image.zoom : 1.2;
 
   const heroImage = {
     src: overrides?.hero?.image?.src || '/hero.jpg',
