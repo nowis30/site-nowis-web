@@ -36,7 +36,7 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-950 text-slate-100 antialiased">
+    <div className="min-h-screen bg-slate-950 text-slate-100 antialiased">
       {session?.impersonation?.active ? (
         <div className="border-b border-amber-500/40 bg-amber-500/15">
           <div className="mx-auto flex max-w-7xl flex-col items-start gap-3 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
@@ -90,7 +90,7 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-[88rem] px-4 py-6 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 md:pb-8 lg:px-8">{children}</main>
+      <main className="mx-auto w-full max-w-[88rem] overflow-x-hidden px-4 py-6 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 md:pb-8 lg:px-8">{children}</main>
       <ClientMobileBottomNav unreadMessages={unreadMessages} />
     </div>
   );
