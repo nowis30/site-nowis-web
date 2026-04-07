@@ -3,6 +3,7 @@ import { requireCrmSession } from "@/features/crm/auth/session";
 import { prisma } from "@/lib/prisma";
 import { DashboardUploader } from "@/features/crm/components/shared/DashboardUploader";
 import { StatusBadge } from "@/features/crm/components/shared/StatusBadge";
+import { ZohoBillingButton } from "@/features/crm/components/shared/ZohoBillingButton";
 import { Calendar, CheckSquare, FileText, Activity, AlertCircle, Clock, User } from "lucide-react";
 
 export default async function CrmDashboardPage() {
@@ -346,7 +347,10 @@ export default async function CrmDashboardPage() {
         </div>
 
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-          <h3 className="font-semibold text-white text-sm mb-4">Statistiques</h3>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h3 className="font-semibold text-white text-sm">Statistiques</h3>
+            <ZohoBillingButton />
+          </div>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between rounded-lg bg-slate-800/40 px-3 py-2">
               <span className="text-slate-400">Suivi des dossiers</span>
