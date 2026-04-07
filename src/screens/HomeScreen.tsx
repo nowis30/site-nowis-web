@@ -5,12 +5,6 @@ import { getHomeSongs } from '@/data/songs';
 import { satisfactionGuarantee, songPackages, songSalesCtas } from '@/data/songSales';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
-const packagePrices: Record<string, string> = {
-  'Mise en chanson': '49,99 $',
-  'Chanson personnalisée': '99,99 $',
-  'Chanson émotion': '149,99 $',
-};
-
 const emotionStatements = [
   'Tu veux offrir quelque chose de vrai.',
   'Tu veux dire merci, je t’aime, je pense à toi ou je suis fier de toi.',
@@ -395,10 +389,10 @@ export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverride
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Forfaits</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Formules</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Trois façons simples de lancer ton projet</h2>
           <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
-            Que tu partes d’un texte déjà écrit ou d’une émotion plus délicate à raconter, je peux adapter la création au niveau d’accompagnement dont tu as besoin.
+            Chaque projet est unique — le tarif aussi. Crée un compte gratuit pour soumettre ta demande et recevoir une soumission personnalisée.
           </p>
         </div>
 
@@ -414,17 +408,12 @@ export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverride
               ].join(' ')}
             >
               {pack.badge ? (
-                <div className="flex items-center justify-between gap-3">
-                  <p className="inline-flex rounded-full bg-primary-500/16 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-100">
-                    {pack.badge}
-                  </p>
-                  <p className="rounded-full bg-slate-950/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-                    99,99 $
-                  </p>
-                </div>
+                <p className="inline-flex rounded-full bg-primary-500/16 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-100">
+                  {pack.badge}
+                </p>
               ) : (
                 <p className="inline-flex rounded-full border border-white/10 bg-slate-950/55 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200 shadow-sm backdrop-blur-sm">
-                  {packagePrices[pack.name]}
+                  Sur soumission
                 </p>
               )}
               <h3 className="mt-4 font-display text-4xl leading-[1.05] text-white">{pack.name}</h3>
@@ -441,7 +430,7 @@ export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverride
                 ))}
               </ul>
               <Link
-                href={songSalesCtas.order.href}
+                href="/inscription"
                 className={[
                   'mt-8 inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition',
                   pack.featured
@@ -449,7 +438,7 @@ export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverride
                     : 'border border-white/10 bg-slate-950/45 text-white backdrop-blur-sm hover:bg-white/10',
                 ].join(' ')}
               >
-                Commander cette formule
+                Obtenir une soumission
               </Link>
             </article>
           ))}
