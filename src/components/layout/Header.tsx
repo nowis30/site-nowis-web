@@ -86,7 +86,7 @@ export const Header: React.FC = () => {
         {/* Logo / Brand */}
         <Link href="/" className="flex items-center gap-3 text-white transition-colors hover:text-primary-200">
           <span className="brand-emblem relative h-12 w-12 overflow-hidden rounded-full border border-white/10 bg-coal-950 shadow-fire">
-            <Image src="/nowis.png" alt="Logo Nowis" fill className="object-contain p-1" />
+            <Image src="/logo_creation_nowis_1mo_max.jpg" alt="Logo Nowis" fill className="object-contain p-1" />
           </span>
           <span>
             <span className="block text-xs font-semibold uppercase tracking-[0.32em] text-primary-200">Création Nowis</span>

@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   }),
   manifest: '/manifest.json',
   icons: {
-    icon: '/nowis.png',
-    apple: '/nowis.png',
+    icon: '/icons/android/launchericon-192x192.png',
+    apple: '/icons/ios/1024.png',
   },
   appleWebApp: {
     capable: true,
