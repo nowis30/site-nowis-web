@@ -22,4 +22,5 @@ export const crmNavigation: CrmNavItem[] = [
   { label: 'Factures',      href: '/crm/invoices',      module: 'invoices',      icon: 'FileText',        section: 'Finance' },
   { label: 'Dossiers',      href: '/crm/cases',         module: 'cases',         icon: 'FolderOpen',      section: 'Administration' },
   { label: 'Paramètres',    href: '/crm/settings',      module: 'settings',      icon: 'Wrench',          section: 'Administration' },
+  { label: 'Avis clients',  href: '/crm/avis',          module: 'reviews',       icon: 'Star',            section: 'Administration' },
 ];

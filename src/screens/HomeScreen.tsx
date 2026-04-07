@@ -1,9 +1,10 @@
-import Image from 'next/image';
+﻿import Image from 'next/image';
 import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { getHomeSongs } from '@/data/songs';
 import { satisfactionGuarantee, songPackages, songSalesCtas } from '@/data/songSales';
-
+import { ReviewsSection } from '@/components/reviews/ReviewsSection';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
 const packagePrices: Record<string, string> = {
   'Mise en chanson': '49,99 $',
   'Chanson personnalisée': '99,99 $',
@@ -32,24 +33,6 @@ const trustReasons = [
   {
     title: 'Le contact reste simple et humain',
     description: 'Tu peux m’écrire avec une idée encore floue. Je t’aide à la clarifier sans pression et sans jargon.',
-  },
-];
-
-const testimonials = [
-  {
-    quote: 'J’ai eu des frissons en entendant la chanson. On sent qu’il y avait quelque chose de vrai du début à la fin.',
-    author: 'Mélanie',
-    context: 'Cadeau pour un anniversaire',
-  },
-  {
-    quote: 'C’était le plus beau cadeau que je pouvais offrir. La chanson a touché tout le monde sans en faire trop.',
-    author: 'Patrick',
-    context: 'Projet pour un proche',
-  },
-  {
-    quote: 'On sent que ce n’est pas fait à la chaîne. Il y a une vraie sensibilité derrière chaque création.',
-    author: 'Julie',
-    context: 'Chanson souvenir',
   },
 ];
 
@@ -377,30 +360,17 @@ export const HomeScreen = async ({ overrides }: { overrides?: HomeScreenOverride
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Témoignages</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Des mots qui rassurent avant de se lancer</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-500">Avis clients</p>
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Ce que disent les gens</h2>
           <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
-            Voici trois exemples de retours courts, pensés comme repères en attendant tes témoignages définitifs. La structure est déjà prête pour être remplacée facilement plus tard.
+            Des retours vrais, laissés par des personnes qui ont vécu le projet.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {testimonials.map((testimonial) => (
-            <article key={`${testimonial.author}-${testimonial.context}`} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(9,14,28,0.84),rgba(14,23,42,0.76))] p-8 text-white shadow-card backdrop-blur-sm">
-              <div className="flex gap-1 text-primary-300" aria-hidden="true">
-                <span>★</span>
-                <span>★</span>
-                <span>★</span>
-                <span>★</span>
-                <span>★</span>
-              </div>
-              <p className="mt-5 text-lg leading-8 text-slate-100">“{testimonial.quote}”</p>
-              <div className="mt-6 border-t border-white/10 pt-5">
-                <p className="font-semibold text-white">{testimonial.author}</p>
-                <p className="text-sm text-slate-300">{testimonial.context}</p>
-              </div>
-            </article>
-          ))}
+        <ReviewsSection />
+
+        <div className="mt-12 max-w-2xl">
+          <ReviewForm />
         </div>
       </section>
 

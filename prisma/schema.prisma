@@ -664,3 +664,19 @@ model SongRequest {
   @@index([createdAt])
   @@map("song_requests")
 }
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String?
+  rating    Int      // 1 à 5
+  comment   String
+  context   String?  // ex: "Chanson personnalisée", "Atelier créatif"
+  status    String   @default("pending") // pending, approved, rejected
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("reviews")
+}

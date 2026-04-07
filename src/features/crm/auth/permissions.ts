@@ -15,7 +15,8 @@ export type CrmModuleKey =
   | 'songRequests'
   | 'workshopRequests'
   | 'settings'
-  | 'notifications';
+  | 'notifications'
+  | 'reviews';
 
 const ADMIN_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   dashboard:    ['read'],
@@ -31,6 +32,7 @@ const ADMIN_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   workshopRequests: ['read', 'create', 'update', 'delete'],
   settings: ['read', 'create', 'update', 'delete'],
   notifications: ['read'],
+  reviews: ['read', 'create', 'update', 'delete'],
 };
 
 const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
@@ -47,6 +49,7 @@ const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   workshopRequests: ['read', 'create', 'update'],
   settings: ['read', 'create', 'update'],
   notifications: ['read'],
+  reviews: ['read', 'update'],
 };
 
 const PORTAL_USER_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
@@ -63,6 +66,7 @@ const PORTAL_USER_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   workshopRequests: [],
   settings: [],
   notifications: [],
+  reviews: [],
 };
 
 const ROLE_PERMISSIONS: Record<CrmRole, Record<CrmModuleKey, CrmAction[]>> = {
