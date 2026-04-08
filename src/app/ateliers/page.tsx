@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PfeqSection } from '@/components/ateliers/PfeqSection';
 
 export default function AteliersPage() {
   return (
@@ -46,6 +47,8 @@ export default function AteliersPage() {
           <Link href="/ateliers/demande" className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Accéder à la procédure de demande</Link>
         </div>
       </section>
+
+      <PfeqSection />
     </main>
   );
 }
