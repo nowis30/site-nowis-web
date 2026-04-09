@@ -404,6 +404,156 @@ export default function AtelierCreatifPage() {
         </div>
       </section>
 
+      {/* ════════════════ MILIEUX VISÉS ════════════════ */}
+      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
+              Milieux et clientèles
+            </p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+              Un atelier conçu pour plusieurs types de groupes
+            </h2>
+            <p className="mt-4 text-[1rem] leading-8 text-slate-300">
+              L'atelier n'est pas réservé à un seul milieu. Il s'adapte au contexte, au public et
+              aux objectifs de chaque groupe.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+
+            {/* Aînés */}
+            <article className="group rounded-[1.75rem] border border-amber-400/20 bg-gradient-to-b from-[rgba(55,35,0,0.32)] to-[rgba(25,15,0,0.22)] p-7 transition hover:border-amber-400/40 hover:from-[rgba(70,44,0,0.42)]">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-lg" aria-hidden="true">🎶</span>
+                <h3 className="font-display text-xl text-white">Aînés</h3>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                Pour résidences, groupes d'aînés et milieux de vie. L'atelier offre une activité de
+                valorisation centrée sur les souvenirs, la musique et l'expression personnelle, dans
+                un découvs numérique doux et très accessible.
+              </p>
+              <ul className="mt-4 space-y-1.5">
+                {['Résidences pour aînés', 'Groupes de vie communautaire', 'Activités de valorisation'].map((t) => (
+                  <li key={t} className="flex items-center gap-2 text-xs text-amber-200/70">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-amber-400/60" />{t}
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            {/* Bibliothèques */}
+            <article className="group rounded-[1.75rem] border border-primary-400/20 bg-gradient-to-b from-[rgba(14,25,55,0.40)] to-[rgba(9,15,32,0.28)] p-7 transition hover:border-primary-400/40 hover:from-[rgba(18,32,70,0.50)]">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-400/15 text-lg" aria-hidden="true">📚</span>
+                <h3 className="font-display text-xl text-white">Bibliothèques</h3>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                Pour activités culturelles et médiation numérique. L'atelier s'inscrit naturellement
+                dans une programmation autour de la créativité, de l'intelligence artificielle et
+                des projets intergénérationnels.
+              </p>
+              <ul className="mt-4 space-y-1.5">
+                {['Activités culturelles', 'Médiation numérique', 'Projets intergénérationnels'].map((t) => (
+                  <li key={t} className="flex items-center gap-2 text-xs text-primary-300/70">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-primary-400/60" />{t}
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            {/* Centres communautaires */}
+            <article className="group rounded-[1.75rem] border border-emerald-400/20 bg-gradient-to-b from-[rgba(4,28,22,0.40)] to-[rgba(3,18,14,0.28)] p-7 transition hover:border-emerald-400/40 hover:from-[rgba(5,36,28,0.50)]">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/15 text-lg" aria-hidden="true">🤝</span>
+                <h3 className="font-display text-xl text-white">Centres communautaires</h3>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                Pour groupes variés et projets collectifs. L'atelier rassemble, valorise et crée du
+                lien, avec une initiation accessible à l'IA et une création musicale commune.
+              </p>
+              <ul className="mt-4 space-y-1.5">
+                {['Organismes communautaires', 'Groupes de rassemblement', 'Projets collectifs'].map((t) => (
+                  <li key={t} className="flex items-center gap-2 text-xs text-emerald-300/70">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-emerald-400/60" />{t}
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            {/* Écoles et jeunesse */}
+            <article className="group rounded-[1.75rem] border border-violet-400/20 bg-gradient-to-b from-[rgba(30,10,55,0.40)] to-[rgba(18,6,35,0.28)] p-7 transition hover:border-violet-400/40 hover:from-[rgba(38,13,70,0.50)]">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/15 text-lg" aria-hidden="true">🏫</span>
+                <h3 className="font-display text-xl text-white">Écoles et jeunesse</h3>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                Pour ateliers éducatifs, créatifs et musicaux adaptés aux jeunes. Participation,
+                écriture, émotions et création d'une œuvre commune dans un format stimulant et
+                actuel.
+              </p>
+              <ul className="mt-4 space-y-1.5">
+                {['Groupes scolaires', 'Maisons des jeunes', 'Ateliers parascolaires'].map((t) => (
+                  <li key={t} className="flex items-center gap-2 text-xs text-violet-300/70">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-violet-400/60" />{t}
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            {/* Groupes intergénérationnels */}
+            <article className="group rounded-[1.75rem] border border-sky-400/20 bg-gradient-to-b from-[rgba(5,22,40,0.40)] to-[rgba(3,14,26,0.28)] p-7 transition hover:border-sky-400/40 hover:from-[rgba(6,28,52,0.50)]">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/15 text-lg" aria-hidden="true">👨‍👩‍👧</span>
+                <h3 className="font-display text-xl text-white">Groupes intergénérationnels</h3>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                Pour vivre une activité commune entre générations, autour des souvenirs, de la
+                musique, de la créativité et de la découverte d'un outil moderne qui réunit plutôt
+                qu'il n'isole.
+              </p>
+              <ul className="mt-4 space-y-1.5">
+                {['Activités multigénérationnelles', 'Projets famille ou communauté', 'Rencontres entre groupes d\'âge'].map((t) => (
+                  <li key={t} className="flex items-center gap-2 text-xs text-sky-300/70">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-sky-400/60" />{t}
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            {/* Groupes privés */}
+            <article className="group rounded-[1.75rem] border border-rose-400/20 bg-gradient-to-b from-[rgba(40,8,18,0.40)] to-[rgba(24,5,11,0.28)] p-7 transition hover:border-rose-400/40 hover:from-[rgba(52,10,23,0.50)]">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-400/15 text-lg" aria-hidden="true">✨</span>
+                <h3 className="font-display text-xl text-white">Groupes privés et événements</h3>
+              </div>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                Pour activités sur mesure, projets de groupe, événements thématiques ou expériences
+                créatives uniques. L'atelier peut être façonné autour d'une intention ou d'un
+                moment particulier.
+              </p>
+              <ul className="mt-4 space-y-1.5">
+                {['Anniversaires et fêtes', 'Groupes corporatifs', 'Projets sur mesure'].map((t) => (
+                  <li key={t} className="flex items-center gap-2 text-xs text-rose-300/70">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-rose-400/60" />{t}
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+          </div>
+
+          {/* Appel à l'action discret */}
+          <p className="mt-10 text-center text-sm text-slate-400">
+            Votre milieu n'est pas dans cette liste ?{' '}
+            <Link href="/contact" className="font-medium text-primary-300 underline-offset-4 hover:underline">
+              Parlez-nous de votre contexte
+            </Link>{' '}
+            — l'atelier peut très probablement s'y adapter.
+          </p>
+        </div>
+      </section>
+
       {/* ════════════════ FORMAT ════════════════ */}
       <section className="bg-steel-950/50 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
