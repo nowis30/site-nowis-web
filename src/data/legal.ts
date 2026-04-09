@@ -1,8 +1,8 @@
 export const legalConfig = {
   companyName: 'Création Nowis',
   legalName: 'Simon Morin',
-  businessIdLabel: 'NEQ / identifiant d’entreprise',
-  businessIdValue: 'Non applicable à ce jour',
+  businessIdLabel: 'NEQ (Numéro d'entreprise du Québec)',
+  businessIdValue: '2264731649',
   responsiblePrivacyTitle: 'Responsable de la protection des renseignements personnels',
   responsiblePrivacyName: 'Simon Morin',
   contactEmail: 'simonmorin@nowis.store',
