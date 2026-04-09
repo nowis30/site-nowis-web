@@ -3,103 +3,174 @@ import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Atelier créatif avec l\'IA – Créer une chanson ensemble | Nowis Morin',
+  title: 'Atelier de création musicale avec l\'IA | Nowis Morin',
   description:
-    'Atelier créatif animé par Nowis Morin : créez ensemble une chanson à partir d\'émotions et de souvenirs, puis repartez avec une vidéo souvenir téléchargeable. Accessible à tous les âges.',
+    'Atelier de création musicale avec l\'IA animé en personne par Nowis Morin. Créez ensemble une chanson à partir d\'émotions et de souvenirs, puis repartez avec une vidéo souvenir téléchargeable. Pour tous les âges.',
   path: '/ateliers/atelier-creatif',
   keywords: [
-    'atelier intelligence artificielle',
-    'atelier créatif musique',
-    'atelier pour jeunes',
-    'atelier pour aînés',
+    'atelier de création musicale avec l\'IA',
+    'atelier musical IA',
     'atelier chanson souvenir',
-    'atelier IA Québec',
-    'atelier musical avec IA',
+    'atelier musique et intelligence artificielle',
+    'atelier créatif pour jeunes',
+    'atelier créatif pour aînés',
     'Nowis Morin atelier',
-    'atelier créatif scolaire',
-    'création musicale IA',
+    'atelier IA Québec',
+    'atelier créatif musical',
+    'création musicale intelligence artificielle',
   ],
 });
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
 const audiences = [
-  { label: 'Jeunes et adolescents', icon: '🎒', desc: 'Expression, identité, créativité dans un format qui les rejoint.' },
-  { label: 'Aînés', icon: '🎶', desc: 'Souvenirs, émotion et musique dans un format doux, accessible et humain.' },
-  { label: 'Écoles et classes', icon: '🏫', desc: 'Projet artistique, sortie parascolaire ou activité spéciale.' },
-  { label: 'Maisons des jeunes', icon: '🏠', desc: 'Atelier participatif, vivant et valorisant pour les jeunes.' },
-  { label: 'Organismes communautaires', icon: '🤝', desc: 'Créer du lien, valoriser les membres et laisser une trace collective.' },
-  { label: 'Groupes intergénérationnels', icon: '👨‍👩‍👧', desc: 'Réunir plusieurs générations autour d\'un projet créatif commun.' },
-  { label: 'Événements spéciaux', icon: '✨', desc: 'Animation originale pour un anniversaire, une fête ou une célébration.' },
-  { label: 'Groupes corporatifs créatifs', icon: '💼', desc: 'Team building humain, original et ancré dans la collaboration.' },
+  {
+    label: 'Jeunes',
+    icon: '🎒',
+    desc: 'Expression créative, identité et confiance dans un format stimulant et actuel.',
+  },
+  {
+    label: 'Aînés',
+    icon: '🎶',
+    desc: 'Souvenirs, émotion et musique dans un format chaleureux, doux et très accessible.',
+  },
+  {
+    label: 'Écoles',
+    icon: '🏫',
+    desc: 'Projet artistique parascolaire, sortie spéciale ou animation de groupe-classe.',
+  },
+  {
+    label: 'Maisons des jeunes',
+    icon: '🏠',
+    desc: 'Activité participative, vivante et valorisante pour des jeunes en contexte communautaire.',
+  },
+  {
+    label: 'Organismes communautaires',
+    icon: '🤝',
+    desc: 'Créer du lien, valoriser les membres et laisser une trace commune et durable.',
+  },
+  {
+    label: 'Groupes intergénérationnels',
+    icon: '👨‍👩‍👧',
+    desc: 'Réunir plusieurs générations autour d\'un projet créatif profond et rassembleur.',
+  },
+  {
+    label: 'Événements spéciaux',
+    icon: '✨',
+    desc: 'Animation originale pour un anniversaire, une célébration ou une fête de groupe.',
+  },
+  {
+    label: 'Groupes privés',
+    icon: '💼',
+    desc: 'Expérience sur mesure pour un groupe corporatif, une famille ou un cercle privé.',
+  },
 ];
 
 const steps = [
   {
     num: '01',
-    title: 'Partage d\'émotions et de souvenirs',
-    desc: 'Les participants partagent ce qui les touche, ce qu\'ils veulent transmettre, ou un moment de vie à faire vivre en musique.',
+    title: 'Partage d\'idées, de souvenirs ou d\'émotions',
+    desc: 'Les participants sont invités à partager ce qui les touche : un souvenir, une émotion, une période de vie ou un message qu\'ils voudraient transmettre.',
   },
   {
     num: '02',
     title: 'Choix d\'un thème commun',
-    desc: 'Le groupe choisit ensemble une direction, une intention, une émotion centrale qui guidera la création.',
+    desc: 'Ensemble, le groupe choisit une direction, une intention ou une émotion centrale qui guidera la création musicale.',
   },
   {
     num: '03',
-    title: 'Création des paroles ou de l\'intention musicale',
-    desc: 'Les idées, les mots et les images deviennent des paroles. Chaque voix contribue à l\'œuvre collective.',
+    title: 'Création de l\'intention ou des paroles',
+    desc: 'Les idées du groupe prennent forme en mots et en images. Chaque voix contribue à nourrir l\'œuvre collective.',
   },
   {
     num: '04',
     title: 'Découverte de l\'IA comme outil créatif',
-    desc: 'Nowis Morin guide le groupe dans l\'utilisation concrète de l\'intelligence artificielle. Ce n\'est pas un cours. C\'est une découverte en action.',
+    desc: 'Nowis Morin guide le groupe dans l\'utilisation concrète de l\'intelligence artificielle. Ce n\'est pas un cours technique — c\'est une découverte en action, dans le plaisir.',
   },
   {
     num: '05',
-    title: 'Transformation en chanson',
-    desc: 'Les idées prennent forme musicale. Une création réelle, nourrie des émotions du groupe.',
+    title: 'Création d\'une ou de plusieurs chansons',
+    desc: 'Les idées, les mots et les émotions se transforment en musique. Une vraie chanson, nourrie de l\'essence du groupe.',
   },
   {
     num: '06',
-    title: 'Création de la vidéo souvenir',
-    desc: 'Une vidéo est construite autour de l\'œuvre finale pour conserver une trace vivante et téléchargeable de l\'expérience.',
+    title: 'Création d\'une vidéo souvenir',
+    desc: 'Autour de l\'œuvre, une vidéo est construite pour garder une trace vivante, belle et téléchargeable de tout ce qui a été vécu.',
+  },
+  {
+    num: '07',
+    title: 'Remise du résultat téléchargeable',
+    desc: 'Chaque participant peut repartir avec le résultat final : chanson(s) et vidéo souvenir, à garder, partager et faire revivre.',
   },
 ];
 
 const highlights = [
-  { icon: '🎵', title: 'Musique', desc: 'Une vraie chanson créée par le groupe, pas un gabarit.' },
-  { icon: '🤖', title: 'IA accessible', desc: 'Un outil moderne qu\'on apprend ensemble, sans panique ni jargon.' },
-  { icon: '❤️', title: 'Émotions au centre', desc: 'Chaque création découle d\'un vécu réel, pas d\'un exercice.' },
-  { icon: '🎬', title: 'Vidéo souvenir', desc: 'Le groupe repart avec un résultat téléchargeable et durable.' },
-  { icon: '👤', title: 'Animation en personne', desc: 'Nowis Morin est présent, disponible et attentif à chaque participant.' },
-  { icon: '🔄', title: 'Format adaptable', desc: 'Durée, taille de groupe, contexte — tout peut être ajusté.' },
+  {
+    icon: '🔍',
+    title: 'Découverte numérique',
+    desc: 'Les participants apprennent à utiliser un outil d\'IA moderne sans pression ni jargon — juste de la curiosité.',
+  },
+  {
+    icon: '😄',
+    title: 'Plaisir',
+    desc: 'L\'atelier est vivant, léger et engageant. Le plaisir est au cœur de chaque étape, pas l\'obligation.',
+  },
+  {
+    icon: '🎵',
+    title: 'Musique',
+    desc: 'Une vraie chanson originale naît du groupe. Ce n\'est pas un gabarit — c\'est votre création.',
+  },
+  {
+    icon: '💛',
+    title: 'Souvenirs',
+    desc: 'La matière première vient des participants eux-mêmes : leurs vécus, leurs émotions, leurs images.',
+  },
+  {
+    icon: '🗣️',
+    title: 'Expression personnelle',
+    desc: 'Chaque personne contribue, peu importe son niveau, son âge ou son rapport au numérique.',
+  },
+  {
+    icon: '🌟',
+    title: 'Activité valorisante',
+    desc: 'Chaque participant repart avec le sentiment réel d\'avoir créé quelque chose de vrai et de beau.',
+  },
+  {
+    icon: '🔄',
+    title: 'Formule adaptable',
+    desc: 'Durée, nombre de participants, contexte, public — tout peut être modulé selon votre réalité.',
+  },
+  {
+    icon: '👤',
+    title: 'Nowis Morin en personne',
+    desc: 'L\'animateur est là, présent et attentif à chaque participant, du début à la fin de l\'atelier.',
+  },
 ];
 
 const faqs = [
   {
     q: 'Est-ce que l\'atelier convient à tous les âges ?',
-    a: 'Oui. L\'atelier est conçu pour être modulable selon l\'âge et le contexte. Il a été offert à des jeunes, à des aînés et à des groupes intergénérationnels. Le contenu et le rythme s\'ajustent naturellement.',
+    a: 'Oui. L\'atelier est conçu pour être modulable selon l\'âge et le contexte. Il peut rassembler des enfants, des adolescents, des adultes ou des aînés — séparément ou en groupe mixte. Le contenu et le rythme s\'ajustent naturellement.',
   },
   {
-    q: 'Faut-il être à l\'aise avec la technologie ?',
-    a: 'Non, aucune compétence technique n\'est requise. L\'atelier guide chaque participant pas à pas. L\'IA est présentée comme un outil simple à expérimenter, pas comme une matière à maîtriser.',
+    q: 'Faut-il être bon en technologie ?',
+    a: 'Non. Aucune compétence technique n\'est requise. L\'atelier accompagne chaque participant pas à pas. L\'intelligence artificielle est présentée comme un outil simple à expérimenter, pas comme une matière à maîtriser.',
   },
   {
     q: 'Combien de personnes peuvent participer ?',
-    a: 'Le format s\'adapte à la taille du groupe. Que vous soyez 10 ou 40 participants, Nowis Morin adapte le déroulement pour que chacun puisse contribuer et vivre l\'expérience pleinement.',
+    a: 'Le format s\'adapte à la taille du groupe. Que vous soyez une dizaine ou une quarantaine de participants, Nowis Morin ajuste le déroulement pour que chacun contribue et vive l\'expérience pleinement.',
   },
   {
-    q: 'Est-ce que le groupe repart avec un résultat concret ?',
-    a: 'Oui. À la fin de l\'atelier, le groupe repart avec une ou plusieurs chansons et une vidéo souvenir téléchargeable. C\'est un résultat réel, porteur de sens et de mémoire collective.',
+    q: 'Est-ce qu\'on repart avec un résultat concret ?',
+    a: 'Oui. Le groupe repart avec une ou plusieurs chansons créées ensemble et une vidéo souvenir téléchargeable. C\'est un résultat réel, porteur de sens et ancré dans la mémoire collective du groupe.',
   },
   {
     q: 'Est-ce que l\'atelier peut être adapté à notre milieu ?',
-    a: 'Absolument. Que ce soit pour une école, une résidence pour aînés, un organisme communautaire ou un événement spécial, le format peut être ajusté selon vos besoins, votre contexte et votre public.',
+    a: 'Absolument. Que vous représentiez une école, une résidence pour aînés, un organisme communautaire ou un groupe privé, le format s\'ajuste selon votre contexte, votre public et vos intentions.',
   },
   {
     q: 'Combien de temps dure l\'activité ?',
-    a: 'Le format de base est prévu pour environ 90 minutes. Il peut être allongé selon le nombre de participants ou l\'intensité de l\'engagement du groupe.',
+    a: 'La durée de base est d\'environ 90 minutes. Elle peut être prolongée selon le nombre de participants ou l\'intensité de l\'engagement du groupe, pour s\'assurer que chacun vive une expérience complète.',
   },
 ];
 
@@ -109,75 +180,112 @@ export default function AtelierCreatifPage() {
   return (
     <main className="text-slate-100">
 
-      {/* ── HERO ── */}
-      <section className="relative overflow-hidden bg-[linear-gradient(160deg,rgba(8,12,24,0.98),rgba(20,14,40,0.96))] px-6 py-20 md:py-28">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(99,102,241,0.14),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(168,85,247,0.10),transparent_40%)]" />
+      {/* ════════════════ HERO ════════════════ */}
+      <section className="relative overflow-hidden px-6 py-24 md:py-32">
+        {/* Fonds lumineux */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 70% 60% at 20% 0%, rgba(96,165,250,0.14) 0%, transparent 60%),' +
+              'radial-gradient(ellipse 55% 55% at 85% 100%, rgba(139,92,246,0.12) 0%, transparent 55%),' +
+              'radial-gradient(ellipse 40% 40% at 50% 50%, rgba(59,130,246,0.06) 0%, transparent 50%)',
+          }}
+        />
+        {/* Grille subtile */}
+        <div aria-hidden="true" className="brand-grid pointer-events-none absolute inset-0 opacity-40" />
+
         <div className="relative mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
-            Atelier créatif · Animation en personne · Tous âges
-          </p>
-          <h1 className="mt-5 font-display text-5xl leading-[1.0] text-white md:text-6xl lg:text-7xl">
-            Créer une chanson ensemble avec l'IA
+          <span className="brand-chip mb-6 inline-block">
+            Animé en personne · Tous âges · Formule adaptable
+          </span>
+
+          <h1 className="font-display text-5xl leading-[0.97] text-white md:text-6xl lg:text-7xl">
+            Atelier de création musicale avec&nbsp;l'IA
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300 md:text-xl">
-            Un atelier créatif, humain et accessible pour transformer des émotions, des souvenirs et des idées en une ou plusieurs chansons — puis en une <strong className="text-white">vidéo souvenir téléchargeable</strong>.
+
+          <p className="mx-auto mt-7 max-w-2xl text-lg leading-9 text-slate-300 md:text-xl">
+            Créez ensemble une ou plusieurs chansons à partir d'émotions, de souvenirs et d'idées
+            personnelles — puis repartez avec une{' '}
+            <strong className="font-semibold text-white">vidéo souvenir téléchargeable</strong>.
           </p>
+
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-brand-warm px-8 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="rounded-xl bg-brand-warm px-8 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Demander cet atelier
             </Link>
             <a
               href="#deroulement"
-              className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-sm transition hover:bg-white/10"
+              className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
-              Découvrir le déroulement
+              Voir le déroulement ↓
             </a>
           </div>
         </div>
       </section>
 
-      {/* ── PRÉSENTATION ── */}
+      {/* ════════════════ PRÉSENTATION ════════════════ */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.15fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">L'atelier en quelques mots</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
-              Une expérience musicale unique, guidée en personne
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
+              L'atelier en quelques mots
+            </p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+              Une expérience musicale collective guidée en personne
             </h2>
           </div>
-          <div className="space-y-5 text-base leading-8 text-slate-300">
+          <div className="space-y-5 text-[1rem] leading-8 text-slate-300">
             <p>
-              Cet <strong className="text-white">atelier créatif</strong> permet à des participants de tous âges de vivre une expérience musicale unique, où l'on crée ensemble une ou plusieurs chansons à partir d'émotions, de souvenirs et d'idées personnelles.
+              Cet atelier permet à des participants de tous âges de vivre une expérience créative
+              profonde : transformer des{' '}
+              <strong className="text-white">souvenirs, des émotions et des idées personnelles</strong>{' '}
+              en une ou plusieurs chansons, avec l'aide de l'intelligence artificielle.
             </p>
             <p>
-              L'<strong className="text-white">intelligence artificielle</strong> y est présentée comme un nouvel outil d'expression et de création — simple à découvrir, fascinant à utiliser, mais toujours <em>au service de l'humain</em>. Ce sont vos idées, vos mots et vos émotions qui créent. L'IA aide à les mettre en forme.
+              L'IA y est présentée comme un outil nouveau à découvrir — simple, fascinant, mais
+              toujours <em>au service de l'humain</em>. Ce sont vos mots, vos émotions et votre
+              intention qui créent. L'IA aide à les mettre en forme musicale.
             </p>
             <p>
-              L'atelier est animé par <strong className="text-white">Nowis Morin en personne</strong>, dans une approche chaleureuse, professionnelle et accessible, quel que soit le contexte ou le niveau des participants.
+              L'expérience est animée par{' '}
+              <strong className="text-white">Nowis Morin en personne</strong>, dans un cadre
+              chaleureux, professionnel et accessible — peu importe le profil ou le contexte du
+              groupe.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── POUR QUI ── */}
-      <section className="bg-slate-950/60 px-6 py-16 md:py-20">
+      {/* ════════════════ POUR QUI ════════════════ */}
+      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Pour qui</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <div className="max-w-xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
+              Pour qui
+            </p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
               Un format qui s'adapte à votre groupe
             </h2>
-            <p className="mt-4 text-base leading-8 text-slate-300">
-              L'atelier se module selon l'âge, le contexte, la taille du groupe et le niveau de familiarité avec le numérique.
+            <p className="mt-4 text-[1rem] leading-8 text-slate-300">
+              L'atelier se module selon l'âge, le contexte, la taille du groupe et le niveau de
+              confort avec le numérique.
             </p>
           </div>
+
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {audiences.map((a) => (
-              <article key={a.label} className="rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(14,20,44,0.80),rgba(9,14,28,0.70))] p-5 backdrop-blur-sm">
-                <span className="text-2xl" role="img" aria-hidden="true">{a.icon}</span>
+              <article
+                key={a.label}
+                className="rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-[rgba(14,20,44,0.78)] to-[rgba(9,14,28,0.65)] p-5 backdrop-blur-sm transition hover:border-white/20 hover:from-[rgba(20,28,60,0.85)]"
+              >
+                <span className="text-2xl" role="img" aria-hidden="true">
+                  {a.icon}
+                </span>
                 <h3 className="mt-3 font-semibold text-white">{a.label}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-400">{a.desc}</p>
               </article>
@@ -186,55 +294,84 @@ export default function AtelierCreatifPage() {
         </div>
       </section>
 
-      {/* ── DÉROULEMENT ── */}
-      <section id="deroulement" className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+      {/* ════════════════ DÉROULEMENT ════════════════ */}
+      <section id="deroulement" className="mx-auto max-w-5xl px-6 py-16 scroll-mt-20 md:py-20">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Ce que les participants vivent</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
-            Une expérience créative guidée, étape par étape
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
+            Ce que les participants vivent
+          </p>
+          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+            Une création guidée étape par étape
           </h2>
-          <p className="mt-4 text-base leading-7 text-slate-300">
-            Ce n'est pas un cours téchnique d'informatique. C'est une expérience <em>créative</em>, <em>émotionnelle</em> et <em>collective</em>.
+          <p className="mt-4 text-[1rem] leading-8 text-slate-300">
+            Ce n'est pas un cours d'informatique. C'est une expérience{' '}
+            <em>créative, émotionnelle et collective</em>.
           </p>
         </div>
-        <div className="mt-12 space-y-6">
+
+        <div className="mt-12 space-y-4">
           {steps.map((step, i) => (
             <article
               key={step.num}
-              className={`flex gap-6 rounded-2xl border p-6 ${i % 2 === 0 ? 'border-primary-500/20 bg-primary-500/5' : 'border-white/10 bg-white/[0.03]'}`}
+              className={`flex gap-5 rounded-[1.5rem] border p-6 transition hover:border-opacity-50 ${
+                i % 2 === 0
+                  ? 'border-primary-500/20 bg-primary-500/[0.06]'
+                  : 'border-white/10 bg-white/[0.025]'
+              }`}
             >
-              <div className="shrink-0">
-                <span className="font-display text-3xl font-bold text-primary-400/60">{step.num}</span>
+              <div className="shrink-0 pt-0.5">
+                <span className="font-display text-2xl font-bold text-primary-400/50 tabular-nums">
+                  {step.num}
+                </span>
               </div>
               <div>
-                <h3 className="font-semibold text-white">{step.title}</h3>
-                <p className="mt-1.5 text-sm leading-7 text-slate-300">{step.desc}</p>
+                <h3 className="font-semibold leading-snug text-white">{step.title}</h3>
+                <p className="mt-2 text-sm leading-7 text-slate-300">{step.desc}</p>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      {/* ── RÉSULTAT FINAL ── */}
-      <section className="bg-slate-950/60 px-6 py-16 md:py-20">
+      {/* ════════════════ RÉSULTAT FINAL ════════════════ */}
+      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
-          <div className="rounded-[2.5rem] border border-amber-300/20 bg-[linear-gradient(145deg,rgba(60,40,0,0.30),rgba(120,80,0,0.15))] p-8 md:p-12">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Ce que le groupe repart avec</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
-              Plus qu'un atelier — un souvenir concret
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-amber-50/90 md:text-lg">
-              À la fin de l'atelier, le groupe repart avec bien plus qu'une découverte de l'IA : il repart avec une <strong className="text-white">création commune</strong>, une <strong className="text-white">chanson porteuse de sens</strong> et une <strong className="text-white">vidéo souvenir téléchargeable</strong> qui garde une trace vivante de l'expérience.
+          <div
+            className="rounded-[2.5rem] border border-amber-400/20 p-8 md:p-12"
+            style={{
+              background:
+                'linear-gradient(145deg, rgba(55,32,0,0.38) 0%, rgba(100,60,0,0.22) 60%, rgba(18,12,0,0.30) 100%)',
+            }}
+          >
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
+              Ce que le groupe repart avec
             </p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+              Plus qu'un atelier — un souvenir réel
+            </h2>
+            <p className="mt-5 max-w-2xl text-[1rem] leading-8 text-amber-50/80 md:text-lg">
+              À la fin de l'atelier, le groupe ne repart pas seulement avec une découverte de l'IA.
+              Il repart avec une{' '}
+              <strong className="text-amber-100">création commune</strong>, une{' '}
+              <strong className="text-amber-100">chanson porteuse de sens</strong> et une{' '}
+              <strong className="text-amber-100">vidéo souvenir téléchargeable</strong> qui garde une
+              trace vivante et concrète de ce qui a été vécu.
+            </p>
+
             <ul className="mt-8 grid gap-3 sm:grid-cols-2">
               {[
                 'Une ou plusieurs chansons créées ensemble',
                 'Une vidéo souvenir téléchargeable',
-                'Une expérience collective marquante',
-                'Un souvenir créatif lié aux émotions du groupe',
+                'Une expérience collective significative',
+                'Un souvenir créatif ancré dans les émotions du groupe',
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-sm leading-7 text-amber-100/90">
-                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400/20 text-xs font-bold text-amber-300">✓</span>
+                <li
+                  key={item}
+                  className="flex items-start gap-3 text-sm leading-7 text-amber-100/80"
+                >
+                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400/20 text-xs font-bold text-amber-300">
+                    ✓
+                  </span>
                   {item}
                 </li>
               ))}
@@ -243,51 +380,62 @@ export default function AtelierCreatifPage() {
         </div>
       </section>
 
-      {/* ── POINTS FORTS ── */}
+      {/* ════════════════ POINTS FORTS ════════════════ */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Les points forts</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+        <div className="max-w-xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
+            Les points forts
+          </p>
+          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
             Ce qui rend cet atelier différent
           </h2>
         </div>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {highlights.map((h) => (
-            <article key={h.title} className="brand-card p-7">
-              <span className="text-2xl" role="img" aria-hidden="true">{h.icon}</span>
-              <h3 className="mt-4 font-display text-2xl text-white">{h.title}</h3>
-              <p className="mt-2 text-sm leading-7 text-slate-300">{h.desc}</p>
+            <article key={h.title} className="brand-card p-6">
+              <span className="text-2xl" role="img" aria-hidden="true">
+                {h.icon}
+              </span>
+              <h3 className="mt-4 font-semibold text-white">{h.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">{h.desc}</p>
             </article>
           ))}
         </div>
       </section>
 
-      {/* ── FORMAT ── */}
-      <section className="bg-slate-950/60 px-6 py-16 md:py-20">
+      {/* ════════════════ FORMAT ════════════════ */}
+      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
-          <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Format de l'atelier</p>
-              <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
+                Format
+              </p>
+              <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
                 Souple, adaptable et pensé pour votre réalité
               </h2>
             </div>
-            <div className="space-y-5 text-sm leading-8 text-slate-300">
+            <div className="space-y-5 text-[1rem] leading-8 text-slate-300">
               <p>
-                Le format de base de l'atelier est prévu pour environ <strong className="text-white">90 minutes</strong>. Il peut être ajusté selon le nombre de participants, le rythme du groupe et le contexte.
+                Le format de base est prévu pour environ{' '}
+                <strong className="text-white">90 minutes</strong>. Il peut être ajusté selon le
+                nombre de participants, le rythme du groupe et le contexte.
               </p>
               <p>
-                Lorsqu'un groupe est plus grand ou particulièrement engagé, l'atelier peut se prolonger afin de permettre une expérience complète et de qualité.
+                Lorsqu'un groupe est plus grand ou particulièrement participatif, l'atelier peut se
+                prolonger naturellement pour offrir une expérience complète et de qualité.
               </p>
-              <ul className="space-y-2">
+              <ul className="mt-2 space-y-3">
                 {[
-                  'Durée de base : ~90 minutes',
+                  'Durée de base : environ 90 minutes',
                   'Adaptable selon la taille du groupe',
-                  'Aucun équipement requis de votre côté',
-                  'Possible en salle de classe, salle communautaire ou autre',
+                  'Aucun équipement spécial requis de votre côté',
+                  'En salle de classe, salle communautaire ou autre',
+                  'Formule souple, sans contrainte technique',
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-3">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
+                  <li key={item} className="flex items-start gap-3 text-sm">
+                    <span className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
                     {item}
                   </li>
                 ))}
@@ -297,67 +445,97 @@ export default function AtelierCreatifPage() {
         </div>
       </section>
 
-      {/* ── NOWIS MORIN ── */}
+      {/* ════════════════ NOWIS MORIN ════════════════ */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="rounded-[2.5rem] border border-primary-300/20 bg-[linear-gradient(145deg,rgba(14,20,44,0.96),rgba(22,30,60,0.90))] p-8 md:p-12">
+        <div
+          className="rounded-[2.5rem] border border-primary-400/20 p-8 md:p-12"
+          style={{
+            background:
+              'linear-gradient(145deg, rgba(14,20,44,0.97) 0%, rgba(22,30,60,0.90) 100%)',
+          }}
+        >
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
             L'animateur
           </p>
-          <h2 className="mt-4 max-w-2xl font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 max-w-2xl font-display text-4xl leading-[1.03] text-white md:text-5xl">
             Nowis Morin anime chaque atelier en personne
           </h2>
-          <div className="mt-6 max-w-2xl space-y-4 text-base leading-8 text-slate-300">
+          <div className="mt-6 max-w-2xl space-y-4 text-[1rem] leading-8 text-slate-300">
             <p>
-              Nowis Morin n'envoie pas une ressource à sa place. Il est là, en personne, à guider chaque participant avec attention, sensibilité et clarté.
+              Nowis Morin ne délègue pas et n'envoie pas une ressource à sa place.{' '}
+              <strong className="text-white">Il est là, en personne</strong>, à guider chaque
+              participant avec attention, sensibilité et clarté — du premier échange jusqu'à la
+              remise du résultat.
             </p>
             <p>
-              Son approche marie la <strong className="text-white">musique</strong>, la <strong className="text-white">créativité humaine</strong> et les <strong className="text-white">nouvelles technologies</strong> dans un format qui inspire sans intimider. Il sait rejoindre les jeunes comme les aînés, les groupes scolaires comme les équipes corporatives.
+              Son approche marie la{' '}
+              <strong className="text-white">musique</strong>, la{' '}
+              <strong className="text-white">créativité humaine</strong> et les{' '}
+              <strong className="text-white">nouvelles technologies</strong> dans un format qui
+              inspire sans jamais intimider. Il sait rejoindre les jeunes comme les aînés, les
+              groupes scolaires comme les équipes corporatives.
             </p>
             <p>
-              L'intelligence artificielle est entre ses mains un outil pédagogique vivant : il la présente, l'utilise devant le groupe et accompagne chaque personne dans la découverte — sans jargon, sans pression.
+              L'intelligence artificielle est entre ses mains un outil pédagogique vivant : il la
+              présente, l'utilise devant le groupe et accompagne chaque personne dans sa découverte
+              — sans jargon, sans pression, avec beaucoup de plaisir.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section className="bg-slate-950/60 px-6 py-16 md:py-20">
+      {/* ════════════════ FAQ ════════════════ */}
+      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
         <div className="mx-auto max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Questions fréquentes</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
-            Ce que les gens demandent souvent
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
+            FAQ
+          </p>
+          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+            Questions fréquentes
           </h2>
-          <dl className="mt-10 space-y-6">
+
+          <dl className="mt-10 divide-y divide-white/10">
             {faqs.map((faq) => (
-              <div key={faq.q} className="border-b border-white/10 pb-6">
-                <dt className="font-semibold text-white">{faq.q}</dt>
-                <dd className="mt-2 text-sm leading-7 text-slate-300">{faq.a}</dd>
+              <div key={faq.q} className="py-6 first:pt-0 last:pb-0">
+                <dt className="font-semibold leading-snug text-white">{faq.q}</dt>
+                <dd className="mt-2.5 text-sm leading-7 text-slate-300">{faq.a}</dd>
               </div>
             ))}
           </dl>
         </div>
       </section>
 
-      {/* ── CTA FINAL ── */}
-      <section className="px-6 py-16 md:py-24">
-        <div className="mx-auto max-w-3xl rounded-[2.5rem] border border-emerald-400/20 bg-[linear-gradient(145deg,rgba(4,33,32,0.94),rgba(10,48,47,0.88))] p-10 text-center md:p-16">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Prêt à organiser l'atelier ?</p>
-          <h2 className="mt-5 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+      {/* ════════════════ CTA FINAL ════════════════ */}
+      <section className="px-6 py-16 md:py-28">
+        <div
+          className="mx-auto max-w-3xl rounded-[2.5rem] border border-emerald-400/20 p-10 text-center md:p-16"
+          style={{
+            background:
+              'linear-gradient(145deg, rgba(3,28,26,0.96) 0%, rgba(8,44,40,0.90) 100%)',
+          }}
+        >
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">
+            Prêt à organiser l'atelier ?
+          </p>
+          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl">
             Organisez un atelier créatif marquant
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-emerald-50/90">
-            Offrez à votre groupe une expérience humaine, musicale et actuelle, où l'intelligence artificielle devient un outil de création au service des souvenirs, de l'expression et du plaisir.
+          <p className="mx-auto mt-5 max-w-xl text-[1rem] leading-8 text-emerald-50/80">
+            Offrez à votre groupe une expérience humaine, musicale et actuelle, où l'intelligence
+            artificielle devient un outil de création au service des souvenirs, de l'expression et
+            du plaisir.
           </p>
+
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-emerald-600 px-8 py-4 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-500"
+              className="rounded-xl bg-emerald-600 px-9 py-4 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Demander cet atelier
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-sm transition hover:bg-white/10"
+              className="rounded-xl border border-white/15 bg-white/5 px-9 py-4 font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Poser une question
             </Link>

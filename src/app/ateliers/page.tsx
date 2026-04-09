@@ -54,12 +54,12 @@ export default function AteliersPage() {
         <div className="rounded-[2.5rem] border border-primary-400/20 bg-[linear-gradient(145deg,rgba(14,20,44,0.92),rgba(22,30,60,0.86))] p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Atelier créatif avec l'IA</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Atelier de création musicale avec l'IA</p>
               <h2 className="mt-3 font-display text-3xl leading-[1.05] text-white md:text-4xl">
-                Créer une chanson ensemble avec l'IA
+                Atelier de création musicale avec l'IA
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">
-                Atelier animé en personne par Nowis Morin. Tous âges. Le groupe crée ensemble une chanson et repart avec une vidéo souvenir téléchargeable.
+                Atelier animé en personne par Nowis Morin. Tous âges. Le groupe crée ensemble une ou plusieurs chansons et repart avec une vidéo souvenir téléchargeable.
               </p>
             </div>
             <Link
