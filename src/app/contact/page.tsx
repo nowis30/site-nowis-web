@@ -8,20 +8,20 @@ import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSecti
 const DEFAULT_CONTACT_CONTENT = {
   hero: {
     eyebrow: 'Contact',
-    title: 'Parle-moi de ta chanson ou de ton projet créatif',
-    description: 'Le site public reste une vitrine. Les nouvelles demandes se font maintenant uniquement depuis le portail client securise.',
+    title: 'Parlez-moi de votre groupe et de votre projet d\'atelier',
+    description: 'Que ce soit pour un atelier, une chanson personnalisée ou un projet particulier — prenons contact. Les demandes d\'atelier et de projets se font via le portail client sécurisé.',
   },
   direct: {
     email: legalConfig.contactEmail,
     phone: legalConfig.contactPhone,
     phoneHref: legalConfig.contactPhoneHref,
     button1: {
-      label: 'Se connecter pour une demande chanson',
-      href: '/connexion?next=%2Fclient%2Fsong-requests%2Fnouveau',
+      label: 'Demander un atelier',
+      href: '/connexion?next=%2Fclient%2Fworkshops%2Fnouveau',
     },
     button2: {
-      label: 'Se connecter pour une demande atelier',
-      href: '/connexion?next=%2Fclient%2Fworkshops%2Fnouveau',
+      label: 'Commander une chanson personnalisée',
+      href: '/connexion?next=%2Fclient%2Fsong-requests%2Fnouveau',
     },
   },
   social: {
@@ -80,11 +80,11 @@ function spacingClass(verticalSpacing: 'tight' | 'normal' | 'airy') {
 }
 
 export const metadata = buildMetadata({
-  title: 'Contact | Création Nowis',
+  title: 'Contact | Création Nowis — Ateliers et projets créatifs',
   description:
-    'Contacte Création Nowis pour commander une chanson personnalisée, demander une option vidéo IA ou discuter d’un projet créatif.',
+    'Contactez Création Nowis pour un atelier de création musicale avec l\'IA, une chanson personnalisée ou un projet artistique particulier. Nowis Morin vous répond directement.',
   path: '/contact',
-  keywords: ['Contact Création Nowis', 'commander une chanson Québec', 'projet créatif musique'],
+  keywords: ['Contact Création Nowis', 'demander un atelier IA', 'atelier création musicale Québec'],
 });
 
 export default async function ContactPage() {
@@ -145,7 +145,7 @@ export default async function ContactPage() {
     : DEFAULT_CONTACT_CONTENT.social.facebook;
 
   return (
-    <div className="bg-slate-50">
+    <div>
       <PageHero
         eyebrow={heroEyebrow}
         title={heroTitle}

@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
             </p>
             <h3 className="brand-metal-text mt-3 font-display text-4xl leading-none md:text-5xl">Nowis Morin</h3>
             <p className="mt-3 text-base leading-8 text-slate-200">
-              Musique, créations visuelles et prise de contact réunies dans un footer plus sobre, lisible et direct.
+              Ateliers de création musicale avec l'IA, chansons personnalisées et services créatifs. Animé et créé par Nowis Morin, dans un rayon de 150 km autour de Drummondville.
             </p>
           </div>
 
@@ -84,33 +84,13 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/commander-une-chanson" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Demandes client
-                </Link>
-              </li>
-              <li>
                 <Link href="/ateliers" className="text-slate-300 hover:text-primary-100 transition-colors">
                   Ateliers
                 </Link>
               </li>
               <li>
-                <Link href="/musique" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Musique / exemples
-                </Link>
-              </li>
-              <li>
-                <Link href="/videos" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Vidéos
-                </Link>
-              </li>
-              <li>
-                <Link href="/services" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Services / Collaborations
-                </Link>
-              </li>
-              <li>
-                <Link href="/connexion" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Connexion client
+                <Link href="/commander-une-chanson" className="text-slate-300 hover:text-primary-100 transition-colors">
+                  Chansons personnalisées
                 </Link>
               </li>
               <li>
@@ -119,14 +99,24 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/inscription" className="text-slate-300 hover:text-primary-100 transition-colors">
-                  Inscription client
+                <Link href="/autres-services" className="text-slate-300 hover:text-primary-100 transition-colors">
+                  Autres services
                 </Link>
               </li>
               <li>
-                <ContactPrefillLink href={legalLinks.contact} className="text-slate-300 hover:text-primary-100 transition-colors">
+                <Link href="/contact" className="text-slate-300 hover:text-primary-100 transition-colors">
                   Contact
-                </ContactPrefillLink>
+                </Link>
+              </li>
+              <li>
+                <Link href="/connexion" className="text-slate-300 hover:text-primary-100 transition-colors">
+                  Portail client
+                </Link>
+              </li>
+              <li>
+                <Link href="/inscription" className="text-slate-300 hover:text-primary-100 transition-colors">
+                  Créer un compte
+                </Link>
               </li>
             </ul>
           </div>
@@ -142,6 +132,11 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <ContactPrefillLink href={legalLinks.contact} className="text-slate-300 hover:text-primary-100 transition-colors">Parler de mon projet</ContactPrefillLink>
+              </li>
+              <li className="pt-2">
+                <Link href="/connexion" className="inline-flex items-center gap-2 rounded-lg border border-primary-400/30 bg-primary-500/10 px-4 py-2 text-sm font-semibold text-primary-200 transition hover:bg-primary-500/20">
+                  Portail client →
+                </Link>
               </li>
             </ul>
           </div>
