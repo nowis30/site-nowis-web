@@ -15,6 +15,7 @@ const navLinks = [
   { label: 'Chansons personnalisees', href: '/commander-une-chanson' },
   { label: 'A propos', href: '/a-propos' },
   { label: 'Autres services', href: '/autres-services' },
+  { label: 'Tarifs', href: '/tarifs' },
   { label: 'Contact', href: '/contact' },
 ];
 
