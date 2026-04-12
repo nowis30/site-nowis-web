@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { buildAuthRedirect } from '@/lib/safe-next';
+import { buildCorsPreflightResponse } from '@/lib/cors';
 
 // Endpoint désormais protégé: les créations ne sont possibles qu'avec session portail.
 
@@ -141,13 +142,10 @@ export async function POST(request: NextRequest) {
 }
 
 // CORS pour appels depuis le site vitrine
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': process.env.SITE_ORIGIN ?? '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
+export async function OPTIONS(request: NextRequest) {
+  return buildCorsPreflightResponse(request, {
+    methods: 'POST, OPTIONS',
+    headers: 'Content-Type, Authorization',
+    credentials: true,
   });
 }

@@ -5,6 +5,7 @@ import { buildClientPortalUrl } from '@/lib/client-portal';
 import { songRequestInputSchema } from '@/lib/validators/song-request';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { buildAuthRedirect } from '@/lib/safe-next';
+import { applyCorsHeaders, buildCorsPreflightResponse } from '@/lib/cors';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,13 +13,16 @@ export async function POST(request: NextRequest) {
     const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
     if (!session) {
-      return NextResponse.json(
+      return applyCorsHeaders(
+        NextResponse.json(
         {
           error: 'Connexion requise pour envoyer une demande.',
           code: 'AUTH_REQUIRED',
           loginUrl: buildAuthRedirect('/client/song-requests/nouveau'),
         },
         { status: 401 },
+        ),
+        request,
       );
     }
 
@@ -35,32 +39,35 @@ export async function POST(request: NextRequest) {
       contactId: session.contactId,
     });
 
-    return NextResponse.json({
-      ok: true,
-      message: 'Demande envoyée avec succès.',
-      clientPortalUrl: buildClientPortalUrl(result.clientPortalPath.replace('/crm/client/', ''), request.nextUrl.origin),
-      ...result,
-    });
+    return applyCorsHeaders(
+      NextResponse.json({
+        ok: true,
+        message: 'Demande envoyée avec succès.',
+        clientPortalUrl: buildClientPortalUrl(result.clientPortalPath.replace('/crm/client/', ''), request.nextUrl.origin),
+        ...result,
+      }),
+      request,
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
+      return applyCorsHeaders(
+        NextResponse.json(
         { error: 'Validation invalide', details: error.issues },
         { status: 400 },
+        ),
+        request,
       );
     }
 
     console.error('[SONG_REQUEST_PUBLIC]', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    return applyCorsHeaders(NextResponse.json({ error: 'Erreur serveur' }, { status: 500 }), request);
   }
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': process.env.SITE_ORIGIN ?? '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
+export async function OPTIONS(request: NextRequest) {
+  return buildCorsPreflightResponse(request, {
+    methods: 'POST, OPTIONS',
+    headers: 'Content-Type, Authorization',
+    credentials: true,
   });
 }

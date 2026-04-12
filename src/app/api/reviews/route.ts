@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { applyCorsHeaders, buildCorsPreflightResponse } from '@/lib/cors';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const reviews = await prisma.review.findMany({
     where: { status: 'approved' },
     orderBy: { createdAt: 'desc' },
@@ -15,7 +16,11 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json(reviews);
+  return applyCorsHeaders(NextResponse.json(reviews), request, {
+    methods: 'GET, POST, OPTIONS',
+    headers: 'Content-Type, Authorization',
+    credentials: false,
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -23,20 +28,24 @@ export async function POST(request: NextRequest) {
   const { name, email, rating, comment, context } = body;
 
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
-    return NextResponse.json({ error: 'Le nom est requis.' }, { status: 400 });
+    return applyCorsHeaders(NextResponse.json({ error: 'Le nom est requis.' }, { status: 400 }), request);
   }
 
   if (!comment || typeof comment !== 'string' || comment.trim().length < 5) {
-    return NextResponse.json({ error: 'Le commentaire est trop court.' }, { status: 400 });
+    return applyCorsHeaders(NextResponse.json({ error: 'Le commentaire est trop court.' }, { status: 400 }), request);
   }
 
   const parsedRating = parseInt(rating, 10);
   if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
-    return NextResponse.json({ error: 'La note doit être entre 1 et 5.' }, { status: 400 });
+    return applyCorsHeaders(NextResponse.json({ error: 'La note doit être entre 1 et 5.' }, { status: 400 }), request);
   }
 
   const normalizedEmail =
     typeof email === 'string' && email.trim().length > 0 ? email.trim().toLowerCase() : null;
+
+  if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return applyCorsHeaders(NextResponse.json({ error: 'Email invalide.' }, { status: 400 }), request);
+  }
 
   await prisma.review.create({
     data: {
@@ -49,5 +58,17 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  return NextResponse.json({ success: true }, { status: 201 });
+  return applyCorsHeaders(NextResponse.json({ success: true }, { status: 201 }), request, {
+    methods: 'GET, POST, OPTIONS',
+    headers: 'Content-Type, Authorization',
+    credentials: false,
+  });
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return buildCorsPreflightResponse(request, {
+    methods: 'GET, POST, OPTIONS',
+    headers: 'Content-Type, Authorization',
+    credentials: false,
+  });
 }

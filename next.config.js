@@ -2,6 +2,8 @@
 const nextConfig = {
   // Output config for Vercel
   output: 'standalone',
+  // Security hardening
+  poweredByHeader: false,
   // Optimize images
   images: {
     domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'localhost', '127.0.0.1', 'nowis.store', 'nowis-admin.vercel.app'],
@@ -85,7 +87,9 @@ const nextConfig = {
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          process.env.NODE_ENV === 'production'
+            ? "script-src 'self' 'unsafe-inline'"
+            : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https:",
           "font-src 'self' data:",

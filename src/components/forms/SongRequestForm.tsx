@@ -141,6 +141,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       const response = await fetch(toPublicApiUrl('/api/site/song-requests'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -187,6 +188,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       formData.append('file', file);
       const response = await fetch(toPublicApiUrl('/api/site/song-requests/upload'), {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       });
       const data = await response.json();
