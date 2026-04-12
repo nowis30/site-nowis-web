@@ -4,6 +4,7 @@ import './globals.css';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { CookieBanner } from '@/components/CookieBanner';
 import { buildMetadata } from '@/lib/seo';
 
 const bodyFont = Inter({
@@ -61,6 +62,7 @@ export default function RootLayout({
         <AuthProvider>
           <AppLayout>{children}</AppLayout>
         </AuthProvider>
+        <CookieBanner />
       </body>
     </html>
   );

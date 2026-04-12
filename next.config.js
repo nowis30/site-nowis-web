@@ -46,10 +46,69 @@ const nextConfig = {
       },
     ];
   },
-  // PWA support
+  // Security & PWA headers
   headers: async () => {
+    const securityHeaders = [
+      // Force HTTPS for 1 year, includeSubDomains
+      {
+        key: 'Strict-Transport-Security',
+        value: 'max-age=31536000; includeSubDomains',
+      },
+      // Block clickjacking — only allow framing from same origin
+      {
+        key: 'X-Frame-Options',
+        value: 'SAMEORIGIN',
+      },
+      // Prevent MIME-type sniffing
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+      // Limit referrer info sent to external domains
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+      // Restrict browser feature APIs
+      {
+        key: 'Permissions-Policy',
+        value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+      },
+      // Content Security Policy
+      // - script-src: self + unsafe-inline required by Next.js App Router
+      // - frame-src: allow YouTube embeds
+      // - img-src: allow all HTTPS images + data URIs (thumbnails, blobs)
+      // - connect-src: allow API calls to self and admin backend
+      // - object-src: none — block Flash/plugins
+      // - base-uri/form-action: restrict to self
+      {
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: blob: https:",
+          "font-src 'self' data:",
+          "frame-src 'self' https://www.youtube.com https://youtube.com",
+          "connect-src 'self' https:",
+          "media-src 'self' blob: https:",
+          "worker-src 'self' blob:",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "upgrade-insecure-requests",
+        ].join('; '),
+      },
+    ];
+
     return [
       {
+        // Apply security headers to all routes
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+      {
+        // Service worker must not be cached
         source: '/sw.js',
         headers: [
           {

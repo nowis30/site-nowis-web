@@ -1,9 +1,22 @@
 ﻿import { NextResponse } from 'next/server';
 import { persistUploadedFile } from '@/lib/uploaded-file';
+import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { buildAuthRedirect } from '@/lib/safe-next';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
+  // Require an authenticated session — no anonymous uploads
+  const session = getClientPortalSessionFromCookieHeader(
+    (request as import('next/server').NextRequest).headers.get('cookie') ?? undefined
+  );
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Connexion requise.', loginUrl: buildAuthRedirect('/client/dashboard') },
+      { status: 401 },
+    );
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
