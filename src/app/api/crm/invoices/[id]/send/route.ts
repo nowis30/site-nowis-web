@@ -83,8 +83,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const appUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_DOMAIN ||
-    process.env.APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
     request.nextUrl.origin;
 
   const portalToken = signClientPortalToken({

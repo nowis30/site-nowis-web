@@ -58,7 +58,6 @@ export function getClientPortalBaseUrl(origin?: string) {
     origin ||
       process.env.NEXT_PUBLIC_SITE_URL ||
       process.env.NEXT_PUBLIC_DOMAIN ||
-      process.env.APP_URL ||
       'http://localhost:3000',
   );
 }
