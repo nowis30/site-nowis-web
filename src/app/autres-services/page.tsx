@@ -80,16 +80,16 @@ export default function AutresServicesPage() {
             En dehors des ateliers et des chansons personnalisées, Nowis Morin propose un univers plus large :
             jeux interactifs, accompagnement d&apos;artistes, vidéos créatives et projets sur mesure. Tout ce qui croise musique, IA et création humaine.
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
               href="/contact"
-              className="cta-primary px-7 py-4"
+              className="cta-primary w-full justify-center px-7 py-4 sm:w-auto"
             >
               Discuter d&apos;un projet
             </Link>
             <Link
               href="/ateliers"
-              className="cta-secondary px-7 py-4"
+              className="cta-secondary w-full justify-center px-7 py-4 sm:w-auto"
             >
               Voir les ateliers
             </Link>
@@ -138,7 +138,7 @@ export default function AutresServicesPage() {
           </p>
           <Link
             href="/contact"
-            className="cta-primary mt-6 px-7 py-3.5"
+            className="cta-primary mt-6 w-full justify-center px-7 py-3.5 sm:w-auto"
           >
             Discuter de votre projet
           </Link>
@@ -188,16 +188,16 @@ export default function AutresServicesPage() {
           <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-[color:var(--site-muted)]">
             Peu importe la forme, si ça croise musique, création et intelligence artificielle — on peut en parler. Nowis Morin aime les projets qui sortent des sentiers battus.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               href="/contact"
-              className="cta-primary px-9 py-4"
+              className="cta-primary w-full justify-center px-9 py-4 sm:w-auto"
             >
               Parler de mon projet
             </Link>
             <Link
               href="/a-propos"
-              className="cta-secondary px-9 py-4"
+              className="cta-secondary w-full justify-center px-9 py-4 sm:w-auto"
             >
               En savoir plus sur Nowis
             </Link>

@@ -86,16 +86,16 @@ export default function AteliersPage() {
           <p className="mt-3 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
             Tous les âges, tous les milieux. Adaptable en durée, en formule et en intention.
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
               href="/ateliers/demande"
-              className="cta-primary px-7 py-4"
+              className="cta-primary w-full justify-center px-7 py-4 sm:w-auto"
             >
               Demander un atelier
             </Link>
             <Link
               href="/contact"
-              className="cta-secondary px-7 py-4"
+              className="cta-secondary w-full justify-center px-7 py-4 sm:w-auto"
             >
               Poser une question
             </Link>
@@ -250,7 +250,7 @@ export default function AteliersPage() {
           </p>
           <Link
             href="/contact"
-            className="cta-primary mt-6 px-7 py-3.5"
+            className="cta-primary mt-6 w-full justify-center px-7 py-3.5 sm:w-auto"
           >
             Demander une soumission
           </Link>

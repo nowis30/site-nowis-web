@@ -123,17 +123,17 @@ export default function TarifsPage() {
             Des ateliers accessibles, animés en personne par Nowis Morin. Tarifs de lancement offerts
             durant les premiers mois pour soutenir le développement de la formule.
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <a
               href="/tarifs-creation-nowis.pdf"
               download
-              className="cta-primary gap-2 px-7 py-4"
+              className="cta-primary w-full justify-center gap-2 px-7 py-4 sm:w-auto"
             >
               <span>⬇</span> Télécharger la grille PDF
             </a>
             <Link
               href="/contact"
-              className="cta-secondary px-7 py-4"
+              className="cta-secondary w-full justify-center px-7 py-4 sm:w-auto"
             >
               Demander une soumission
             </Link>
@@ -221,7 +221,7 @@ export default function TarifsPage() {
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {servicesPersonnalises.map((s) => (
               <article key={s.name} className="brand-card p-7">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
                   <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{s.name}</h3>
                   <span className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-sm font-bold text-primary-200">
                     {s.tarif}

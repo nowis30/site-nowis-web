@@ -1,4 +1,5 @@
-﻿import { notFound } from 'next/navigation';
+﻿import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import { getPublishedListingBySlug, getPublishedListings } from '@/lib/logements';
 
 interface PageProps {
@@ -44,9 +45,15 @@ export default async function LogementPage({ params }: PageProps) {
             <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
               <div className="grid gap-2 md:grid-cols-2">
                 {(logement.images.length > 0 ? logement.images : ['']).slice(0, 4).map((image, index) => (
-                  <div key={`${logement.id}-${index}`} className="h-64 bg-slate-100">
+                  <div key={`${logement.id}-${index}`} className="relative h-64 bg-slate-100">
                     {image ? (
-                      <img src={image} alt={`${logement.title} ${index + 1}`} className="h-full w-full object-cover" />
+                      <Image
+                        src={image}
+                        alt={`${logement.title} ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
                     ) : (
                       <div className="flex h-full items-center justify-center text-sm text-slate-400">Aucune image</div>
                     )}
@@ -76,7 +83,7 @@ export default async function LogementPage({ params }: PageProps) {
                 {typeof logement.parking === 'boolean' ? <li>Stationnement: {logement.parking ? 'Oui' : 'Non'}</li> : null}
                 {typeof logement.petsAllowed === 'boolean' ? <li>Animaux: {logement.petsAllowed ? 'Acceptes' : 'Non'}</li> : null}
               </ul>
-              <a href={`/logements/${logement.slug}/reserver`} className="mt-8 inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+              <a href={`/logements/${logement.slug}/reserver`} className="mt-8 inline-flex w-full justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
                 Reserver une visite
               </a>
             </div>

@@ -170,13 +170,13 @@ export const HomeScreen = async () => {
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/ateliers"
-                className="cta-primary px-7 py-4"
+                className="cta-primary w-full justify-center px-7 py-4 sm:w-auto"
               >
                 Demander un atelier
               </Link>
               <Link
                 href="#exemples"
-                className="cta-secondary px-7 py-4"
+                className="cta-secondary w-full justify-center px-7 py-4 sm:w-auto"
               >
                 Voir des exemples
               </Link>
@@ -431,7 +431,7 @@ export const HomeScreen = async () => {
             </div>
             <Link
               href="/contact"
-              className="shrink-0 rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-6 py-3 font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white md:self-center"
+              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-6 py-3 text-center font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white md:shrink-0 md:self-center"
             >
               Nous contacter
             </Link>
@@ -510,16 +510,16 @@ export const HomeScreen = async () => {
           <p className="mx-auto mt-6 max-w-2xl text-[1rem] leading-8 text-[color:var(--site-muted)]">
             Création Nowis propose des ateliers artistiques pour mieux comprendre l'intelligence artificielle et apprendre à l'utiliser comme un outil de création, de réflexion et d'expression. Chaque atelier est adapté au groupe, au milieu et à l'objectif visé.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               href="/ateliers/demande"
-              className="cta-primary px-9 py-4"
+              className="cta-primary w-full justify-center px-9 py-4 sm:w-auto"
             >
               Demander un atelier
             </Link>
             <Link
               href="/commander-une-chanson"
-              className="cta-secondary px-9 py-4"
+              className="cta-secondary w-full justify-center px-9 py-4 sm:w-auto"
             >
               Demander une chanson
             </Link>

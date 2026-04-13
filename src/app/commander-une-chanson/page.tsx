@@ -264,13 +264,13 @@ export default async function CommanderUneChansonPage() {
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
               href="#acces-portail"
-              className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white transition hover:brightness-105"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white transition hover:brightness-105 sm:w-auto"
             >
               Voir la procedure
             </Link>
             <Link
               href={songSalesCtas.talk.href}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 font-semibold text-slate-900 transition hover:bg-slate-100"
+              className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 font-semibold text-slate-900 transition hover:bg-slate-100 sm:w-auto"
             >
               {songSalesCtas.talk.label}
             </Link>

@@ -1,4 +1,5 @@
-﻿import Link from 'next/link';
+﻿import Image from 'next/image';
+import Link from 'next/link';
 import { getPublishedListings } from '@/lib/logements';
 
 export const metadata = {
@@ -29,9 +30,15 @@ export default async function LogementsPage() {
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {listings.map((logement) => (
               <article key={logement.id} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div className="h-56 bg-slate-100">
+                <div className="relative h-56 bg-slate-100">
                   {logement.images[0] ? (
-                    <img src={logement.images[0]} alt={logement.title} className="h-full w-full object-cover" />
+                    <Image
+                      src={logement.images[0]}
+                      alt={logement.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    />
                   ) : (
                     <div className="flex h-full items-center justify-center text-sm text-slate-400">Aucune image</div>
                   )}
@@ -44,11 +51,11 @@ export default async function LogementsPage() {
                     <span>{logement.bedrooms} ch. • {logement.bathrooms} sdb • {logement.area} m²</span>
                     <span className="font-semibold">{logement.price.toLocaleString('fr-CA')} €</span>
                   </div>
-                  <div className="mt-6 flex gap-3">
-                    <Link href={`/logements/${logement.slug}`} className="inline-flex rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white transition hover:bg-slate-800">
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <Link href={`/logements/${logement.slug}`} className="inline-flex w-full justify-center rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 sm:w-auto">
                       Voir le logement
                     </Link>
-                    <Link href={`/logements/${logement.slug}/reserver`} className="inline-flex rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
+                    <Link href={`/logements/${logement.slug}/reserver`} className="inline-flex w-full justify-center rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100 sm:w-auto">
                       Reserver
                     </Link>
                   </div>
