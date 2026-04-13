@@ -1,14 +1,15 @@
+import Link from 'next/link';
 import { PageHero } from '@/components/marketing/PageHero';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { serviceOffers } from '@/data/serviceOffers';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
-  title: 'Services et collaborations — Nowis Morin | Chansons, vidéos, visuels et concepts IA',
+  title: 'Services créatifs — Création Nowis | Chansons personnalisées, vidéos IA et concepts sur mesure',
   description:
-    'Découvre les services proposés par Nowis Morin : chansons personnalisées, vidéos créatives, visuels, concepts marketing avec IA et collaborations spéciales.',
+    'Découvrez les services créatifs de Création Nowis : chansons personnalisées, vidéos IA, visuels et concepts sur mesure à Drummondville et partout au Québec.',
   path: '/services',
-  keywords: ['Nowis Morin services', 'chanson personnalisée', 'vidéo IA Québec', 'collaboration créative'],
+  keywords: ['services Création Nowis', 'chanson personnalisée Québec', 'vidéo IA Drummondville', 'concept créatif avec IA'],
 });
 
 export default function ServicesPage() {
@@ -16,13 +17,18 @@ export default function ServicesPage() {
     <div className="site-background">
       <PageHero
         eyebrow="Services / Collaborations"
-        title="Des créations personnalisées pour les artistes, les idées fortes et les projets qui veulent se démarquer"
-        description="Cette page présente ce que Nowis Morin peut concevoir pour toi : chansons sur mesure, vidéos, visuels créatifs et concepts plus ambitieux mêlant art, émotion et intelligence artificielle."
+        title="Des services créatifs clairs pour transformer une idée en projet concret"
+        description="Création Nowis accompagne les projets qui ont besoin d une chanson personnalisée, d une vidéo IA, d un visuel ou d une direction créative claire, avec une approche humaine et sur soumission."
         primaryCta={{ label: 'Parler de mon projet', href: '/contact?projectType=autre&message=Bonjour, je veux discuter d’un projet créatif avec Création Nowis.' }}
         secondaryCta={{ label: 'Écouter mes chansons', href: '/musique' }}
       />
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="glass-panel-soft mb-8 rounded-3xl p-6 shadow-sm">
+          <p className="text-sm leading-7 text-[color:var(--site-muted)]">
+            Chaque service est ajusté selon le contexte, le format et l intention recherchée. L objectif n est pas de vendre un forfait rigide, mais d orienter rapidement vers la bonne formule et vers la bonne prise de contact.
+          </p>
+        </div>
         <div className="grid gap-8 md:grid-cols-2">
           {serviceOffers.map((offer) => (
             <article key={offer.title} className="glass-panel-soft rounded-3xl p-8 shadow-sm">
@@ -34,6 +40,15 @@ export default function ServicesPage() {
                   <li key={bullet}>• {bullet}</li>
                 ))}
               </ul>
+              {offer.href.startsWith('/contact') ? (
+                <ContactPrefillLink href={offer.href} className="cta-secondary mt-6 inline-flex px-5 py-3 text-sm">
+                  {offer.cta}
+                </ContactPrefillLink>
+              ) : (
+                <Link href={offer.href} className="cta-secondary mt-6 inline-flex px-5 py-3 text-sm">
+                  {offer.cta}
+                </Link>
+              )}
             </article>
           ))}
         </div>
@@ -43,7 +58,10 @@ export default function ServicesPage() {
           <p className="mt-4 max-w-3xl leading-relaxed text-[color:var(--site-muted)]">
             Si ton projet ne rentre pas exactement dans une case, c’est souvent là que les meilleures collaborations commencent. Nowis Morin peut t’aider à concevoir une approche originale, sur mesure et alignée avec ton objectif de visibilité ou d’émotion.
           </p>
-          <ContactPrefillLink href="/contact" className="mt-6 inline-flex rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-5 py-3 font-semibold text-white transition hover:brightness-105">Parler de mon projet</ContactPrefillLink>
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+            <ContactPrefillLink href="/contact" className="inline-flex rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-5 py-3 font-semibold text-white transition hover:brightness-105">Parler de mon projet</ContactPrefillLink>
+            <Link href="/creations" className="cta-secondary px-5 py-3">Voir mes créations</Link>
+          </div>
         </div>
       </section>
     </div>

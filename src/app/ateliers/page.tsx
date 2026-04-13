@@ -1,4 +1,7 @@
+import Script from 'next/script';
 import Link from 'next/link';
+import { buildMetadata } from '@/lib/seo';
+import { buildFaqSchema, buildServiceSchema } from '@/lib/structured-data';
 
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
@@ -58,11 +61,38 @@ const etapes = [
   { num: '07', title: 'Résultat final et vidéo souvenir', desc: 'Une vidéo est créée autour de l\'œuvre — téléchargeable, partageable et durable.' },
 ];
 
+export const metadata = buildMetadata({
+  title: 'Ateliers de création musicale avec IA | Création Nowis à Drummondville',
+  description:
+    'Découvrez les ateliers de création musicale avec l IA de Création Nowis : une formule humaine, adaptée aux écoles, aux aînés, aux organismes et aux groupes partout à Drummondville et au Québec.',
+  path: '/ateliers',
+  image: '/hero.jpg',
+  keywords: [
+    'ateliers IA Drummondville',
+    'création musicale avec IA Québec',
+    'atelier pour écoles Québec',
+    'atelier pour aînés Drummondville',
+    'Nowis Morin ateliers',
+  ],
+});
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AteliersPage() {
+  const faqSchema = buildFaqSchema(faqItems.map((item) => ({ question: item.q, answer: item.a })));
+  const serviceSchema = buildServiceSchema({
+    name: 'Ateliers de création musicale avec IA',
+    description:
+      'Des ateliers animés en personne par Nowis Morin pour écoles, aînés, organismes et groupes qui veulent découvrir l intelligence artificielle par la musique.',
+    path: '/ateliers',
+    serviceType: 'Atelier de création musicale avec IA',
+    audience: ['Écoles', 'Aînés', 'Organismes communautaires', 'Groupes intergénérationnels'],
+  });
+
   return (
     <main className="text-[color:var(--site-text)]">
+      <Script id="ateliers-service-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <Script id="ateliers-faq-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
@@ -81,10 +111,10 @@ export default function AteliersPage() {
             Un atelier vivant, humain et accessible pour tous
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-            Animés en personne par Nowis Morin, les ateliers de création musicale avec l&apos;IA invitent chaque groupe à créer une chanson à partir de ses propres émotions, souvenirs et idées — et à repartir avec une vidéo souvenir téléchargeable.
+            Animés en personne par Nowis Morin, les ateliers de création musicale avec l&apos;IA invitent chaque groupe à créer une chanson à partir de ses propres émotions, souvenirs et idées, puis à repartir avec une vidéo souvenir téléchargeable.
           </p>
           <p className="mt-3 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
-            Tous les âges, tous les milieux. Adaptable en durée, en formule et en intention.
+            Une formule pensée pour les écoles, les aînés, les organismes et les groupes de Drummondville et partout au Québec. Soumission sur demande selon votre réalité.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
@@ -324,10 +354,10 @@ export default function AteliersPage() {
               Demander un atelier
             </Link>
             <Link
-              href="/contact"
+              href="/ateliers/atelier-creatif"
               className="cta-secondary px-9 py-4"
             >
-              Poser une question
+              Voir l'atelier détaillé
             </Link>
           </div>
         </div>

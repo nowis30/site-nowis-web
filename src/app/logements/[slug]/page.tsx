@@ -1,4 +1,5 @@
 ﻿import Image from 'next/image';
+import { buildMetadata } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import { getPublishedListingBySlug, getPublishedListings } from '@/lib/logements';
 
@@ -10,16 +11,21 @@ export async function generateMetadata({ params }: PageProps) {
   const logement = await getPublishedListingBySlug(params.slug);
 
   if (!logement) {
-    return {
+    return buildMetadata({
       title: 'Logement introuvable - NOWIS',
       description: 'Le logement demandé est introuvable.',
-    };
+      path: `/logements/${params.slug}`,
+      noIndex: true,
+    });
   }
 
-  return {
-    title: `${logement.title} – Logement`,
+  return buildMetadata({
+    title: `${logement.title} | Logement à ${logement.city} - NOWIS`,
     description: logement.descriptionShort,
-  };
+    path: `/logements/${logement.slug}`,
+    image: logement.images[0] || '/hero.jpg',
+    keywords: [logement.title, logement.city, 'logement à louer'],
+  });
 }
 
 export async function generateStaticParams() {
@@ -49,7 +55,7 @@ export default async function LogementPage({ params }: PageProps) {
                     {image ? (
                       <Image
                         src={image}
-                        alt={`${logement.title} ${index + 1}`}
+                        alt={`${logement.title}, photo ${index + 1} du logement à ${logement.city}`}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 50vw"

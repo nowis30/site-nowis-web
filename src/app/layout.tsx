@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CookieBanner } from '@/components/CookieBanner';
 import { buildMetadata } from '@/lib/seo';
+import { buildOrganizationSchema } from '@/lib/structured-data';
 
 const bodyFont = Inter({
   subsets: ['latin'],
@@ -22,11 +23,11 @@ const displayFont = Alfa_Slab_One({
 
 export const metadata: Metadata = {
   ...buildMetadata({
-    title: 'Création Nowis | Chansons personnalisées et créations musicales',
+    title: 'Création Nowis | Ateliers de création musicale avec IA et chansons personnalisées au Québec',
     description:
-      'Création Nowis propose des chansons personnalisées, des créations musicales sur mesure et des options visuelles ou vidéo IA pour accompagner les moments importants.',
+      'Création Nowis, avec Nowis Morin à Drummondville, propose des ateliers de création musicale avec l IA, des chansons personnalisées et des vidéos créatives partout au Québec.',
     path: '/',
-    keywords: ['Création Nowis', 'chanson personnalisée Québec', 'chansons sur mesure', 'Nowis Morin musique'],
+    keywords: ['Création Nowis', 'création musicale avec IA', 'atelier IA Québec', 'chanson personnalisée Drummondville', 'Nowis Morin'],
   }),
   manifest: '/manifest.json',
   icons: {
@@ -48,6 +49,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const organizationSchema = buildOrganizationSchema();
+
   return (
     <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <head>
@@ -56,6 +59,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Création NOWIS" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       </head>
       <body className="bg-[#fcf7f1] text-[color:var(--site-text)] font-sans">
         <UnregisterServiceWorker />

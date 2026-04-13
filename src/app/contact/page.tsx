@@ -80,11 +80,11 @@ function spacingClass(verticalSpacing: 'tight' | 'normal' | 'airy') {
 }
 
 export const metadata = buildMetadata({
-  title: 'Contact | Création Nowis — Ateliers et projets créatifs',
+  title: 'Contact Création Nowis | Demander un atelier, une chanson ou un projet créatif',
   description:
-    'Contactez Création Nowis pour un atelier de création musicale avec l\'IA, une chanson personnalisée ou un projet artistique particulier. Nowis Morin vous répond directement.',
+    'Contactez Création Nowis à Drummondville pour demander un atelier de création musicale avec l IA, une chanson personnalisée ou un projet créatif. Réponse directe de Nowis Morin.',
   path: '/contact',
-  keywords: ['Contact Création Nowis', 'demander un atelier IA', 'atelier création musicale Québec'],
+  keywords: ['contact Création Nowis', 'demander un atelier IA', 'demander une chanson personnalisée', 'Drummondville Québec'],
 });
 
 export default async function ContactPage() {
@@ -158,6 +158,7 @@ export default async function ContactPage() {
           <div className="glass-panel-strong rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Contact direct</h2>
             <p className="mt-4 text-[color:var(--site-muted)]">Pour une demande rapide, une collaboration ou une idée à clarifier :</p>
+            <p className="mt-3 text-sm leading-6 text-[color:var(--site-soft)]">Réponse humaine, soumission sur demande et orientation vers la bonne formule selon votre projet.</p>
             <ul className="mt-6 space-y-3 text-[color:var(--site-text)]">
               <li>Email: <a href={`mailto:${email}`} className="hover:underline">{email}</a></li>
               <li>Telephone: <a href={phoneHref} className="hover:underline">{phone}</a></li>
@@ -205,6 +206,18 @@ export default async function ContactPage() {
               <a href={youtube} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Voir sur YouTube</a>
               <a href={instagram} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Instagram</a>
               <a href={facebook} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Facebook</a>
+            </div>
+          </div>
+
+          <div className="warm-cta-panel rounded-3xl p-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Vous ne savez pas encore quelle page choisir ?</h2>
+            <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
+              Commencez par la bonne entrée : ateliers pour un groupe, chanson personnalisée pour un moment important, ou créations pour un besoin plus large.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <a href="/ateliers" className="cta-secondary rounded-2xl px-5 py-3">Demander un atelier</a>
+              <a href="/commander-une-chanson" className="cta-secondary rounded-2xl px-5 py-3">Demander une chanson</a>
+              <a href="/creations" className="cta-secondary rounded-2xl px-5 py-3">Voir mes créations</a>
             </div>
           </div>
         </div>

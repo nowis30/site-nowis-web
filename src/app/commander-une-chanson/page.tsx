@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import { ClientPortalRequestGate } from '@/components/marketing/ClientPortalRequestGate';
 import { PageHero } from '@/components/marketing/PageHero';
 import {
@@ -14,6 +15,7 @@ import {
 import { legalLinks } from '@/data/legal';
 import { portfolioDisclosure, songPackages, songProcessSteps, songSalesCtas } from '@/data/songSales';
 import { buildMetadata } from '@/lib/seo';
+import { buildServiceSchema } from '@/lib/structured-data';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
 
 const DEFAULT_SONG_PAGE_CONTENT = {
@@ -59,14 +61,24 @@ function pickHref(adminValue: string | null | undefined, fallback: string) {
 }
 
 export const metadata = buildMetadata({
-  title: 'Commander une chanson | Création Nowis',
+  title: 'Demander une chanson personnalisée | Création Nowis',
   description:
-    'Commande une chanson personnalisée avec Création Nowis : projet sur mesure, option vidéo IA, garantie satisfaction et demande simple à envoyer.',
+    'Demandez une chanson personnalisée avec Création Nowis : une création humaine, sur mesure, avec options visuelles ou vidéo IA et prise de contact simple depuis Drummondville vers tout le Québec.',
   path: '/commander-une-chanson',
-  keywords: ['Commander une chanson', 'chanson personnalisée Québec', 'projet musical sur mesure', 'Création Nowis'],
+  image: '/hero.jpg',
+  keywords: ['demander une chanson personnalisée', 'chanson personnalisée Québec', 'Nowis Morin chanson sur mesure', 'vidéo IA chanson'],
 });
 
 export default async function CommanderUneChansonPage() {
+  const serviceSchema = buildServiceSchema({
+    name: 'Chansons personnalisées sur mesure',
+    description:
+      'Création Nowis conçoit des chansons personnalisées à partir d histoires, de souvenirs et d émotions, avec accompagnement humain et options vidéo IA.',
+    path: '/commander-une-chanson',
+    serviceType: 'Chanson personnalisée',
+    audience: ['Familles', 'Couples', 'Événements', 'Projets personnels'],
+  });
+
   const runtimePayload = await getAdminRuntimePayload();
   const adminPage = getAdminPage(runtimePayload, 'commander-une-chanson');
 
@@ -165,6 +177,7 @@ export default async function CommanderUneChansonPage() {
 
   return (
     <div className="site-background text-slate-900">
+      <Script id="song-service-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
       <PageHero
         eyebrow={heroEyebrow}
         title={heroTitle}
@@ -232,6 +245,9 @@ export default async function CommanderUneChansonPage() {
             <p className="mt-4 text-lg leading-relaxed text-slate-600">
               Décris l’histoire, l’émotion recherchée et le type d’accompagnement souhaité. Si tu hésites encore, tu peux simplement raconter le contexte avec tes mots.
             </p>
+            <p className="mt-4 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-[rgba(255,247,238,0.7)] px-4 py-3 text-sm leading-6 text-slate-700">
+              Chaque chanson est évaluée sur demande. L objectif est de bien comprendre le contexte avant de confirmer une soumission ou une direction créative.
+            </p>
             <div className="mt-8 rounded-2xl border border-[rgba(131,97,67,0.12)] bg-[rgba(255,250,244,0.8)] p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Consentement portfolio</p>
               <p className="mt-3 text-sm leading-6 text-slate-600">{portfolioDisclosure.text}</p>
@@ -266,7 +282,7 @@ export default async function CommanderUneChansonPage() {
               href="#acces-portail"
               className="inline-flex w-full items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white transition hover:brightness-105 sm:w-auto"
             >
-              Voir la procedure
+              Demander une chanson
             </Link>
             <Link
               href={songSalesCtas.talk.href}

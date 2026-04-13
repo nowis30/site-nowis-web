@@ -6,14 +6,18 @@ export function buildMetadata({
   title,
   description,
   path = '/',
-  image = '/hero.jpg',
+  image = '/nowis.png',
   keywords = [],
+  noIndex = false,
+  openGraphType = 'website',
 }: {
   title: string;
   description: string;
   path?: string;
   image?: string;
   keywords?: string[];
+  noIndex?: boolean;
+  openGraphType?: 'website' | 'article';
 }): Metadata {
   const url = `${siteUrl}${path}`;
 
@@ -23,13 +27,14 @@ export function buildMetadata({
     keywords,
     metadataBase: new URL(siteUrl),
     alternates: { canonical: path },
+    robots: noIndex ? { index: false, follow: false } : undefined,
     openGraph: {
       title,
       description,
       url,
-      siteName: 'Nowis Morin',
+      siteName: 'Création Nowis',
       locale: 'fr_CA',
-      type: 'website',
+      type: openGraphType,
       images: [{ url: image, width: 1200, height: 630, alt: title }],
     },
     twitter: {

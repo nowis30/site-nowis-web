@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
-  title: 'À propos — Nowis Morin | Créateur, animateur et artiste au Québec',
+  title: 'À propos de Nowis Morin | Création Nowis à Drummondville',
   description:
-    'Nowis Morin est le créateur derrière Création Nowis. Artiste, animateur et passionné de création musicale, il anime des ateliers avec l\'IA et crée des chansons personnalisées en personne, partout au Québec.',
+    'Découvrez Nowis Morin, créateur de Création Nowis à Drummondville : ateliers de création musicale avec IA, chansons personnalisées et accompagnement humain partout au Québec.',
   path: '/a-propos',
-  keywords: ['Nowis Morin', 'à propos', 'artiste IA Québec', 'ateliers création musicale'],
+  image: '/hero.jpg',
+  keywords: ['Nowis Morin', 'Création Nowis Drummondville', 'artiste IA Québec', 'ateliers création musicale avec IA'],
 });
 
 export default function AProposPage() {
@@ -57,7 +58,7 @@ export default function AProposPage() {
               <div className="relative aspect-[3/4]">
                 <Image
                   src="/hero.jpg"
-                  alt="Nowis Morin, créateur de Création Nowis"
+                  alt="Portrait de Nowis Morin, créateur de Création Nowis et animateur d ateliers IA"
                   fill
                   className="brightness-[0.75] contrast-[1.04]"
                   style={{ objectFit: 'cover', objectPosition: '50% 25%' }}

@@ -2,11 +2,11 @@ import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
-  title: 'Autres services — Nowis Morin | Jeux, artistes, vidéos, créations particulières',
+  title: 'Autres services créatifs — Création Nowis | Vidéos IA, jeux et accompagnement artistique',
   description:
-    'Découvrez les autres services de Création Nowis : jeux interactifs avec l\'IA, accompagnement d\'artistes, vidéos créatives, contenus visuels et projets artistiques particuliers.',
+    'Découvrez les autres services créatifs de Création Nowis : vidéos IA, jeux interactifs, accompagnement d artistes et projets sur mesure à Drummondville et partout au Québec.',
   path: '/autres-services',
-  keywords: ['autres services Nowis', 'jeux IA', 'accompagnement artistes', 'vidéos créatives', 'contenu artistique'],
+  keywords: ['autres services Création Nowis', 'vidéos IA Québec', 'accompagnement artistes Drummondville', 'jeux IA'],
 });
 
 const services = [
@@ -79,6 +79,9 @@ export default function AutresServicesPage() {
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
             En dehors des ateliers et des chansons personnalisées, Nowis Morin propose un univers plus large :
             jeux interactifs, accompagnement d&apos;artistes, vidéos créatives et projets sur mesure. Tout ce qui croise musique, IA et création humaine.
+          </p>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--site-soft)]">
+            Chaque demande se discute sur soumission, selon le public, le format et le niveau d accompagnement recherché.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
@@ -200,6 +203,12 @@ export default function AutresServicesPage() {
               className="cta-secondary w-full justify-center px-9 py-4 sm:w-auto"
             >
               En savoir plus sur Nowis
+            </Link>
+            <Link
+              href="/videos"
+              className="cta-secondary w-full justify-center px-9 py-4 sm:w-auto"
+            >
+              Voir les vidéos IA
             </Link>
           </div>
         </div>

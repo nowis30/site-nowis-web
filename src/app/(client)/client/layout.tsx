@@ -1,6 +1,14 @@
+import type { Metadata } from 'next';
 import { getClientPortalSessionServer } from '@/features/client-portal/auth/session';
 import { ClientPortalShell } from '@/features/client-portal/components/ClientPortalShell';
 import { safeCountUnreadAdminMessages } from '@/lib/messages-store';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function ClientAreaLayout({ children }: { children: React.ReactNode }) {
   let session;

@@ -1,12 +1,15 @@
 ﻿import Image from 'next/image';
 import Link from 'next/link';
+import { buildMetadata } from '@/lib/seo';
 import { getPublishedListings } from '@/lib/logements';
 
-export const metadata = {
-  title: 'Logements à louer - NOWIS',
+export const metadata = buildMetadata({
+  title: 'Logements à louer | NOWIS',
   description:
-    'Explorez nos logements à louer : photos, tarifs, localisation et réservation de visite. Découvrez votre prochain logement en quelques clics.',
-};
+    'Explorez les logements publiés sur NOWIS : photos, caractéristiques, localisation et prise de contact pour organiser une visite.',
+  path: '/logements',
+  keywords: ['logements à louer', 'annonces logements NOWIS', 'visite logement'],
+});
 
 export default async function LogementsPage() {
   const listings = await getPublishedListings();
@@ -18,7 +21,7 @@ export default async function LogementsPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Logements</p>
           <h1 className="mt-4 text-4xl font-bold text-slate-950 md:text-5xl">Logements a louer</h1>
           <p className="mt-4 text-lg leading-relaxed text-slate-600">
-            Explore les logements actuellement publies, leurs caracteristiques et les options de reservation disponibles.
+            Explorez les logements actuellement publies, leurs caracteristiques et les moyens simples de demander une visite ou un contact direct.
           </p>
         </div>
 
@@ -34,7 +37,7 @@ export default async function LogementsPage() {
                   {logement.images[0] ? (
                     <Image
                       src={logement.images[0]}
-                      alt={logement.title}
+                      alt={`${logement.title}, photo principale du logement à ${logement.city}`}
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"

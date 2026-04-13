@@ -3,6 +3,8 @@ export type ServiceOffer = {
   subtitle: string;
   description: string;
   bullets: string[];
+  href: string;
+  cta: string;
 };
 
 export const serviceOffers: ServiceOffer[] = [
@@ -12,6 +14,8 @@ export const serviceOffers: ServiceOffer[] = [
     description:
       'Nowis Morin crée des chansons originales à partir de ton idée, de ton histoire ou de ton message, avec une direction artistique claire et un rendu moderne.',
     bullets: ['Cadeaux uniques', 'Projets personnels', 'Événements et hommages'],
+    href: '/commander-une-chanson',
+    cta: 'Demander une chanson',
   },
   {
     title: 'Vidéos personnalisées',
@@ -19,6 +23,8 @@ export const serviceOffers: ServiceOffer[] = [
     description:
       'Des vidéos courtes, créatives et visuellement fortes, pensées pour les réseaux sociaux, la promotion d’un projet ou une identité artistique.',
     bullets: ['YouTube', 'Formats sociaux', 'Teasers artistiques'],
+    href: '/videos',
+    cta: 'Voir les vidéos IA',
   },
   {
     title: 'Visuels créatifs',
@@ -26,6 +32,8 @@ export const serviceOffers: ServiceOffer[] = [
     description:
       'Création d’ambiances visuelles, concepts, couvertures et images promotionnelles pour enrichir ta présence en ligne.',
     bullets: ['Visuels de lancement', 'Univers de marque', 'Direction artistique'],
+    href: '/autres-services',
+    cta: 'Voir mes créations',
   },
   {
     title: 'Concepts marketing avec IA',
@@ -33,5 +41,7 @@ export const serviceOffers: ServiceOffer[] = [
     description:
       'Nowis Morin combine intuition créative, narration et outils IA pour produire des concepts utiles aux artistes, entreprises et projets spéciaux.',
     bullets: ['Campagnes créatives', 'Idées de contenu', 'Projets spéciaux'],
+    href: '/contact?projectType=autre&message=Bonjour, je veux discuter d un projet creatif avec Creation Nowis.',
+    cta: 'Me contacter',
   },
 ];

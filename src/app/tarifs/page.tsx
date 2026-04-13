@@ -4,7 +4,7 @@ import { buildMetadata } from '@/lib/seo';
 export const metadata = buildMetadata({
   title: 'Tarifs — Création Nowis | Ateliers, chansons personnalisées et services créatifs',
   description:
-    'Consulter les tarifs de Création Nowis : ateliers de groupe (60 min à 3 h), accompagnement individuel à 120 $/h, chanson IA souvenir à 25 $ et vidéo IA avec chanson à 100 $. Tarifs de lancement disponibles.',
+    'Consultez les repères tarifaires de Création Nowis pour préparer une demande d atelier, de chanson personnalisée ou de service créatif. La soumission finale reste adaptée à chaque projet.',
   path: '/tarifs',
   keywords: ['tarifs ateliers création nowis', 'prix atelier musical IA', 'chanson personnalisée prix', 'tarifs Nowis Morin'],
 });
@@ -120,8 +120,7 @@ export default function TarifsPage() {
             Tarifs — Création Nowis
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-            Des ateliers accessibles, animés en personne par Nowis Morin. Tarifs de lancement offerts
-            durant les premiers mois pour soutenir le développement de la formule.
+            Des repères clairs pour comprendre les formules proposées par Nowis Morin. La soumission finale est toujours ajustée selon le groupe, le contexte, le déplacement et le niveau d accompagnement attendu.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <a
@@ -139,7 +138,7 @@ export default function TarifsPage() {
             </Link>
           </div>
           <p className="mt-5 text-sm text-[color:var(--site-soft)]">
-            Les tarifs de lancement sont valides pendant les 3 premiers mois d&apos;activité. Les tarifs réguliers s&apos;appliquent par la suite.
+            Les montants affichés servent de base de discussion. La soumission confirmée dépend toujours du projet réel.
           </p>
         </div>
       </section>

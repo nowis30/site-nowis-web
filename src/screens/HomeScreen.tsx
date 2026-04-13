@@ -181,6 +181,9 @@ export const HomeScreen = async () => {
                 Voir des exemples
               </Link>
             </div>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--site-soft)]">
+              Soumissions sur demande, réponse humaine et ateliers animés par Nowis Morin à Drummondville et partout au Québec.
+            </p>
 
             <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
               <div className="glass-panel-soft px-4 py-4">
@@ -204,7 +207,7 @@ export const HomeScreen = async () => {
               <div className="relative aspect-[4/5.15] md:aspect-[4/5]">
                 <Image
                   src="/hero.jpg"
-                  alt="Nowis Morin, créateur principal de Création Nowis"
+                  alt="Nowis Morin présente des ateliers de création musicale avec l IA chez Création Nowis"
                   fill
                   className="object-cover object-[50%_28%] brightness-[0.88] contrast-[1.05] saturate-[1.02] md:object-[50%_35%] md:brightness-[0.84] md:contrast-[1.03]"
                   priority
@@ -462,7 +465,7 @@ export const HomeScreen = async () => {
             <div className="relative min-h-[360px] lg:min-h-[460px]">
               <Image
                 src="/hero.jpg"
-                alt="Nowis Morin"
+                alt="Nowis Morin, artiste et animateur de Création Nowis à Drummondville"
                 fill
                 className="object-cover brightness-[0.84] contrast-[1.04]"
                 style={{ objectPosition: '50% 25%' }}

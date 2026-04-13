@@ -4,10 +4,13 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nowis.store';
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-    },
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/api/', '/client/', '/crm/', '/connexion', '/inscription'],
+      },
+    ],
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl,
   };
