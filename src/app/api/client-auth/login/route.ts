@@ -6,6 +6,7 @@ import { buildErrorPayload, ensureAuthConfig, logApiDiagnostic } from '@/lib/api
 import { prisma } from '@/lib/prisma';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
 import { clientLoginSchema } from '@/features/client-portal/auth/validators';
+import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
 import { sanitizeNextPath } from '@/lib/safe-next';
 
 function errorResponse(
@@ -13,7 +14,10 @@ function errorResponse(
   message: string,
   status: number,
 ) {
-  return NextResponse.json(buildErrorPayload(code, message), { status });
+  return NextResponse.json(buildErrorPayload(code, message), {
+    status,
+    headers: { 'Cache-Control': 'no-store' },
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -36,6 +40,22 @@ export async function POST(request: NextRequest) {
     const payload = clientLoginSchema.parse(rawBody);
     const email = payload.email.toLowerCase();
     const redirectTo = sanitizeNextPath(payload.next, '/client/dashboard');
+    const clientIp = getRequestClientIp(request.headers);
+    const limiter = consumeRateLimit(
+      `client-login:${sanitizeRateLimitIdentifier(clientIp)}:${sanitizeRateLimitIdentifier(email)}`,
+      6,
+      10 * 60 * 1000,
+    );
+
+    if (!limiter.allowed) {
+      return NextResponse.json(
+        buildErrorPayload('AUTH_FAIL', 'Trop de tentatives. Reessayez dans quelques minutes.'),
+        {
+          status: 429,
+          headers: { 'Retry-After': String(limiter.retryAfterSeconds), 'Cache-Control': 'no-store' },
+        },
+      );
+    }
 
     const user = await prisma.user.findFirst({
       where: {
@@ -77,7 +97,10 @@ export async function POST(request: NextRequest) {
       fullName: user.contact.fullName,
     });
 
-    const response = NextResponse.json({ ok: true, redirectTo });
+    const response = NextResponse.json(
+      { ok: true, redirectTo },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
     response.headers.append('Set-Cookie', createClientPortalSessionCookie(sessionToken));
     return response;
   } catch (error) {

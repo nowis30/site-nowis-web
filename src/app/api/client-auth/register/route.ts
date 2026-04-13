@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
+import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
 import { sanitizeNextPath } from '@/lib/safe-next';
 
 export async function POST(request: NextRequest) {
@@ -12,6 +13,25 @@ export async function POST(request: NextRequest) {
     const payload = clientRegisterSchema.parse(await request.json());
     const redirectTo = sanitizeNextPath(payload.next, '/client/dashboard');
     const email = payload.email.toLowerCase();
+    const clientIp = getRequestClientIp(request.headers);
+    const limiter = consumeRateLimit(
+      `client-register:${sanitizeRateLimitIdentifier(clientIp)}:${sanitizeRateLimitIdentifier(email)}`,
+      4,
+      15 * 60 * 1000,
+    );
+
+    if (!limiter.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Trop de tentatives d’inscription. Réessayez dans quelques minutes.',
+          code: 'RATE_LIMITED',
+        },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(limiter.retryAfterSeconds), 'Cache-Control': 'no-store' },
+        },
+      );
+    }
 
     const existingUser = await prisma.user.findFirst({
       where: { email: { equals: email, mode: 'insensitive' } },
@@ -25,7 +45,7 @@ export async function POST(request: NextRequest) {
           code: 'EMAIL_EXISTS',
           suggestedAction: 'login',
         },
-        { status: 409 },
+        { status: 409, headers: { 'Cache-Control': 'no-store' } },
       );
     }
 
@@ -112,21 +132,27 @@ export async function POST(request: NextRequest) {
       fullName: result.contact.fullName,
     });
 
-    const response = NextResponse.json({
-      ok: true,
-      message: 'Compte client cree avec succes.',
-      redirectTo,
-      user: {
-        id: result.user.id,
-        email: result.user.email,
-        fullName: result.user.fullName,
+    const response = NextResponse.json(
+      {
+        ok: true,
+        message: 'Compte client cree avec succes.',
+        redirectTo,
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          fullName: result.user.fullName,
+        },
       },
-    });
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
     response.headers.append('Set-Cookie', createClientPortalSessionCookie(sessionToken));
     return response;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      return NextResponse.json({ error: 'Un compte existe deja avec cet email.', code: 'EMAIL_EXISTS', suggestedAction: 'login' }, { status: 409 });
+      return NextResponse.json(
+        { error: 'Un compte existe deja avec cet email.', code: 'EMAIL_EXISTS', suggestedAction: 'login' },
+        { status: 409, headers: { 'Cache-Control': 'no-store' } },
+      );
     }
 
     if (error instanceof ZodError) {
@@ -136,11 +162,11 @@ export async function POST(request: NextRequest) {
           code: 'VALIDATION_ERROR',
           details: error.issues,
         },
-        { status: 400 },
+        { status: 400, headers: { 'Cache-Control': 'no-store' } },
       );
     }
 
     console.error('[CLIENT_AUTH_REGISTER]', error);
-    return NextResponse.json({ error: 'Inscription impossible pour le moment.' }, { status: 500 });
+    return NextResponse.json({ error: 'Inscription impossible pour le moment.' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
   }
 }

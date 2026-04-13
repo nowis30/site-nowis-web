@@ -1,23 +1,34 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
+import { sanitizeNextPath } from '@/lib/safe-next';
 
 export default function ConnexionPage() {
   const router = useRouter();
-  const { user, loading, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [externalErrorCode, setExternalErrorCode] = useState<string | null>(null);
+  const [nextPath, setNextPath] = useState('/client/dashboard');
 
   useEffect(() => {
-    if (!loading && user) {
-      router.replace('/proprietaire');
-    }
-  }, [loading, user, router]);
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    setExternalErrorCode(params.get('error'));
+    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
+  }, []);
+
+  const externalErrorMessage =
+    externalErrorCode === 'invalid-link'
+      ? 'Le lien de connexion est invalide ou expiré.'
+      : externalErrorCode === 'account-not-found'
+        ? "Aucun compte client n'est relié à ce lien."
+        : null;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,8 +36,16 @@ export default function ConnexionPage() {
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
-      router.replace('/proprietaire');
+      const response = await fetch('/api/client-auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, next: nextPath }),
+      });
+      const data = await readApiJson(response);
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, 'Impossible de se connecter.'));
+      }
+      router.replace(data.redirectTo || '/client/dashboard');
     } catch (err) {
       setError((err as Error).message || 'Impossible de se connecter.');
     } finally {
@@ -35,51 +54,100 @@ export default function ConnexionPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-120px)] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion</h1>
-        <p className="text-sm text-gray-600 mb-6">
-          Accédez à votre espace propriétaire pour gérer vos logements.
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Adresse e-mail</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              placeholder="vous@exemple.com"
-            />
+    <div className="relative min-h-[calc(100vh-120px)] overflow-hidden px-4 py-12">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(circle at 14% 12%, rgba(184,111,61,0.14), transparent 24%),' +
+            'radial-gradient(circle at 86% 14%, rgba(203,165,120,0.18), transparent 20%)',
+        }}
+      />
+      <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div className="warm-cta-panel p-8 md:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Portail client</p>
+          <h1 className="mt-4 font-display text-4xl leading-[1.02] text-[color:var(--site-heading)] md:text-5xl">Un accès simple pour suivre votre projet sans friction</h1>
+          <p className="mt-5 text-base leading-8 text-[color:var(--site-muted)]">
+            Connectez-vous pour retrouver vos demandes, vos rendez-vous, vos échanges et les prochaines étapes. L’espace reste clair, humain et centré sur votre projet.
+          </p>
+          <div className="mt-8 grid gap-3">
+            {[
+              'Suivre une demande de chanson ou d’atelier',
+              'Retrouver vos rendez-vous et messages',
+              'Accéder à un espace protégé par session sécurisée',
+            ].map((item) => (
+              <div key={item} className="glass-panel-soft flex items-start gap-3 rounded-[1.25rem] px-4 py-3">
+                <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--site-accent-soft)] text-xs font-bold text-[color:var(--site-accent-strong)]">✓</span>
+                <span className="text-sm leading-6 text-[color:var(--site-text)]">{item}</span>
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              placeholder="••••••••"
-            />
+        <div className="w-full max-w-xl lg:justify-self-end">
+          <div className="glass-panel-strong rounded-[2rem] p-8 shadow-card">
+            <h2 className="text-2xl font-bold text-[color:var(--site-heading)] mb-2">Connexion au portail client</h2>
+            <p className="text-sm text-[color:var(--site-muted)] mb-6">
+              Utilisez votre adresse e-mail et votre mot de passe pour entrer dans votre espace client sécurisé.
+            </p>
+
+            {nextPath !== '/client/dashboard' ? (
+              <div className="mb-4 rounded-lg border border-[color:var(--site-accent)]/20 bg-[color:var(--site-accent-soft)] px-3 py-2 text-sm text-[color:var(--site-accent-strong)]">
+                Connexion requise pour continuer vers la page demandee.
+              </div>
+            ) : null}
+
+            {externalErrorMessage ? (
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                {externalErrorMessage}
+              </div>
+            ) : null}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[color:var(--site-heading)]">Adresse e-mail</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-lg border border-[color:var(--site-border)] bg-white px-4 py-3 text-sm text-[color:var(--site-heading)] shadow-sm focus:border-[color:var(--site-accent)] focus:ring-[color:var(--site-accent)]"
+                  placeholder="vous@exemple.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[color:var(--site-heading)]">Mot de passe</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="mt-1 block w-full rounded-lg border border-[color:var(--site-border)] bg-white px-4 py-3 text-sm text-[color:var(--site-heading)] shadow-sm focus:border-[color:var(--site-accent)] focus:ring-[color:var(--site-accent)]"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Connexion...' : 'Se connecter'}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-sm text-[color:var(--site-muted)]">
+              Pas encore d'acces ?{' '}
+              <Link href={`/inscription?next=${encodeURIComponent(nextPath)}`} className="text-[color:var(--site-accent-strong)] hover:underline">
+                Créer mon accès
+              </Link>
+            </p>
+
+            <p className="mt-3 text-sm text-[color:var(--site-muted)]">
+              Espace equipe interne: <Link href="/crm/login" className="font-medium text-[color:var(--site-accent-strong)] hover:underline">connexion CRM</Link>
+            </p>
           </div>
-
-          {error && <div className="text-sm text-red-600">{error}</div>}
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Connexion...' : 'Se connecter'}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-sm text-gray-600">
-          Pas encore de compte ?{' '}
-          <a href="/inscription" className="text-primary-600 hover:underline">
-            Créer un compte
-          </a>
-        </p>
+        </div>
       </div>
     </div>
   );

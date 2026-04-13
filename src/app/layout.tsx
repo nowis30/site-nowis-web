@@ -51,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <head>
-        <meta name="theme-color" content="#f7efe5" />
+        <meta name="theme-color" content="#f6f1ea" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
