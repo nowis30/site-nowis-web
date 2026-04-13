@@ -21,9 +21,9 @@ type SectionHeaderProps = {
 };
 
 function SectionHeader({ eyebrow, title, description, centered = false, theme = 'dark' }: SectionHeaderProps) {
-  const titleClass = theme === 'dark' ? 'text-white' : 'text-slate-950';
-  const descClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
-  const eyebrowClass = theme === 'dark' ? 'text-primary-300' : 'text-primary-600';
+  const titleClass = theme === 'dark' ? 'text-[color:var(--site-heading)]' : 'text-slate-950';
+  const descClass = theme === 'dark' ? 'text-[color:var(--site-muted)]' : 'text-slate-600';
+  const eyebrowClass = theme === 'dark' ? 'text-[color:var(--site-accent-strong)]' : 'text-primary-600';
 
   return (
     <div className={centered ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl'}>
@@ -38,12 +38,12 @@ function SectionHeader({ eyebrow, title, description, centered = false, theme = 
 
 export function SongTrustStrip() {
   return (
-    <section className="border-y border-white/10 bg-coal-950/65 backdrop-blur-sm">
+    <section className="section-soft border-y border-[rgba(131,97,67,0.08)] backdrop-blur-sm">
       <div className="mx-auto grid max-w-7xl gap-4 px-6 py-6 md:grid-cols-2 xl:grid-cols-4">
         {songTrustItems.map((item) => (
-          <article key={item.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-200">{item.title}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-200">{item.description}</p>
+          <article key={item.title} className="glass-panel-soft rounded-[1.5rem] px-5 py-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">{item.title}</p>
+            <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{item.description}</p>
           </article>
         ))}
       </div>
@@ -52,12 +52,12 @@ export function SongTrustStrip() {
 }
 
 export function SongHowItWorksSection({ theme = 'dark' }: { theme?: 'light' | 'dark' }) {
-  const sectionText = theme === 'dark' ? 'text-white' : 'text-slate-950';
+  const sectionText = theme === 'dark' ? 'text-[color:var(--site-heading)]' : 'text-slate-950';
   const cardClass = theme === 'dark'
-    ? 'brand-card p-8'
+    ? 'glass-panel-soft p-8'
     : 'rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm';
-  const labelClass = theme === 'dark' ? 'text-primary-300' : 'text-primary-600';
-  const bodyClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
+  const labelClass = theme === 'dark' ? 'text-[color:var(--site-accent-strong)]' : 'text-primary-600';
+  const bodyClass = theme === 'dark' ? 'text-[color:var(--site-muted)]' : 'text-slate-600';
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
@@ -102,12 +102,12 @@ export function SongHowItWorksSectionWithData({
   theme?: 'light' | 'dark';
   data?: SongHowItWorksSectionData;
 }) {
-  const sectionText = theme === 'dark' ? 'text-white' : 'text-slate-950';
+  const sectionText = theme === 'dark' ? 'text-[color:var(--site-heading)]' : 'text-slate-950';
   const cardClass = theme === 'dark'
-    ? 'brand-card p-8'
+    ? 'glass-panel-soft p-8'
     : 'rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm';
-  const labelClass = theme === 'dark' ? 'text-primary-300' : 'text-primary-600';
-  const bodyClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
+  const labelClass = theme === 'dark' ? 'text-[color:var(--site-accent-strong)]' : 'text-primary-600';
+  const bodyClass = theme === 'dark' ? 'text-[color:var(--site-muted)]' : 'text-slate-600';
 
   const steps = data?.steps && data.steps.length > 0 ? data.steps : songProcessSteps;
 
@@ -230,13 +230,13 @@ export function SongProjectTypesSection() {
 
 export function SongVideoExtrasSection({ theme = 'dark' }: { theme?: 'light' | 'dark' }) {
   const mainCard = theme === 'dark'
-    ? 'brand-panel p-8 text-white md:p-10'
+    ? 'glass-panel-strong p-8 text-[color:var(--site-heading)] md:p-10'
     : 'rounded-[2rem] border border-slate-200 bg-white p-8 text-slate-900 shadow-sm md:p-10';
-  const labelClass = theme === 'dark' ? 'text-primary-200' : 'text-primary-600';
-  const titleClass = theme === 'dark' ? 'text-white' : 'text-slate-950';
-  const bodyClass = theme === 'dark' ? 'text-slate-200' : 'text-slate-600';
+  const labelClass = theme === 'dark' ? 'text-[color:var(--site-accent-strong)]' : 'text-primary-600';
+  const titleClass = theme === 'dark' ? 'text-[color:var(--site-heading)]' : 'text-slate-950';
+  const bodyClass = theme === 'dark' ? 'text-[color:var(--site-muted)]' : 'text-slate-600';
   const noteClass = theme === 'dark'
-    ? 'mt-5 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-6 text-slate-200'
+    ? 'mt-5 rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-5 py-4 text-sm leading-6 text-[color:var(--site-muted)]'
     : 'mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-700';
 
   return (
@@ -315,10 +315,10 @@ export function SongPortfolioBlock() {
 
 export function SongFinalCtaSection() {
   return (
-    <section className="brand-shell rounded-[2rem] p-8 text-white shadow-card md:p-10">
-      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">Prêt à lancer la demande</p>
-      <h2 className="mt-4 font-display text-4xl leading-[1.05] md:text-5xl">Un projet musical simple à lancer, sans complication</h2>
-      <p className="mt-4 max-w-3xl text-base leading-8 text-slate-200 md:text-lg">
+    <section className="warm-cta-panel p-8 shadow-card md:p-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Prêt à lancer la demande</p>
+      <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">Un projet musical simple à lancer, sans complication</h2>
+      <p className="mt-4 max-w-3xl text-base leading-8 text-[color:var(--site-muted)] md:text-lg">
         Si tu veux passer à l’action, tu peux lancer directement la demande ou commencer par m’expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.
       </p>
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -330,7 +330,7 @@ export function SongFinalCtaSection() {
         </Link>
         <ContactPrefillLink
           href={songSalesCtas.talk.href}
-          className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-primary-500/10"
+          className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
         >
           {songSalesCtas.talk.label}
         </ContactPrefillLink>
@@ -427,10 +427,10 @@ export function SongFinalCtaSectionWithData({ data }: { data?: SongFinalCtaData 
   const secondary = data?.secondaryCta || { label: songSalesCtas.talk.label, href: songSalesCtas.talk.href };
 
   return (
-    <section className="brand-shell rounded-[2rem] p-8 text-white shadow-card md:p-10">
-      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-200">{data?.eyebrow || 'Prêt à lancer la demande'}</p>
-      <h2 className="mt-4 font-display text-4xl leading-[1.05] md:text-5xl">{data?.title || 'Un projet musical simple à lancer, sans complication'}</h2>
-      <p className="mt-4 max-w-3xl text-base leading-8 text-slate-200 md:text-lg">
+    <section className="warm-cta-panel p-8 shadow-card md:p-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">{data?.eyebrow || 'Prêt à lancer la demande'}</p>
+      <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">{data?.title || 'Un projet musical simple à lancer, sans complication'}</h2>
+      <p className="mt-4 max-w-3xl text-base leading-8 text-[color:var(--site-muted)] md:text-lg">
         {data?.description || 'Si tu veux passer à l’action, tu peux lancer directement la demande ou commencer par m’expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.'}
       </p>
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -442,7 +442,7 @@ export function SongFinalCtaSectionWithData({ data }: { data?: SongFinalCtaData 
         </Link>
         <ContactPrefillLink
           href={secondary.href}
-          className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-primary-500/10"
+          className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
         >
           {secondary.label}
         </ContactPrefillLink>

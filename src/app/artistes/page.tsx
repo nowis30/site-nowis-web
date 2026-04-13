@@ -36,7 +36,7 @@ export default function ArtistesPage() {
   const artists = getAllArtists();
 
   return (
-    <div className="bg-slate-50">
+    <div className="site-background">
       <PageHero
         eyebrow="Artistes"
         title="Des artistes réunis sous une même bannière créative, humaine et moderne"
@@ -71,7 +71,7 @@ export default function ArtistesPage() {
               Deux pages dédiées permettent maintenant de mieux comprendre les rôles, les approches et les univers qui composent Création Nowis.
             </p>
           </div>
-          <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’un projet avec Création Nowis." className="inline-flex rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white transition hover:bg-slate-800">
+          <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’un projet avec Création Nowis." className="inline-flex rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
             Contacter Création Nowis
           </ContactPrefillLink>
         </div>
@@ -85,13 +85,13 @@ export default function ArtistesPage() {
 
       <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <article className="rounded-[2rem] bg-slate-950 p-8 text-white shadow-sm md:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Chansons personnalisées</p>
-            <h2 className="mt-4 text-3xl font-bold">Une création pensée pour un moment important</h2>
-            <p className="mt-5 text-lg leading-relaxed text-slate-300">
+          <article className="warm-cta-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Chansons personnalisées</p>
+            <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">Une création pensée pour un moment important</h2>
+            <p className="mt-5 text-lg leading-relaxed text-[color:var(--site-text)]">
               Création Nowis peut aussi accompagner des clients qui veulent une chanson personnalisée à partir d’une histoire réelle, d’un souvenir ou d’un événement marquant. L’approche reste sobre, crédible et émotionnelle, avec la possibilité d’ajouter ensuite un visuel, une vidéo ou une petite vitrine de présentation.
             </p>
-            <p className="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-relaxed text-slate-200">
+            <p className="mt-6 rounded-2xl border border-[color:var(--site-accent)]/15 bg-white/70 px-5 py-4 text-sm leading-relaxed text-[color:var(--site-text)]">
               Chaque demande est évaluée selon le projet. L’idée est de garder une approche claire, humaine et facile à discuter avant de lancer la création.
             </p>
           </article>
@@ -106,7 +106,7 @@ export default function ArtistesPage() {
               ))}
             </div>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je souhaite une chanson personnalisée pour un moment important." className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white transition hover:bg-slate-800">
+              <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je souhaite une chanson personnalisée pour un moment important." className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
                 Demander une chanson personnalisée
               </ContactPrefillLink>
               <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-50">

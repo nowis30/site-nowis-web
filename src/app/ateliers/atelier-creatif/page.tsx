@@ -178,7 +178,7 @@ const faqs = [
 
 export default function AtelierCreatifPage() {
   return (
-    <main className="text-slate-100">
+    <main className="text-[color:var(--site-text)]">
 
       {/* ════════════════ HERO ════════════════ */}
       <section className="relative overflow-hidden px-6 py-24 md:py-32">
@@ -262,7 +262,7 @@ export default function AtelierCreatifPage() {
       </section>
 
       {/* ════════════════ POUR QUI ════════════════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="max-w-xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
@@ -281,7 +281,7 @@ export default function AtelierCreatifPage() {
             {audiences.map((a) => (
               <article
                 key={a.label}
-                className="rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-[rgba(14,20,44,0.78)] to-[rgba(9,14,28,0.65)] p-5 backdrop-blur-sm transition hover:border-white/20 hover:from-[rgba(20,28,60,0.85)]"
+                className="brand-card rounded-[1.5rem] p-5 transition"
               >
                 <span className="text-2xl" role="img" aria-hidden="true">
                   {a.icon}
@@ -334,15 +334,9 @@ export default function AtelierCreatifPage() {
       </section>
 
       {/* ════════════════ RÉSULTAT FINAL ════════════════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
-          <div
-            className="rounded-[2.5rem] border border-amber-400/20 p-8 md:p-12"
-            style={{
-              background:
-                'linear-gradient(145deg, rgba(55,32,0,0.38) 0%, rgba(100,60,0,0.22) 60%, rgba(18,12,0,0.30) 100%)',
-            }}
-          >
+          <div className="warm-spotlight-panel p-8 md:p-12">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
               Ce que le groupe repart avec
             </p>
@@ -405,7 +399,7 @@ export default function AtelierCreatifPage() {
       </section>
 
       {/* ════════════════ MILIEUX VISÉS ════════════════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
@@ -423,7 +417,7 @@ export default function AtelierCreatifPage() {
           <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
 
             {/* Aînés */}
-            <article className="group rounded-[1.75rem] border border-amber-400/20 bg-gradient-to-b from-[rgba(55,35,0,0.32)] to-[rgba(25,15,0,0.22)] p-7 transition hover:border-amber-400/40 hover:from-[rgba(70,44,0,0.42)]">
+            <article className="warm-spotlight-panel group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-lg" aria-hidden="true">🎶</span>
                 <h3 className="font-display text-xl text-white">Aînés</h3>
@@ -443,7 +437,7 @@ export default function AtelierCreatifPage() {
             </article>
 
             {/* Bibliothèques */}
-            <article className="group rounded-[1.75rem] border border-primary-400/20 bg-gradient-to-b from-[rgba(14,25,55,0.40)] to-[rgba(9,15,32,0.28)] p-7 transition hover:border-primary-400/40 hover:from-[rgba(18,32,70,0.50)]">
+            <article className="glass-panel-strong group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-400/15 text-lg" aria-hidden="true">📚</span>
                 <h3 className="font-display text-xl text-white">Bibliothèques</h3>
@@ -463,7 +457,7 @@ export default function AtelierCreatifPage() {
             </article>
 
             {/* Centres communautaires */}
-            <article className="group rounded-[1.75rem] border border-emerald-400/20 bg-gradient-to-b from-[rgba(4,28,22,0.40)] to-[rgba(3,18,14,0.28)] p-7 transition hover:border-emerald-400/40 hover:from-[rgba(5,36,28,0.50)]">
+            <article className="glass-panel-soft group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/15 text-lg" aria-hidden="true">🤝</span>
                 <h3 className="font-display text-xl text-white">Centres communautaires</h3>
@@ -482,7 +476,7 @@ export default function AtelierCreatifPage() {
             </article>
 
             {/* Écoles et jeunesse */}
-            <article className="group rounded-[1.75rem] border border-violet-400/20 bg-gradient-to-b from-[rgba(30,10,55,0.40)] to-[rgba(18,6,35,0.28)] p-7 transition hover:border-violet-400/40 hover:from-[rgba(38,13,70,0.50)]">
+            <article className="brand-card group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/15 text-lg" aria-hidden="true">🏫</span>
                 <h3 className="font-display text-xl text-white">Écoles et jeunesse</h3>
@@ -502,7 +496,7 @@ export default function AtelierCreatifPage() {
             </article>
 
             {/* Groupes intergénérationnels */}
-            <article className="group rounded-[1.75rem] border border-sky-400/20 bg-gradient-to-b from-[rgba(5,22,40,0.40)] to-[rgba(3,14,26,0.28)] p-7 transition hover:border-sky-400/40 hover:from-[rgba(6,28,52,0.50)]">
+            <article className="brand-card group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/15 text-lg" aria-hidden="true">👨‍👩‍👧</span>
                 <h3 className="font-display text-xl text-white">Groupes intergénérationnels</h3>
@@ -522,7 +516,7 @@ export default function AtelierCreatifPage() {
             </article>
 
             {/* Groupes privés */}
-            <article className="group rounded-[1.75rem] border border-rose-400/20 bg-gradient-to-b from-[rgba(40,8,18,0.40)] to-[rgba(24,5,11,0.28)] p-7 transition hover:border-rose-400/40 hover:from-[rgba(52,10,23,0.50)]">
+            <article className="warm-spotlight-panel group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-400/15 text-lg" aria-hidden="true">✨</span>
                 <h3 className="font-display text-xl text-white">Groupes privés et événements</h3>
@@ -555,7 +549,7 @@ export default function AtelierCreatifPage() {
       </section>
 
       {/* ════════════════ FORMAT ════════════════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
@@ -597,13 +591,7 @@ export default function AtelierCreatifPage() {
 
       {/* ════════════════ NOWIS MORIN ════════════════ */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div
-          className="rounded-[2.5rem] border border-primary-400/20 p-8 md:p-12"
-          style={{
-            background:
-              'linear-gradient(145deg, rgba(14,20,44,0.97) 0%, rgba(22,30,60,0.90) 100%)',
-          }}
-        >
+        <div className="glass-panel-strong p-8 md:p-12">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
             L'animateur
           </p>
@@ -635,7 +623,7 @@ export default function AtelierCreatifPage() {
       </section>
 
       {/* ════════════════ FAQ ════════════════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
             FAQ
@@ -644,7 +632,7 @@ export default function AtelierCreatifPage() {
             Questions fréquentes
           </h2>
 
-          <dl className="mt-10 divide-y divide-white/10">
+          <dl className="mt-10 divide-y divide-[rgba(131,97,67,0.12)]">
             {faqs.map((faq) => (
               <div key={faq.q} className="py-6 first:pt-0 last:pb-0">
                 <dt className="font-semibold leading-snug text-white">{faq.q}</dt>
@@ -657,20 +645,14 @@ export default function AtelierCreatifPage() {
 
       {/* ════════════════ CTA FINAL ════════════════ */}
       <section className="px-6 py-16 md:py-28">
-        <div
-          className="mx-auto max-w-3xl rounded-[2.5rem] border border-emerald-400/20 p-10 text-center md:p-16"
-          style={{
-            background:
-              'linear-gradient(145deg, rgba(3,28,26,0.96) 0%, rgba(8,44,40,0.90) 100%)',
-          }}
-        >
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">
+        <div className="warm-cta-panel mx-auto max-w-3xl p-10 text-center md:p-16">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">
             Prêt à organiser l'atelier ?
           </p>
-          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Organisez un atelier créatif marquant
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[1rem] leading-8 text-emerald-50/80">
+          <p className="mx-auto mt-5 max-w-xl text-[1rem] leading-8 text-[color:var(--site-muted)]">
             Offrez à votre groupe une expérience humaine, musicale et actuelle, où l'intelligence
             artificielle devient un outil de création au service des souvenirs, de l'expression et
             du plaisir.
@@ -685,7 +667,7 @@ export default function AtelierCreatifPage() {
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-white/15 bg-white/5 px-9 py-4 font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-coal-950"
+              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-9 py-4 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Poser une question
             </Link>

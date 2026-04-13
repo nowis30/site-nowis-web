@@ -25,24 +25,24 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
   const embedPlatform = artist.platforms.find((platform) => platform.embedUrl);
 
   return (
-    <div className="bg-slate-50">
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_55%,#111827_100%)]">
+    <div className="site-background">
+      <section className="section-warm relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-          <Link href="/artistes" className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white">
+          <Link href="/artistes" className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--site-muted)] transition hover:text-[color:var(--site-heading)]">
             <span aria-hidden="true">←</span>
             Retour aux artistes
           </Link>
 
           <div className="mt-8 grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">{artist.role}</p>
-              <h1 className="mt-5 text-4xl font-bold leading-tight text-white md:text-6xl">{artist.pageTitle}</h1>
-              <p className="mt-5 max-w-3xl text-xl leading-relaxed text-slate-200">{artist.hook}</p>
-              <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-300">{artist.shortBio}</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">{artist.role}</p>
+              <h1 className="mt-5 text-4xl font-bold leading-tight text-[color:var(--site-heading)] md:text-6xl">{artist.pageTitle}</h1>
+              <p className="mt-5 max-w-3xl text-xl leading-relaxed text-[color:var(--site-text)]">{artist.hook}</p>
+              <p className="mt-6 max-w-3xl text-lg leading-relaxed text-[color:var(--site-text)]">{artist.shortBio}</p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 {artist.heroHighlights.map((highlight) => (
-                  <span key={highlight} className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100">
+                  <span key={highlight} className="rounded-full border border-[color:var(--site-accent)]/15 bg-white/70 px-4 py-2 text-sm font-medium text-[color:var(--site-text)]">
                     {highlight}
                   </span>
                 ))}
@@ -52,21 +52,21 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                 <ContactPrefillLink href={artist.contactHref} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
                   Demander une chanson personnalisée
                 </ContactPrefillLink>
-                <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+                <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
                   Parler de mon projet
                 </ContactPrefillLink>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl">
+            <div className="glass-panel-soft relative overflow-hidden rounded-[2rem] border border-[var(--site-border)] shadow-2xl">
               {artist.image?.src ? (
                 <div className="relative min-h-[360px]">
-                  <Image src={artist.image.src} alt={artist.image.alt} fill className="object-cover brightness-[0.7] contrast-[1.05]" />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.12)_0%,rgba(2,6,23,0.32)_40%,rgba(2,6,23,0.9)_100%)]" />
+                  <Image src={artist.image.src} alt={artist.image.alt} fill className="object-cover brightness-[0.92] contrast-[1.02]" />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(251,244,234,0.02)_0%,rgba(140,102,67,0.18)_42%,rgba(53,35,23,0.48)_100%)]" />
                 </div>
               ) : (
-                <div className="flex min-h-[360px] flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_30%),linear-gradient(180deg,#020617_0%,#0f172a_100%)] p-8 text-white">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-white/5 text-3xl font-bold text-emerald-300">
+                <div className="flex min-h-[360px] flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(183,141,92,0.22),_transparent_30%),linear-gradient(180deg,#fbf4ea_0%,#f2e2cb_100%)] p-8 text-[color:var(--site-heading)]">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-[color:var(--site-accent)]/20 bg-white/70 text-3xl font-bold text-[color:var(--site-accent-strong)]">
                     {artist.name
                       .split(' ')
                       .map((part) => part[0])
@@ -74,10 +74,10 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                       .slice(0, 3)}
                   </div>
                   <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-emerald-300">Création Nowis</p>
+                    <p className="text-sm uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Création Nowis</p>
                     <p className="mt-3 text-3xl font-semibold">{artist.name}</p>
-                    <p className="mt-2 text-lg text-slate-200">{artist.role}</p>
-                    <p className="mt-3 max-w-md text-slate-300">
+                    <p className="mt-2 text-lg text-[color:var(--site-text)]">{artist.role}</p>
+                    <p className="mt-3 max-w-md text-[color:var(--site-text)]">
                       Un univers présenté avec une direction sobre, humaine et cohérente avec le reste du site, même sans visuel dédié.
                     </p>
                   </div>
@@ -109,15 +109,15 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
             </div>
           </article>
 
-          <aside className="rounded-[2rem] bg-slate-950 p-8 text-white shadow-sm md:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Repère créatif</p>
-            <h2 className="mt-4 text-3xl font-bold">Une démarche qui part de l’humain</h2>
-            <p className="mt-5 leading-relaxed text-slate-300">
+          <aside className="warm-spotlight-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Repère créatif</p>
+            <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">Une démarche qui part de l’humain</h2>
+            <p className="mt-5 leading-relaxed text-[color:var(--site-text)]">
               Ici, l’intelligence artificielle n’est pas une finalité. Elle sert à conserver une émotion, structurer une idée, prolonger une chanson et rendre un projet plus concret, sans effacer la sensibilité de départ.
             </p>
             <div className="mt-8 grid gap-3">
               {artist.heroHighlights.map((highlight) => (
-                <div key={highlight} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-slate-100">
+                <div key={highlight} className="rounded-2xl border border-[color:var(--site-accent)]/15 bg-white/70 px-4 py-4 text-[color:var(--site-text)]">
                   {highlight}
                 </div>
               ))}
@@ -149,15 +149,15 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
         </section>
 
         <section id="sur-mesure" className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <article className="rounded-[2rem] bg-slate-950 p-8 text-white shadow-sm md:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Sur mesure</p>
-            <h2 className="mt-4 text-3xl font-bold">{artist.customCreationsTitle}</h2>
-            <div className="mt-6 space-y-5 leading-relaxed text-slate-300">
+          <article className="warm-cta-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Sur mesure</p>
+            <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">{artist.customCreationsTitle}</h2>
+            <div className="mt-6 space-y-5 leading-relaxed text-[color:var(--site-text)]">
               {artist.customCreationsIntro.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
-            <p className="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-relaxed text-slate-200">
+            <p className="mt-6 rounded-2xl border border-[color:var(--site-accent)]/15 bg-white/70 px-5 py-4 text-sm leading-relaxed text-[color:var(--site-text)]">
               {artist.pricingNote}
             </p>
           </article>
@@ -177,7 +177,7 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                 Chaque projet part d’un échange humain : votre histoire, l’émotion à transmettre, le ton recherché et la meilleure forme pour lui donner de la portée.
               </p>
             </div>
-            <ContactPrefillLink href={artist.contactHref} className="mt-8 inline-flex rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white transition hover:bg-slate-800">
+            <ContactPrefillLink href={artist.contactHref} className="mt-8 inline-flex rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
               Contacter Création Nowis
             </ContactPrefillLink>
           </article>
@@ -237,9 +237,9 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
             </div>
           </article>
 
-          <aside className="rounded-[2rem] bg-slate-950 p-8 text-white shadow-sm md:p-10">
-            <h2 className="text-3xl font-bold">Écoute directe</h2>
-            <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5">
+          <aside className="warm-spotlight-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+            <h2 className="text-3xl font-bold text-[color:var(--site-heading)]">Écoute directe</h2>
+            <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-[color:var(--site-accent)]/15 bg-white/75">
               {embedPlatform?.embedUrl ? (
                 <iframe
                   src={embedPlatform.embedUrl}
@@ -251,23 +251,23 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                   className="w-full"
                 />
               ) : (
-                <div className="flex min-h-[352px] items-center justify-center px-6 text-center text-slate-300">
+                <div className="flex min-h-[352px] items-center justify-center px-6 text-center text-[color:var(--site-muted)]">
                   Aucun embed disponible pour le moment. Les liens externes restent accessibles ci-contre.
                 </div>
               )}
             </div>
-            <p className="mt-5 text-sm leading-relaxed text-slate-300">
+            <p className="mt-5 text-sm leading-relaxed text-[color:var(--site-text)]">
               Les embeds sont affichés quand une source officielle est disponible. Les autres plateformes restent préparées dans la structure de données pour être complétées facilement.
             </p>
           </aside>
         </section>
 
-        <section id="creation-nowis" className="rounded-[2rem] bg-[linear-gradient(180deg,#020617_0%,#0f172a_100%)] p-8 text-white shadow-sm md:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-300">Création Nowis</p>
-          <h2 className="mt-4 text-3xl font-bold">{artist.associationTitle}</h2>
+        <section id="creation-nowis" className="warm-cta-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Création Nowis</p>
+          <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">{artist.associationTitle}</h2>
           <div className="mt-6 grid gap-5 lg:grid-cols-2">
             {artist.associationText.map((paragraph) => (
-              <p key={paragraph} className="leading-relaxed text-slate-300">{paragraph}</p>
+              <p key={paragraph} className="leading-relaxed text-[color:var(--site-text)]">{paragraph}</p>
             ))}
           </div>
 
@@ -275,7 +275,7 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
             <ContactPrefillLink href={artist.contactHref} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
               Demander une chanson personnalisée
             </ContactPrefillLink>
-            <Link href="/artistes" className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
+            <Link href="/artistes" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
               Voir les autres artistes
             </Link>
           </div>

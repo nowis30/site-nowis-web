@@ -35,20 +35,20 @@ export function CookieBanner() {
       role="dialog"
       aria-modal="false"
       aria-label="Consentement aux cookies"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-coal-950/95 px-4 py-5 backdrop-blur-md md:px-6"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[rgba(131,97,67,0.12)] bg-[rgba(252,247,241,0.94)] px-4 py-5 backdrop-blur-md md:px-6"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <p className="text-sm leading-6 text-slate-300 md:max-w-3xl">
+        <p className="text-sm leading-6 text-[color:var(--site-muted)] md:max-w-3xl">
           Ce site utilise uniquement des cookies essentiels à son fonctionnement (session, sécurité). Aucun cookie
           publicitaire ou de traçage tiers n&apos;est installé.{' '}
-          <Link href="/confidentialite" className="underline underline-offset-2 hover:text-white transition-colors">
+          <Link href="/confidentialite" className="underline underline-offset-2 transition-colors hover:text-[color:var(--site-accent-strong)]">
             Politique de confidentialité
           </Link>
         </p>
         <div className="flex shrink-0 gap-3">
           <button
             onClick={() => saveConsent('declined')}
-            className="rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/10"
+            className="rounded-lg border border-[rgba(131,97,67,0.12)] bg-white/72 px-4 py-2 text-sm font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
             type="button"
           >
             Refuser les non essentiels

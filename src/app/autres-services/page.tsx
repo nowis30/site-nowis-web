@@ -58,7 +58,7 @@ const services = [
 
 export default function AutresServicesPage() {
   return (
-    <main className="text-slate-100">
+    <main className="text-[color:var(--site-text)]">
 
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
@@ -98,7 +98,7 @@ export default function AutresServicesPage() {
       </section>
 
       {/* ── SERVICES ── */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Les services secondaires</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
@@ -108,7 +108,7 @@ export default function AutresServicesPage() {
             {services.map((svc) => (
               <article
                 key={svc.title}
-                className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,rgba(10,15,28,0.88),rgba(15,22,42,0.72))] p-7 transition hover:border-white/20"
+                className="brand-card p-7 transition"
               >
                 <span className="text-3xl" role="img" aria-hidden="true">{svc.icon}</span>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary-300">{svc.chip}</p>
@@ -130,7 +130,7 @@ export default function AutresServicesPage() {
 
       {/* ── TARIFICATION ── */}
       <section className="mx-auto max-w-4xl px-6 py-12 md:py-16">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center md:p-10">
+        <div className="glass-panel-soft p-8 text-center md:p-10">
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
           <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Tous les projets sont sur soumission</h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300">
@@ -146,10 +146,10 @@ export default function AutresServicesPage() {
       </section>
 
       {/* ── OFFRE PRINCIPALE ── */}
-      <section className="bg-steel-950/50 px-6 py-12 md:py-16">
+      <section className="section-warm px-6 py-12 md:py-16">
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[2rem] border border-primary-400/20 bg-[linear-gradient(145deg,rgba(14,22,48,0.90),rgba(20,30,62,0.84))] p-7">
+            <div className="glass-panel-strong p-7">
               <span className="text-3xl" role="img" aria-hidden="true">🎵</span>
               <h3 className="mt-4 font-display text-2xl text-white md:text-3xl">Ateliers de création musicale</h3>
               <p className="mt-3 text-sm leading-7 text-slate-300">
@@ -157,12 +157,12 @@ export default function AutresServicesPage() {
               </p>
               <Link
                 href="/ateliers"
-                className="mt-5 inline-flex rounded-xl border border-primary-400/30 bg-primary-500/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-500/20"
+                className="mt-5 inline-flex rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-6 py-3 text-sm font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
               >
                 Voir les ateliers →
               </Link>
             </div>
-            <div className="rounded-[2rem] border border-amber-400/15 bg-[linear-gradient(145deg,rgba(40,22,0,0.38),rgba(28,16,0,0.25))] p-7">
+            <div className="warm-spotlight-panel p-7">
               <span className="text-3xl" role="img" aria-hidden="true">🎼</span>
               <h3 className="mt-4 font-display text-2xl text-white md:text-3xl">Chansons personnalisées</h3>
               <p className="mt-3 text-sm leading-7 text-slate-300">
@@ -170,7 +170,7 @@ export default function AutresServicesPage() {
               </p>
               <Link
                 href="/commander-une-chanson"
-                className="mt-5 inline-flex rounded-xl border border-amber-400/25 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/18"
+                className="mt-5 inline-flex rounded-xl border border-[rgba(201,117,71,0.16)] bg-white/72 px-6 py-3 text-sm font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white"
               >
                 Commander une chanson →
               </Link>
@@ -181,14 +181,11 @@ export default function AutresServicesPage() {
 
       {/* ── CTA ── */}
       <section className="px-6 py-16 md:py-24">
-        <div
-          className="mx-auto max-w-4xl rounded-[2.5rem] border border-primary-400/20 p-10 text-center md:p-16"
-          style={{ background: 'linear-gradient(145deg, rgba(8,14,38,0.97) 0%, rgba(16,26,62,0.93) 100%)' }}
-        >
-          <h2 className="font-display text-4xl leading-[1.03] text-white md:text-5xl">
+        <div className="warm-cta-panel mx-auto max-w-4xl p-10 text-center md:p-16">
+          <h2 className="font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Vous avez un projet en tête&nbsp;?
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-slate-300">
+          <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-[color:var(--site-muted)]">
             Peu importe la forme, si ça croise musique, création et intelligence artificielle — on peut en parler. Nowis Morin aime les projets qui sortent des sentiers battus.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
@@ -200,7 +197,7 @@ export default function AutresServicesPage() {
             </Link>
             <Link
               href="/a-propos"
-              className="rounded-xl border border-white/15 bg-white/5 px-9 py-4 font-semibold text-white transition hover:bg-white/10"
+              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
             >
               En savoir plus sur Nowis
             </Link>

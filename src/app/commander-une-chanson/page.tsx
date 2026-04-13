@@ -164,7 +164,7 @@ export default async function CommanderUneChansonPage() {
     : DEFAULT_SONG_PAGE_CONTENT.final.secondaryCta.href;
 
   return (
-    <div className="bg-slate-50 text-slate-900">
+    <div className="site-background text-slate-900">
       <PageHero
         eyebrow={heroEyebrow}
         title={heroTitle}
@@ -226,13 +226,13 @@ export default async function CommanderUneChansonPage() {
 
       <section id="acces-portail" className="mx-auto grid max-w-7xl gap-10 px-6 pb-16 lg:grid-cols-[1.05fr_0.95fr] md:pb-20">
         <div>
-          <div className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
+          <div className="glass-panel-soft p-8 md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Commande</p>
             <h2 className="mt-4 text-3xl font-bold text-slate-950">Envoyer une demande claire et complète</h2>
             <p className="mt-4 text-lg leading-relaxed text-slate-600">
               Décris l’histoire, l’émotion recherchée et le type d’accompagnement souhaité. Si tu hésites encore, tu peux simplement raconter le contexte avec tes mots.
             </p>
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <div className="mt-8 rounded-2xl border border-[rgba(131,97,67,0.12)] bg-[rgba(255,250,244,0.8)] p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Consentement portfolio</p>
               <p className="mt-3 text-sm leading-6 text-slate-600">{portfolioDisclosure.text}</p>
               <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
@@ -245,7 +245,7 @@ export default async function CommanderUneChansonPage() {
               </ul>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+            <div className="mt-8 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-[rgba(255,247,238,0.86)] p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">Nouveau processus</p>
               <p className="mt-3 text-sm leading-6 text-slate-700">
                 Les demandes ne se font plus sur le site public. Pour envoyer une demande de chanson, vous devez passer par le portail client sécurisé.
@@ -264,7 +264,7 @@ export default async function CommanderUneChansonPage() {
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
               href="#acces-portail"
-              className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-6 py-3 font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white transition hover:brightness-105"
             >
               Voir la procedure
             </Link>
@@ -281,7 +281,7 @@ export default async function CommanderUneChansonPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
-        <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+        <div className="glass-panel-soft p-8 md:p-10">
           <h2 className="text-2xl font-bold text-slate-950">Besoin d’un peu d’aide avant d’envoyer la demande?</h2>
           <p className="mt-4 max-w-3xl leading-relaxed text-slate-600">
             Si tu veux mieux préparer ton message avant de commander, la page de préparation peut t’aider à clarifier le ton, les détails importants et les attentes du projet.

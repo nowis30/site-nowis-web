@@ -1,53 +1,253 @@
-import { PageHero } from '@/components/marketing/PageHero';
+import Image from 'next/image';
+import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
-  title: 'À propos — Nowis Morin | Artiste, créateur et approche IA au Québec',
+  title: 'À propos — Nowis Morin | Créateur, animateur et artiste au Québec',
   description:
-    'Découvre qui est Nowis Morin, sa vision artistique, sa manière d’utiliser l’intelligence artificielle et ce qu’il peut créer pour les particuliers et les entreprises.',
+    'Nowis Morin est le créateur derrière Création Nowis. Artiste, animateur et passionné de création musicale, il anime des ateliers avec l\'IA et crée des chansons personnalisées en personne, partout au Québec.',
   path: '/a-propos',
-  keywords: ['Nowis Morin', 'à propos Nowis Morin', 'artiste IA Québec'],
+  keywords: ['Nowis Morin', 'à propos', 'artiste IA Québec', 'ateliers création musicale'],
 });
 
 export default function AProposPage() {
   return (
-    <div className="bg-slate-50">
-      <PageHero
-        eyebrow="À propos"
-        title="Nowis Morin : une approche créative, humaine et résolument tournée vers l’avenir"
-        description="Je crée des chansons, vidéos, visuels et concepts artistiques avec l’aide de l’intelligence artificielle. Mon objectif n’est pas de remplacer la sensibilité humaine, mais de l’amplifier pour produire des créations plus fortes, plus rapides et plus mémorables."
-        primaryCta={{ label: 'Découvrir ma musique', href: '/musique' }}
-        secondaryCta={{ label: 'Me contacter', href: '/contact' }}
-      />
+    <main className="text-[color:var(--site-text)]">
 
-      <section className="mx-auto max-w-7xl space-y-10 px-6 py-16 md:py-20">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <article className="rounded-3xl bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-950">Qui je suis</h2>
-            <p className="mt-4 leading-relaxed text-slate-600">
-              Je suis Nowis Morin, artiste et créateur basé au Québec. Mon travail s’appuie sur une direction artistique claire : prendre une idée, une émotion ou un message, puis le transformer en chanson, vidéo ou concept visuel capable de toucher, surprendre et marquer.
+      {/* ── HÉROS ── */}
+      <section className="relative overflow-hidden px-6 py-16 md:py-24">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(circle at 12% 10%, rgba(96,165,250,0.12), transparent 26%),' +
+              'radial-gradient(circle at 85% 8%, rgba(139,92,246,0.10), transparent 22%)',
+          }}
+        />
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
+          <div>
+            <span className="brand-chip inline-block">À propos</span>
+            <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
+              Nowis Morin — Créateur, animateur, artiste
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
+              Je suis Nowis Morin, créateur derrière Création Nowis. J&apos;anime des ateliers de création musicale
+              avec l&apos;IA, je crée des chansons personnalisées et j&apos;explore les territoires où la sensibilité
+              humaine et la technologie se rencontrent vraiment.
             </p>
-          </article>
-          <article className="rounded-3xl bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-950">Comment j’utilise l’IA</h2>
-            <p className="mt-4 leading-relaxed text-slate-600">
-              L’IA fait partie de mon atelier créatif. Elle m’aide à explorer plus vite, à tester différentes directions et à produire des bases solides. Ensuite, je sélectionne, affine, assemble et dirige le rendu final pour qu’il reste cohérent, crédible et aligné avec l’intention du projet.
-            </p>
-          </article>
-          <article className="rounded-3xl bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-950">Pourquoi je fais ça</h2>
-            <p className="mt-4 leading-relaxed text-slate-600">
-              Parce que la création peut devenir un véritable levier d’émotion, d’identité et de visibilité. J’aime l’idée de rendre possible des projets qui, autrement, resteraient seulement dans l’imagination. Avec la bonne méthode, une idée simple peut devenir une œuvre forte.
-            </p>
-          </article>
-          <article className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
-            <h2 className="text-2xl font-bold">Ce que je peux offrir</h2>
-            <p className="mt-4 leading-relaxed text-slate-300">
-              Des chansons personnalisées, des vidéos créatives, des visuels, des concepts marketing et des collaborations artistiques. Que tu sois un artiste, une entreprise, une famille ou une personne avec une idée précise, Nowis Morin peut transformer ton projet en création concrète et mémorable.
-            </p>
-          </article>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href="/ateliers"
+                className="rounded-xl bg-brand-warm px-7 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              >
+                Découvrir les ateliers
+              </Link>
+              <Link
+                href="/contact"
+                className="rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold text-white transition hover:bg-white/10"
+              >
+                Me contacter
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative hidden lg:block">
+            <div className="overflow-hidden rounded-[2rem] border border-primary-200/20 shadow-card">
+              <div className="relative aspect-[3/4]">
+                <Image
+                  src="/hero.jpg"
+                  alt="Nowis Morin, créateur de Création Nowis"
+                  fill
+                  className="brightness-[0.75] contrast-[1.04]"
+                  style={{ objectFit: 'cover', objectPosition: '50% 25%' }}
+                  priority
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.06)_0%,rgba(5,8,22,0.72)_100%)]" />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-    </div>
+
+      {/* ── QUI JE SUIS ── */}
+      <section className="section-soft px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Mon histoire</p>
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+            Qui je suis, et ce qui me drive
+          </h2>
+          <div className="mt-8 grid gap-6 text-base leading-8 text-slate-300 lg:grid-cols-2">
+            <div className="space-y-5">
+              <p>
+                Je m&apos;appelle Nowis Morin. Je suis artiste, musicien et passionné de création sous toutes ses formes. Mon univers, c&apos;est la musique — mais pas seulement. C&apos;est aussi l&apos;expression, la transmission, l&apos;idée que la création peut <strong className="text-[color:var(--site-heading)]">vraiment toucher les gens</strong>.
+              </p>
+              <p>
+                Ce qui m&apos;a amené à créer Création Nowis, c&apos;est un désir simple : rendre la création musicale <strong className="text-[color:var(--site-heading)]">accessible, vivante et signifiante</strong> — pas juste pour les artistes professionals, mais pour chaque personne qui a quelque chose à exprimer ou à vivre collectivement.
+              </p>
+            </div>
+            <div className="space-y-5">
+              <p>
+                J&apos;anime chaque atelier moi-même, en personne. Parce que la présence, l&apos;écoute et la connexion humaine font partie du résultat. Ce n&apos;est pas que de la technologie — c&apos;est <strong className="text-[color:var(--site-heading)]">une expérience</strong>.
+              </p>
+              <p>
+                Je crée aussi des chansons personnalisées pour des moments qui comptent : anniversaires, mariages, hommages, projets artistiques. Des créations sur mesure, nourries par les émotions et les mots des gens qui les commandent.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MON RAPPORT À L'IA ── */}
+      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Pourquoi l&apos;IA</p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+              L&apos;IA est un outil. Le reste, c&apos;est humain.
+            </h2>
+            <div className="mt-6 space-y-5 text-base leading-8 text-slate-300">
+              <p>
+                Je suis fasciné par l&apos;intelligence artificielle depuis que j&apos;ai commencé à y voir ce qu&apos;elle peut vraiment faire : <strong className="text-[color:var(--site-heading)]">amplifier la créativité</strong> plutôt que la remplacer. L&apos;IA est un outil puissant. Mais c&apos;est toujours l&apos;humain qui décide de l&apos;intention, du ton, de l&apos;émotion et du résultat final.
+              </p>
+              <p>
+                Dans mes ateliers, je ne montre pas l&apos;IA comme quelque chose d&apos;intimidant. Je la montre comme quelque chose qu&apos;on peut apprendre à utiliser — <strong className="text-[color:var(--site-heading)]">ici, maintenant, concrètement</strong> — pour créer quelque chose de beau.
+              </p>
+              <p>
+                Ma conviction, c&apos;est que comprendre l&apos;IA, c&apos;est important. Et l&apos;apprendre par la musique, c&apos;est une façon de le faire qui reste avec les gens.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { icon: '🎯', title: 'La direction reste humaine', desc: 'L\'IA ne choisit pas l\'émotion, le ton, le message. C\'est toujours le créateur ou le groupe qui décide.' },
+              { icon: '⚡', title: 'Plus rapide, plus riche', desc: 'Avec l\'IA comme outil, on peut explorer plus d\'idées, tester plus de directions et aboutir à un résultat plus fort.' },
+              { icon: '🌱', title: 'Apprendre en créant', desc: 'La meilleure façon de comprendre l\'IA, c\'est de l\'utiliser pour créer quelque chose qui compte vraiment pour soi.' },
+            ].map((card) => (
+              <article key={card.title} className="brand-card flex gap-4 p-5">
+                <span className="shrink-0 text-2xl" role="img" aria-hidden="true">{card.icon}</span>
+                <div>
+                  <h3 className="font-semibold text-white">{card.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-400">{card.desc}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CE QUE JE FAIS ── */}
+      <section className="section-warm px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Mes activités</p>
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+            Ce que je fais concrètement
+          </h2>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: '🎵',
+                title: 'Ateliers de création musicale',
+                desc: 'J\'anime des ateliers en personne, adaptés à tous les âges et tous les milieux. Le groupe crée ensemble une chanson et repart avec une vidéo souvenir.',
+                href: '/ateliers',
+                cta: 'Voir les ateliers',
+                featured: true,
+              },
+              {
+                icon: '🎼',
+                title: 'Chansons personnalisées',
+                desc: 'Je crée des chansons sur mesure pour des occasions importantes : anniversaires, mariages, hommages, projets artistiques et plus encore.',
+                href: '/commander-une-chanson',
+                cta: 'Commander une chanson',
+                featured: false,
+              },
+              {
+                icon: '🎬',
+                title: 'Contenus artistiques',
+                desc: 'Vidéos musicales, créations visuelles, jeux interactifs et contenu artistique selon vos besoins créatifs.',
+                href: '/autres-services',
+                cta: 'Autres services',
+                featured: false,
+              },
+            ].map((item) => (
+              <article
+                key={item.title}
+                className={`flex flex-col p-7 transition hover:-translate-y-1 ${
+                  item.featured
+                    ? 'glass-panel-strong shadow-fire'
+                    : 'brand-card'
+                }`}
+              >
+                <span className="text-3xl" role="img" aria-hidden="true">{item.icon}</span>
+                <h3 className="mt-4 font-display text-2xl text-white">{item.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-6 text-slate-300">{item.desc}</p>
+                <Link
+                  href={item.href}
+                  className={`mt-5 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${
+                    item.featured
+                      ? 'bg-brand-warm text-white shadow-fire hover:brightness-110'
+                      : 'border border-[rgba(131,97,67,0.12)] bg-white/72 text-[color:var(--site-heading)] hover:bg-white'
+                  }`}
+                >
+                  {item.cta}
+                </Link>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── VALEURS ── */}
+      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Mes valeurs</p>
+        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          Ce qui guide ma démarche
+        </h2>
+        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            { icon: '🤝', title: 'L\'humain d\'abord', desc: 'La technologie est au service des personnes — jamais l\'inverse. Chaque atelier, chaque création part d\'un besoin humain réel.' },
+            { icon: '✨', title: 'La qualité du moment', desc: 'Un atelier réussi, c\'est un moment où les gens ont vraiment vécu quelque chose. Pas juste assisté à quelque chose.' },
+            { icon: '🎓', title: 'Apprendre en faisant', desc: 'On n\'apprend pas l\'IA en regardant des présentations. On l\'apprend en l\'utilisant pour créer quelque chose qui compte.' },
+            { icon: '🌱', title: 'Accessibilité', desc: 'Ce n\'est pas réservé aux experts. Mes ateliers s\'adressent à tous — aucune compétence préalable n\'est nécessaire.' },
+            { icon: '🎨', title: 'Authenticité artistique', desc: 'Je ne produis pas à la chaîne. Chaque création, chaque atelier est pensé pour être vrai, unique et porteur de sens.' },
+            { icon: '📍', title: 'Ancrage local', desc: 'Je suis basé à Drummondville et je me déplace partout au Québec. La proximité fait partie de ma démarche.' },
+          ].map((val) => (
+            <article key={val.title} className="brand-card p-6">
+              <span className="text-2xl" role="img" aria-hidden="true">{val.icon}</span>
+              <h3 className="mt-4 font-semibold text-white">{val.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">{val.desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="px-6 py-16 md:py-24">
+        <div className="warm-cta-panel mx-auto max-w-4xl p-10 text-center md:p-16">
+          <h2 className="font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
+            On travaille ensemble ?
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-[color:var(--site-muted)]">
+            Pour un atelier, une chanson personnalisée ou simplement pour discuter d&apos;un projet, je suis disponible et j&apos;aime les échanges directs.
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <Link
+              href="/ateliers"
+              className="rounded-xl bg-brand-warm px-9 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+            >
+              Découvrir les ateliers
+            </Link>
+            <Link
+              href="/contact"
+              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+            >
+              Me contacter
+            </Link>
+          </div>
+        </div>
+      </section>
+
+    </main>
   );
 }

@@ -101,7 +101,7 @@ const preferentiels = [
 
 export default function TarifsPage() {
   return (
-    <main className="text-slate-100">
+    <main className="text-[color:var(--site-text)]">
 
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
@@ -145,7 +145,7 @@ export default function TarifsPage() {
       </section>
 
       {/* ── ATELIERS DE GROUPE ── */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Ateliers de groupe</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
@@ -159,10 +159,10 @@ export default function TarifsPage() {
             {ateliers.map((a) => (
               <article
                 key={a.name}
-                className={`flex flex-col rounded-[2rem] border p-6 transition hover:-translate-y-1 ${
+                className={`flex flex-col p-6 transition hover:-translate-y-1 ${
                   a.accent
-                    ? 'border-primary-400/30 bg-[linear-gradient(145deg,rgba(14,25,55,0.96),rgba(20,35,75,0.90))] shadow-fire'
-                    : 'border-white/10 bg-[linear-gradient(180deg,rgba(10,15,28,0.82),rgba(15,23,42,0.68))]'
+                      ? 'glass-panel-strong shadow-fire'
+                      : 'brand-card'
                 }`}
               >
                 {a.accent && (
@@ -199,7 +199,7 @@ export default function TarifsPage() {
           {inclus.map((item) => (
             <div
               key={item.label}
-              className="flex gap-4 rounded-[1.5rem] border border-emerald-500/15 bg-emerald-500/[0.05] p-5"
+              className="glass-panel-soft flex gap-4 rounded-[1.5rem] p-5"
             >
               <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-300">✓</span>
               <div>
@@ -212,7 +212,7 @@ export default function TarifsPage() {
       </section>
 
       {/* ── SERVICES PERSONNALISÉS ── */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Services personnalisés</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
@@ -243,7 +243,7 @@ export default function TarifsPage() {
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {produits.map((p) => (
-            <article key={p.name} className="flex flex-col rounded-[2rem] border border-amber-400/15 bg-[linear-gradient(145deg,rgba(40,22,0,0.35),rgba(28,16,0,0.22))] p-6">
+            <article key={p.name} className="warm-spotlight-panel flex flex-col p-6">
               <h3 className="font-display text-2xl text-amber-100">{p.name}</h3>
               <span className="mt-1 text-xs font-semibold text-slate-400">{p.format}</span>
               <p className="mt-3 flex-1 text-sm leading-6 text-slate-300">{p.desc}</p>
@@ -254,7 +254,7 @@ export default function TarifsPage() {
       </section>
 
       {/* ── TARIFS PRÉFÉRENTIELS + DÉPLACEMENT ── */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl grid gap-8 lg:grid-cols-2 lg:items-start">
 
           {/* Préférentiels */}
@@ -263,7 +263,7 @@ export default function TarifsPage() {
             <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Certains milieux bénéficient d&apos;un tarif adapté</h2>
             <div className="mt-6 space-y-3">
               {preferentiels.map((pref) => (
-                <div key={pref.clientele} className="flex gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <div key={pref.clientele} className="glass-panel-soft flex gap-3 rounded-xl p-4">
                   <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-500/20 text-xs font-bold text-primary-300">✓</span>
                   <div>
                     <span className="font-semibold text-white">{pref.clientele}</span>
@@ -280,15 +280,15 @@ export default function TarifsPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-400">Déplacement</p>
               <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Frais de déplacement</h2>
             </div>
-            <div className="rounded-[1.5rem] border border-emerald-400/15 bg-emerald-500/[0.06] p-5">
+            <div className="glass-panel-soft rounded-[1.5rem] p-5">
               <p className="font-semibold text-emerald-200">Jusqu&apos;à 100 km aller-retour</p>
               <p className="mt-1 text-sm text-slate-300">À partir de Drummondville — <strong className="text-white">inclus dans le tarif.</strong></p>
             </div>
-            <div className="rounded-[1.5rem] border border-amber-400/15 bg-amber-500/[0.06] p-5">
+            <div className="warm-spotlight-panel rounded-[1.5rem] p-5">
               <p className="font-semibold text-amber-200">Au-delà de 100 km aller-retour</p>
               <p className="mt-1 text-sm text-slate-300">Frais supplémentaires selon la distance. À discuter lors de la demande.</p>
             </div>
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
+            <div className="glass-panel-soft rounded-[1.5rem] p-4">
               <p className="text-sm text-slate-400">
                 <strong className="text-slate-200">Note :</strong> Pour un projet en dehors du rayon habituel, une soumission personnalisée peut être demandée.
               </p>
@@ -303,16 +303,16 @@ export default function TarifsPage() {
         <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
           Tous les tarifs en un coup d&apos;œil
         </h2>
-        <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-white/10">
+        <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-[rgba(131,97,67,0.12)] bg-white/72 shadow-soft">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.04]">
+              <tr className="border-b border-[rgba(131,97,67,0.12)] bg-[rgba(255,250,244,0.82)]">
                 <th className="px-5 py-4 text-left font-semibold text-slate-200">Service</th>
                 <th className="px-5 py-4 text-right font-semibold text-amber-300">Lancement</th>
                 <th className="px-5 py-4 text-right font-semibold text-slate-400">Régulier</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-[rgba(131,97,67,0.08)]">
               {[
                 { service: 'Atelier express — 60 min', lancement: '180 $', regulier: '225 $' },
                 { service: 'Atelier découverte — 90 min', lancement: '250 $', regulier: '325 $' },
@@ -322,7 +322,7 @@ export default function TarifsPage() {
                 { service: 'Chanson IA souvenir', lancement: '25 $', regulier: '25 $' },
                 { service: 'Vidéo IA avec chanson', lancement: '100 $', regulier: '100 $' },
               ].map((row, i) => (
-                <tr key={row.service} className={i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}>
+                <tr key={row.service} className={i % 2 === 0 ? 'bg-transparent' : 'bg-[rgba(255,248,241,0.72)]'}>
                   <td className="px-5 py-3.5 text-slate-200">{row.service}</td>
                   <td className="px-5 py-3.5 text-right font-semibold text-amber-200">{row.lancement}</td>
                   <td className="px-5 py-3.5 text-right text-slate-400">{row.regulier}</td>
@@ -335,7 +335,7 @@ export default function TarifsPage() {
           <a
             href="/tarifs-creation-nowis.pdf"
             download
-            className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-6 py-3.5 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
           >
             <span>⬇</span> Télécharger la grille complète (PDF)
           </a>
@@ -344,10 +344,7 @@ export default function TarifsPage() {
 
       {/* ── CTA FINAL ── */}
       <section className="px-6 py-16 md:py-24">
-        <div
-          className="mx-auto max-w-4xl overflow-hidden rounded-[2.5rem] border border-primary-400/20 p-10 text-center md:p-16"
-          style={{ background: 'linear-gradient(145deg, rgba(8,14,38,0.97) 0%, rgba(16,26,62,0.93) 100%)' }}
-        >
+        <div className="warm-cta-panel mx-auto max-w-4xl overflow-hidden p-10 text-center md:p-16">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Passez à l&apos;action</p>
           <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl">
             Réservez votre atelier ou demandez une soumission
@@ -364,7 +361,7 @@ export default function TarifsPage() {
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-white/15 bg-white/5 px-9 py-4 font-semibold text-white transition hover:bg-white/10"
+              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
             >
               Poser une question
             </Link>

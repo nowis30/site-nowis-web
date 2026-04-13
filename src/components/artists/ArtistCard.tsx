@@ -8,9 +8,9 @@ export function ArtistCard({ artist }: { artist: ArtistProfile }) {
   return (
     <Link
       href={`/artistes/${artist.slug}`}
-      className="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="group glass-panel-soft overflow-hidden rounded-[2rem] border border-[var(--site-border)] shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
-      <div className="relative h-72 overflow-hidden bg-slate-950">
+      <div className="relative h-72 overflow-hidden bg-[var(--site-soft)]">
         {hasImage ? (
           <>
             <Image
@@ -19,10 +19,10 @@ export function ArtistCard({ artist }: { artist: ArtistProfile }) {
               fill
               className="object-cover transition duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.18)] to-transparent" />
           </>
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.25),_transparent_30%),linear-gradient(180deg,#020617_0%,#0f172a_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(183,141,92,0.28),_transparent_30%),linear-gradient(180deg,#fbf4ea_0%,#f2e2cb_100%)]" />
         )}
 
       </div>

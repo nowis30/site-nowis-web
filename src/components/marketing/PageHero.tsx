@@ -59,32 +59,32 @@ export function PageHero({ eyebrow, title, description, primaryCta, secondaryCta
 
   return (
     <section className="brand-shell brand-grid">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.14)_0%,rgba(5,8,22,0.32)_35%,rgba(5,8,22,0.72)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,247,238,0.28)_38%,rgba(242,227,207,0.72)_100%)]" />
       <div className={`relative z-10 mx-auto ${contentWidth} px-6 ${spacing} ${mobileSpacing}`}>
         <div className={`relative ${align}`}>
           {eyebrow ? <p className="brand-chip">{eyebrow}</p> : null}
-          <h1 className={`mt-5 font-display ${heading} leading-[1.02] text-white ${style?.contentAlign === 'center' ? 'mx-auto max-w-5xl' : 'max-w-4xl'}`}>{title}</h1>
-          <p className={`mt-6 text-base leading-8 text-slate-100 md:text-lg ${style?.contentAlign === 'center' ? 'mx-auto max-w-3xl' : 'max-w-2xl'}`}>{description}</p>
+          <h1 className={`mt-5 font-display ${heading} leading-[1.02] text-[color:var(--site-heading)] ${style?.contentAlign === 'center' ? 'mx-auto max-w-5xl' : 'max-w-4xl'}`}>{title}</h1>
+          <p className={`mt-6 text-base leading-8 text-[color:var(--site-muted)] md:text-lg ${style?.contentAlign === 'center' ? 'mx-auto max-w-3xl' : 'max-w-2xl'}`}>{description}</p>
           {(primaryCta || secondaryCta) && (
             <div className={`mt-10 flex flex-col gap-4 sm:flex-row ${style?.contentAlign === 'center' ? 'justify-center' : ''}`}>
               {primaryCta ? (
                 primaryCta.href.startsWith('/contact') ? (
-                  <ContactPrefillLink href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">
+                  <ContactPrefillLink href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-105">
                     {primaryCta.label}
                   </ContactPrefillLink>
                 ) : (
-                  <Link href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110">
+                  <Link href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-105">
                     {primaryCta.label}
                   </Link>
                 )
               ) : null}
               {secondaryCta ? (
                 secondaryCta.href.startsWith('/contact') ? (
-                  <ContactPrefillLink href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-slate-950/50 px-6 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/14">
+                  <ContactPrefillLink href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-6 py-3 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white">
                     {secondaryCta.label}
                   </ContactPrefillLink>
                 ) : (
-                  <Link href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 bg-slate-950/50 px-6 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/14">
+                  <Link href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-6 py-3 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white">
                     {secondaryCta.label}
                   </Link>
                 )

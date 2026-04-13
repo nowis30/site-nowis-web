@@ -62,7 +62,7 @@ const deroulementSteps = [
 
 export const HomeScreen = async () => {
   return (
-    <div className="relative overflow-hidden bg-transparent text-slate-100">
+    <div className="relative overflow-hidden bg-transparent text-[color:var(--site-text)]">
 
       {/* ════ HERO ════ */}
       <section className="relative overflow-hidden">
@@ -100,7 +100,7 @@ export const HomeScreen = async () => {
             <h1 className="brand-metal-text mt-6 font-display text-5xl leading-[0.95] md:text-7xl xl:text-[5.5rem]">
               Créer avec l'IA, en restant profondément humain
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200 md:text-xl">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--site-muted)] md:text-xl">
               Nowis Morin vous accompagne à travers des ateliers et des créations musicales où
               l'intelligence artificielle devient un outil puissant pour apprendre, s'exprimer,
               créer et rassembler.
@@ -115,22 +115,22 @@ export const HomeScreen = async () => {
               </Link>
               <Link
                 href="/connexion"
-                className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/12 px-7 py-4 font-semibold text-white backdrop-blur-sm transition hover:bg-primary-500/22"
+                className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-7 py-4 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white"
               >
                 Portail client
               </Link>
             </div>
 
             <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-4 backdrop-blur-md">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-200">Ateliers</p>
-                <p className="mt-1.5 text-sm leading-6 text-slate-200">
+              <div className="glass-panel-soft px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Ateliers</p>
+                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">
                   Animés en personne. Tous âges. Adaptés à votre milieu.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-950/55 px-4 py-4 backdrop-blur-md">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Rayon de service</p>
-                <p className="mt-1.5 text-sm leading-6 text-slate-200">
+              <div className="glass-panel-soft px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Rayon de service</p>
+                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">
                   Environ 150 km autour de Drummondville.
                 </p>
               </div>
@@ -140,22 +140,21 @@ export const HomeScreen = async () => {
           {/* Image hero */}
           <div className="relative z-10">
             <div
-              className="overflow-hidden rounded-[2rem] border border-primary-200/20 shadow-card"
-              style={{ background: 'linear-gradient(180deg, #07101f 0%, #10182d 100%)' }}
+              className="warm-spotlight-panel overflow-hidden"
             >
               <div className="relative aspect-[4/5.15] md:aspect-[4/5]">
                 <Image
                   src="/hero.jpg"
                   alt="Nowis Morin, créateur principal de Création Nowis"
                   fill
-                  className="object-cover object-[50%_28%] brightness-[0.8] contrast-[1.12] saturate-[1.05] md:object-[50%_35%] md:brightness-[0.72] md:contrast-[1.05] md:saturate-100"
+                  className="object-cover object-[50%_28%] brightness-[0.92] contrast-[1.03] saturate-[1.02] md:object-[50%_35%] md:brightness-[0.88] md:contrast-[1.02] md:saturate-100"
                   priority
                 />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.04)_0%,rgba(5,8,22,0.14)_35%,rgba(5,8,22,0.8)_100%)] md:bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.24)_38%,rgba(5,8,22,0.88)_100%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,241,0.02)_0%,rgba(255,248,241,0.08)_35%,rgba(80,50,25,0.36)_100%)] md:bg-[linear-gradient(180deg,rgba(255,248,241,0.04)_0%,rgba(255,248,241,0.14)_38%,rgba(80,50,25,0.42)_100%)]" />
               </div>
               <div className="px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-200">Création Nowis</p>
-                <p className="mt-1.5 text-sm leading-6 text-slate-200">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Création Nowis</p>
+                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">
                   Nowis Morin anime chaque atelier en personne. Musique, IA et créativité humaine réunies.
                 </p>
               </div>
@@ -168,7 +167,7 @@ export const HomeScreen = async () => {
       <section className="mx-auto max-w-7xl px-6 pb-4 pt-6 md:pb-8">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Ce que je propose</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Des expériences créatives autour de la musique et de l'IA
           </h2>
         </div>
@@ -177,26 +176,26 @@ export const HomeScreen = async () => {
           {offres.map((offre) => (
             <article
               key={offre.href}
-              className={`flex flex-col rounded-[2rem] border p-8 transition hover:-translate-y-1 ${
+              className={`flex flex-col p-8 transition hover:-translate-y-1 ${
                 offre.featured
-                  ? 'border-primary-400/30 bg-[linear-gradient(145deg,rgba(14,25,55,0.96),rgba(20,35,75,0.90))] shadow-fire'
-                  : 'border-white/10 bg-[linear-gradient(180deg,rgba(10,15,28,0.82),rgba(15,23,42,0.68))]'
+                  ? 'glass-panel-strong shadow-fire'
+                  : 'brand-card'
               }`}
             >
               {offre.featured && (
-                <span className="mb-4 inline-block self-start rounded-full bg-primary-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-primary-300">
+                <span className="mb-4 inline-block self-start rounded-full bg-[rgba(201,117,71,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--site-accent-strong)]">
                   {offre.chip}
                 </span>
               )}
               <span className="text-3xl" role="img" aria-hidden="true">{offre.icon}</span>
-              <h3 className="mt-4 font-display text-3xl leading-[1.05] text-white">{offre.title}</h3>
-              <p className="mt-4 flex-1 text-sm leading-7 text-slate-300">{offre.desc}</p>
+              <h3 className="mt-4 font-display text-3xl leading-[1.05] text-[color:var(--site-heading)]">{offre.title}</h3>
+              <p className="mt-4 flex-1 text-sm leading-7 text-[color:var(--site-muted)]">{offre.desc}</p>
               <Link
                 href={offre.href}
                 className={`mt-6 inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition ${
                   offre.featured
                     ? 'bg-brand-warm text-white shadow-fire hover:brightness-110'
-                    : 'border border-white/15 bg-white/5 text-white hover:bg-white/10'
+                    : 'border border-[rgba(131,97,67,0.12)] bg-white/70 text-[color:var(--site-heading)] hover:bg-white'
                 }`}
               >
                 {offre.cta}
@@ -208,14 +207,14 @@ export const HomeScreen = async () => {
 
       {/* ════ ATELIER EN VEDETTE ════ */}
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-        <div className="overflow-hidden rounded-[2.5rem] border border-primary-400/25 shadow-card" style={{ background: 'linear-gradient(145deg, rgba(8,14,38,0.97) 0%, rgba(16,26,60,0.93) 100%)' }}>
+        <div className="warm-spotlight-panel overflow-hidden">
           <div className="grid gap-10 p-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-0 lg:p-0">
             <div className="lg:p-12">
               <span className="brand-chip inline-block">Atelier en vedette</span>
-              <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl lg:text-6xl">
+              <h2 className="mt-5 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl lg:text-6xl">
                 Atelier de création musicale avec&nbsp;l'IA
               </h2>
-              <p className="mt-5 max-w-lg text-[1rem] leading-8 text-slate-300">
+              <p className="mt-5 max-w-lg text-[1rem] leading-8 text-[color:var(--site-muted)]">
                 Une expérience créative, humaine et accessible pour découvrir l'intelligence
                 artificielle à travers la musique, les émotions, les souvenirs et la création
                 collective. Animé en personne par Nowis Morin.
@@ -228,8 +227,8 @@ export const HomeScreen = async () => {
                   'Le groupe repart avec une chanson et une vidéo souvenir',
                   'Durée de base : environ 90 minutes',
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm leading-7 text-slate-200">
-                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-500/20 text-xs font-bold text-primary-300">✓</span>
+                  <li key={item} className="flex items-start gap-3 text-sm leading-7 text-[color:var(--site-text)]">
+                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[rgba(201,117,71,0.12)] text-xs font-bold text-[color:var(--site-accent-strong)]">✓</span>
                     {item}
                   </li>
                 ))}
@@ -243,7 +242,7 @@ export const HomeScreen = async () => {
                 </Link>
                 <Link
                   href="/ateliers/atelier-creatif"
-                  className="rounded-xl border border-white/15 bg-white/5 px-7 py-3.5 font-semibold text-white transition hover:bg-white/10"
+                  className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-7 py-3.5 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
                 >
                   Voir la page complète
                 </Link>
@@ -251,23 +250,23 @@ export const HomeScreen = async () => {
             </div>
             <div
               className="relative hidden min-h-[420px] lg:block"
-              style={{ background: 'linear-gradient(90deg, rgba(8,14,38,0.0) 0%, rgba(8,14,38,1) 5%)' }}
+              style={{ background: 'linear-gradient(90deg, rgba(255,248,241,0) 0%, rgba(244,230,210,0.92) 8%)' }}
             >
               <Image
                 src="/hero.jpg"
                 alt="Atelier de création musicale avec Nowis Morin"
                 fill
-                className="object-cover opacity-50"
+                className="object-cover opacity-78"
                 style={{ objectPosition: '60% 20%' }}
               />
-              <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(270deg, rgba(8,14,38,0.0) 40%, rgba(8,14,38,1) 100%)' }} />
+              <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(270deg, rgba(255,248,241,0.0) 42%, rgba(244,230,210,0.94) 100%)' }} />
             </div>
           </div>
         </div>
       </section>
 
       {/* ════ POUR QUI ════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Pour qui</p>
@@ -283,7 +282,7 @@ export const HomeScreen = async () => {
             {audiences.map((a) => (
               <article
                 key={a.label}
-                className="rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-[rgba(14,20,44,0.78)] to-[rgba(9,14,28,0.65)] p-5 backdrop-blur-sm transition hover:border-white/20"
+                className="brand-card rounded-[1.5rem] p-5 transition"
               >
                 <span className="text-2xl" role="img" aria-hidden="true">{a.icon}</span>
                 <h3 className="mt-3 font-semibold text-white">{a.label}</h3>
@@ -295,7 +294,7 @@ export const HomeScreen = async () => {
           <div className="mt-8 text-center">
             <Link
               href="/ateliers"
-              className="inline-flex items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-500/10 px-6 py-3.5 font-semibold text-amber-200 transition hover:bg-amber-500/20"
+              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(201,117,71,0.16)] bg-white/70 px-6 py-3.5 font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white"
             >
               Voir tous les détails de l'atelier →
             </Link>
@@ -341,7 +340,7 @@ export const HomeScreen = async () => {
       </section>
 
       {/* ════ DÉROULEMENT ════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Comment ça se passe</p>
@@ -376,7 +375,7 @@ export const HomeScreen = async () => {
 
       {/* ════ RÉSULTAT FINAL ════ */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="rounded-[2.5rem] border border-amber-400/20 p-8 md:p-12" style={{ background: 'linear-gradient(145deg, rgba(55,32,0,0.35) 0%, rgba(100,60,0,0.20) 60%, rgba(18,12,0,0.28) 100%)' }}>
+        <div className="warm-spotlight-panel p-8 md:p-12">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Ce que le groupe garde</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Plus qu'un souvenir — un résultat concret</h2>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
@@ -399,9 +398,9 @@ export const HomeScreen = async () => {
       </section>
 
       {/* ════ RAYON DE DÉPLACEMENT ════ */}
-      <section className="bg-steel-950/50 px-6 py-12 md:py-16">
+      <section className="section-soft px-6 py-12 md:py-16">
         <div className="mx-auto max-w-4xl">
-          <div className="flex flex-col gap-4 rounded-[2rem] border border-emerald-400/15 bg-[linear-gradient(145deg,rgba(3,22,18,0.88),rgba(6,34,28,0.80))] p-7 text-center md:flex-row md:items-center md:gap-8 md:p-8 md:text-left">
+          <div className="glass-panel-soft flex flex-col gap-4 p-7 text-center md:flex-row md:items-center md:gap-8 md:p-8 md:text-left">
             <span className="shrink-0 text-4xl" role="img" aria-hidden="true">📍</span>
             <div>
               <h3 className="font-display text-2xl text-white md:text-3xl">Ateliers dans un rayon de 150 km autour de Drummondville</h3>
@@ -411,7 +410,7 @@ export const HomeScreen = async () => {
             </div>
             <Link
               href="/contact"
-              className="shrink-0 rounded-xl border border-emerald-400/30 bg-emerald-500/12 px-6 py-3 font-semibold text-emerald-200 transition hover:bg-emerald-500/22 md:self-center"
+              className="shrink-0 rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-6 py-3 font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white md:self-center"
             >
               Nous contacter
             </Link>
@@ -443,7 +442,7 @@ export const HomeScreen = async () => {
       </section>
 
       {/* ════ TÉMOIGNAGES ════ */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Témoignages</p>
@@ -460,7 +459,7 @@ export const HomeScreen = async () => {
 
       {/* ════ À PROPOS NOWIS ════ */}
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-        <div className="overflow-hidden rounded-[2.5rem] border border-white/10 shadow-card">
+        <div className="warm-spotlight-panel overflow-hidden">
           <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
             <div className="relative min-h-[360px] lg:min-h-[460px]">
               <Image
@@ -470,14 +469,14 @@ export const HomeScreen = async () => {
                 className="object-cover brightness-[0.85]"
                 style={{ objectPosition: '50% 25%' }}
               />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.22)_40%,rgba(5,8,22,0.82)_100%)] lg:bg-[linear-gradient(90deg,rgba(5,8,22,0.06)_0%,rgba(5,8,22,0.18)_55%,rgba(5,8,22,0.82)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,238,0.05)_0%,rgba(255,247,238,0.18)_40%,rgba(82,52,27,0.58)_100%)] lg:bg-[linear-gradient(90deg,rgba(255,247,238,0.05)_0%,rgba(255,247,238,0.18)_55%,rgba(82,52,27,0.62)_100%)]" />
             </div>
-            <div className="bg-[linear-gradient(145deg,rgba(9,14,28,0.96),rgba(14,22,44,0.92))] p-8 md:p-10 lg:p-12">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Nowis Morin</p>
-              <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+            <div className="bg-[linear-gradient(145deg,rgba(255,252,247,0.94),rgba(243,228,207,0.92))] p-8 md:p-10 lg:p-12">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Nowis Morin</p>
+              <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
                 Créateur, animateur, artiste
               </h2>
-              <div className="mt-5 space-y-4 text-[1rem] leading-8 text-slate-300">
+              <div className="mt-5 space-y-4 text-[1rem] leading-8 text-[color:var(--site-muted)]">
                 <p>
                   Nowis Morin est le créateur derrière <strong className="text-white">Création Nowis</strong>. Artiste, musicien et passionné de technologie créative, il anime lui-même chaque atelier — présent, disponible et attentif à chaque participant.
                 </p>
@@ -490,7 +489,7 @@ export const HomeScreen = async () => {
               </div>
               <Link
                 href="/a-propos"
-                className="mt-6 inline-flex rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white transition hover:bg-white/10"
+                className="mt-6 inline-flex rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-6 py-3.5 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
               >
                 En savoir plus →
               </Link>
@@ -501,19 +500,16 @@ export const HomeScreen = async () => {
 
       {/* ════ CTA FINAL ════ */}
       <section className="px-6 py-16 md:py-28">
-        <div
-          className="mx-auto max-w-4xl overflow-hidden rounded-[2.5rem] border border-primary-400/20 p-10 text-center md:p-16"
-          style={{ background: 'linear-gradient(145deg, rgba(8,14,38,0.97) 0%, rgba(16,26,62,0.93) 100%)' }}
-        >
+        <div className="warm-cta-panel relative mx-auto max-w-4xl overflow-hidden p-10 text-center md:p-16">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.5)_0.7px,transparent_0.7px)] [background-size:22px_22px]"
+            className="pointer-events-none absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(138,92,60,0.4)_0.7px,transparent_0.7px)] [background-size:22px_22px]"
           />
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Passez à l'action</p>
-          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl lg:text-6xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Passez à l'action</p>
+          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl lg:text-6xl">
             Prêt à offrir un atelier différent, humain et actuel ?
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-[1rem] leading-8 text-slate-300">
+          <p className="mx-auto mt-6 max-w-2xl text-[1rem] leading-8 text-[color:var(--site-muted)]">
             Création Nowis propose des ateliers artistiques pour mieux comprendre l'intelligence artificielle et apprendre à l'utiliser comme un outil de création, de réflexion et d'expression. Chaque atelier est adapté au groupe, au milieu et à l'objectif visé.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
@@ -525,7 +521,7 @@ export const HomeScreen = async () => {
             </Link>
             <Link
               href="/connexion"
-              className="rounded-xl border border-primary-300/40 bg-primary-500/12 px-9 py-4 font-semibold text-white transition hover:bg-primary-500/22"
+              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
             >
               Accéder au portail client
             </Link>

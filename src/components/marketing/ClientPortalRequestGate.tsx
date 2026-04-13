@@ -23,18 +23,18 @@ export function ClientPortalRequestGate({
   const encodedNext = encodeURIComponent(nextPath);
 
   return (
-    <section className="rounded-[2rem] border border-amber-300/30 bg-[linear-gradient(155deg,rgba(120,53,15,0.10),rgba(22,18,31,0.82))] p-8 text-white shadow-card md:p-10">
-      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-200">Portail client requis</p>
-      <h2 className="mt-4 text-3xl font-semibold leading-tight text-white md:text-4xl">{title}</h2>
-      <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-100 md:text-base">{description}</p>
+    <section className="warm-spotlight-panel p-8 shadow-card md:p-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Portail client requis</p>
+      <h2 className="mt-4 text-3xl font-semibold leading-tight text-[color:var(--site-heading)] md:text-4xl">{title}</h2>
+      <p className="mt-4 max-w-3xl text-sm leading-7 text-[color:var(--site-muted)] md:text-base">{description}</p>
 
       <ol className="mt-8 grid gap-3 text-sm md:grid-cols-2">
         {steps.map((step, index) => (
-          <li key={step} className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950/35 px-4 py-3">
-            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-400/20 text-xs font-bold text-amber-100">
+          <li key={step} className="flex items-center gap-3 rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-4 py-3">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[rgba(201,117,71,0.12)] text-xs font-bold text-[color:var(--site-accent-strong)]">
               {index + 1}
             </span>
-            <span className="text-slate-100">{step}</span>
+            <span className="text-[color:var(--site-heading)]">{step}</span>
           </li>
         ))}
       </ol>
@@ -48,14 +48,14 @@ export function ClientPortalRequestGate({
         </Link>
         <Link
           href={`/connexion?next=${encodedNext}`}
-          className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-slate-950/45 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
         >
           Se connecter
         </Link>
         {showBackToPortal ? (
           <Link
             href={nextPath}
-            className="inline-flex items-center justify-center rounded-xl border border-emerald-300/35 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/20"
+            className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white"
           >
             Ouvrir la section portail
           </Link>

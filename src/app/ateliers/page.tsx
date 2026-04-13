@@ -62,7 +62,7 @@ const etapes = [
 
 export default function AteliersPage() {
   return (
-    <main className="text-slate-100">
+    <main className="text-[color:var(--site-text)]">
 
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
@@ -104,7 +104,7 @@ export default function AteliersPage() {
       </section>
 
       {/* ── MILIEUX VISÉS ── */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Pour qui</p>
@@ -119,7 +119,7 @@ export default function AteliersPage() {
             {milieux.map((m) => (
               <article
                 key={m.label}
-                className="rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-[rgba(14,20,44,0.78)] to-[rgba(9,14,28,0.65)] p-5 backdrop-blur-sm transition hover:border-white/20"
+                className="brand-card rounded-[1.5rem] p-5 transition"
               >
                 <span className="text-2xl" role="img" aria-hidden="true">{m.icon}</span>
                 <h3 className="mt-3 font-semibold text-white">{m.label}</h3>
@@ -162,7 +162,7 @@ export default function AteliersPage() {
       </section>
 
       {/* ── DÉROULEMENT ── */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Déroulement</p>
@@ -196,7 +196,7 @@ export default function AteliersPage() {
 
       {/* ── RÉSULTATS ── */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="rounded-[2.5rem] border border-amber-400/20 p-8 md:p-12" style={{ background: 'linear-gradient(145deg, rgba(55,32,0,0.35) 0%, rgba(100,60,0,0.20) 60%, rgba(18,12,0,0.28) 100%)' }}>
+        <div className="warm-spotlight-panel p-8 md:p-12">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Ce que le groupe repart avec</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
             Un résultat concret, pas juste une expérience
@@ -221,7 +221,7 @@ export default function AteliersPage() {
       </section>
 
       {/* ── DURÉE ET RAYON ── */}
-      <section className="bg-steel-950/50 px-6 py-12 md:py-16">
+      <section className="section-soft px-6 py-12 md:py-16">
         <div className="mx-auto max-w-5xl grid gap-4 md:grid-cols-2">
           <div className="rounded-[2rem] border border-primary-400/20 bg-primary-500/[0.07] p-7">
             <span className="text-3xl" role="img" aria-hidden="true">⏱️</span>
@@ -242,7 +242,7 @@ export default function AteliersPage() {
 
       {/* ── TARIFICATION ── */}
       <section className="mx-auto max-w-4xl px-6 py-12 md:py-16">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center md:p-10">
+        <div className="glass-panel-soft p-8 text-center md:p-10">
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
           <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Tarification sur soumission</h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300">
@@ -258,7 +258,7 @@ export default function AteliersPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="bg-steel-950/50 px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-4xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Questions fréquentes</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
@@ -285,7 +285,7 @@ export default function AteliersPage() {
 
       {/* ── ATELIER CREATIF LINK ── */}
       <section className="mx-auto max-w-5xl px-6 py-12 md:py-16">
-        <div className="rounded-[2.5rem] border border-primary-400/20 bg-[linear-gradient(145deg,rgba(14,20,44,0.92),rgba(22,30,60,0.86))] p-8 md:p-10">
+        <div className="glass-panel-strong p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Atelier spécifique</p>
@@ -298,7 +298,7 @@ export default function AteliersPage() {
             </div>
             <Link
               href="/ateliers/atelier-creatif"
-              className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-7 py-3.5 font-semibold text-white transition hover:bg-primary-500/20"
+              className="shrink-0 rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-7 py-3.5 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
             >
               Voir la page complète →
             </Link>
@@ -308,10 +308,7 @@ export default function AteliersPage() {
 
       {/* ── CTA FINAL ── */}
       <section className="px-6 py-16 md:py-24">
-        <div
-          className="mx-auto max-w-4xl overflow-hidden rounded-[2.5rem] border border-primary-400/20 p-10 text-center md:p-16"
-          style={{ background: 'linear-gradient(145deg, rgba(8,14,38,0.97) 0%, rgba(16,26,62,0.93) 100%)' }}
-        >
+        <div className="warm-cta-panel mx-auto max-w-4xl overflow-hidden p-10 text-center md:p-16">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Prêt à vous lancer</p>
           <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl">
             Offrir un atelier différent, humain et actuel
@@ -328,7 +325,7 @@ export default function AteliersPage() {
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-white/15 bg-white/5 px-9 py-4 font-semibold text-white transition hover:bg-white/10"
+              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
             >
               Poser une question
             </Link>

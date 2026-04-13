@@ -20,19 +20,19 @@ export async function ReviewsSection() {
       {reviews.map((review) => (
         <article
           key={review.id}
-          className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(9,14,28,0.84),rgba(14,23,42,0.76))] p-8 text-white shadow-card backdrop-blur-sm"
+          className="glass-panel-soft p-8"
         >
           <div className="flex gap-1 text-yellow-400" aria-label={`Note : ${review.rating} sur 5`}>
             {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-white/20'}>
+              <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-[rgba(141,121,102,0.38)]'}>
                 ★
               </span>
             ))}
           </div>
-          <p className="mt-5 text-lg leading-8 text-slate-100">"{review.comment}"</p>
-          <div className="mt-6 border-t border-white/10 pt-5">
-            <p className="font-semibold text-white">{review.name}</p>
-            {review.context && <p className="text-sm text-slate-300">{review.context}</p>}
+          <p className="mt-5 text-lg leading-8 text-[color:var(--site-text)]">"{review.comment}"</p>
+          <div className="mt-6 border-t border-[rgba(131,97,67,0.12)] pt-5">
+            <p className="font-semibold text-[color:var(--site-heading)]">{review.name}</p>
+            {review.context && <p className="text-sm text-[color:var(--site-muted)]">{review.context}</p>}
           </div>
         </article>
       ))}

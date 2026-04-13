@@ -56,10 +56,10 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
 
   if (submitted) {
     return (
-      <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(9,14,28,0.84),rgba(14,23,42,0.76))] p-8 text-center text-white backdrop-blur-sm">
+      <div className="glass-panel-soft rounded-[2rem] border border-[var(--site-border)] p-8 text-center text-[color:var(--site-text)]">
         <div className="text-4xl">⭐</div>
-        <h3 className="mt-4 font-display text-2xl text-white">Merci pour ton avis !</h3>
-        <p className="mt-2 text-slate-300">
+        <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)]">Merci pour ton avis !</h3>
+        <p className="mt-2 text-[color:var(--site-text)]">
           Ton témoignage sera publié après validation. Je l'apprécie vraiment.
         </p>
       </div>
@@ -71,16 +71,16 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(9,14,28,0.84),rgba(14,23,42,0.76))] p-8 text-white backdrop-blur-sm"
+      className="glass-panel-soft rounded-[2rem] border border-[var(--site-border)] p-8 text-[color:var(--site-text)]"
     >
-      <h3 className="font-display text-2xl text-white">Laisser un avis</h3>
-      <p className="mt-1 text-sm text-slate-400">
+      <h3 className="font-display text-2xl text-[color:var(--site-heading)]">Laisser un avis</h3>
+      <p className="mt-1 text-sm text-[color:var(--site-muted)]">
         Ton témoignage sera visible sur le site après validation.
       </p>
 
       {/* Étoiles */}
       <div className="mt-6">
-        <p className="mb-2 text-sm font-medium text-slate-300">Ta note *</p>
+        <p className="mb-2 text-sm font-medium text-[color:var(--site-text)]">Ta note *</p>
         <div className="flex gap-1" role="group" aria-label="Note de 1 à 5 étoiles">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -91,7 +91,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
               onMouseLeave={() => setHovered(0)}
               aria-label={`${star} étoile${star > 1 ? 's' : ''}`}
               className={`text-3xl transition-colors ${
-                star <= displayRating ? 'text-yellow-400' : 'text-white/20'
+                star <= displayRating ? 'text-yellow-500' : 'text-[color:var(--site-border)]'
               } hover:text-yellow-300`}
             >
               ★
@@ -102,7 +102,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="review-name" className="mb-1.5 block text-sm font-medium text-slate-300">
+          <label htmlFor="review-name" className="mb-1.5 block text-sm font-medium text-[color:var(--site-text)]">
             Ton prénom *
           </label>
           <input
@@ -112,12 +112,12 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Marie"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 focus:border-primary-400 focus:outline-none"
+            className="w-full rounded-xl border border-[color:var(--site-border)] bg-white/85 px-4 py-2.5 text-[color:var(--site-heading)] placeholder-[color:var(--site-muted)] focus:border-primary-400 focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="review-email" className="mb-1.5 block text-sm font-medium text-slate-300">
-            Email <span className="text-slate-500">(facultatif)</span>
+          <label htmlFor="review-email" className="mb-1.5 block text-sm font-medium text-[color:var(--site-text)]">
+            Email <span className="text-[color:var(--site-muted)]">(facultatif)</span>
           </label>
           <input
             id="review-email"
@@ -125,20 +125,20 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="marie@exemple.com"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 focus:border-primary-400 focus:outline-none"
+            className="w-full rounded-xl border border-[color:var(--site-border)] bg-white/85 px-4 py-2.5 text-[color:var(--site-heading)] placeholder-[color:var(--site-muted)] focus:border-primary-400 focus:outline-none"
           />
         </div>
       </div>
 
       <div className="mt-4">
-        <label htmlFor="review-context" className="mb-1.5 block text-sm font-medium text-slate-300">
-          Type de projet <span className="text-slate-500">(facultatif)</span>
+        <label htmlFor="review-context" className="mb-1.5 block text-sm font-medium text-[color:var(--site-text)]">
+          Type de projet <span className="text-[color:var(--site-muted)]">(facultatif)</span>
         </label>
         <select
           id="review-context"
           value={context}
           onChange={(e) => setContext(e.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-[#0e172a] px-4 py-2.5 text-white focus:border-primary-400 focus:outline-none"
+          className="w-full rounded-xl border border-[color:var(--site-border)] bg-white/85 px-4 py-2.5 text-[color:var(--site-heading)] focus:border-primary-400 focus:outline-none"
         >
           <option value="">-- Choisir --</option>
           {CONTEXTS.map((c) => (
@@ -150,7 +150,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
       </div>
 
       <div className="mt-4">
-        <label htmlFor="review-comment" className="mb-1.5 block text-sm font-medium text-slate-300">
+        <label htmlFor="review-comment" className="mb-1.5 block text-sm font-medium text-[color:var(--site-text)]">
           Ton commentaire *
         </label>
         <textarea
@@ -160,7 +160,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Partage ton expérience..."
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 focus:border-primary-400 focus:outline-none"
+          className="w-full rounded-xl border border-[color:var(--site-border)] bg-white/85 px-4 py-2.5 text-[color:var(--site-heading)] placeholder-[color:var(--site-muted)] focus:border-primary-400 focus:outline-none"
         />
       </div>
 

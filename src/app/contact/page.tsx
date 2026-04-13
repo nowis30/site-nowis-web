@@ -144,7 +144,7 @@ export default async function ContactPage() {
     : DEFAULT_CONTACT_CONTENT.social.facebook;
 
   return (
-    <div>
+    <div className="site-background text-[color:var(--site-text)]">
       <PageHero
         eyebrow={heroEyebrow}
         title={heroTitle}
@@ -155,24 +155,24 @@ export default async function ContactPage() {
         <ClientPortalRequestGate nextPath="/client/dashboard" />
 
         <div className="space-y-6">
-          <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
-            <h2 className="text-2xl font-bold">Contact direct</h2>
-            <p className="mt-4 text-slate-300">Pour une demande rapide, une collaboration ou une idée à clarifier :</p>
-            <ul className="mt-6 space-y-3 text-slate-200">
+          <div className="glass-panel-strong rounded-3xl p-8 shadow-sm">
+            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Contact direct</h2>
+            <p className="mt-4 text-[color:var(--site-muted)]">Pour une demande rapide, une collaboration ou une idée à clarifier :</p>
+            <ul className="mt-6 space-y-3 text-[color:var(--site-text)]">
               <li>Email: <a href={`mailto:${email}`} className="hover:underline">{email}</a></li>
               <li>Telephone: <a href={phoneHref} className="hover:underline">{phone}</a></li>
             </ul>
             <div className="mt-6 flex flex-col gap-3">
-              <a href={songRequestHref} className="rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+              <a href={songRequestHref} className="rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-5 py-3 font-semibold text-[color:var(--site-heading)] transition hover:bg-white">
                 {songRequestLabel}
               </a>
-              <a href={workshopRequestHref} className="rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+              <a href={workshopRequestHref} className="rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-5 py-3 font-semibold text-[color:var(--site-heading)] transition hover:bg-white">
                 {workshopRequestLabel}
               </a>
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white p-8 shadow-sm">
+          <div className="glass-panel-soft rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-950">Protection des renseignements personnels</h2>
             <p className="mt-4 leading-relaxed text-slate-600">
               Responsable : {legalConfig.responsiblePrivacyName}. Pour toute demande liée à l’accès, à la correction ou au retrait de renseignements personnels, tu peux écrire directement à cette personne.
@@ -198,7 +198,7 @@ export default async function ContactPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white p-8 shadow-sm">
+          <div className="glass-panel-soft rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-950">Où suivre Nowis Morin</h2>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <a href={spotify} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">Écouter sur Spotify</a>

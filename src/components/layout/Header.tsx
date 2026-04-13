@@ -40,14 +40,14 @@ export const Header: React.FC = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-[200] isolate overflow-visible border-b border-white/10 bg-[#07101f]/92 backdrop-blur-xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/82">
+    <header className="sticky top-0 z-[200] isolate overflow-visible border-b border-[rgba(131,97,67,0.12)] bg-[rgba(252,247,241,0.88)] backdrop-blur-xl shadow-[0_16px_36px_rgba(99,65,38,0.08)] supports-[backdrop-filter]:bg-[rgba(252,247,241,0.78)]">
       <nav className="relative z-[201] mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="relative z-[210] flex items-center gap-3 text-white transition-colors hover:text-primary-200">
-          <span className="relative h-12 w-12 overflow-hidden rounded-full border border-white/10 bg-coal-950 shadow-fire">
+        <Link href="/" className="relative z-[210] flex items-center gap-3 text-[color:var(--site-heading)] transition-colors hover:text-[color:var(--site-accent-strong)]">
+          <span className="relative h-12 w-12 overflow-hidden rounded-full border border-[rgba(131,97,67,0.12)] bg-[linear-gradient(180deg,#fffaf4_0%,#f1e1cb_100%)] shadow-[0_14px_26px_rgba(188,124,77,0.18)]">
             <Image src="/nowis.png" alt="Logo Creation Nowis" fill className="object-contain p-1" />
           </span>
           <span>
-            <span className="block text-xs font-semibold uppercase tracking-[0.32em] text-primary-200">Creation Nowis</span>
+            <span className="block text-xs font-semibold uppercase tracking-[0.32em] text-[color:var(--site-accent-strong)]">Creation Nowis</span>
             <span className="brand-metal-text block font-display text-xl leading-none md:text-2xl">Nowis Morin</span>
           </span>
         </Link>
@@ -57,14 +57,14 @@ export const Header: React.FC = () => {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium transition-colors duration-200 hover:text-primary-100 ${pathname === link.href ? 'text-primary-300' : 'text-slate-200'}`}
+              className={`text-sm font-medium transition-colors duration-200 hover:text-[color:var(--site-accent-strong)] ${pathname === link.href ? 'text-[color:var(--site-accent-strong)]' : 'text-[color:var(--site-muted)]'}`}
             >
               {link.label}
             </Link>
           ))}
           <Link
             href="/connexion"
-            className="ml-2 rounded-xl border border-primary-400/40 bg-primary-500/15 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-primary-500/25"
+            className="ml-2 rounded-xl border border-[rgba(201,117,71,0.18)] bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-105"
           >
             Portail client
           </Link>
@@ -72,13 +72,13 @@ export const Header: React.FC = () => {
 
         <button
           type="button"
-          className="relative z-[220] touch-manipulation lg:hidden rounded-xl border border-white/10 p-2 text-slate-100 transition-colors hover:bg-white/10"
+          className="relative z-[220] touch-manipulation lg:hidden rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/60 p-2 text-[color:var(--site-heading)] transition-colors hover:bg-white"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Menu mobile"
           aria-expanded={isMenuOpen}
           aria-controls="mobile-main-menu"
         >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d={isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
           </svg>
@@ -89,24 +89,24 @@ export const Header: React.FC = () => {
             <button
               type="button"
               aria-label="Fermer le menu"
-              className="fixed inset-0 z-[205] bg-black/60 lg:hidden"
+              className="fixed inset-0 z-[205] bg-[rgba(75,48,28,0.24)] lg:hidden"
               onClick={() => setIsMenuOpen(false)}
             />
             <div className="absolute inset-x-0 top-full z-[215] lg:hidden">
               <div
                 id="mobile-main-menu"
-                className="max-h-[calc(100vh-5.25rem)] overflow-y-auto border-t border-white/10 bg-[#050816]/98 px-5 pb-8 pt-5 shadow-2xl"
+                className="max-h-[calc(100vh-5.25rem)] overflow-y-auto border-t border-[rgba(131,97,67,0.1)] bg-[linear-gradient(180deg,rgba(255,250,245,0.98),rgba(244,233,218,0.98))] px-5 pb-8 pt-5 shadow-[0_28px_60px_rgba(107,72,42,0.18)]"
               >
               <div className="mx-auto flex max-w-md flex-col gap-3">
-                <div className="mb-1 rounded-2xl border border-primary-500/20 bg-primary-500/10 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-200">Navigation</p>
-                  <p className="mt-1 text-sm text-slate-300">Creation Nowis — Nowis Morin</p>
+                <div className="mb-1 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-white/70 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Navigation</p>
+                  <p className="mt-1 text-sm text-[color:var(--site-muted)]">Creation Nowis — Nowis Morin</p>
                 </div>
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`rounded-2xl border border-white/10 px-5 py-4 text-base font-semibold text-white transition hover:border-primary-400/40 hover:bg-slate-800 ${pathname === link.href ? 'bg-slate-800 border-primary-400/30' : 'bg-slate-900'}`}
+                    className={`rounded-2xl border px-5 py-4 text-base font-semibold transition ${pathname === link.href ? 'border-[rgba(201,117,71,0.22)] bg-[rgba(255,255,255,0.7)] text-[color:var(--site-accent-strong)]' : 'border-[rgba(131,97,67,0.1)] bg-[rgba(255,255,255,0.56)] text-[color:var(--site-heading)] hover:border-[rgba(201,117,71,0.18)] hover:bg-white'}`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}
@@ -114,7 +114,7 @@ export const Header: React.FC = () => {
                 ))}
                 <Link
                   href="/connexion"
-                  className="mt-2 rounded-2xl bg-brand-warm px-6 py-4 text-center text-base font-semibold text-white shadow-fire transition-all hover:brightness-110"
+                  className="mt-2 rounded-2xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-4 text-center text-base font-semibold text-white shadow-fire transition-all hover:brightness-105"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Portail client

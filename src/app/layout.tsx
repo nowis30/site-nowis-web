@@ -1,22 +1,37 @@
 import type { Metadata } from 'next';
+import { Alfa_Slab_One, Inter } from 'next/font/google';
 import './globals.css';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { CookieBanner } from '@/components/CookieBanner';
 import { buildMetadata } from '@/lib/seo';
+
+const bodyFont = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const displayFont = Alfa_Slab_One({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-display',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   ...buildMetadata({
-    title: 'Nowis Morin — Chansons, vidéos et créations IA au Québec',
+    title: 'Création Nowis | Chansons personnalisées et créations musicales',
     description:
-      'Nowis Morin crée des chansons, vidéos, visuels et projets créatifs avec l’aide de l’intelligence artificielle. Une vitrine artistique et marketing pensée pour l’écoute, la découverte et la prise de contact.',
+      'Création Nowis propose des chansons personnalisées, des créations musicales sur mesure et des options visuelles ou vidéo IA pour accompagner les moments importants.',
     path: '/',
-    keywords: ['Nowis Morin', 'Nowis Morin chanson', 'musique Nowis Morin', 'chanson IA Québec', 'artiste musique IA Québec'],
+    keywords: ['Création Nowis', 'chanson personnalisée Québec', 'chansons sur mesure', 'Nowis Morin musique'],
   }),
   manifest: '/manifest.json',
   icons: {
-    icon: '/hero.jpg',
-    apple: '/hero.jpg',
+    icon: '/icons/android/launchericon-192x192.png',
+    apple: '/icons/ios/1024.png',
   },
   appleWebApp: {
     capable: true,
@@ -34,19 +49,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <head>
-        <meta name="theme-color" content="#6366f1" />
+        <meta name="theme-color" content="#f7efe5" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Création NOWIS" />
       </head>
-      <body className="bg-gray-50 text-gray-900">
+      <body className="bg-[#fcf7f1] text-[color:var(--site-text)] font-sans">
         <UnregisterServiceWorker />
         <AuthProvider>
           <AppLayout>{children}</AppLayout>
         </AuthProvider>
+        <CookieBanner />
       </body>
     </html>
   );
