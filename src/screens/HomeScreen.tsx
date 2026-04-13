@@ -68,7 +68,17 @@ export const HomeScreen = async () => {
       <section className="relative overflow-hidden">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 md:hidden"
+          style={{
+            background:
+              'radial-gradient(circle at 15% 12%, rgba(96,165,250,0.08), transparent 22%),' +
+              'radial-gradient(circle at 86% 10%, rgba(139,92,246,0.07), transparent 18%),' +
+              'radial-gradient(circle at 76% 38%, rgba(59,130,246,0.04), transparent 20%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 hidden md:block"
           style={{
             background:
               'radial-gradient(circle at 15% 12%, rgba(96,165,250,0.13), transparent 24%),' +
@@ -78,7 +88,7 @@ export const HomeScreen = async () => {
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.5)_0.7px,transparent_0.7px)] [background-size:22px_22px]"
+          className="pointer-events-none absolute inset-0 opacity-[0.04] md:opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.5)_0.7px,transparent_0.7px)] [background-size:22px_22px]"
         />
 
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-24 lg:py-32">
@@ -133,16 +143,15 @@ export const HomeScreen = async () => {
               className="overflow-hidden rounded-[2rem] border border-primary-200/20 shadow-card"
               style={{ background: 'linear-gradient(180deg, #07101f 0%, #10182d 100%)' }}
             >
-              <div className="relative aspect-[4/5]">
+              <div className="relative aspect-[4/5.15] md:aspect-[4/5]">
                 <Image
                   src="/hero.jpg"
                   alt="Nowis Morin, créateur principal de Création Nowis"
                   fill
-                  className="brightness-[0.72] contrast-[1.05]"
-                  style={{ objectFit: 'cover', objectPosition: '50% 35%' }}
+                  className="object-cover object-[50%_28%] brightness-[0.8] contrast-[1.12] saturate-[1.05] md:object-[50%_35%] md:brightness-[0.72] md:contrast-[1.05] md:saturate-100"
                   priority
                 />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.24)_38%,rgba(5,8,22,0.88)_100%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.04)_0%,rgba(5,8,22,0.14)_35%,rgba(5,8,22,0.8)_100%)] md:bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.24)_38%,rgba(5,8,22,0.88)_100%)]" />
               </div>
               <div className="px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-200">Création Nowis</p>

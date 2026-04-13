@@ -40,9 +40,9 @@ export const Header: React.FC = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-[120] isolate border-b border-white/10 bg-[#07101f]/88 backdrop-blur-2xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/78">
-      <nav className="relative z-[121] mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="relative z-[130] flex items-center gap-3 text-white transition-colors hover:text-primary-200">
+    <header className="sticky top-0 z-[200] isolate overflow-visible border-b border-white/10 bg-[#07101f]/92 backdrop-blur-xl shadow-card supports-[backdrop-filter]:bg-[#07101f]/82">
+      <nav className="relative z-[201] mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="relative z-[210] flex items-center gap-3 text-white transition-colors hover:text-primary-200">
           <span className="relative h-12 w-12 overflow-hidden rounded-full border border-white/10 bg-coal-950 shadow-fire">
             <Image src="/nowis.png" alt="Logo Creation Nowis" fill className="object-contain p-1" />
           </span>
@@ -72,7 +72,7 @@ export const Header: React.FC = () => {
 
         <button
           type="button"
-          className="relative z-[130] touch-manipulation lg:hidden rounded-xl border border-white/10 p-2 text-slate-100 transition-colors hover:bg-white/10"
+          className="relative z-[220] touch-manipulation lg:hidden rounded-xl border border-white/10 p-2 text-slate-100 transition-colors hover:bg-white/10"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Menu mobile"
           aria-expanded={isMenuOpen}
@@ -85,9 +85,18 @@ export const Header: React.FC = () => {
         </button>
 
         {isMenuOpen ? (
-          <div className="pointer-events-none fixed inset-x-0 bottom-0 top-[5.25rem] z-[125] lg:hidden">
-            <button type="button" aria-label="Fermer le menu" className="pointer-events-auto absolute inset-0 bg-black/70" onClick={() => setIsMenuOpen(false)} />
-            <div id="mobile-main-menu" className="pointer-events-auto absolute inset-x-0 bottom-0 top-0 overflow-y-auto border-t border-white/10 bg-[#050816] px-5 pb-8 pt-5">
+          <>
+            <button
+              type="button"
+              aria-label="Fermer le menu"
+              className="fixed inset-0 z-[205] bg-black/60 lg:hidden"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            <div className="absolute inset-x-0 top-full z-[215] lg:hidden">
+              <div
+                id="mobile-main-menu"
+                className="max-h-[calc(100vh-5.25rem)] overflow-y-auto border-t border-white/10 bg-[#050816]/98 px-5 pb-8 pt-5 shadow-2xl"
+              >
               <div className="mx-auto flex max-w-md flex-col gap-3">
                 <div className="mb-1 rounded-2xl border border-primary-500/20 bg-primary-500/10 px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-200">Navigation</p>
@@ -112,7 +121,8 @@ export const Header: React.FC = () => {
                 </Link>
               </div>
             </div>
-          </div>
+            </div>
+          </>
         ) : null}
       </nav>
     </header>
