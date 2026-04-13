@@ -25,7 +25,7 @@ export function SongCard({ song }: { song: Song }) {
           fill
           className="object-cover transition duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.08)] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.08)] to-transparent" />
       </div>
       <div className="space-y-5 p-7">
         <div className="flex flex-wrap gap-2">

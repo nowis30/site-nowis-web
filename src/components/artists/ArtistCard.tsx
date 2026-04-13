@@ -19,10 +19,10 @@ export function ArtistCard({ artist }: { artist: ArtistProfile }) {
               fill
               className="object-cover transition duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.18)] to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.18)] to-transparent" />
           </>
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(183,141,92,0.28),_transparent_30%),linear-gradient(180deg,#fbf4ea_0%,#f2e2cb_100%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(183,141,92,0.28),_transparent_30%),linear-gradient(180deg,#fbf4ea_0%,#f2e2cb_100%)]" />
         )}
 
       </div>

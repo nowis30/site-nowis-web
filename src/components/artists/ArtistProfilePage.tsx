@@ -62,7 +62,7 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
               {artist.image?.src ? (
                 <div className="relative min-h-[360px]">
                   <Image src={artist.image.src} alt={artist.image.alt} fill className="object-cover brightness-[0.92] contrast-[1.02]" />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(251,244,234,0.02)_0%,rgba(140,102,67,0.18)_42%,rgba(53,35,23,0.48)_100%)]" />
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(251,244,234,0.02)_0%,rgba(140,102,67,0.18)_42%,rgba(53,35,23,0.48)_100%)]" />
                 </div>
               ) : (
                 <div className="flex min-h-[360px] flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(183,141,92,0.22),_transparent_30%),linear-gradient(180deg,#fbf4ea_0%,#f2e2cb_100%)] p-8 text-[color:var(--site-heading)]">

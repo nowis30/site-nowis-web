@@ -58,7 +58,7 @@ export function PageHero({ eyebrow, title, description, primaryCta, secondaryCta
   const align = alignClass(style?.contentAlign || 'left', style?.mobileAlign || 'inherit');
 
   return (
-    <section className="brand-shell brand-grid">
+    <section className="brand-shell brand-grid pointer-events-auto">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,247,238,0.28)_38%,rgba(242,227,207,0.72)_100%)]" />
       <div className={`relative z-10 mx-auto ${contentWidth} px-6 ${spacing} ${mobileSpacing}`}>
         <div className={`relative ${align}`}>

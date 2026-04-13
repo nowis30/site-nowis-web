@@ -39,10 +39,21 @@ export const Header: React.FC = () => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-[200] isolate overflow-visible border-b border-[rgba(131,97,67,0.12)] bg-[rgba(252,247,241,0.88)] backdrop-blur-xl shadow-[0_16px_36px_rgba(99,65,38,0.08)] supports-[backdrop-filter]:bg-[rgba(252,247,241,0.78)]">
-      <nav className="relative z-[201] mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="relative z-[210] flex items-center gap-3 text-[color:var(--site-heading)] transition-colors hover:text-[color:var(--site-accent-strong)]">
+    <header className="fixed inset-x-0 top-0 z-[120] border-b border-[rgba(131,97,67,0.12)] bg-[rgba(252,247,241,0.88)] backdrop-blur-xl shadow-[0_16px_36px_rgba(99,65,38,0.08)] supports-[backdrop-filter]:bg-[rgba(252,247,241,0.78)]">
+      <nav className="relative z-[123] mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="relative z-[123] flex items-center gap-3 text-[color:var(--site-heading)] transition-colors hover:text-[color:var(--site-accent-strong)]">
           <span className="relative h-12 w-12 overflow-hidden rounded-full border border-[rgba(131,97,67,0.12)] bg-[linear-gradient(180deg,#fffaf4_0%,#f1e1cb_100%)] shadow-[0_14px_26px_rgba(188,124,77,0.18)]">
             <Image src="/nowis.png" alt="Logo Creation Nowis" fill className="object-contain p-1" />
           </span>
@@ -52,7 +63,7 @@ export const Header: React.FC = () => {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-5 lg:flex">
+        <div className="hidden items-center gap-5 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -72,7 +83,7 @@ export const Header: React.FC = () => {
 
         <button
           type="button"
-          className="relative z-[220] touch-manipulation lg:hidden rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/60 p-2 text-[color:var(--site-heading)] transition-colors hover:bg-white"
+          className="relative z-[123] touch-manipulation rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/60 p-2 text-[color:var(--site-heading)] transition-colors hover:bg-white md:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Menu mobile"
           aria-expanded={isMenuOpen}
@@ -89,38 +100,38 @@ export const Header: React.FC = () => {
             <button
               type="button"
               aria-label="Fermer le menu"
-              className="fixed inset-0 z-[205] bg-[rgba(75,48,28,0.24)] lg:hidden"
+              className="fixed inset-0 z-[121] bg-[rgba(75,48,28,0.24)] md:hidden"
               onClick={() => setIsMenuOpen(false)}
             />
-            <div className="absolute inset-x-0 top-full z-[215] lg:hidden">
+            <div className="fixed inset-x-3 top-20 z-[122] md:hidden">
               <div
                 id="mobile-main-menu"
-                className="max-h-[calc(100vh-5.25rem)] overflow-y-auto border-t border-[rgba(131,97,67,0.1)] bg-[linear-gradient(180deg,rgba(255,250,245,0.98),rgba(244,233,218,0.98))] px-5 pb-8 pt-5 shadow-[0_28px_60px_rgba(107,72,42,0.18)]"
+                className="max-h-[calc(100vh-6rem)] overflow-y-auto rounded-[1.75rem] border border-[rgba(131,97,67,0.14)] bg-[linear-gradient(180deg,rgba(255,250,245,0.99),rgba(244,233,218,0.99))] px-5 pb-6 pt-5 shadow-[0_28px_60px_rgba(107,72,42,0.22)]"
               >
-              <div className="mx-auto flex max-w-md flex-col gap-3">
-                <div className="mb-1 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-white/70 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Navigation</p>
-                  <p className="mt-1 text-sm text-[color:var(--site-muted)]">Creation Nowis — Nowis Morin</p>
-                </div>
-                {navLinks.map((link) => (
+                <div className="mx-auto flex max-w-md flex-col gap-3">
+                  <div className="mb-1 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-white/70 px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Navigation</p>
+                    <p className="mt-1 text-sm text-[color:var(--site-muted)]">Creation Nowis — Nowis Morin</p>
+                  </div>
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`rounded-2xl border px-5 py-4 text-base font-semibold transition ${pathname === link.href ? 'border-[rgba(201,117,71,0.22)] bg-[rgba(255,255,255,0.7)] text-[color:var(--site-accent-strong)]' : 'border-[rgba(131,97,67,0.1)] bg-[rgba(255,255,255,0.56)] text-[color:var(--site-heading)] hover:border-[rgba(201,117,71,0.18)] hover:bg-white'}`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
                   <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`rounded-2xl border px-5 py-4 text-base font-semibold transition ${pathname === link.href ? 'border-[rgba(201,117,71,0.22)] bg-[rgba(255,255,255,0.7)] text-[color:var(--site-accent-strong)]' : 'border-[rgba(131,97,67,0.1)] bg-[rgba(255,255,255,0.56)] text-[color:var(--site-heading)] hover:border-[rgba(201,117,71,0.18)] hover:bg-white'}`}
+                    href="/connexion"
+                    className="mt-2 rounded-2xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-4 text-center text-base font-semibold text-white shadow-fire transition-all hover:brightness-105"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {link.label}
+                    Portail client
                   </Link>
-                ))}
-                <Link
-                  href="/connexion"
-                  className="mt-2 rounded-2xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-4 text-center text-base font-semibold text-white shadow-fire transition-all hover:brightness-105"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Portail client
-                </Link>
+                </div>
               </div>
-            </div>
             </div>
           </>
         ) : null}

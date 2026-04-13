@@ -63,7 +63,7 @@ export default function AProposPage() {
                   style={{ objectFit: 'cover', objectPosition: '50% 25%' }}
                   priority
                 />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.06)_0%,rgba(5,8,22,0.72)_100%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.06)_0%,rgba(5,8,22,0.72)_100%)]" />
               </div>
             </div>
           </div>

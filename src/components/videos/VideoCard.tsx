@@ -15,7 +15,7 @@ export function VideoCard({ title, image, shortDescription, youtubeUrl, category
     <article className="group glass-panel-soft overflow-hidden rounded-3xl border border-[var(--site-border)] shadow-card transition hover:-translate-y-1 hover:border-[color:var(--site-accent)]/50 hover:shadow-fire">
       <div className="relative h-56 overflow-hidden bg-[var(--site-soft)]">
         <Image src={image} alt={title} fill className="object-cover transition duration-500 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.08)] to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.08)] to-transparent" />
       </div>
       <div className="space-y-5 p-7">
         <span className="inline-flex rounded-full border border-[color:var(--site-accent)]/20 bg-[color:var(--site-accent-soft)] px-3 py-1 text-xs font-semibold text-[color:var(--site-accent-strong)]">{category}</span>

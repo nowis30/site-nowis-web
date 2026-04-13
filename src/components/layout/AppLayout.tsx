@@ -24,19 +24,19 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="public-site site-background relative flex min-h-screen flex-col overflow-x-clip text-[color:var(--site-text)] isolate">
+    <div className="public-site site-background relative flex min-h-screen flex-col overflow-x-clip text-[color:var(--site-text)]">
       {/* Header - Navigation */}
-      <div className="relative z-10">
+      <div>
         <Header />
       </div>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-grow">
+      <main className="relative z-0 flex-grow pt-24 md:pt-28">
         {children}
       </main>
 
       {/* Footer */}
-      <div className="relative z-10">
+      <div className="relative z-0">
         <Footer />
       </div>
     </div>
