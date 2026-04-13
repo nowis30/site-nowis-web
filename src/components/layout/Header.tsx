@@ -75,7 +75,7 @@ export const Header: React.FC = () => {
           ))}
           <Link
             href="/connexion"
-            className="ml-2 rounded-xl border border-[rgba(201,117,71,0.18)] bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-105"
+            className="cta-primary ml-2 px-5 py-2.5 text-sm"
           >
             Portail client
           </Link>
@@ -125,7 +125,7 @@ export const Header: React.FC = () => {
                   ))}
                   <Link
                     href="/connexion"
-                    className="mt-2 rounded-2xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-4 text-center text-base font-semibold text-white shadow-fire transition-all hover:brightness-105"
+                    className="cta-primary mt-2 px-6 py-4 text-center text-base"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Portail client
