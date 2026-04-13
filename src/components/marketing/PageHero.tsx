@@ -59,8 +59,8 @@ export function PageHero({ eyebrow, title, description, primaryCta, secondaryCta
 
   return (
     <section className="brand-shell brand-grid">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.14)_0%,rgba(5,8,22,0.32)_35%,rgba(5,8,22,0.72)_100%)]" />
-      <div className={`mx-auto ${contentWidth} px-6 ${spacing} ${mobileSpacing}`}>
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.14)_0%,rgba(5,8,22,0.32)_35%,rgba(5,8,22,0.72)_100%)]" />
+      <div className={`relative z-10 mx-auto ${contentWidth} px-6 ${spacing} ${mobileSpacing}`}>
         <div className={`relative ${align}`}>
           {eyebrow ? <p className="brand-chip">{eyebrow}</p> : null}
           <h1 className={`mt-5 font-display ${heading} leading-[1.02] text-white ${style?.contentAlign === 'center' ? 'mx-auto max-w-5xl' : 'max-w-4xl'}`}>{title}</h1>

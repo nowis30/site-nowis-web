@@ -142,7 +142,7 @@ export const HomeScreen = async () => {
                   style={{ objectFit: 'cover', objectPosition: '50% 35%' }}
                   priority
                 />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.24)_38%,rgba(5,8,22,0.88)_100%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.24)_38%,rgba(5,8,22,0.88)_100%)]" />
               </div>
               <div className="px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-200">Création Nowis</p>
@@ -251,7 +251,7 @@ export const HomeScreen = async () => {
                 className="object-cover opacity-50"
                 style={{ objectPosition: '60% 20%' }}
               />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(270deg, rgba(8,14,38,0.0) 40%, rgba(8,14,38,1) 100%)' }} />
+              <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(270deg, rgba(8,14,38,0.0) 40%, rgba(8,14,38,1) 100%)' }} />
             </div>
           </div>
         </div>
@@ -461,7 +461,7 @@ export const HomeScreen = async () => {
                 className="object-cover brightness-[0.85]"
                 style={{ objectPosition: '50% 25%' }}
               />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.22)_40%,rgba(5,8,22,0.82)_100%)] lg:bg-[linear-gradient(90deg,rgba(5,8,22,0.06)_0%,rgba(5,8,22,0.18)_55%,rgba(5,8,22,0.82)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.08)_0%,rgba(5,8,22,0.22)_40%,rgba(5,8,22,0.82)_100%)] lg:bg-[linear-gradient(90deg,rgba(5,8,22,0.06)_0%,rgba(5,8,22,0.18)_55%,rgba(5,8,22,0.82)_100%)]" />
             </div>
             <div className="bg-[linear-gradient(145deg,rgba(9,14,28,0.96),rgba(14,22,44,0.92))] p-8 md:p-10 lg:p-12">
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Nowis Morin</p>
