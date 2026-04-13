@@ -97,7 +97,6 @@ export default async function ContactPage() {
   const heroEnabled = heroSection?.isActive ?? false;
   const directEnabled = directSection?.isActive ?? false;
   const socialEnabled = socialSection?.isActive ?? false;
-  const heroStyle = getAdminSectionVisualStyle(heroSection);
   const directStyle = getAdminSectionVisualStyle(directSection);
 
   const heroEyebrow = heroEnabled
@@ -150,7 +149,6 @@ export default async function ContactPage() {
         eyebrow={heroEyebrow}
         title={heroTitle}
         description={heroDescription}
-        style={heroStyle}
       />
 
       <section className={`mx-auto grid ${widthClass(directStyle.contentWidth)} gap-10 px-6 ${spacingClass(directStyle.verticalSpacing)} lg:grid-cols-[1.05fr_0.95fr]`}>

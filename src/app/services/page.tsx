@@ -1,5 +1,4 @@
 import { PageHero } from '@/components/marketing/PageHero';
-import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { serviceOffers } from '@/data/serviceOffers';
 import { buildMetadata } from '@/lib/seo';
 
@@ -18,7 +17,7 @@ export default function ServicesPage() {
         eyebrow="Services / Collaborations"
         title="Des créations personnalisées pour les artistes, les idées fortes et les projets qui veulent se démarquer"
         description="Cette page présente ce que Nowis Morin peut concevoir pour toi : chansons sur mesure, vidéos, visuels créatifs et concepts plus ambitieux mêlant art, émotion et intelligence artificielle."
-        primaryCta={{ label: 'Parler de mon projet', href: '/contact?projectType=autre&message=Bonjour, je veux discuter d’un projet créatif avec Création Nowis.' }}
+        primaryCta={{ label: 'Me contacter', href: '/contact' }}
         secondaryCta={{ label: 'Écouter mes chansons', href: '/musique' }}
       />
 
@@ -43,7 +42,7 @@ export default function ServicesPage() {
           <p className="mt-4 max-w-3xl leading-relaxed text-slate-300">
             Si ton projet ne rentre pas exactement dans une case, c’est souvent là que les meilleures collaborations commencent. Nowis Morin peut t’aider à concevoir une approche originale, sur mesure et alignée avec ton objectif de visibilité ou d’émotion.
           </p>
-          <ContactPrefillLink href="/contact" className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Parler de mon projet</ContactPrefillLink>
+          <a href="/contact" className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Parler de mon projet</a>
         </div>
       </section>
     </div>

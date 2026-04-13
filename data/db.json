@@ -7,14 +7,6 @@
       "passwordHash": "$2b$10$AQoVq49epo634L23rJTyHelsp1HVVc1kXh9ng4xmTkOP6LREAQO6y",
       "role": "owner",
       "createdAt": "2026-03-08T18:47:16.872Z"
-    },
-    {
-      "id": "ae1ccc3a-9d01-4ab0-bc89-567ae16ff16e",
-      "name": "simon morin",
-      "email": "simonmorin30@gmail.com",
-      "passwordHash": "$2b$10$dmrn8rBBVKD/HZxVhRpCA.Kd8wlOzeECzw/63CdcGqDKX7J6vM4PC",
-      "role": "owner",
-      "createdAt": "2026-03-24T18:13:33.107Z"
     }
   ],
   "listings": []

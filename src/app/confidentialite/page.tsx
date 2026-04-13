@@ -1,186 +1,226 @@
+/**
+ * Page de Confidentialité / Loi 25
+ * Politique de protection des renseignements personnels conforme à la Loi 25
+ */
+
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
-import { PageHero } from '@/components/marketing/PageHero';
-import { buildMetadata } from '@/lib/seo';
-import { complianceNotes, essentialCookies, legalConfig, legalLinks } from '@/data/legal';
-
-export const metadata = buildMetadata({
-  title: 'Politique de confidentialité | Création Nowis',
-  description:
-    'Consultez la politique de confidentialité de Création Nowis : renseignements recueillis, usage, conservation, droits d’accès et coordonnées du responsable de la protection des renseignements personnels.',
-  path: '/confidentialite',
-  keywords: ['politique de confidentialité Création Nowis', 'protection renseignements personnels Québec', 'confidentialité Nowis'],
-});
-
-const privacySections = [
-  {
-    title: '1. Introduction',
-    content: [
-      'Création Nowis prend au sérieux la protection des renseignements personnels fournis par ses visiteurs et ses clients.',
-      'Cette politique explique, en termes simples, quels renseignements peuvent être recueillis, pourquoi ils le sont, comment ils sont utilisés et comment communiquer avec la personne responsable.',
-    ],
-  },
-  {
-    title: '2. Renseignements que nous pouvons recueillir',
-    bullets: [
-      'votre nom, votre courriel et votre numéro de téléphone lorsque vous remplissez un formulaire ou communiquez avec nous ;',
-      'les renseignements que vous choisissez de partager au sujet de votre projet, de votre histoire ou de vos attentes ;',
-      'certaines données techniques limitées liées à l’utilisation du site, comme l’adresse IP, les journaux techniques ou les données nécessaires au bon fonctionnement du service.',
-    ],
-  },
-  {
-    title: '3. Pourquoi ces renseignements sont recueillis',
-    bullets: [
-      'répondre à votre demande ;',
-      'communiquer avec vous et assurer le suivi du projet ;',
-      'préparer une proposition ou une direction de création adaptée ;',
-      'respecter les obligations administratives, contractuelles ou légales applicables.',
-    ],
-  },
-  {
-    title: '4. Partage et accès aux renseignements',
-    content: [
-      'Les renseignements ne sont pas vendus. Ils peuvent être accessibles uniquement aux personnes autorisées ou à certains fournisseurs techniques nécessaires au fonctionnement du site, de l’hébergement ou des communications.',
-      'Lorsque des outils externes sont utilisés, l’accès est limité à ce qui est raisonnablement nécessaire pour traiter la demande ou faire fonctionner le service.',
-    ],
-  },
-  {
-    title: '5. Conservation et sécurité',
-    content: [
-      'Les renseignements sont conservés pour la durée raisonnablement nécessaire au suivi des demandes, à la prestation des services et au respect des obligations applicables.',
-      'Création Nowis met en place des mesures techniques et organisationnelles raisonnables pour limiter les accès non autorisés, la perte ou l’usage inapproprié des renseignements.',
-    ],
-  },
-  {
-    title: '6. Vos droits',
-    bullets: [
-      'demander l’accès à vos renseignements ;',
-      'demander la correction d’un renseignement inexact ;',
-      'demander le retrait ou la suppression de renseignements lorsque la situation le permet ;',
-      'retirer votre consentement à certaines utilisations, sous réserve des obligations déjà en cours ou des exigences légales applicables.',
-    ],
-  },
-  {
-    title: '7. Cookies et outils similaires',
-    content: [
-      'Le site utilise surtout des mécanismes techniques nécessaires à son bon fonctionnement, à la sécurité ou à la gestion d’une session authentifiée lorsque certaines zones privées sont utilisées.',
-      complianceNotes.noMarketingCookies,
-      complianceNotes.cookieBannerRule,
-      'Vous pouvez limiter certains cookies dans votre navigateur, mais certaines fonctions du site pourraient alors être affectées.',
-    ],
-  },
-  {
-    title: '8. Mise à jour de la politique',
-    content: [
-      'Cette politique peut être ajustée si les pratiques du site évoluent ou si des clarifications deviennent nécessaires. La version la plus récente reste publiée sur cette page.',
-    ],
-  },
-];
-
-function SectionBlock({ title, content, bullets }: { title: string; content?: string[]; bullets?: string[] }) {
-  return (
-    <section className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
-      <h2 className="text-2xl font-bold text-slate-950">{title}</h2>
-      {content?.length ? (
-        <div className="mt-4 space-y-4 leading-7 text-slate-700">
-          {content.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-        </div>
-      ) : null}
-      {bullets?.length ? (
-        <ul className="mt-5 space-y-3 leading-7 text-slate-700">
-          {bullets.map((item) => (
-            <li key={item} className="flex gap-3">
-              <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xs font-bold text-white">•</span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </section>
-  );
-}
 
 export default function ConfidentialitePage() {
   return (
-    <div className="bg-slate-50">
-      <PageHero
-        eyebrow="Protection des renseignements personnels"
-        title="Une politique de confidentialité rédigée de façon plus claire et plus lisible"
-        description="Cette page explique comment Création Nowis recueille, utilise, conserve et traite les renseignements personnels transmis par le site public."
-        primaryCta={{ label: 'Conditions de vente', href: legalLinks.terms }}
-        secondaryCta={{ label: 'Contacter Création Nowis', href: legalLinks.contact }}
-      />
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white py-20">
+          <div className="max-w-4xl mx-auto px-6">
+            
+            {/* En-tête */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Politique de confidentialité
+              </h1>
+              <p className="text-xl text-gray-600">
+                Conforme à la <strong>Loi 25</strong> sur la protection des renseignements personnels au Québec
+              </p>
+              <p className="text-sm text-gray-500 mt-4">
+                Dernière mise à jour : 12 décembre 2025
+              </p>
+            </div>
 
-      <section className="mx-auto max-w-5xl space-y-8 px-6 py-16 md:py-20">
-        <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-          <h1 className="text-3xl font-bold text-slate-950 md:text-4xl">Politique de confidentialité</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
-            Cette politique vise à mieux expliquer les pratiques de Création Nowis en matière de protection des renseignements personnels, sans donner un faux sentiment de sécurité ni faire de promesse absolue.
-          </p>
-          <p className="mt-4 text-sm text-slate-500">Dernière mise à jour : {legalConfig.legalLastUpdated}</p>
-        </article>
+            {/* Contenu principal */}
+            <div className="bg-white rounded-3xl p-8 md:p-12 shadow-card border border-gray-100 space-y-8 text-gray-700 leading-relaxed">
+              
+              {/* Section 1 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  1. Introduction
+                </h2>
+                <p>
+                  <strong>Création NOWIS</strong> (ci-après « nous » ou « notre ») s'engage à protéger la confidentialité et la sécurité de vos renseignements personnels conformément à la <strong>Loi 25</strong> (Loi modernisant des dispositions législatives en matière de protection des renseignements personnels) en vigueur au Québec.
+                </p>
+                <p className="mt-3">
+                  Cette politique explique quels renseignements nous collectons, comment nous les utilisons, et vos droits concernant vos données personnelles.
+                </p>
+              </section>
 
-        <article className="rounded-3xl border border-emerald-200 bg-emerald-50 p-8 shadow-sm md:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">{legalConfig.responsiblePrivacyTitle}</p>
-          <h2 className="mt-4 text-2xl font-bold text-slate-950">Coordonnées du responsable</h2>
-          <p className="mt-4 leading-7 text-slate-700">
-            Le responsable de la protection des renseignements personnels de {legalConfig.companyName} est :
-          </p>
-          <div className="mt-5 rounded-2xl border border-emerald-200 bg-white p-5 text-sm leading-7 text-slate-700">
-            <p className="font-semibold text-slate-950">{legalConfig.responsiblePrivacyName}</p>
-            <p>
-              Courriel :{' '}
-              <a href={`mailto:${legalConfig.privacyEmail}`} className="font-medium text-emerald-700 hover:underline">
-                {legalConfig.privacyEmail}
-              </a>
-            </p>
-            <p>
-              Téléphone :{' '}
-              <a href={legalConfig.privacyPhoneHref} className="font-medium text-emerald-700 hover:underline">
-                {legalConfig.privacyPhone}
-              </a>
-            </p>
+              {/* Section 2 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  2. Renseignements que nous collectons
+                </h2>
+                <p>
+                  Nous collectons uniquement les renseignements personnels nécessaires à la fourniture de nos services créatifs. Cela peut inclure :
+                </p>
+                <ul className="list-disc list-inside mt-3 space-y-2 ml-4">
+                  <li><strong>Nom complet</strong> et coordonnées (courriel, téléphone)</li>
+                  <li><strong>Informations sur votre projet</strong> (description, besoins, préférences)</li>
+                  <li><strong>Données de navigation</strong> (adresse IP, cookies) si vous utilisez notre site web</li>
+                  <li><strong>Historique de communication</strong> (messages, appels, rendez-vous)</li>
+                </ul>
+                <p className="mt-3">
+                  Nous ne collectons <strong>jamais</strong> de renseignements sensibles (origine ethnique, religion, orientation sexuelle, santé) sauf si vous nous les fournissez volontairement dans le cadre d'un projet spécifique et avec votre consentement explicite.
+                </p>
+              </section>
+
+              {/* Section 3 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  3. Utilisation de vos renseignements
+                </h2>
+                <p>
+                  Vos renseignements personnels sont utilisés pour :
+                </p>
+                <ul className="list-disc list-inside mt-3 space-y-2 ml-4">
+                  <li>Vous contacter et répondre à vos demandes de projet</li>
+                  <li>Fournir nos services créatifs (vidéos, chansons, publicités, sites web, etc.)</li>
+                  <li>Gérer les rendez-vous et planifications (via Cal.com ou autre outil)</li>
+                  <li>Améliorer notre site web et nos services</li>
+                  <li>Respecter nos obligations légales et contractuelles</li>
+                </ul>
+                <p className="mt-3">
+                  Nous <strong>ne vendons ni ne louons</strong> vos renseignements personnels à des tiers. Nous ne partageons vos données qu'avec des partenaires de confiance (ex. : plateformes de paiement, hébergement web) dans le strict respect de la Loi 25.
+                </p>
+              </section>
+
+              {/* Section 4 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  4. Consentement
+                </h2>
+                <p>
+                  En nous transmettant vos renseignements personnels via notre formulaire de contact, par courriel ou lors d'un appel, vous consentez à ce que nous les utilisions aux fins décrites dans cette politique.
+                </p>
+                <p className="mt-3">
+                  Vous pouvez <strong>retirer votre consentement</strong> à tout moment en nous contactant (voir section 8). Toutefois, cela pourrait limiter notre capacité à vous fournir certains services.
+                </p>
+              </section>
+
+              {/* Section 5 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  5. Conservation et sécurité
+                </h2>
+                <p>
+                  Vos renseignements personnels sont conservés aussi longtemps que nécessaire pour :
+                </p>
+                <ul className="list-disc list-inside mt-3 space-y-2 ml-4">
+                  <li>Fournir nos services et maintenir notre relation d'affaires</li>
+                  <li>Respecter nos obligations légales (ex. : comptabilité, contrats)</li>
+                </ul>
+                <p className="mt-3">
+                  Nous mettons en place des mesures de sécurité techniques et organisationnelles pour protéger vos données contre tout accès non autorisé, perte ou divulgation accidentelle. Cela inclut :
+                </p>
+                <ul className="list-disc list-inside mt-3 space-y-2 ml-4">
+                  <li>Chiffrement des communications (HTTPS)</li>
+                  <li>Accès restreint aux données (seules les personnes autorisées y ont accès)</li>
+                  <li>Sauvegardes régulières et sécurisées</li>
+                </ul>
+              </section>
+
+              {/* Section 6 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  6. Vos droits (Loi 25)
+                </h2>
+                <p>
+                  Conformément à la Loi 25, vous avez les droits suivants concernant vos renseignements personnels :
+                </p>
+                <ul className="list-disc list-inside mt-3 space-y-2 ml-4">
+                  <li>
+                    <strong>Droit d'accès :</strong> Vous pouvez demander une copie des renseignements que nous détenons sur vous.
+                  </li>
+                  <li>
+                    <strong>Droit de rectification :</strong> Vous pouvez demander la correction de renseignements inexacts ou incomplets.
+                  </li>
+                  <li>
+                    <strong>Droit à l'effacement :</strong> Vous pouvez demander la suppression de vos données dans certaines circonstances (ex. : consentement retiré, données obsolètes).
+                  </li>
+                  <li>
+                    <strong>Droit à la portabilité :</strong> Vous pouvez demander que vos données vous soient transmises dans un format structuré et couramment utilisé.
+                  </li>
+                  <li>
+                    <strong>Droit de retirer votre consentement :</strong> Vous pouvez retirer votre consentement à tout moment.
+                  </li>
+                  <li>
+                    <strong>Droit de déposer une plainte :</strong> Vous pouvez déposer une plainte auprès de la Commission d'accès à l'information du Québec (CAI) si vous estimez que vos droits n'ont pas été respectés.
+                  </li>
+                </ul>
+                <p className="mt-3">
+                  Pour exercer l'un de ces droits, contactez-nous via les coordonnées fournies à la section 8.
+                </p>
+              </section>
+
+              {/* Section 7 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  7. Cookies et technologies similaires
+                </h2>
+                <p>
+                  Notre site web utilise des cookies et des technologies similaires pour améliorer votre expérience de navigation. Les cookies sont de petits fichiers texte stockés sur votre appareil qui nous aident à :
+                </p>
+                <ul className="list-disc list-inside mt-3 space-y-2 ml-4">
+                  <li>Analyser le trafic et l'utilisation du site (Google Analytics, si activé)</li>
+                  <li>Mémoriser vos préférences</li>
+                  <li>Sécuriser votre navigation</li>
+                </ul>
+                <p className="mt-3">
+                  Vous pouvez désactiver les cookies via les paramètres de votre navigateur, mais cela pourrait affecter certaines fonctionnalités du site.
+                </p>
+              </section>
+
+              {/* Section 8 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  8. Nous contacter
+                </h2>
+                <p>
+                  Pour toute question concernant cette politique de confidentialité ou pour exercer vos droits en vertu de la Loi 25, contactez-nous :
+                </p>
+                <div className="mt-4 p-6 bg-gray-50 rounded-xl border border-gray-200">
+                  <p className="font-semibold text-gray-900 mb-2">Création NOWIS</p>
+                  <p className="text-gray-700">
+                    📧 <a href="mailto:simonmorin@nowis.store" className="text-primary-600 hover:underline">simonmorin@nowis.store</a>
+                  </p>
+                  <p className="text-gray-700">
+                    📞 <a href="tel:+18193883407" className="text-primary-600 hover:underline">(819) 388-3407</a>
+                  </p>
+                  <p className="text-gray-700 mt-2">
+                    📍 Basé au Québec, Canada
+                  </p>
+                </div>
+                <p className="mt-4 text-sm text-gray-600">
+                  Nous nous engageons à répondre à vos demandes dans un délai raisonnable, conformément aux exigences de la Loi 25.
+                </p>
+              </section>
+
+              {/* Section 9 */}
+              <section>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  9. Modifications de cette politique
+                </h2>
+                <p>
+                  Nous pouvons mettre à jour cette politique de confidentialité de temps à autre pour refléter les changements dans nos pratiques ou les exigences légales. La version la plus récente sera toujours disponible sur cette page, avec la date de mise à jour indiquée en haut.
+                </p>
+                <p className="mt-3">
+                  Nous vous encourageons à consulter cette page régulièrement pour rester informé de nos pratiques en matière de protection des renseignements personnels.
+                </p>
+              </section>
+
+            </div>
+
+            {/* CTA retour */}
+            <div className="text-center mt-12">
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-white text-lg font-semibold rounded-xl hover:bg-primary-700 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
+              >
+                <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Retour à l'accueil
+              </Link>
+            </div>
+
           </div>
-          <p className="mt-4 text-sm leading-6 text-slate-600">
-            Pour toute question concernant la collecte, l’utilisation, la conservation ou la suppression de vos renseignements personnels, vous pouvez communiquer avec cette personne.
-          </p>
-        </article>
-
-        {privacySections.map((section) => (
-          <SectionBlock key={section.title} title={section.title} content={section.content} bullets={section.bullets} />
-        ))}
-
-        <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
-          <h2 className="text-2xl font-bold text-slate-950">Cookies essentiels actuellement déclarés</h2>
-          <div className="mt-6 space-y-4">
-            {essentialCookies.map((cookie) => (
-              <div key={cookie.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-700">
-                <p className="font-semibold text-slate-950">{cookie.name}</p>
-                <p className="mt-2">Finalité : {cookie.purpose}</p>
-                <p>Durée maximale : {cookie.duration}</p>
-                <p>Essentiel : {cookie.required ? 'oui' : 'non'}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-sm leading-6 text-slate-600">{complianceNotes.legalReview}</p>
-        </article>
-
-        <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
-          <h2 className="text-2xl font-bold text-slate-950">Liens utiles</h2>
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <Link href={legalLinks.legal} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
-              Voir les mentions légales
-            </Link>
-            <Link href={legalLinks.terms} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
-              Voir les conditions de vente
-            </Link>
-            <Link href={legalLinks.contact} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
-              Contacter Création Nowis
-            </Link>
-          </div>
-        </article>
-      </section>
     </div>
   );
 }

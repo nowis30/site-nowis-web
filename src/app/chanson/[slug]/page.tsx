@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
 import { getSongBySlug } from '@/data/songs';
@@ -81,7 +80,7 @@ export default async function ChansonPage({ params }: PageProps) {
             <h1 className="mt-5 text-4xl font-bold leading-tight text-white md:text-6xl">{song.title}</h1>
             {publishedAt ? <p className="mt-4 text-base font-medium text-slate-300">Sortie : {publishedAt}</p> : null}
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-300">
-              {song.description || 'Découvre cette chanson de Nowis Morin et accède directement aux plateformes officielles lorsqu’elles sont disponibles.'}
+              {song.description || 'Les données affichées sur cette page sont synchronisées depuis YouTube et Spotify lorsqu’elles sont disponibles.'}
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               {song.youtubeUrl ? (
@@ -94,11 +93,6 @@ export default async function ChansonPage({ params }: PageProps) {
                   Écouter sur Spotify
                 </a>
               ) : null}
-              {song.otherStreamUrl ? (
-                <a href={song.otherStreamUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
-                  Autre plateforme
-                </a>
-              ) : null}
             </div>
           </div>
 
@@ -108,7 +102,7 @@ export default async function ChansonPage({ params }: PageProps) {
             </div>
             {song.spotifyUrl ? (
               <p className="text-sm text-slate-300">
-                Accès direct vers les plateformes officielles pour écouter la chanson dans le bon contexte.
+                Spotify est affiché avec attribution et lien direct vers la plateforme, conformément à la demande.
               </p>
             ) : null}
           </div>
@@ -118,42 +112,45 @@ export default async function ChansonPage({ params }: PageProps) {
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <article className="rounded-3xl bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-950">À propos de cette chanson</h2>
-            <div className="mt-6 space-y-4 text-slate-600">
-              <p className="leading-relaxed">
-                Cette page présente la chanson avec ses liens d’écoute et une version plus claire de sa description, afin d’offrir une lecture simple et agréable aux visiteurs.
-              </p>
+            <h2 className="text-2xl font-bold text-slate-950">Lecture et informations</h2>
+            <dl className="mt-6 space-y-4 text-slate-600">
+              <div>
+                <dt className="font-semibold text-slate-950">Source</dt>
+                <dd className="mt-1 capitalize">{song.source}</dd>
+              </div>
               {publishedAt ? (
                 <div>
-                  <p className="font-semibold text-slate-950">Date de publication</p>
-                  <p className="mt-1">{publishedAt}</p>
+                  <dt className="font-semibold text-slate-950">Date de publication</dt>
+                  <dd className="mt-1">{publishedAt}</dd>
                 </div>
               ) : null}
-              {(song.youtubeUrl || song.spotifyUrl || song.otherStreamUrl) ? (
+              {song.youtubeVideoId ? (
                 <div>
-                  <p className="font-semibold text-slate-950">Plateformes disponibles</p>
-                  <p className="mt-1">
-                    {[song.youtubeUrl ? 'YouTube' : null, song.spotifyUrl ? 'Spotify' : null, song.otherStreamUrl ? 'Autre plateforme' : null]
-                      .filter(Boolean)
-                      .join(' • ')}
-                  </p>
+                  <dt className="font-semibold text-slate-950">ID vidéo YouTube</dt>
+                  <dd className="mt-1 break-all">{song.youtubeVideoId}</dd>
                 </div>
               ) : null}
-            </div>
+              {song.spotifyTrackId ? (
+                <div>
+                  <dt className="font-semibold text-slate-950">ID piste Spotify</dt>
+                  <dd className="mt-1 break-all">{song.spotifyTrackId}</dd>
+                </div>
+              ) : null}
+            </dl>
           </article>
 
           <article className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
             <h2 className="text-2xl font-bold">Continuer l’exploration</h2>
             <p className="mt-4 leading-relaxed text-slate-300">
-              Continue l’exploration du catalogue musical, découvre d’autres chansons et contacte Création Nowis si tu veux transformer une idée ou une histoire en projet sur mesure.
+              La page musique se met à jour à partir du catalogue synchronisé. Si une nouvelle chanson est publiée sur YouTube ou Spotify, elle peut apparaître automatiquement après la synchronisation serveur.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/musique" className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
                 Retour à la musique
               </Link>
-              <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée ou d’un projet musical avec Création Nowis." className="inline-flex rounded-xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
-                Contacter Création Nowis
-              </ContactPrefillLink>
+              <Link href="/contact" className="inline-flex rounded-xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:bg-white/10">
+                Me contacter
+              </Link>
             </div>
           </article>
         </div>

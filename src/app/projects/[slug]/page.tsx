@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { projects } from '@/data/projects';
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface PageProps {
   params: { slug: string };
@@ -39,15 +38,11 @@ export default function ProjectPage({ params }: PageProps) {
 
           <div className="w-full lg:w-1/3">
             <div className="rounded-3xl overflow-hidden shadow-lg">
-              <div className="relative h-64 w-full">
-                <Image
-                  src={project.image ?? '/nowis.png'}
-                  alt={project.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 33vw"
-                />
-              </div>
+              <img
+                src={project.image ?? '/hero.jpg'}
+                alt={project.title}
+                className="w-full h-64 object-cover"
+              />
             </div>
             {project.tags && (
               <div className="mt-6 flex flex-wrap gap-2">

@@ -17,33 +17,32 @@ export function SongCard({ song }: { song: Song }) {
   const publishedAt = formatPublishedAt(song.publishedAt);
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(9,14,28,0.84),rgba(14,23,42,0.76))] shadow-card backdrop-blur-sm transition hover:-translate-y-1 hover:border-primary-400/40 hover:shadow-fire">
-      <div className="relative h-56 overflow-hidden bg-steel-900">
+    <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+      <div className="relative h-56 overflow-hidden bg-slate-100">
         <Image
           src={song.image}
           alt={song.title}
           fill
           className="object-cover transition duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-coal-950 via-coal-950/10 to-transparent" />
       </div>
-      <div className="space-y-5 p-7">
+      <div className="space-y-4 p-6">
         <div className="flex flex-wrap gap-2">
           {song.seoTags.slice(0, 3).map((tag) => (
-            <span key={tag} className="rounded-full border border-primary-400/25 bg-primary-500/12 px-3 py-1 text-xs font-medium text-primary-100">
+            <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
               {tag}
             </span>
           ))}
         </div>
         <div>
-          <h3 className="font-display text-3xl leading-[1.08] text-white md:text-[2rem]">{song.title}</h3>
-          {publishedAt ? <p className="mt-2 text-sm font-medium text-slate-300">{publishedAt}</p> : null}
-          {song.shortDescription ? <p className="mt-3 text-base leading-7 text-slate-200">{song.shortDescription}</p> : null}
+          <h3 className="text-2xl font-semibold text-slate-950">{song.title}</h3>
+          {publishedAt ? <p className="mt-2 text-sm font-medium text-slate-500">{publishedAt}</p> : null}
+          {song.shortDescription ? <p className="mt-3 leading-relaxed text-slate-600">{song.shortDescription}</p> : null}
         </div>
         <div className="flex flex-wrap gap-3">
           <Link
             href={`/chanson/${song.slug}`}
-            className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 text-sm font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+            className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             Voir la chanson
           </Link>
@@ -52,7 +51,7 @@ export function SongCard({ song }: { song: Song }) {
               href={song.youtubeUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-xl border border-secondary-400/40 bg-secondary-500/80 px-5 py-3 text-sm font-semibold text-white transition hover:bg-secondary-500"
+              className="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
             >
               YouTube
             </a>
@@ -62,7 +61,7 @@ export function SongCard({ song }: { song: Song }) {
               href={song.spotifyUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-slate-950/45 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/10"
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
             >
               Spotify
             </a>

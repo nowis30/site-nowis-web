@@ -74,7 +74,6 @@ export default async function VideosPage() {
 
   const heroEnabled = heroSection?.isActive ?? false;
   const gridEnabled = gridSection?.isActive ?? false;
-  const heroStyle = getAdminSectionVisualStyle(heroSection);
   const gridStyle = getAdminSectionVisualStyle(gridSection);
 
   const heroEyebrow = heroEnabled
@@ -114,7 +113,6 @@ export default async function VideosPage() {
         description={heroDescription}
         primaryCta={{ label: heroPrimaryLabel, href: heroPrimaryHref }}
         secondaryCta={{ label: heroSecondaryLabel, href: heroSecondaryHref }}
-        style={heroStyle}
       />
 
       <section className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-6 ${spacingClass(gridStyle.verticalSpacing)}`}>

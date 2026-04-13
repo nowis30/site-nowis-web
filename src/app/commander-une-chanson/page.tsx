@@ -79,7 +79,6 @@ export default async function CommanderUneChansonPage() {
   const howEnabled = howSection?.isActive ?? false;
   const packagesEnabled = packagesSection?.isActive ?? false;
   const finalEnabled = finalSection?.isActive ?? false;
-  const heroStyle = getAdminSectionVisualStyle(heroSection);
 
   const heroEyebrow = heroEnabled
     ? pickText(getAdminBlockValue(heroSection, 'eyebrow'), DEFAULT_SONG_PAGE_CONTENT.hero.eyebrow)
@@ -175,7 +174,6 @@ export default async function CommanderUneChansonPage() {
           label: heroSecondaryLabel,
           href: heroSecondaryHref,
         }}
-        style={heroStyle}
       />
 
       <SongProjectTypesSection />

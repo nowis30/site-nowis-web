@@ -1,34 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
-import { sanitizeNextPath } from '@/lib/safe-next';
 
 export default function ConnexionPage() {
   const router = useRouter();
+  const { user, loading, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [externalErrorCode, setExternalErrorCode] = useState<string | null>(null);
-  const [nextPath, setNextPath] = useState('/client/dashboard');
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    setExternalErrorCode(params.get('error'));
-    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
-  }, []);
-
-  const externalErrorMessage =
-    externalErrorCode === 'invalid-link'
-      ? 'Le lien de connexion est invalide ou expiré.'
-      : externalErrorCode === 'account-not-found'
-        ? "Aucun compte client n'est relié à ce lien."
-        : null;
+    if (!loading && user) {
+      router.replace('/proprietaire');
+    }
+  }, [loading, user, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,16 +25,8 @@ export default function ConnexionPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/client-auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, next: nextPath }),
-      });
-      const data = await readApiJson(response);
-      if (!response.ok) {
-        throw new Error(getApiErrorMessage(data, 'Impossible de se connecter.'));
-      }
-      router.replace(data.redirectTo || '/client/dashboard');
+      await login(email, password);
+      router.replace('/proprietaire');
     } catch (err) {
       setError((err as Error).message || 'Impossible de se connecter.');
     } finally {
@@ -56,22 +37,10 @@ export default function ConnexionPage() {
   return (
     <div className="min-h-[calc(100vh-120px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion au portail client</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connexion</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Connectez-vous pour envoyer une demande de chanson ou d'atelier, puis suivre vos rendez-vous et echanges avec Nowis.
+          Accédez à votre espace propriétaire pour gérer vos logements.
         </p>
-
-        {nextPath !== '/client/dashboard' ? (
-          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
-            Connexion requise pour continuer vers la page demandee.
-          </div>
-        ) : null}
-
-        {externalErrorMessage ? (
-          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            {externalErrorMessage}
-          </div>
-        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -106,14 +75,10 @@ export default function ConnexionPage() {
         </form>
 
         <p className="mt-6 text-sm text-gray-600">
-          Pas encore d'acces ?{' '}
-          <Link href={`/inscription?next=${encodeURIComponent(nextPath)}`} className="text-primary-600 hover:underline">
-            Créer mon accès
-          </Link>
-        </p>
-
-        <p className="mt-3 text-sm text-gray-600">
-          Espace equipe interne: <Link href="/crm/login" className="font-medium text-primary-600 hover:underline">connexion CRM</Link>
+          Pas encore de compte ?{' '}
+          <a href="/inscription" className="text-primary-600 hover:underline">
+            Créer un compte
+          </a>
         </p>
       </div>
     </div>

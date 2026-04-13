@@ -84,7 +84,6 @@ export default async function MusiquePage() {
 
   const heroEnabled = heroSection?.isActive ?? false;
   const gridEnabled = songsGridSection?.isActive ?? false;
-  const heroStyle = getAdminSectionVisualStyle(heroSection);
   const gridStyle = getAdminSectionVisualStyle(songsGridSection);
   const gridMobileSpacing = mobileSpacingClass(gridStyle.mobileSpacing);
   const gridAlign = alignClass(gridStyle.contentAlign, gridStyle.mobileAlign);
@@ -129,7 +128,6 @@ export default async function MusiquePage() {
           label: heroSecondaryLabel,
           href: heroSecondaryHref,
         }}
-        style={heroStyle}
       />
 
       <section className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-6 ${spacingClass(gridStyle.verticalSpacing)} ${gridMobileSpacing}`}>

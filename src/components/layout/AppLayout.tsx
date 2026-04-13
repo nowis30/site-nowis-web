@@ -7,40 +7,26 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { StarfieldBackground } from './StarfieldBackground';
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const pathname = usePathname();
-  const isAppRoute = pathname.startsWith('/crm') || pathname.startsWith('/client');
-
-  if (isAppRoute) {
-    return <>{children}</>;
-  }
-
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-clip bg-transparent text-slate-100 isolate">
-      <StarfieldBackground />
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900">
       {/* Header - Navigation */}
-      <div className="relative z-10">
-        <Header />
-      </div>
+      <Header />
 
       {/* Main Content */}
-      <main className="relative z-10 flex-grow">
+      <main className="flex-grow">
         {children}
       </main>
 
       {/* Footer */}
-      <div className="relative z-10">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
