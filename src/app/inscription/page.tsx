@@ -1,35 +1,67 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
+import { sanitizeNextPath } from '@/lib/safe-next';
 
 export default function InscriptionPage() {
   const router = useRouter();
-  const { user, loading, register } = useAuth();
-  const [name, setName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nextPath, setNextPath] = useState('/client/dashboard');
 
   useEffect(() => {
-    if (!loading && user) {
-      router.replace('/proprietaire');
-    }
-  }, [loading, user, router]);
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    const parsed = clientRegisterSchema.safeParse({
+      fullName,
+      email,
+      phone,
+      password,
+      address: '',
+      message: '',
+    });
+
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message || 'Formulaire invalide.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await register(name, email, password);
-      router.replace('/proprietaire');
+      const response = await fetch('/api/client-auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...parsed.data, next: nextPath }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('Un compte existe deja avec cet email. Essaie de te connecter.');
+        }
+        if (response.status === 400 && Array.isArray(data?.details) && data.details.length > 0) {
+          throw new Error(data.details[0]?.message || data.error || 'Impossible de creer le compte.');
+        }
+        throw new Error(data.error || 'Impossible de creer le compte.');
+      }
+      router.replace(data.redirectTo || '/client/dashboard');
     } catch (err) {
-      setError((err as Error).message || 'Impossible de créer le compte.');
+      setError((err as Error).message || 'Impossible de creer le compte.');
     } finally {
       setIsSubmitting(false);
     }
@@ -40,19 +72,25 @@ export default function InscriptionPage() {
       <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200 p-8 shadow-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Inscription</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Créez votre compte pour commencer à publier des logements et gérer vos réservations.
+          Creez votre acces Nowis pour envoyer vos demandes de chanson ou d'atelier, puis suivre messages, rendez-vous et documents.
         </p>
+
+        {nextPath !== '/client/dashboard' ? (
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+            Creez votre compte pour continuer vers la page demandee.
+          </div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nom</label>
+            <label className="block text-sm font-medium text-gray-700">Nom complet</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               required
               className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              placeholder="Prénom Nom"
+              placeholder="Prenom Nom"
             />
           </div>
 
@@ -69,6 +107,18 @@ export default function InscriptionPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700">Telephone</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="+1 819 000 0000"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
             <input
               type="password"
@@ -76,22 +126,22 @@ export default function InscriptionPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="mt-1 block w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              placeholder="••••••••"
+              placeholder="Min. 8 caracteres, avec majuscule et chiffre"
             />
           </div>
 
           {error && <div className="text-sm text-red-600">{error}</div>}
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Création en cours...' : 'Créer mon compte'}
+            {isSubmitting ? 'Creation en cours...' : 'Creer mon acces'}
           </Button>
         </form>
 
         <p className="mt-6 text-sm text-gray-600">
-          Vous avez déjà un compte ?{' '}
-          <a href="/connexion" className="text-primary-600 hover:underline">
+          Vous avez deja un compte ?{' '}
+          <Link href={`/connexion?next=${encodeURIComponent(nextPath)}`} className="text-primary-600 hover:underline">
             Se connecter
-          </a>
+          </Link>
         </p>
       </div>
     </div>

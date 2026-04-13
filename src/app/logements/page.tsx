@@ -55,9 +55,14 @@ export default async function LogementsPage() {
                     <Link href={`/logements/${logement.slug}`} className="inline-flex w-full justify-center rounded-xl bg-slate-950 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 sm:w-auto">
                       Voir le logement
                     </Link>
-                    <Link href={`/logements/${logement.slug}/reserver`} className="inline-flex w-full justify-center rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100 sm:w-auto">
-                      Reserver
-                    </Link>
+                    <a
+                      href={logement.bookingUrl || `mailto:${logement.ownerEmail}`}
+                      target={logement.bookingUrl ? '_blank' : undefined}
+                      rel={logement.bookingUrl ? 'noreferrer' : undefined}
+                      className="inline-flex w-full justify-center rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100 sm:w-auto"
+                    >
+                      {logement.bookingUrl ? 'Reserver' : 'Contacter'}
+                    </a>
                   </div>
                 </div>
               </article>

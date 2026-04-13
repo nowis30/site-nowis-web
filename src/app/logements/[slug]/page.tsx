@@ -83,8 +83,13 @@ export default async function LogementPage({ params }: PageProps) {
                 {typeof logement.parking === 'boolean' ? <li>Stationnement: {logement.parking ? 'Oui' : 'Non'}</li> : null}
                 {typeof logement.petsAllowed === 'boolean' ? <li>Animaux: {logement.petsAllowed ? 'Acceptes' : 'Non'}</li> : null}
               </ul>
-              <a href={`/logements/${logement.slug}/reserver`} className="mt-8 inline-flex w-full justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
-                Reserver une visite
+              <a
+                href={logement.bookingUrl || `mailto:${logement.ownerEmail}`}
+                target={logement.bookingUrl ? '_blank' : undefined}
+                rel={logement.bookingUrl ? 'noreferrer' : undefined}
+                className="mt-8 inline-flex w-full justify-center rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
+              >
+                {logement.bookingUrl ? 'Reserver une visite' : 'Contacter le proprietaire'}
               </a>
             </div>
           </aside>

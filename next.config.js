@@ -39,6 +39,26 @@ const nextConfig = {
         destination: '/jeux/heritier-millionnaire',
         permanent: true,
       },
+      {
+        source: '/logements/:slug/reserver',
+        destination: '/logements/:slug',
+        permanent: true,
+      },
+      {
+        source: '/projects/:slug',
+        destination: '/portfolio',
+        permanent: true,
+      },
+      {
+        source: '/proprietaire',
+        destination: '/connexion?next=/client/dashboard',
+        permanent: true,
+      },
+      {
+        source: '/proprietaire/:path*',
+        destination: '/connexion?next=/client/dashboard',
+        permanent: true,
+      },
       // Rediriger www vers le domaine apex (si résolu côté DNS)
       {
         source: '/:path*',
