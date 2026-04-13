@@ -110,8 +110,8 @@ export default function TarifsPage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 10% 12%, rgba(96,165,250,0.12), transparent 26%),' +
-              'radial-gradient(circle at 86% 8%, rgba(251,191,36,0.10), transparent 22%)',
+              'radial-gradient(circle at 10% 12%, rgba(184,111,61,0.12), transparent 26%),' +
+              'radial-gradient(circle at 86% 8%, rgba(203,165,120,0.14), transparent 22%)',
           }}
         />
         <div className="mx-auto max-w-5xl">
@@ -119,7 +119,7 @@ export default function TarifsPage() {
           <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
             Tarifs — Création Nowis
           </h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-200">
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
             Des ateliers accessibles, animés en personne par Nowis Morin. Tarifs de lancement offerts
             durant les premiers mois pour soutenir le développement de la formule.
           </p>
@@ -127,18 +127,18 @@ export default function TarifsPage() {
             <a
               href="/tarifs-creation-nowis.pdf"
               download
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-warm px-7 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary gap-2 px-7 py-4"
             >
               <span>⬇</span> Télécharger la grille PDF
             </a>
             <Link
               href="/contact"
-              className="rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold text-white transition hover:bg-white/10"
+              className="cta-secondary px-7 py-4"
             >
               Demander une soumission
             </Link>
           </div>
-          <p className="mt-5 text-sm text-slate-400">
+          <p className="mt-5 text-sm text-[color:var(--site-soft)]">
             Les tarifs de lancement sont valides pendant les 3 premiers mois d&apos;activité. Les tarifs réguliers s&apos;appliquent par la suite.
           </p>
         </div>
@@ -148,10 +148,10 @@ export default function TarifsPage() {
       <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Ateliers de groupe</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Formules d&apos;ateliers
           </h2>
-          <p className="mt-4 text-base leading-8 text-slate-300">
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
             Animés en personne, dans un rayon de 100 km aller-retour depuis Drummondville (déplacement inclus).
           </p>
 
@@ -170,17 +170,17 @@ export default function TarifsPage() {
                     Populaire
                   </span>
                 )}
-                <h3 className="font-display text-2xl text-white">{a.name}</h3>
-                <span className="mt-1 text-sm font-medium text-slate-400">{a.duree}</span>
-                <p className="mt-3 flex-1 text-sm leading-6 text-slate-300">{a.desc}</p>
+                <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{a.name}</h3>
+                <span className="mt-1 text-sm font-medium text-[color:var(--site-soft)]">{a.duree}</span>
+                <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{a.desc}</p>
                 <div className="mt-5 space-y-2 border-t border-white/10 pt-4">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Lancement</span>
                     <span className="text-lg font-bold text-amber-200">{a.lancement}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Régulier</span>
-                    <span className="text-sm text-slate-400 line-through">{a.regulier}</span>
+                    <span className="text-xs text-[color:var(--site-soft)]">Régulier</span>
+                    <span className="text-sm text-[color:var(--site-soft)] line-through">{a.regulier}</span>
                   </div>
                 </div>
               </article>
@@ -192,7 +192,7 @@ export default function TarifsPage() {
       {/* ── CE QUI EST INCLUS ── */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-400">Inclus dans chaque atelier</p>
-        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
           Ce qui est toujours inclus
         </h2>
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -203,8 +203,8 @@ export default function TarifsPage() {
             >
               <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-300">✓</span>
               <div>
-                <h3 className="font-semibold text-white">{item.label}</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-400">{item.desc}</p>
+                <h3 className="font-semibold text-[color:var(--site-heading)]">{item.label}</h3>
+                <p className="mt-1 text-sm leading-6 text-[color:var(--site-muted)]">{item.desc}</p>
               </div>
             </div>
           ))}
@@ -215,20 +215,20 @@ export default function TarifsPage() {
       <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Services personnalisés</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Accompagnement à la carte
           </h2>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {servicesPersonnalises.map((s) => (
               <article key={s.name} className="brand-card p-7">
                 <div className="flex items-start justify-between gap-4">
-                  <h3 className="font-display text-2xl text-white">{s.name}</h3>
+                  <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{s.name}</h3>
                   <span className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-sm font-bold text-primary-200">
                     {s.tarif}
                   </span>
                 </div>
-                <p className="mt-1 text-xs font-semibold text-slate-400">{s.conditions}</p>
-                <p className="mt-3 text-sm leading-7 text-slate-300">{s.desc}</p>
+                <p className="mt-1 text-xs font-semibold text-[color:var(--site-soft)]">{s.conditions}</p>
+                <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">{s.desc}</p>
               </article>
             ))}
           </div>
@@ -238,15 +238,15 @@ export default function TarifsPage() {
       {/* ── PRODUITS À LA CARTE ── */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Produits à la carte</p>
-        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
           Chansons et vidéos
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {produits.map((p) => (
             <article key={p.name} className="warm-spotlight-panel flex flex-col p-6">
               <h3 className="font-display text-2xl text-amber-100">{p.name}</h3>
-              <span className="mt-1 text-xs font-semibold text-slate-400">{p.format}</span>
-              <p className="mt-3 flex-1 text-sm leading-6 text-slate-300">{p.desc}</p>
+              <span className="mt-1 text-xs font-semibold text-[color:var(--site-soft)]">{p.format}</span>
+              <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{p.desc}</p>
               <span className="mt-5 block text-2xl font-bold text-amber-200">{p.prix}</span>
             </article>
           ))}
@@ -260,14 +260,14 @@ export default function TarifsPage() {
           {/* Préférentiels */}
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Tarifs préférentiels</p>
-            <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Certains milieux bénéficient d&apos;un tarif adapté</h2>
+            <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Certains milieux bénéficient d&apos;un tarif adapté</h2>
             <div className="mt-6 space-y-3">
               {preferentiels.map((pref) => (
                 <div key={pref.clientele} className="glass-panel-soft flex gap-3 rounded-xl p-4">
                   <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-500/20 text-xs font-bold text-primary-300">✓</span>
                   <div>
-                    <span className="font-semibold text-white">{pref.clientele}</span>
-                    <p className="mt-0.5 text-sm text-slate-400">{pref.note}</p>
+                    <span className="font-semibold text-[color:var(--site-heading)]">{pref.clientele}</span>
+                    <p className="mt-0.5 text-sm text-[color:var(--site-muted)]">{pref.note}</p>
                   </div>
                 </div>
               ))}
@@ -278,19 +278,19 @@ export default function TarifsPage() {
           <div className="space-y-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-400">Déplacement</p>
-              <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Frais de déplacement</h2>
+              <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Frais de déplacement</h2>
             </div>
             <div className="glass-panel-soft rounded-[1.5rem] p-5">
               <p className="font-semibold text-emerald-200">Jusqu&apos;à 100 km aller-retour</p>
-              <p className="mt-1 text-sm text-slate-300">À partir de Drummondville — <strong className="text-white">inclus dans le tarif.</strong></p>
+              <p className="mt-1 text-sm text-[color:var(--site-muted)]">À partir de Drummondville — <strong className="text-[color:var(--site-heading)]">inclus dans le tarif.</strong></p>
             </div>
             <div className="warm-spotlight-panel rounded-[1.5rem] p-5">
               <p className="font-semibold text-amber-200">Au-delà de 100 km aller-retour</p>
-              <p className="mt-1 text-sm text-slate-300">Frais supplémentaires selon la distance. À discuter lors de la demande.</p>
+              <p className="mt-1 text-sm text-[color:var(--site-muted)]">Frais supplémentaires selon la distance. À discuter lors de la demande.</p>
             </div>
             <div className="glass-panel-soft rounded-[1.5rem] p-4">
-              <p className="text-sm text-slate-400">
-                <strong className="text-slate-200">Note :</strong> Pour un projet en dehors du rayon habituel, une soumission personnalisée peut être demandée.
+              <p className="text-sm text-[color:var(--site-muted)]">
+                <strong className="text-[color:var(--site-heading)]">Note :</strong> Pour un projet en dehors du rayon habituel, une soumission personnalisée peut être demandée.
               </p>
             </div>
           </div>
@@ -300,16 +300,16 @@ export default function TarifsPage() {
       {/* ── RÉSUMÉ ── */}
       <section className="mx-auto max-w-4xl px-6 py-16 md:py-20">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Résumé rapide</p>
-        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
           Tous les tarifs en un coup d&apos;œil
         </h2>
         <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-[rgba(131,97,67,0.12)] bg-white/72 shadow-soft">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[rgba(131,97,67,0.12)] bg-[rgba(255,250,244,0.82)]">
-                <th className="px-5 py-4 text-left font-semibold text-slate-200">Service</th>
+                <th className="px-5 py-4 text-left font-semibold text-[color:var(--site-heading)]">Service</th>
                 <th className="px-5 py-4 text-right font-semibold text-amber-300">Lancement</th>
-                <th className="px-5 py-4 text-right font-semibold text-slate-400">Régulier</th>
+                <th className="px-5 py-4 text-right font-semibold text-[color:var(--site-soft)]">Régulier</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(131,97,67,0.08)]">
@@ -323,9 +323,9 @@ export default function TarifsPage() {
                 { service: 'Vidéo IA avec chanson', lancement: '100 $', regulier: '100 $' },
               ].map((row, i) => (
                 <tr key={row.service} className={i % 2 === 0 ? 'bg-transparent' : 'bg-[rgba(255,248,241,0.72)]'}>
-                  <td className="px-5 py-3.5 text-slate-200">{row.service}</td>
+                  <td className="px-5 py-3.5 text-[color:var(--site-heading)]">{row.service}</td>
                   <td className="px-5 py-3.5 text-right font-semibold text-amber-200">{row.lancement}</td>
-                  <td className="px-5 py-3.5 text-right text-slate-400">{row.regulier}</td>
+                  <td className="px-5 py-3.5 text-right text-[color:var(--site-soft)]">{row.regulier}</td>
                 </tr>
               ))}
             </tbody>
@@ -335,7 +335,7 @@ export default function TarifsPage() {
           <a
             href="/tarifs-creation-nowis.pdf"
             download
-            className="inline-flex items-center gap-2 rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-6 py-3.5 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+            className="cta-secondary gap-2 px-6 py-3.5"
           >
             <span>⬇</span> Télécharger la grille complète (PDF)
           </a>
@@ -346,22 +346,22 @@ export default function TarifsPage() {
       <section className="px-6 py-16 md:py-24">
         <div className="warm-cta-panel mx-auto max-w-4xl overflow-hidden p-10 text-center md:p-16">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Passez à l&apos;action</p>
-          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Réservez votre atelier ou demandez une soumission
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-slate-300">
+          <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-[color:var(--site-muted)]">
             Pour toute question sur les tarifs, les formules ou un besoin particulier, Nowis Morin vous répond directement.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-brand-warm px-9 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary px-9 py-4"
             >
               Demander un atelier
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+              className="cta-secondary px-9 py-4"
             >
               Poser une question
             </Link>

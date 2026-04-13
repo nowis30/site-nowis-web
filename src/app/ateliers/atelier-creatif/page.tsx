@@ -188,9 +188,9 @@ export default function AtelierCreatifPage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 70% 60% at 20% 0%, rgba(96,165,250,0.14) 0%, transparent 60%),' +
-              'radial-gradient(ellipse 55% 55% at 85% 100%, rgba(139,92,246,0.12) 0%, transparent 55%),' +
-              'radial-gradient(ellipse 40% 40% at 50% 50%, rgba(59,130,246,0.06) 0%, transparent 50%)',
+              'radial-gradient(ellipse 70% 60% at 20% 0%, rgba(184,111,61,0.14) 0%, transparent 60%),' +
+              'radial-gradient(ellipse 55% 55% at 85% 100%, rgba(203,165,120,0.12) 0%, transparent 55%),' +
+              'radial-gradient(ellipse 40% 40% at 50% 50%, rgba(184,111,61,0.06) 0%, transparent 50%)',
           }}
         />
         {/* Grille subtile */}
@@ -201,26 +201,26 @@ export default function AtelierCreatifPage() {
             Animé en personne · Tous âges · Formule adaptable
           </span>
 
-          <h1 className="font-display text-5xl leading-[0.97] text-white md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl leading-[0.97] text-[color:var(--site-heading)] md:text-6xl lg:text-7xl">
             Atelier de création musicale avec&nbsp;l'IA
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-lg leading-9 text-slate-300 md:text-xl">
+          <p className="mx-auto mt-7 max-w-2xl text-lg leading-9 text-[color:var(--site-muted)] md:text-xl">
             Créez ensemble une ou plusieurs chansons à partir d'émotions, de souvenirs et d'idées
             personnelles — puis repartez avec une{' '}
-            <strong className="font-semibold text-white">vidéo souvenir téléchargeable</strong>.
+            <strong className="font-semibold text-[color:var(--site-heading)]">vidéo souvenir téléchargeable</strong>.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-brand-warm px-8 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-coal-950"
+              className="cta-primary px-8 py-4 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Demander cet atelier
             </Link>
             <a
               href="#deroulement"
-              className="rounded-xl border border-white/15 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-coal-950"
+              className="cta-secondary px-8 py-4 focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Voir le déroulement ↓
             </a>
@@ -235,15 +235,15 @@ export default function AtelierCreatifPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
               L'atelier en quelques mots
             </p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
               Une expérience musicale collective guidée en personne
             </h2>
           </div>
-          <div className="space-y-5 text-[1rem] leading-8 text-slate-300">
+          <div className="space-y-5 text-[1rem] leading-8 text-[color:var(--site-muted)]">
             <p>
               Cet atelier permet à des participants de tous âges de vivre une expérience créative
               profonde : transformer des{' '}
-              <strong className="text-white">souvenirs, des émotions et des idées personnelles</strong>{' '}
+              <strong className="text-[color:var(--site-heading)]">souvenirs, des émotions et des idées personnelles</strong>{' '}
               en une ou plusieurs chansons, avec l'aide de l'intelligence artificielle.
             </p>
             <p>
@@ -253,7 +253,7 @@ export default function AtelierCreatifPage() {
             </p>
             <p>
               L'expérience est animée par{' '}
-              <strong className="text-white">Nowis Morin en personne</strong>, dans un cadre
+              <strong className="text-[color:var(--site-heading)]">Nowis Morin en personne</strong>, dans un cadre
               chaleureux, professionnel et accessible — peu importe le profil ou le contexte du
               groupe.
             </p>
@@ -268,10 +268,10 @@ export default function AtelierCreatifPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
               Pour qui
             </p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
               Un format qui s'adapte à votre groupe
             </h2>
-            <p className="mt-4 text-[1rem] leading-8 text-slate-300">
+            <p className="mt-4 text-[1rem] leading-8 text-[color:var(--site-muted)]">
               L'atelier se module selon l'âge, le contexte, la taille du groupe et le niveau de
               confort avec le numérique.
             </p>
@@ -286,8 +286,8 @@ export default function AtelierCreatifPage() {
                 <span className="text-2xl" role="img" aria-hidden="true">
                   {a.icon}
                 </span>
-                <h3 className="mt-3 font-semibold text-white">{a.label}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{a.desc}</p>
+                <h3 className="mt-3 font-semibold text-[color:var(--site-heading)]">{a.label}</h3>
+                <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{a.desc}</p>
               </article>
             ))}
           </div>
@@ -300,10 +300,10 @@ export default function AtelierCreatifPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
             Ce que les participants vivent
           </p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Une création guidée étape par étape
           </h2>
-          <p className="mt-4 text-[1rem] leading-8 text-slate-300">
+          <p className="mt-4 text-[1rem] leading-8 text-[color:var(--site-muted)]">
             Ce n'est pas un cours d'informatique. C'est une expérience{' '}
             <em>créative, émotionnelle et collective</em>.
           </p>
@@ -325,8 +325,8 @@ export default function AtelierCreatifPage() {
                 </span>
               </div>
               <div>
-                <h3 className="font-semibold leading-snug text-white">{step.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-slate-300">{step.desc}</p>
+                <h3 className="font-semibold leading-snug text-[color:var(--site-heading)]">{step.title}</h3>
+                <p className="mt-2 text-sm leading-7 text-[color:var(--site-muted)]">{step.desc}</p>
               </div>
             </article>
           ))}
@@ -380,7 +380,7 @@ export default function AtelierCreatifPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
             Les points forts
           </p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Ce qui rend cet atelier différent
           </h2>
         </div>
@@ -391,8 +391,8 @@ export default function AtelierCreatifPage() {
               <span className="text-2xl" role="img" aria-hidden="true">
                 {h.icon}
               </span>
-              <h3 className="mt-4 font-semibold text-white">{h.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">{h.desc}</p>
+              <h3 className="mt-4 font-semibold text-[color:var(--site-heading)]">{h.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{h.desc}</p>
             </article>
           ))}
         </div>
@@ -405,10 +405,10 @@ export default function AtelierCreatifPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">
               Milieux et clientèles
             </p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
               Un atelier conçu pour plusieurs types de groupes
             </h2>
-            <p className="mt-4 text-[1rem] leading-8 text-slate-300">
+            <p className="mt-4 text-[1rem] leading-8 text-[color:var(--site-muted)]">
               L'atelier n'est pas réservé à un seul milieu. Il s'adapte au contexte, au public et
               aux objectifs de chaque groupe.
             </p>
@@ -420,9 +420,9 @@ export default function AtelierCreatifPage() {
             <article className="warm-spotlight-panel group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-lg" aria-hidden="true">🎶</span>
-                <h3 className="font-display text-xl text-white">Aînés</h3>
+                <h3 className="font-display text-xl text-[color:var(--site-heading)]">Aînés</h3>
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-300">
+              <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
                 Pour résidences, groupes d'aînés et milieux de vie. L'atelier offre une activité de
                 valorisation centrée sur les souvenirs, la musique et l'expression personnelle, dans
                 un découvs numérique doux et très accessible.
@@ -440,9 +440,9 @@ export default function AtelierCreatifPage() {
             <article className="glass-panel-strong group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-400/15 text-lg" aria-hidden="true">📚</span>
-                <h3 className="font-display text-xl text-white">Bibliothèques</h3>
+                <h3 className="font-display text-xl text-[color:var(--site-heading)]">Bibliothèques</h3>
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-300">
+              <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
                 Pour activités culturelles et médiation numérique. L'atelier s'inscrit naturellement
                 dans une programmation autour de la créativité, de l'intelligence artificielle et
                 des projets intergénérationnels.
@@ -460,9 +460,9 @@ export default function AtelierCreatifPage() {
             <article className="glass-panel-soft group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/15 text-lg" aria-hidden="true">🤝</span>
-                <h3 className="font-display text-xl text-white">Centres communautaires</h3>
+                <h3 className="font-display text-xl text-[color:var(--site-heading)]">Centres communautaires</h3>
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-300">
+              <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
                 Pour groupes variés et projets collectifs. L'atelier rassemble, valorise et crée du
                 lien, avec une initiation accessible à l'IA et une création musicale commune.
               </p>
@@ -479,9 +479,9 @@ export default function AtelierCreatifPage() {
             <article className="brand-card group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/15 text-lg" aria-hidden="true">🏫</span>
-                <h3 className="font-display text-xl text-white">Écoles et jeunesse</h3>
+                <h3 className="font-display text-xl text-[color:var(--site-heading)]">Écoles et jeunesse</h3>
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-300">
+              <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
                 Pour ateliers éducatifs, créatifs et musicaux adaptés aux jeunes. Participation,
                 écriture, émotions et création d'une œuvre commune dans un format stimulant et
                 actuel.
@@ -499,9 +499,9 @@ export default function AtelierCreatifPage() {
             <article className="brand-card group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/15 text-lg" aria-hidden="true">👨‍👩‍👧</span>
-                <h3 className="font-display text-xl text-white">Groupes intergénérationnels</h3>
+                <h3 className="font-display text-xl text-[color:var(--site-heading)]">Groupes intergénérationnels</h3>
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-300">
+              <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
                 Pour vivre une activité commune entre générations, autour des souvenirs, de la
                 musique, de la créativité et de la découverte d'un outil moderne qui réunit plutôt
                 qu'il n'isole.
@@ -519,9 +519,9 @@ export default function AtelierCreatifPage() {
             <article className="warm-spotlight-panel group p-7 transition">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-400/15 text-lg" aria-hidden="true">✨</span>
-                <h3 className="font-display text-xl text-white">Groupes privés et événements</h3>
+                <h3 className="font-display text-xl text-[color:var(--site-heading)]">Groupes privés et événements</h3>
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-300">
+              <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
                 Pour activités sur mesure, projets de groupe, événements thématiques ou expériences
                 créatives uniques. L'atelier peut être façonné autour d'une intention ou d'un
                 moment particulier.
@@ -538,7 +538,7 @@ export default function AtelierCreatifPage() {
           </div>
 
           {/* Appel à l'action discret */}
-          <p className="mt-10 text-center text-sm text-slate-400">
+          <p className="mt-10 text-center text-sm text-[color:var(--site-soft)]">
             Votre milieu n'est pas dans cette liste ?{' '}
             <Link href="/contact" className="font-medium text-primary-300 underline-offset-4 hover:underline">
               Parlez-nous de votre contexte
@@ -556,14 +556,14 @@ export default function AtelierCreatifPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
                 Format
               </p>
-              <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+              <h2 className="mt-4 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
                 Souple, adaptable et pensé pour votre réalité
               </h2>
             </div>
-            <div className="space-y-5 text-[1rem] leading-8 text-slate-300">
+            <div className="space-y-5 text-[1rem] leading-8 text-[color:var(--site-muted)]">
               <p>
                 Le format de base est prévu pour environ{' '}
-                <strong className="text-white">90 minutes</strong>. Il peut être ajusté selon le
+                <strong className="text-[color:var(--site-heading)]">90 minutes</strong>. Il peut être ajusté selon le
                 nombre de participants, le rythme du groupe et le contexte.
               </p>
               <p>
@@ -595,21 +595,21 @@ export default function AtelierCreatifPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
             L'animateur
           </p>
-          <h2 className="mt-4 max-w-2xl font-display text-4xl leading-[1.03] text-white md:text-5xl">
+          <h2 className="mt-4 max-w-2xl font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Nowis Morin anime chaque atelier en personne
           </h2>
-          <div className="mt-6 max-w-2xl space-y-4 text-[1rem] leading-8 text-slate-300">
+          <div className="mt-6 max-w-2xl space-y-4 text-[1rem] leading-8 text-[color:var(--site-muted)]">
             <p>
               Nowis Morin ne délègue pas et n'envoie pas une ressource à sa place.{' '}
-              <strong className="text-white">Il est là, en personne</strong>, à guider chaque
+              <strong className="text-[color:var(--site-heading)]">Il est là, en personne</strong>, à guider chaque
               participant avec attention, sensibilité et clarté — du premier échange jusqu'à la
               remise du résultat.
             </p>
             <p>
               Son approche marie la{' '}
-              <strong className="text-white">musique</strong>, la{' '}
-              <strong className="text-white">créativité humaine</strong> et les{' '}
-              <strong className="text-white">nouvelles technologies</strong> dans un format qui
+              <strong className="text-[color:var(--site-heading)]">musique</strong>, la{' '}
+              <strong className="text-[color:var(--site-heading)]">créativité humaine</strong> et les{' '}
+              <strong className="text-[color:var(--site-heading)]">nouvelles technologies</strong> dans un format qui
               inspire sans jamais intimider. Il sait rejoindre les jeunes comme les aînés, les
               groupes scolaires comme les équipes corporatives.
             </p>
@@ -628,15 +628,15 @@ export default function AtelierCreatifPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
             FAQ
           </p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Questions fréquentes
           </h2>
 
           <dl className="mt-10 divide-y divide-[rgba(131,97,67,0.12)]">
             {faqs.map((faq) => (
               <div key={faq.q} className="py-6 first:pt-0 last:pb-0">
-                <dt className="font-semibold leading-snug text-white">{faq.q}</dt>
-                <dd className="mt-2.5 text-sm leading-7 text-slate-300">{faq.a}</dd>
+                <dt className="font-semibold leading-snug text-[color:var(--site-heading)]">{faq.q}</dt>
+                <dd className="mt-2.5 text-sm leading-7 text-[color:var(--site-muted)]">{faq.a}</dd>
               </div>
             ))}
           </dl>
@@ -661,13 +661,13 @@ export default function AtelierCreatifPage() {
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-emerald-600 px-9 py-4 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-coal-950"
+              className="cta-primary px-9 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Demander cet atelier
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-9 py-4 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-coal-950"
+              className="cta-secondary px-9 py-4 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-coal-950"
             >
               Poser une question
             </Link>

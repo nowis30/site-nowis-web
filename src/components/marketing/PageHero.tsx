@@ -59,7 +59,7 @@ export function PageHero({ eyebrow, title, description, primaryCta, secondaryCta
 
   return (
     <section className="brand-shell brand-grid pointer-events-auto">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,247,238,0.28)_38%,rgba(242,227,207,0.72)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(184,111,61,0.14),transparent_22%),linear-gradient(180deg,rgba(246,241,234,0.22)_0%,rgba(243,236,227,0.52)_44%,rgba(239,231,220,0.92)_100%)]" />
       <div className={`relative z-10 mx-auto ${contentWidth} px-6 ${spacing} ${mobileSpacing}`}>
         <div className={`relative ${align}`}>
           {eyebrow ? <p className="brand-chip">{eyebrow}</p> : null}
@@ -69,22 +69,22 @@ export function PageHero({ eyebrow, title, description, primaryCta, secondaryCta
             <div className={`mt-10 flex flex-col gap-4 sm:flex-row ${style?.contentAlign === 'center' ? 'justify-center' : ''}`}>
               {primaryCta ? (
                 primaryCta.href.startsWith('/contact') ? (
-                  <ContactPrefillLink href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-105">
+                  <ContactPrefillLink href={primaryCta.href} className="cta-primary">
                     {primaryCta.label}
                   </ContactPrefillLink>
                 ) : (
-                  <Link href={primaryCta.href} className="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-105">
+                  <Link href={primaryCta.href} className="cta-primary">
                     {primaryCta.label}
                   </Link>
                 )
               ) : null}
               {secondaryCta ? (
                 secondaryCta.href.startsWith('/contact') ? (
-                  <ContactPrefillLink href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-6 py-3 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white">
+                  <ContactPrefillLink href={secondaryCta.href} className="cta-secondary">
                     {secondaryCta.label}
                   </ContactPrefillLink>
                 ) : (
-                  <Link href={secondaryCta.href} className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-6 py-3 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white">
+                  <Link href={secondaryCta.href} className="cta-secondary">
                     {secondaryCta.label}
                   </Link>
                 )

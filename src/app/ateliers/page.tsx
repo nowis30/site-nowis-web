@@ -71,8 +71,8 @@ export default function AteliersPage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 10% 12%, rgba(96,165,250,0.12), transparent 26%),' +
-              'radial-gradient(circle at 86% 8%, rgba(139,92,246,0.1), transparent 22%)',
+              'radial-gradient(circle at 10% 12%, rgba(184,111,61,0.12), transparent 26%),' +
+              'radial-gradient(circle at 86% 8%, rgba(203,165,120,0.16), transparent 22%)',
           }}
         />
         <div className="mx-auto max-w-5xl">
@@ -80,22 +80,22 @@ export default function AteliersPage() {
           <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
             Un atelier vivant, humain et accessible pour tous
           </h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-200">
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
             Animés en personne par Nowis Morin, les ateliers de création musicale avec l&apos;IA invitent chaque groupe à créer une chanson à partir de ses propres émotions, souvenirs et idées — et à repartir avec une vidéo souvenir téléchargeable.
           </p>
-          <p className="mt-3 max-w-2xl text-base leading-8 text-slate-300">
+          <p className="mt-3 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
             Tous les âges, tous les milieux. Adaptable en durée, en formule et en intention.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-brand-warm px-7 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary px-7 py-4"
             >
               Demander un atelier
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold text-white transition hover:bg-white/10"
+              className="cta-secondary px-7 py-4"
             >
               Poser une question
             </Link>
@@ -108,10 +108,10 @@ export default function AteliersPage() {
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Pour qui</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
               Un atelier fait pour plusieurs milieux
             </h2>
-            <p className="mt-4 text-base leading-8 text-slate-300">
+            <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
               L&apos;atelier s&apos;adapte au groupe, à l&apos;âge, au contexte et aux objectifs. Il n&apos;y a pas deux ateliers identiques.
             </p>
           </div>
@@ -122,8 +122,8 @@ export default function AteliersPage() {
                 className="brand-card rounded-[1.5rem] p-5 transition"
               >
                 <span className="text-2xl" role="img" aria-hidden="true">{m.icon}</span>
-                <h3 className="mt-3 font-semibold text-white">{m.label}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">{m.desc}</p>
+                <h3 className="mt-3 font-semibold text-[color:var(--site-heading)]">{m.label}</h3>
+                <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{m.desc}</p>
               </article>
             ))}
           </div>
@@ -135,11 +135,11 @@ export default function AteliersPage() {
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">L&apos;IA dans l&apos;atelier</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
               L&apos;IA comme outil, pas comme remplacement
             </h2>
           </div>
-          <div className="space-y-5 text-base leading-8 text-slate-300">
+          <div className="space-y-5 text-base leading-8 text-[color:var(--site-muted)]">
             <p>Dans l&apos;atelier, l&apos;intelligence artificielle est <strong className="text-white">un outil de création</strong>. Un outil puissant, concret — qu&apos;on peut apprendre à utiliser intelligemment.</p>
             <p>Nowis Morin guide chaque groupe à travers cette découverte, pas à pas, de façon accessible et rassurante. <strong className="text-white">L&apos;humain reste au centre</strong>. Les émotions, les souvenirs et les mots des participants nourrissent tout le processus.</p>
             <p>L&apos;IA ne décide pas. Elle aide à transformer ce que les gens ont à l&apos;intérieur en quelque chose de beau et de réel.</p>
@@ -154,8 +154,8 @@ export default function AteliersPage() {
           ].map((card) => (
             <article key={card.title} className="brand-card p-6">
               <span className="text-2xl" role="img" aria-hidden="true">{card.icon}</span>
-              <h3 className="mt-4 font-semibold text-white">{card.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">{card.desc}</p>
+              <h3 className="mt-4 font-semibold text-[color:var(--site-heading)]">{card.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{card.desc}</p>
             </article>
           ))}
         </div>
@@ -166,10 +166,10 @@ export default function AteliersPage() {
         <div className="mx-auto max-w-5xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Déroulement</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
               Comment se déroule un atelier
             </h2>
-            <p className="mt-4 text-base leading-8 text-slate-300">
+            <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
               Environ 90 minutes de création collective, guidée du début à la fin par Nowis Morin.
             </p>
           </div>
@@ -185,8 +185,8 @@ export default function AteliersPage() {
               >
                 <span className="font-display text-2xl font-bold text-primary-400/50 tabular-nums">{e.num}</span>
                 <div>
-                  <h3 className="font-semibold text-white">{e.title}</h3>
-                  <p className="mt-1 text-sm leading-6 text-slate-400">{e.desc}</p>
+                  <h3 className="font-semibold text-[color:var(--site-heading)]">{e.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-[color:var(--site-muted)]">{e.desc}</p>
                 </div>
               </article>
             ))}
@@ -198,7 +198,7 @@ export default function AteliersPage() {
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
         <div className="warm-spotlight-panel p-8 md:p-12">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Ce que le groupe repart avec</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Un résultat concret, pas juste une expérience
           </h2>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
@@ -244,13 +244,13 @@ export default function AteliersPage() {
       <section className="mx-auto max-w-4xl px-6 py-12 md:py-16">
         <div className="glass-panel-soft p-8 text-center md:p-10">
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
-          <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Tarification sur soumission</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300">
+          <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tarification sur soumission</h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
             Le coût d&apos;un atelier dépend de la durée, du nombre de participants, des besoins spécifiques et du déplacement. Écrivez-nous pour obtenir une soumission claire, sans surprise.
           </p>
           <Link
             href="/contact"
-            className="mt-6 inline-flex rounded-xl bg-brand-warm px-7 py-3.5 font-semibold text-white shadow-fire transition hover:brightness-110"
+            className="cta-primary mt-6 px-7 py-3.5"
           >
             Demander une soumission
           </Link>
@@ -261,7 +261,7 @@ export default function AteliersPage() {
       <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-4xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Questions fréquentes</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             On répond à vos questions
           </h2>
           <div className="mt-10 space-y-4">
@@ -270,13 +270,13 @@ export default function AteliersPage() {
                 key={item.q}
                 className="group rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-6 py-5 transition hover:border-white/20"
               >
-                <summary className="cursor-pointer list-none font-semibold text-white group-open:text-primary-200">
+                <summary className="cursor-pointer list-none font-semibold text-[color:var(--site-heading)] group-open:text-[color:var(--site-accent-strong)]">
                   <span className="flex items-start justify-between gap-4">
                     {item.q}
-                    <span className="mt-0.5 shrink-0 text-slate-400 transition group-open:rotate-180">▾</span>
+                    <span className="mt-0.5 shrink-0 text-[color:var(--site-soft)] transition group-open:rotate-180">▾</span>
                   </span>
                 </summary>
-                <p className="mt-4 text-sm leading-7 text-slate-300">{item.a}</p>
+                <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">{item.a}</p>
               </details>
             ))}
           </div>
@@ -289,16 +289,16 @@ export default function AteliersPage() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Atelier spécifique</p>
-              <h2 className="mt-3 font-display text-3xl leading-[1.05] text-white md:text-4xl">
+              <h2 className="mt-3 font-display text-3xl leading-[1.05] text-[color:var(--site-heading)] md:text-4xl">
                 Atelier de création musicale avec l&apos;IA
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">
+              <p className="mt-3 max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
                 Découvrez la page dédiée à notre atelier phare, avec tous les détails sur le contenu, les objectifs et les modalités.
               </p>
             </div>
             <Link
               href="/ateliers/atelier-creatif"
-              className="shrink-0 rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-7 py-3.5 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+              className="cta-secondary shrink-0 px-7 py-3.5"
             >
               Voir la page complète →
             </Link>
@@ -310,22 +310,22 @@ export default function AteliersPage() {
       <section className="px-6 py-16 md:py-24">
         <div className="warm-cta-panel mx-auto max-w-4xl overflow-hidden p-10 text-center md:p-16">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Prêt à vous lancer</p>
-          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-white md:text-5xl">
+          <h2 className="mt-5 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Offrir un atelier différent, humain et actuel
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-300">
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
             Pour un atelier unique dans votre milieu, prenez contact avec Nowis Morin. On discutera ensemble du format, du groupe et des objectifs — et vous obtiendrez une soumission claire.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-brand-warm px-9 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary px-9 py-4"
             >
               Demander un atelier
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+              className="cta-secondary px-9 py-4"
             >
               Poser une question
             </Link>

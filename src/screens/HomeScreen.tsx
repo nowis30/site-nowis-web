@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { HomepageMediaShowcase, type HomepageMediaItem } from '@/components/marketing/HomepageMediaShowcase';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
+import { getYouTubeThumbnailUrl } from '@/lib/seo';
 
 // ─── Données statiques ────────────────────────────────────────────────────────
 
@@ -37,15 +39,27 @@ const offres = [
   },
 ];
 
-const audiences = [
-  { icon: '🎶', label: 'Aînés', desc: 'Souvenirs, musique, valorisation et découverte numérique douce et accessible.' },
-  { icon: '📚', label: 'Bibliothèques', desc: 'Médiation culturelle, activité créative et exploration de l\'IA simplement.' },
-  { icon: '🤝', label: 'Centres communautaires', desc: 'Activité rassembleuse, humaine et expressive pour des groupes variés.' },
-  { icon: '🏛️', label: 'Organismes', desc: 'Projet collectif, participation et découverte actuelle de l\'intelligence artificielle.' },
-  { icon: '🏫', label: 'Écoles', desc: 'Créativité, écriture, musique, expression et découverte technologique pour les jeunes.' },
-  { icon: '🏠', label: 'Maisons des jeunes', desc: 'Atelier vivant, participatif et valorisant dans un cadre communautaire.' },
-  { icon: '👨‍👩‍👧', label: 'Intergénérationnel', desc: 'Relier les générations par la musique, les souvenirs et la création collective.' },
-  { icon: '✨', label: 'Groupes privés', desc: 'Activité spéciale ou projet unique pour un événement, une fête ou un groupe sur mesure.' },
+const proofCards = [
+  {
+    icon: '🤝',
+    title: 'Une approche profondément humaine',
+    desc: 'La chaleur, l’écoute et l’émotion sont au centre. L’IA sert la création, elle ne remplace jamais le lien humain.',
+  },
+  {
+    icon: '🎵',
+    title: 'Un résultat concret et mémorable',
+    desc: 'Le groupe repart avec une chanson, une vidéo souvenir ou une direction claire pour passer à l’action.',
+  },
+  {
+    icon: '📱',
+    title: 'L’IA rendue simple et rassurante',
+    desc: 'La technologie devient accessible, compréhensible et utile, même pour un public qui part de zéro.',
+  },
+  {
+    icon: '✨',
+    title: 'Une offre qui donne envie d’agir',
+    desc: 'Atelier, chanson personnalisée ou accompagnement créatif : le visiteur comprend vite ce qu’il peut demander.',
+  },
 ];
 
 const deroulementSteps = [
@@ -58,9 +72,60 @@ const deroulementSteps = [
   { num: '07', title: 'Vidéo souvenir et résultat téléchargeable', desc: 'Une vidéo est créée autour de l\'œuvre — téléchargeable, partageable et durable.' },
 ];
 
+const featuredVideoUrl = 'https://www.youtube.com/watch?v=Vu-UxATjw2o';
+
+const mediaExamples: HomepageMediaItem[] = [
+  {
+    id: 'intergenerationnel',
+    eyebrow: 'Ateliers intergénérationnels',
+    title: 'Créer un moment fort entre plusieurs générations',
+    description: 'Une activité sensible, douce et actuelle où les souvenirs deviennent chanson et vidéo souvenir.',
+    posterSrc: '/hero.jpg',
+    posterAlt: 'Nowis Morin dans un univers musical chaleureux',
+    href: '/ateliers',
+    ctaLabel: 'Demander un atelier',
+    videoUrl: featuredVideoUrl,
+  },
+  {
+    id: 'ecoles-aines',
+    eyebrow: 'Écoles, aînés, maisons des jeunes',
+    title: 'Adapter l’expérience au milieu et à l’âge du groupe',
+    description: 'Un format pensé pour les organismes, les bibliothèques, les écoles, les aînés et les groupes qui veulent vivre quelque chose de concret.',
+    posterSrc: '/images/hero.jpg',
+    posterAlt: 'Atelier de création musicale adapté à plusieurs publics',
+    href: '/ateliers/atelier-creatif',
+    ctaLabel: 'Voir l’atelier créatif',
+    videoUrl: featuredVideoUrl,
+  },
+  {
+    id: 'chanson-personnalisee',
+    eyebrow: 'Chanson personnalisée',
+    title: 'Transformer une histoire vraie en chanson marquante',
+    description: 'Pour un anniversaire, un hommage, un mariage ou un souvenir de famille : une création qui touche pour vrai.',
+    posterSrc: getYouTubeThumbnailUrl('https://www.youtube.com/watch?v=VbcHV4K72-Q', 'hqdefault') || '/hero.jpg',
+    posterAlt: 'Exemple de chanson personnalisée',
+    href: '/commander-une-chanson',
+    ctaLabel: 'Commander une chanson',
+    videoUrl: 'https://www.youtube.com/watch?v=VbcHV4K72-Q',
+  },
+  {
+    id: 'musique-ia-telephone',
+    eyebrow: 'Musique + IA simplifiée',
+    title: 'Montrer que l’IA peut devenir un outil créatif simple',
+    description: 'Une démonstration claire, concrète et accessible de ce que l’IA permet quand elle est bien guidée et bien expliquée.',
+    posterSrc: getYouTubeThumbnailUrl('https://www.youtube.com/watch?v=hvyftoI3CSA', 'hqdefault') || '/logo_creation_nowis_1mo_max.jpg',
+    posterAlt: 'Musique et intelligence artificielle utilisées simplement',
+    href: '/a-propos',
+    ctaLabel: 'Comprendre l’approche',
+    videoUrl: 'https://www.youtube.com/watch?v=hvyftoI3CSA',
+  },
+];
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export const HomeScreen = async () => {
+  const [featuredMedia, ...mediaCards] = mediaExamples;
+
   return (
     <div className="relative overflow-hidden bg-transparent text-[color:var(--site-text)]">
 
@@ -94,68 +159,62 @@ export const HomeScreen = async () => {
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-24 lg:py-32">
           {/* Texte hero */}
           <div className="relative z-10">
-            <span className="brand-chip inline-block">
-              Ateliers · Chansons · Création · Intelligence artificielle
-            </span>
+            <span className="brand-chip inline-block">Ateliers · Chansons · Création · IA rendue simple</span>
             <h1 className="brand-metal-text mt-6 font-display text-5xl leading-[0.95] md:text-7xl xl:text-[5.5rem]">
-              Créer avec l'IA, en restant profondément humain
+              Des ateliers musicaux et des créations qui touchent, rassurent et donnent envie d’agir
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--site-muted)] md:text-xl">
-              Nowis Morin vous accompagne à travers des ateliers et des créations musicales où
-              l'intelligence artificielle devient un outil puissant pour apprendre, s'exprimer,
-              créer et rassembler.
+              Nowis Morin transforme la musique, les souvenirs et l’intelligence artificielle en expériences simples, humaines et marquantes. Le visiteur comprend vite ce qu’il peut vivre, offrir ou demander.
             </p>
 
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/ateliers"
-                className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-7 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+                className="cta-primary px-7 py-4"
               >
                 Demander un atelier
               </Link>
               <Link
-                href="/connexion"
-                className="inline-flex items-center justify-center rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-7 py-4 font-semibold text-[color:var(--site-heading)] backdrop-blur-sm transition hover:bg-white"
+                href="#exemples"
+                className="cta-secondary px-7 py-4"
               >
-                Portail client
+                Voir des exemples
               </Link>
             </div>
 
-            <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
+            <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
               <div className="glass-panel-soft px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Ateliers</p>
-                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">
-                  Animés en personne. Tous âges. Adaptés à votre milieu.
-                </p>
+                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">Animés en personne. Tous âges. Adaptés à votre milieu.</p>
               </div>
               <div className="glass-panel-soft px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Rayon de service</p>
-                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">
-                  Environ 150 km autour de Drummondville.
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Chansons</p>
+                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">Des créations sur mesure pour un moment important ou un souvenir à offrir.</p>
+              </div>
+              <div className="glass-panel-soft px-4 py-4 sm:col-span-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">IA simplifiée</p>
+                <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">Compréhensible, concrète et utilisée comme un outil créatif rassurant.</p>
               </div>
             </div>
           </div>
 
           {/* Image hero */}
           <div className="relative z-10">
-            <div
-              className="warm-spotlight-panel overflow-hidden"
-            >
+            <div className="warm-spotlight-panel overflow-hidden">
               <div className="relative aspect-[4/5.15] md:aspect-[4/5]">
                 <Image
                   src="/hero.jpg"
                   alt="Nowis Morin, créateur principal de Création Nowis"
                   fill
-                  className="object-cover object-[50%_28%] brightness-[0.92] contrast-[1.03] saturate-[1.02] md:object-[50%_35%] md:brightness-[0.88] md:contrast-[1.02] md:saturate-100"
+                  className="object-cover object-[50%_28%] brightness-[0.88] contrast-[1.05] saturate-[1.02] md:object-[50%_35%] md:brightness-[0.84] md:contrast-[1.03]"
                   priority
                 />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,241,0.02)_0%,rgba(255,248,241,0.08)_35%,rgba(80,50,25,0.36)_100%)] md:bg-[linear-gradient(180deg,rgba(255,248,241,0.04)_0%,rgba(255,248,241,0.14)_38%,rgba(80,50,25,0.42)_100%)]" />
+                <div className="pointer-events-none absolute inset-0 hero-overlay-warm" />
               </div>
               <div className="px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Création Nowis</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Une présence vraie</p>
                 <p className="mt-1.5 text-sm leading-6 text-[color:var(--site-muted)]">
-                  Nowis Morin anime chaque atelier en personne. Musique, IA et créativité humaine réunies.
+                  Nowis Morin anime chaque atelier en personne. La technologie reste claire, l’expérience reste vivante et le résultat reste humain.
                 </p>
               </div>
             </div>
@@ -163,13 +222,30 @@ export const HomeScreen = async () => {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-6 pb-8 pt-2 md:pb-10">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {proofCards.map((card) => (
+            <article key={card.title} className="glass-panel-soft p-6">
+              <span className="text-2xl" role="img" aria-hidden="true">{card.icon}</span>
+              <h2 className="mt-4 font-display text-2xl leading-[1.05] text-[color:var(--site-heading)]">{card.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">{card.desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <HomepageMediaShowcase featured={featuredMedia} items={mediaCards} />
+
       {/* ════ CE QUE JE FAIS ════ */}
-      <section className="mx-auto max-w-7xl px-6 pb-4 pt-6 md:pb-8">
+      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Ce que je propose</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Services principaux</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
-            Des expériences créatives autour de la musique et de l'IA
+            Ce que le visiteur peut demander immédiatement
           </h2>
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
+            Une offre claire, rapide à comprendre et pensée pour convertir sans perdre la chaleur artistique du projet.
+          </p>
         </div>
 
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
@@ -194,8 +270,8 @@ export const HomeScreen = async () => {
                 href={offre.href}
                 className={`mt-6 inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition ${
                   offre.featured
-                    ? 'bg-brand-warm text-white shadow-fire hover:brightness-110'
-                    : 'border border-[rgba(131,97,67,0.12)] bg-white/70 text-[color:var(--site-heading)] hover:bg-white'
+                    ? 'cta-primary'
+                    : 'cta-secondary'
                 }`}
               >
                 {offre.cta}
@@ -205,81 +281,26 @@ export const HomeScreen = async () => {
         </div>
       </section>
 
-      {/* ════ ATELIER EN VEDETTE ════ */}
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-        <div className="warm-spotlight-panel overflow-hidden">
-          <div className="grid gap-10 p-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-0 lg:p-0">
-            <div className="lg:p-12">
-              <span className="brand-chip inline-block">Atelier en vedette</span>
-              <h2 className="mt-5 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl lg:text-6xl">
-                Atelier de création musicale avec&nbsp;l'IA
-              </h2>
-              <p className="mt-5 max-w-lg text-[1rem] leading-8 text-[color:var(--site-muted)]">
-                Une expérience créative, humaine et accessible pour découvrir l'intelligence
-                artificielle à travers la musique, les émotions, les souvenirs et la création
-                collective. Animé en personne par Nowis Morin.
-              </p>
-              <ul className="mt-6 space-y-3">
-                {[
-                  'Accessible à tous les âges',
-                  'Adaptable selon le milieu et la taille du groupe',
-                  'L\'IA est découverte comme outil, pas comme remplacement',
-                  'Le groupe repart avec une chanson et une vidéo souvenir',
-                  'Durée de base : environ 90 minutes',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm leading-7 text-[color:var(--site-text)]">
-                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[rgba(201,117,71,0.12)] text-xs font-bold text-[color:var(--site-accent-strong)]">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link
-                  href="/ateliers/demande"
-                  className="rounded-xl bg-brand-warm px-7 py-3.5 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
-                >
-                  Demander cet atelier
-                </Link>
-                <Link
-                  href="/ateliers/atelier-creatif"
-                  className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/75 px-7 py-3.5 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
-                >
-                  Voir la page complète
-                </Link>
-              </div>
-            </div>
-            <div
-              className="relative hidden min-h-[420px] lg:block"
-              style={{ background: 'linear-gradient(90deg, rgba(255,248,241,0) 0%, rgba(244,230,210,0.92) 8%)' }}
-            >
-              <Image
-                src="/hero.jpg"
-                alt="Atelier de création musicale avec Nowis Morin"
-                fill
-                className="object-cover opacity-78"
-                style={{ objectPosition: '60% 20%' }}
-              />
-              <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(270deg, rgba(255,248,241,0.0) 42%, rgba(244,230,210,0.94) 100%)' }} />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ════ POUR QUI ════ */}
-      <section className="section-soft px-6 py-16 md:py-20">
+      <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Pour qui</p>
             <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
-              Un atelier fait pour plusieurs milieux
+              Des usages concrets qui parlent vite au bon visiteur
             </h2>
             <p className="mt-4 text-[1rem] leading-8 text-slate-300">
-              L'atelier n'est jamais le même pour deux groupes. Il s'adapte à l'âge, au contexte, au nombre de participants et aux objectifs.
+              Le site doit immédiatement aider chacun à se reconnaître : organisme, école, famille, client qui veut offrir une chanson ou personne curieuse de comprendre l’IA sans pression.
             </p>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {audiences.map((a) => (
+            {[
+              { icon: '🎶', label: 'Aînés et intergénérationnel', desc: 'Pour réveiller les souvenirs, créer du lien et vivre un moment touchant.' },
+              { icon: '🏫', label: 'Écoles et maisons des jeunes', desc: 'Pour découvrir l’IA autrement, par la musique, l’écriture et la participation.' },
+              { icon: '🎁', label: 'Familles et cadeaux marquants', desc: 'Pour offrir une chanson personnalisée qui garde une vraie valeur émotionnelle.' },
+              { icon: '📱', label: 'Curieux et créatifs', desc: 'Pour comprendre comment l’IA peut devenir un outil simple, utile et artistique.' },
+            ].map((a) => (
               <article
                 key={a.label}
                 className="brand-card rounded-[1.5rem] p-5 transition"
@@ -294,7 +315,7 @@ export const HomeScreen = async () => {
           <div className="mt-8 text-center">
             <Link
               href="/ateliers"
-              className="inline-flex items-center gap-2 rounded-xl border border-[rgba(201,117,71,0.16)] bg-white/70 px-6 py-3.5 font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white"
+              className="cta-secondary gap-2 px-6 py-3.5"
             >
               Voir tous les détails de l'atelier →
             </Link>
@@ -308,18 +329,18 @@ export const HomeScreen = async () => {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">L'IA simplement</p>
             <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
-              Ce n'est pas sorcier. C'est juste un nouvel outil à apprendre.
+              L’IA devient rassurante quand on la voit dans un vrai usage humain.
             </h2>
           </div>
           <div className="space-y-5 text-[1rem] leading-8 text-slate-300">
             <p>
-              L'intelligence artificielle est un <strong className="text-white">nouvel outil</strong>. Comme tout outil puissant, il faut apprendre à l'utiliser. Dans les ateliers de Nowis Morin, on l'aborde de façon <em>simple, humaine, créative et concrète</em>.
+              L'intelligence artificielle est un <strong className="text-white">outil nouveau</strong>, mais elle n’a pas besoin d’être froide, abstraite ou compliquée. Ici, elle est expliquée par la création, par la musique et par l’expérience vécue.
             </p>
             <p>
-              Ce n'est pas réservé aux experts. Ce n'est pas quelque chose de froid ou de compliqué. On peut l'utiliser pour créer, réfléchir, apprendre et exprimer des idées — et <strong className="text-white">l'humain reste au centre</strong>.
+              Ce n'est pas réservé aux experts. On peut l'utiliser pour créer, réfléchir, apprendre et exprimer des idées — et <strong className="text-white">l'humain reste au centre</strong>.
             </p>
             <p>
-              Nowis Morin ne remplace pas la sensibilité humaine par une machine. Il enseigne comment <strong className="text-white">utiliser l'IA intelligemment</strong> — comme un outil de création au service des souvenirs, de l'expression et du plaisir.
+              Nowis Morin montre comment <strong className="text-white">utiliser l'IA intelligemment</strong>, avec tact, émotion et simplicité, pour faire émerger quelque chose de beau et d’utile.
             </p>
           </div>
         </div>
@@ -340,7 +361,7 @@ export const HomeScreen = async () => {
       </section>
 
       {/* ════ DÉROULEMENT ════ */}
-      <section className="section-warm px-6 py-16 md:py-20">
+      <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Comment ça se passe</p>
@@ -398,7 +419,7 @@ export const HomeScreen = async () => {
       </section>
 
       {/* ════ RAYON DE DÉPLACEMENT ════ */}
-      <section className="section-soft px-6 py-12 md:py-16">
+      <section className="section-warm px-6 py-12 md:py-16">
         <div className="mx-auto max-w-4xl">
           <div className="glass-panel-soft flex flex-col gap-4 p-7 text-center md:flex-row md:items-center md:gap-8 md:p-8 md:text-left">
             <span className="shrink-0 text-4xl" role="img" aria-hidden="true">📍</span>
@@ -418,37 +439,14 @@ export const HomeScreen = async () => {
         </div>
       </section>
 
-      {/* ════ VIDÉO ════ */}
-      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">L'univers Création Nowis</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Découvrir en image</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-[1rem] leading-8 text-slate-300">
-            Plongez dans l'univers artistique de Nowis Morin : musique, création, intelligence artificielle et expression humaine.
-          </p>
-        </div>
-
-        <div className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 shadow-card">
-          <div className="relative aspect-video w-full">
-            <iframe
-              src="https://www.youtube.com/embed/Vu-UxATjw2o"
-              title="Création Nowis — Univers de Nowis Morin"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 h-full w-full"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* ════ TÉMOIGNAGES ════ */}
       <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Témoignages</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Ce que disent les gens</h2>
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Ce que l’expérience laisse vraiment</h2>
             <p className="mt-4 text-[1rem] leading-8 text-slate-300">
-              Des retours vrais, laissés par des personnes qui ont vécu l'expérience.
+              Des retours vrais, laissés par des personnes qui ont vécu un atelier, une chanson ou une création avec Nowis Morin.
             </p>
           </div>
           <div className="mt-10">
@@ -466,10 +464,10 @@ export const HomeScreen = async () => {
                 src="/hero.jpg"
                 alt="Nowis Morin"
                 fill
-                className="object-cover brightness-[0.85]"
+                className="object-cover brightness-[0.84] contrast-[1.04]"
                 style={{ objectPosition: '50% 25%' }}
               />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,238,0.05)_0%,rgba(255,247,238,0.18)_40%,rgba(82,52,27,0.58)_100%)] lg:bg-[linear-gradient(90deg,rgba(255,247,238,0.05)_0%,rgba(255,247,238,0.18)_55%,rgba(82,52,27,0.62)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 hero-overlay-warm" />
             </div>
             <div className="bg-[linear-gradient(145deg,rgba(255,252,247,0.94),rgba(243,228,207,0.92))] p-8 md:p-10 lg:p-12">
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Nowis Morin</p>
@@ -515,15 +513,15 @@ export const HomeScreen = async () => {
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers/demande"
-              className="rounded-xl bg-brand-warm px-9 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary px-9 py-4"
             >
               Demander un atelier
             </Link>
             <Link
-              href="/connexion"
-              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+              href="/commander-une-chanson"
+              className="cta-secondary px-9 py-4"
             >
-              Accéder au portail client
+              Demander une chanson
             </Link>
           </div>
         </div>

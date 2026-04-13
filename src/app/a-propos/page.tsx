@@ -21,8 +21,8 @@ export default function AProposPage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 12% 10%, rgba(96,165,250,0.12), transparent 26%),' +
-              'radial-gradient(circle at 85% 8%, rgba(139,92,246,0.10), transparent 22%)',
+              'radial-gradient(circle at 12% 10%, rgba(184,111,61,0.12), transparent 26%),' +
+              'radial-gradient(circle at 85% 8%, rgba(203,165,120,0.16), transparent 22%)',
           }}
         />
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
@@ -31,7 +31,7 @@ export default function AProposPage() {
             <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
               Nowis Morin — Créateur, animateur, artiste
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--site-muted)]">
               Je suis Nowis Morin, créateur derrière Création Nowis. J&apos;anime des ateliers de création musicale
               avec l&apos;IA, je crée des chansons personnalisées et j&apos;explore les territoires où la sensibilité
               humaine et la technologie se rencontrent vraiment.
@@ -39,13 +39,13 @@ export default function AProposPage() {
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/ateliers"
-                className="rounded-xl bg-brand-warm px-7 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+                className="cta-primary px-7 py-4"
               >
                 Découvrir les ateliers
               </Link>
               <Link
                 href="/contact"
-                className="rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold text-white transition hover:bg-white/10"
+                className="cta-secondary px-7 py-4"
               >
                 Me contacter
               </Link>
@@ -63,7 +63,7 @@ export default function AProposPage() {
                   style={{ objectFit: 'cover', objectPosition: '50% 25%' }}
                   priority
                 />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,22,0.06)_0%,rgba(5,8,22,0.72)_100%)]" />
+                <div className="pointer-events-none absolute inset-0 hero-overlay-warm" />
               </div>
             </div>
           </div>
@@ -74,10 +74,10 @@ export default function AProposPage() {
       <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Mon histoire</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Qui je suis, et ce qui me drive
           </h2>
-          <div className="mt-8 grid gap-6 text-base leading-8 text-slate-300 lg:grid-cols-2">
+          <div className="mt-8 grid gap-6 text-base leading-8 text-[color:var(--site-muted)] lg:grid-cols-2">
             <div className="space-y-5">
               <p>
                 Je m&apos;appelle Nowis Morin. Je suis artiste, musicien et passionné de création sous toutes ses formes. Mon univers, c&apos;est la musique — mais pas seulement. C&apos;est aussi l&apos;expression, la transmission, l&apos;idée que la création peut <strong className="text-[color:var(--site-heading)]">vraiment toucher les gens</strong>.
@@ -103,10 +103,10 @@ export default function AProposPage() {
         <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Pourquoi l&apos;IA</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
               L&apos;IA est un outil. Le reste, c&apos;est humain.
             </h2>
-            <div className="mt-6 space-y-5 text-base leading-8 text-slate-300">
+            <div className="mt-6 space-y-5 text-base leading-8 text-[color:var(--site-muted)]">
               <p>
                 Je suis fasciné par l&apos;intelligence artificielle depuis que j&apos;ai commencé à y voir ce qu&apos;elle peut vraiment faire : <strong className="text-[color:var(--site-heading)]">amplifier la créativité</strong> plutôt que la remplacer. L&apos;IA est un outil puissant. Mais c&apos;est toujours l&apos;humain qui décide de l&apos;intention, du ton, de l&apos;émotion et du résultat final.
               </p>
@@ -128,8 +128,8 @@ export default function AProposPage() {
               <article key={card.title} className="brand-card flex gap-4 p-5">
                 <span className="shrink-0 text-2xl" role="img" aria-hidden="true">{card.icon}</span>
                 <div>
-                  <h3 className="font-semibold text-white">{card.title}</h3>
-                  <p className="mt-1 text-sm leading-6 text-slate-400">{card.desc}</p>
+                  <h3 className="font-semibold text-[color:var(--site-heading)]">{card.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-[color:var(--site-muted)]">{card.desc}</p>
                 </div>
               </article>
             ))}
@@ -141,7 +141,7 @@ export default function AProposPage() {
       <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Mes activités</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Ce que je fais concrètement
           </h2>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -180,14 +180,14 @@ export default function AProposPage() {
                 }`}
               >
                 <span className="text-3xl" role="img" aria-hidden="true">{item.icon}</span>
-                <h3 className="mt-4 font-display text-2xl text-white">{item.title}</h3>
-                <p className="mt-3 flex-1 text-sm leading-6 text-slate-300">{item.desc}</p>
+                <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)]">{item.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{item.desc}</p>
                 <Link
                   href={item.href}
                   className={`mt-5 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${
                     item.featured
-                      ? 'bg-brand-warm text-white shadow-fire hover:brightness-110'
-                      : 'border border-[rgba(131,97,67,0.12)] bg-white/72 text-[color:var(--site-heading)] hover:bg-white'
+                      ? 'cta-primary'
+                      : 'cta-secondary'
                   }`}
                 >
                   {item.cta}
@@ -201,7 +201,7 @@ export default function AProposPage() {
       {/* ── VALEURS ── */}
       <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Mes valeurs</p>
-        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+        <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
           Ce qui guide ma démarche
         </h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -215,8 +215,8 @@ export default function AProposPage() {
           ].map((val) => (
             <article key={val.title} className="brand-card p-6">
               <span className="text-2xl" role="img" aria-hidden="true">{val.icon}</span>
-              <h3 className="mt-4 font-semibold text-white">{val.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">{val.desc}</p>
+              <h3 className="mt-4 font-semibold text-[color:var(--site-heading)]">{val.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{val.desc}</p>
             </article>
           ))}
         </div>
@@ -234,13 +234,13 @@ export default function AProposPage() {
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/ateliers"
-              className="rounded-xl bg-brand-warm px-9 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary px-9 py-4"
             >
               Découvrir les ateliers
             </Link>
             <Link
               href="/contact"
-              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+              className="cta-secondary px-9 py-4"
             >
               Me contacter
             </Link>

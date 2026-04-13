@@ -163,48 +163,48 @@ export default async function ContactPage() {
               <li>Telephone: <a href={phoneHref} className="hover:underline">{phone}</a></li>
             </ul>
             <div className="mt-6 flex flex-col gap-3">
-              <a href={songRequestHref} className="rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-5 py-3 font-semibold text-[color:var(--site-heading)] transition hover:bg-white">
+              <a href={songRequestHref} className="cta-primary rounded-2xl px-5 py-3">
                 {songRequestLabel}
               </a>
-              <a href={workshopRequestHref} className="rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/70 px-5 py-3 font-semibold text-[color:var(--site-heading)] transition hover:bg-white">
+              <a href={workshopRequestHref} className="cta-secondary rounded-2xl px-5 py-3">
                 {workshopRequestLabel}
               </a>
             </div>
           </div>
 
           <div className="glass-panel-soft rounded-3xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-950">Protection des renseignements personnels</h2>
-            <p className="mt-4 leading-relaxed text-slate-600">
+            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Protection des renseignements personnels</h2>
+            <p className="mt-4 leading-relaxed text-[color:var(--site-muted)]">
               Responsable : {legalConfig.responsiblePrivacyName}. Pour toute demande liée à l’accès, à la correction ou au retrait de renseignements personnels, tu peux écrire directement à cette personne.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a href={`mailto:${legalConfig.privacyEmail}`} className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">
+              <a href={`mailto:${legalConfig.privacyEmail}`} className="cta-secondary rounded-2xl px-5 py-4">
                 {legalConfig.privacyEmail}
               </a>
-              <a href={legalConfig.privacyPhoneHref} className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">
+              <a href={legalConfig.privacyPhoneHref} className="cta-secondary rounded-2xl px-5 py-4">
                 {legalConfig.privacyPhone}
               </a>
             </div>
             <div className="mt-6 flex flex-col gap-3">
-              <a href={legalLinks.legal} className="text-sm font-semibold text-emerald-700 hover:underline">
+              <a href={legalLinks.legal} className="text-sm font-semibold text-[color:var(--site-accent-strong)] hover:underline">
                 Voir les mentions légales
               </a>
-              <a href={legalLinks.privacy} className="text-sm font-semibold text-emerald-700 hover:underline">
+              <a href={legalLinks.privacy} className="text-sm font-semibold text-[color:var(--site-accent-strong)] hover:underline">
                 Voir la politique de confidentialité
               </a>
-              <a href={legalLinks.terms} className="text-sm font-semibold text-emerald-700 hover:underline">
+              <a href={legalLinks.terms} className="text-sm font-semibold text-[color:var(--site-accent-strong)] hover:underline">
                 Voir les conditions de vente
               </a>
             </div>
           </div>
 
           <div className="glass-panel-soft rounded-3xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-950">Où suivre Nowis Morin</h2>
+            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Où suivre Nowis Morin</h2>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <a href={spotify} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">Écouter sur Spotify</a>
-              <a href={youtube} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">Voir sur YouTube</a>
-              <a href={instagram} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">Instagram</a>
-              <a href={facebook} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-200 px-5 py-4 font-semibold text-slate-800 transition hover:bg-slate-50">Facebook</a>
+              <a href={spotify} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Écouter sur Spotify</a>
+              <a href={youtube} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Voir sur YouTube</a>
+              <a href={instagram} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Instagram</a>
+              <a href={facebook} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Facebook</a>
             </div>
           </div>
         </div>

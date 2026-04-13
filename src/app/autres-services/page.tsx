@@ -67,8 +67,8 @@ export default function AutresServicesPage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 12% 10%, rgba(139,92,246,0.12), transparent 26%),' +
-              'radial-gradient(circle at 85% 8%, rgba(96,165,250,0.10), transparent 22%)',
+              'radial-gradient(circle at 12% 10%, rgba(184,111,61,0.12), transparent 26%),' +
+              'radial-gradient(circle at 85% 8%, rgba(203,165,120,0.16), transparent 22%)',
           }}
         />
         <div className="mx-auto max-w-5xl">
@@ -76,20 +76,20 @@ export default function AutresServicesPage() {
           <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
             Des créations au-delà des ateliers
           </h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-200">
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
             En dehors des ateliers et des chansons personnalisées, Nowis Morin propose un univers plus large :
             jeux interactifs, accompagnement d&apos;artistes, vidéos créatives et projets sur mesure. Tout ce qui croise musique, IA et création humaine.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href="/contact"
-              className="rounded-xl bg-brand-warm px-7 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary px-7 py-4"
             >
               Discuter d&apos;un projet
             </Link>
             <Link
               href="/ateliers"
-              className="rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold text-white transition hover:bg-white/10"
+              className="cta-secondary px-7 py-4"
             >
               Voir les ateliers
             </Link>
@@ -101,7 +101,7 @@ export default function AutresServicesPage() {
       <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Les services secondaires</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">
+          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Ce que Création Nowis peut aussi faire
           </h2>
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
@@ -112,11 +112,11 @@ export default function AutresServicesPage() {
               >
                 <span className="text-3xl" role="img" aria-hidden="true">{svc.icon}</span>
                 <p className="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary-300">{svc.chip}</p>
-                <h3 className="mt-3 font-display text-2xl text-white md:text-3xl">{svc.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-300">{svc.desc}</p>
+                <h3 className="mt-3 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">{svc.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">{svc.desc}</p>
                 <ul className="mt-4 space-y-2">
                   {svc.items.map((item) => (
-                    <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-300">
+                    <li key={item} className="flex items-start gap-3 text-sm leading-6 text-[color:var(--site-muted)]">
                       <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary-500/20 text-[10px] font-bold text-primary-300">✓</span>
                       {item}
                     </li>
@@ -132,13 +132,13 @@ export default function AutresServicesPage() {
       <section className="mx-auto max-w-4xl px-6 py-12 md:py-16">
         <div className="glass-panel-soft p-8 text-center md:p-10">
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
-          <h2 className="mt-4 font-display text-3xl text-white md:text-4xl">Tous les projets sont sur soumission</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-300">
+          <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tous les projets sont sur soumission</h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
             Chaque projet est unique. Il n&apos;y a pas de grille de prix fixe — on discute ensemble de vos besoins et je vous propose une soumission claire et adaptée à votre réalité.
           </p>
           <Link
             href="/contact"
-            className="mt-6 inline-flex rounded-xl bg-brand-warm px-7 py-3.5 font-semibold text-white shadow-fire transition hover:brightness-110"
+            className="cta-primary mt-6 px-7 py-3.5"
           >
             Discuter de votre projet
           </Link>
@@ -151,26 +151,26 @@ export default function AutresServicesPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="glass-panel-strong p-7">
               <span className="text-3xl" role="img" aria-hidden="true">🎵</span>
-              <h3 className="mt-4 font-display text-2xl text-white md:text-3xl">Ateliers de création musicale</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
+              <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">Ateliers de création musicale</h3>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">
                 Notre offre principale. Des ateliers animés en personne, pour tous les âges, avec une chanson et une vidéo souvenir téléchargeable à la clé.
               </p>
               <Link
                 href="/ateliers"
-                className="mt-5 inline-flex rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-6 py-3 text-sm font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+                className="cta-secondary mt-5 px-6 py-3 text-sm"
               >
                 Voir les ateliers →
               </Link>
             </div>
             <div className="warm-spotlight-panel p-7">
               <span className="text-3xl" role="img" aria-hidden="true">🎼</span>
-              <h3 className="mt-4 font-display text-2xl text-white md:text-3xl">Chansons personnalisées</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
+              <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">Chansons personnalisées</h3>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">
                 Des chansons créées sur mesure pour les occasions qui comptent — anniversaires, mariages, hommages et projets personnels.
               </p>
               <Link
                 href="/commander-une-chanson"
-                className="mt-5 inline-flex rounded-xl border border-[rgba(201,117,71,0.16)] bg-white/72 px-6 py-3 text-sm font-semibold text-[color:var(--site-accent-strong)] transition hover:bg-white"
+                className="cta-secondary mt-5 px-6 py-3 text-sm"
               >
                 Commander une chanson →
               </Link>
@@ -191,13 +191,13 @@ export default function AutresServicesPage() {
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/contact"
-              className="rounded-xl bg-brand-warm px-9 py-4 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
+              className="cta-primary px-9 py-4"
             >
               Parler de mon projet
             </Link>
             <Link
               href="/a-propos"
-              className="rounded-xl border border-[rgba(131,97,67,0.12)] bg-white/72 px-9 py-4 font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+              className="cta-secondary px-9 py-4"
             >
               En savoir plus sur Nowis
             </Link>
