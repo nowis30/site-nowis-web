@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShieldCheck, LogOut } from 'lucide-react';
+import { ShieldCheck, LogOut, Menu, X } from 'lucide-react';
 import { ClientMobileBottomNav } from '@/features/client-portal/components/ClientMobileBottomNav';
+import { clientPortalNavigation } from '@/features/client-portal/config/navigation';
 
 interface ClientPortalShellProps {
   session: {
@@ -22,6 +24,24 @@ interface ClientPortalShellProps {
 export function ClientPortalShell({ session, unreadMessages, children }: ClientPortalShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   async function logout() {
     await fetch('/api/client-auth/logout', { method: 'POST' });
@@ -62,6 +82,19 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
           </div>
           {session ? (
             <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:gap-4">
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:border-primary-500/50 hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 md:hidden"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="client-mobile-menu"
+              >
+                <Menu size={16} /> Menu
+              </button>
+              <div className="min-w-0 flex-1 md:hidden">
+                <p className="truncate text-sm font-medium text-white">{session.fullName}</p>
+                <p className="truncate text-xs text-slate-400">{session.email}</p>
+              </div>
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-medium text-white">{session.fullName}</p>
                 <p className="text-xs text-slate-400">{session.email}</p>
@@ -76,17 +109,81 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
             </div>
           ) : null}
         </div>
+        {mobileMenuOpen ? (
+          <div className="md:hidden">
+            <button
+              type="button"
+              aria-label="Fermer le menu client"
+              className="fixed inset-0 z-50 bg-slate-950/75"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div
+              id="client-mobile-menu"
+              className="absolute inset-x-3 top-[calc(100%+0.75rem)] z-[60] overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-950/98 shadow-[0_24px_60px_rgba(2,6,23,0.55)] backdrop-blur"
+            >
+              <div className="flex items-start justify-between gap-4 border-b border-slate-800 px-4 py-4">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-white">{session?.fullName}</p>
+                  <p className="truncate text-xs text-slate-400">{session?.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 text-slate-300 hover:border-primary-500/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60"
+                  aria-label="Fermer le panneau de navigation"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <nav className="grid gap-2 p-3" aria-label="Menu mobile du portail client">
+                {clientPortalNavigation.map(({ href, label, matches }) => {
+                  const isActive = matches(pathname);
+
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      aria-current={isActive ? 'page' : undefined}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={[
+                        'flex items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60',
+                        isActive ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-800 text-slate-200 hover:border-primary-500/40 hover:bg-slate-900/80 hover:text-white',
+                      ].join(' ')}
+                    >
+                      <span>{label}</span>
+                      {href === '/client/messages' && unreadMessages > 0 ? (
+                        <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-slate-950">
+                          {unreadMessages > 99 ? '99+' : unreadMessages}
+                        </span>
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        ) : null}
         <div className="mx-auto hidden max-w-[88rem] px-4 pb-4 md:block md:px-6 lg:px-8">
           <nav className="flex flex-wrap items-center gap-2 pb-1" aria-label="Navigation portail client">
-          <Link href="/client/dashboard" aria-current={pathname === '/client/dashboard' ? 'page' : undefined} className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/dashboard' ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>Tableau de bord</Link>
-          <Link href="/client/messages" aria-current={pathname === '/client/messages' ? 'page' : undefined} className={`inline-flex whitespace-nowrap items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/messages' ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>
-            Messages
-            {unreadMessages > 0 ? <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-slate-950">{unreadMessages}</span> : null}
-          </Link>
-          <Link href="/client/song-requests" aria-current={pathname === '/client/song-requests' || pathname.startsWith('/client/song-requests/') ? 'page' : undefined} className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/song-requests' || pathname.startsWith('/client/song-requests/') ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>Demandes chanson</Link>
-          <Link href="/client/workshops" aria-current={pathname === '/client/workshops' || pathname.startsWith('/client/workshops/') ? 'page' : undefined} className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/workshops' || pathname.startsWith('/client/workshops/') ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>Ateliers</Link>
-          <Link href="/client/documents" aria-current={pathname === '/client/documents' ? 'page' : undefined} className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/documents' ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>Documents</Link>
-          <Link href="/client/appointments" aria-current={pathname === '/client/appointments' ? 'page' : undefined} className={`whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 ${pathname === '/client/appointments' ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white'}`}>Rendez-vous</Link>
+            {clientPortalNavigation.map(({ href, label, matches }) => {
+              const isActive = matches(pathname);
+
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={[
+                    'whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60',
+                    isActive ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white',
+                    href === '/client/messages' ? 'inline-flex items-center gap-2' : '',
+                  ].join(' ')}
+                >
+                  <span>{label}</span>
+                  {href === '/client/messages' && unreadMessages > 0 ? <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-slate-950">{unreadMessages}</span> : null}
+                </Link>
+              );
+            })}
           </nav>
         </div>
       </header>
