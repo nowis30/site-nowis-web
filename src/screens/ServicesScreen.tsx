@@ -24,55 +24,55 @@ interface Service {
 const services: Service[] = [
   {
     id: '1',
-    icon: '👕',
-    title: 'Design T-shirt IA',
-    description: 'Crée un design unique pour ton t-shirt avec l\'intelligence artificielle.',
+    icon: '🎤',
+    title: 'Ateliers et accompagnement créatif',
+    description: 'Animation d atelier, accompagnement et creation sur mesure avec une approche humaine et accessible.',
     features: [
-      'Génération de design personnalisé',
-      'Unlimited revisions',
-      'Fichiers haute résolution',
-      'Support commercial',
+      'Tarif de base universel',
+      'Accompagnement personnalise',
+      'Format individuel ou de groupe',
+      'Base claire avant soumission detaillee',
     ],
-    price: 'À partir de 49€',
+    price: '120 $ / heure',
   },
   {
     id: '2',
     icon: '🎵',
-    title: 'Création Musique (Suno)',
-    description: 'Composition musicale originale et royalty-free générée avec Suno IA.',
+    title: 'Chanson IA souvenir',
+    description: 'Creation d une chanson souvenir ou amusante a partir de vos informations et de votre intention.',
     features: [
-      'Musique originale royalty-free',
-      'Genres variés (pop, rap, ambient...)',
-      'Fichier WAV haute qualité',
-      'Libre d\'utilisation commerciale',
+      'Format simple',
+      'Creation rapide',
+      'Approche personnalisee',
+      'Ideal pour un cadeau ou un souvenir',
     ],
-    price: 'À partir de 79€',
+    price: '25 $',
   },
   {
     id: '3',
     icon: '🎬',
-    title: 'Production Vidéo (Revide.ai)',
-    description: 'Vidéo professionnelle créée avec Revide.ai pour tes besoins marketing.',
+    title: 'Vidéo IA avec chanson',
+    description: 'Video souvenir ou promotionnelle en format simple, accompagnee d une chanson IA adaptee au projet.',
     features: [
-      'Vidéo courte format viral',
-      'Effets visuels IA',
-      'Musique incluse (Suno)',
-      'Optimisée TikTok/Instagram',
+      'Video + chanson',
+      'Format simple',
+      'Livrable facile a partager',
+      'Convient aux souvenirs et contenus courts',
     ],
-    price: 'À partir de 199€',
+    price: '100 $',
   },
   {
     id: '4',
-    icon: '📦',
-    title: 'Package Complet',
-    description: 'Combine T-shirt, musique et vidéo pour une campagne complète.',
+    icon: '✨',
+    title: 'Projet créatif personnalisé',
+    description: 'Mandat special, video IA, reels, shorts, contenu promotionnel ou autre demande creative sur mesure.',
     features: [
-      'Design T-shirt + musique + vidéo',
-      'Coordination créative',
-      'Révisions illimitées',
-      'Support prioritaire',
+      'Sur soumission',
+      'Mandat adapte a l objectif',
+      'Possibilite de formule groupe',
+      'Orientation claire des livrables',
     ],
-    price: 'À partir de 299€',
+    price: 'Sur soumission',
   },
 ];
 
@@ -82,7 +82,7 @@ export const ServicesScreen: React.FC = () => {
       <div className="text-center">
         <SectionTitle
           title="Nos Services"
-          subtitle="Tout ce qu'il te faut pour créer du contenu extraordinaire"
+          subtitle="Une grille simple pour les services visibles et une soumission claire pour les projets speciaux"
         />
       </div>
 
@@ -172,8 +172,7 @@ export const ServicesScreen: React.FC = () => {
               <span className="group-open:rotate-180 transition-transform">▼</span>
             </summary>
             <p className="mt-4 text-slate-300 text-sm">
-              Oui ! Tous nos contenus générés sont sous licence commerciale. Tu peux les utiliser
-              pour ton business sans restriction.
+              Les droits et les usages sont confirmes selon le type de mandat et le livrable retenu. Cela fait partie de la discussion avant la livraison.
             </p>
           </details>
 
@@ -183,7 +182,7 @@ export const ServicesScreen: React.FC = () => {
               <span className="group-open:rotate-180 transition-transform">▼</span>
             </summary>
             <p className="mt-4 text-slate-300 text-sm">
-              En général 5-7 jours ouvrables. Pour les demandes urgentes, contacte-nous.
+              Le delai depend du format choisi et du niveau de personnalisation. Une chanson simple ne demande pas le meme travail qu un mandat video ou promotionnel.
             </p>
           </details>
 
@@ -193,7 +192,7 @@ export const ServicesScreen: React.FC = () => {
               <span className="group-open:rotate-180 transition-transform">▼</span>
             </summary>
             <p className="mt-4 text-slate-300 text-sm">
-              Oui. L’accompagnement peut être ajusté selon le volume, le rythme et les livrables attendus. Le plus simple est d’en discuter directement.
+              Oui. Le tarif de base est de 120 $ / heure, et certains groupes peuvent aussi profiter d une formule a partir de 10 $ par personne selon le projet.
             </p>
           </details>
         </div>

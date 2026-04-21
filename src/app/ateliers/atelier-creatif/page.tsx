@@ -170,7 +170,7 @@ const faqs = [
   },
   {
     q: 'Combien de temps dure l\'activité ?',
-    a: 'La durée de base est d\'environ 90 minutes. Elle peut être prolongée selon le nombre de participants ou l\'intensité de l\'engagement du groupe, pour s\'assurer que chacun vive une expérience complète.',
+    a: 'L atelier peut etre propose en 60 minutes, 90 minutes, 2 heures ou 3 heures. La formule est choisie selon votre groupe et votre contexte, avec une grille simple et affichee clairement.',
   },
 ];
 
@@ -562,17 +562,19 @@ export default function AtelierCreatifPage() {
             </div>
             <div className="space-y-5 text-[1rem] leading-8 text-[color:var(--site-muted)]">
               <p>
-                Le format de base est prévu pour environ{' '}
-                <strong className="text-[color:var(--site-heading)]">90 minutes</strong>. Il peut être ajusté selon le
-                nombre de participants, le rythme du groupe et le contexte.
+                L atelier est offert en{' '}
+                <strong className="text-[color:var(--site-heading)]">60 minutes, 90 minutes, 2 heures ou 3 heures</strong>, selon
+                le rythme du groupe, le cadre de l activite et le niveau d implication souhaite.
               </p>
               <p>
-                Lorsqu'un groupe est plus grand ou particulièrement participatif, l'atelier peut se
-                prolonger naturellement pour offrir une expérience complète et de qualité.
+                La meme logique tarifaire s applique partout : 120 $, 180 $, 240 $ ou 360 $ selon la duree retenue. Pour certains groupes, une formule lancement peut aussi etre offerte a partir de 10 $ par personne.
               </p>
               <ul className="mt-2 space-y-3">
                 {[
-                  'Durée de base : environ 90 minutes',
+                  '60 minutes : 120 $',
+                  '90 minutes : 180 $',
+                  '2 heures : 240 $',
+                  '3 heures : 360 $',
                   'Adaptable selon la taille du groupe',
                   'Aucun équipement spécial requis de votre côté',
                   'En salle de classe, salle communautaire ou autre',
@@ -586,6 +588,33 @@ export default function AtelierCreatifPage() {
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ════════════════ TARIFS ════════════════ */}
+      <section className="mx-auto max-w-5xl px-6 py-12 md:py-16">
+        <div className="glass-panel-soft p-8 md:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">
+            Tarifs
+          </p>
+          <h2 className="mt-4 font-display text-3xl leading-[1.03] text-[color:var(--site-heading)] md:text-4xl">
+            Une grille simple pour reserver l atelier
+          </h2>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              '60 minutes : 120 $',
+              '90 minutes : 180 $',
+              '2 heures : 240 $',
+              '3 heures : 360 $',
+            ].map((item) => (
+              <div key={item} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-4 text-sm font-semibold text-[color:var(--site-heading)]">
+                {item}
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-sm leading-7 text-[color:var(--site-muted)]">
+            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a partir de 10 $ par personne pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
+          </p>
         </div>
       </section>
 

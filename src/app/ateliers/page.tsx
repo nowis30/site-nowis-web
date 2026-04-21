@@ -20,15 +20,15 @@ const faqItems = [
   },
   {
     q: 'Quelle est la durée habituelle ?',
-    a: 'La durée de base est d\'environ 90 minutes. Des formules adaptées — plus courtes ou plus longues — peuvent être discutées selon vos besoins et le cadre de votre activité.',
+    a: 'Les formats affiches sont clairs : 60 minutes, 90 minutes, 2 heures ou 3 heures. Cela permet de choisir une formule adaptee a votre groupe sans ambiguite.',
   },
   {
     q: 'Quel est le coût d\'un atelier ?',
-    a: 'Les ateliers sont offerts sur soumission. Le coût varie selon la durée, le nombre de participants, le déplacement et les besoins spécifiques. Écrivez-nous pour obtenir une soumission personnalisée.',
+    a: 'Les ateliers suivent la grille officielle : 60 minutes = 120 $, 90 minutes = 180 $, 2 heures = 240 $ et 3 heures = 360 $. Pour certains groupes, une formule lancement peut aussi etre offerte a partir de 10 $ par personne.',
   },
   {
     q: 'Est-ce que Nowis Morin se déplace jusqu\'à chez nous ?',
-    a: 'Oui. Les ateliers sont animés en personne dans un rayon d\'environ 150 km autour de Drummondville. Pour un projet en dehors de ce rayon, une soumission spéciale peut être discutée.',
+    a: 'Oui. Les ateliers sont animes en personne dans un rayon d environ 100 km aller-retour autour de Drummondville. Pour un projet en dehors de ce rayon, une soumission speciale peut etre discutee.',
   },
   {
     q: 'Qu\'est-ce que le groupe repart avec ?',
@@ -114,7 +114,7 @@ export default function AteliersPage() {
             Animés en personne par Nowis Morin, les ateliers de création musicale avec l&apos;IA invitent chaque groupe à créer une chanson à partir de ses propres émotions, souvenirs et idées, puis à repartir avec une vidéo souvenir téléchargeable.
           </p>
           <p className="mt-3 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
-            Une formule pensée pour les écoles, les aînés, les organismes et les groupes de Drummondville et partout au Québec. Soumission sur demande selon votre réalité.
+            Une formule pensee pour les ecoles, les aines, les organismes et les groupes de Drummondville et partout au Quebec. Le tarif suit une grille simple : 120 $ pour 60 minutes, 180 $ pour 90 minutes, 240 $ pour 2 heures et 360 $ pour 3 heures.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
@@ -200,7 +200,7 @@ export default function AteliersPage() {
               Comment se déroule un atelier
             </h2>
             <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
-              Environ 90 minutes de création collective, guidée du début à la fin par Nowis Morin.
+              Un format au choix de 60 minutes, 90 minutes, 2 heures ou 3 heures, guide du debut a la fin par Nowis Morin.
             </p>
           </div>
           <div className="mt-10 grid gap-3 md:grid-cols-2">
@@ -257,14 +257,14 @@ export default function AteliersPage() {
             <span className="text-3xl" role="img" aria-hidden="true">⏱️</span>
             <h3 className="mt-4 font-display text-2xl text-white">Durée adaptable</h3>
             <p className="mt-2 text-sm leading-7 text-slate-300">
-              La durée habituelle est d&apos;environ <strong className="text-white">90 minutes</strong>. Des formules plus courtes ou plus longues sont possibles selon le groupe, le milieu et les objectifs visés.
+              Choisissez la formule qui convient a votre groupe : <strong className="text-white">60 minutes a 120 $</strong>, <strong className="text-white">90 minutes a 180 $</strong>, <strong className="text-white">2 heures a 240 $</strong> ou <strong className="text-white">3 heures a 360 $</strong>.
             </p>
           </div>
           <div className="rounded-[2rem] border border-emerald-400/15 bg-emerald-500/[0.06] p-7">
             <span className="text-3xl" role="img" aria-hidden="true">📍</span>
             <h3 className="mt-4 font-display text-2xl text-white">Rayon de déplacement</h3>
             <p className="mt-2 text-sm leading-7 text-slate-300">
-              Les ateliers sont animés en personne dans un rayon d&apos;environ <strong className="text-white">150 km autour de Drummondville</strong>. Pour un projet en dehors de cette zone, une soumission spéciale peut être discutée.
+              Les ateliers sont animes en personne dans un rayon d&apos;environ <strong className="text-white">100 km aller-retour autour de Drummondville</strong>. Pour un projet en dehors de cette zone, une soumission speciale peut etre discutee.
             </p>
           </div>
         </div>
@@ -274,9 +274,24 @@ export default function AteliersPage() {
       <section className="mx-auto max-w-4xl px-6 py-12 md:py-16">
         <div className="glass-panel-soft p-8 text-center md:p-10">
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
-          <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tarification sur soumission</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
-            Le coût d&apos;un atelier dépend de la durée, du nombre de participants, des besoins spécifiques et du déplacement. Écrivez-nous pour obtenir une soumission claire, sans surprise.
+          <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tarifs des ateliers</h2>
+          <div className="mx-auto mt-6 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
+            {[
+              '60 minutes : 120 $',
+              '90 minutes : 180 $',
+              '2 heures : 240 $',
+              '3 heures : 360 $',
+            ].map((item) => (
+              <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-[color:var(--site-heading)]">
+                {item}
+              </div>
+            ))}
+          </div>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-[color:var(--site-muted)]">
+            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a partir de 10 $ par personne pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
+          </p>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[color:var(--site-muted)]">
+            Le deplacement est inclus jusqu a 100 km aller-retour depuis Drummondville. Au-dela, une soumission complementaire peut etre discutee.
           </p>
           <Link
             href="/contact"
@@ -344,7 +359,7 @@ export default function AteliersPage() {
             Offrir un atelier différent, humain et actuel
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
-            Pour un atelier unique dans votre milieu, prenez contact avec Nowis Morin. On discutera ensemble du format, du groupe et des objectifs — et vous obtiendrez une soumission claire.
+            Pour un atelier unique dans votre milieu, prenez contact avec Nowis Morin. On discutera ensemble du format, du groupe et des objectifs, avec une grille deja claire pour partir sur une base simple.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link

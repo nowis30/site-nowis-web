@@ -81,7 +81,7 @@ export default function AutresServicesPage() {
             jeux interactifs, accompagnement d&apos;artistes, vidéos créatives et projets sur mesure. Tout ce qui croise musique, IA et création humaine.
           </p>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--site-soft)]">
-            Chaque demande se discute sur soumission, selon le public, le format et le niveau d accompagnement recherché.
+            Tarif de base universel : 120 $ / heure. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
@@ -135,9 +135,9 @@ export default function AutresServicesPage() {
       <section className="mx-auto max-w-4xl px-6 py-12 md:py-16">
         <div className="glass-panel-soft p-8 text-center md:p-10">
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
-          <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tous les projets sont sur soumission</h2>
+          <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tarification claire selon le type de mandat</h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
-            Chaque projet est unique. Il n&apos;y a pas de grille de prix fixe — on discute ensemble de vos besoins et je vous propose une soumission claire et adaptée à votre réalité.
+            Le tarif de base est de 120 $ / heure pour l accompagnement et les mandats qui suivent une logique horaire. Les projets speciaux et les productions plus complexes sont etablis sur soumission, selon les livrables et le contexte.
           </p>
           <Link
             href="/contact"

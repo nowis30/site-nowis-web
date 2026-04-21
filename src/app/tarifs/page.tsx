@@ -13,72 +13,68 @@ export const metadata = buildMetadata({
 
 const ateliers = [
   {
-    name: 'Atelier express',
-    duree: '60 min',
-    lancement: '180 $',
-    regulier: '225 $',
-    desc: 'Découverte rapide du processus créatif et création simple en groupe.',
+    name: 'Atelier 60 minutes',
+    duree: '60 minutes',
+    tarif: '120 $',
+    desc: 'Format direct pour initier un groupe a la creation musicale avec l IA et produire un premier resultat concret.',
     accent: false,
   },
   {
-    name: 'Atelier découverte',
-    duree: '90 min',
-    lancement: '250 $',
-    regulier: '325 $',
-    desc: 'Création d\'une chanson à partir d\'idées, de souvenirs, d\'émotions ou d\'un thème choisi.',
+    name: 'Atelier 90 minutes',
+    duree: '90 minutes',
+    tarif: '180 $',
+    desc: 'Formule la plus frequente pour aller plus loin dans les idees, les paroles et la mise en chanson.',
     accent: false,
   },
   {
-    name: 'Atelier créatif',
-    duree: '2 h',
-    lancement: '325 $',
-    regulier: '425 $',
-    desc: 'Formule plus complète avec accompagnement dans les idées, les paroles et la mise en chanson.',
+    name: 'Atelier 2 heures',
+    duree: '2 heures',
+    tarif: '240 $',
+    desc: 'Atelier approfondi pour laisser plus de place a la participation, a l expression et au raffinement du resultat.',
     accent: true,
   },
   {
-    name: 'Atelier immersif',
-    duree: '3 h',
-    lancement: '450 $',
-    regulier: '575 $',
-    desc: 'Expérience approfondie permettant une création collective plus marquante et plus développée.',
+    name: 'Atelier 3 heures',
+    duree: '3 heures',
+    tarif: '360 $',
+    desc: 'Experience immersive pour les groupes qui veulent une demarche plus complete ou un moment fort sur mesure.',
     accent: false,
   },
 ];
 
 const servicesPersonnalises = [
   {
-    name: 'Accompagnement individuel',
+    name: 'Tarif de base universel',
     tarif: '120 $ / heure',
     conditions: 'Minimum 1 heure',
-    desc: 'Création de chanson, accompagnement créatif, projet personnel ou assistance sur mesure.',
+    desc: 'Pour l accompagnement creatif, les mandats ponctuels et les besoins personnalises qui suivent la meme base horaire.',
   },
   {
-    name: 'Projet personnalisé',
-    tarif: '120 $ / heure',
+    name: 'Tarification sur demande',
+    tarif: 'Sur soumission',
     conditions: 'Selon mandat',
-    desc: 'Vidéo IA, reel, short, publicité, concept créatif ou demande spéciale.',
+    desc: 'Pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.',
   },
 ];
 
 const produits = [
   {
     name: 'Chanson IA souvenir',
-    prix: '25 $',
+    tarif: '25 $',
     format: 'Simple',
-    desc: 'Création d\'une chanson amusante ou souvenir à partir des informations fournies.',
+    desc: 'Creation d une chanson amusante ou souvenir a partir des informations fournies.',
   },
   {
     name: 'Vidéo IA avec chanson',
-    prix: '100 $',
+    tarif: '100 $',
     format: 'Standard',
-    desc: 'Vidéo souvenir ou amusante avec chanson IA, en format simple.',
+    desc: 'Video souvenir ou amusante avec chanson IA, en format simple.',
   },
   {
     name: 'Projet spécial',
-    prix: 'Sur soumission',
+    tarif: 'Sur soumission',
     format: 'Personnalisé',
-    desc: 'Fêtes d\'enfants, événements, projets promotionnels ou demandes particulières.',
+    desc: 'Fetes d enfants, evenements, projets promotionnels ou demandes particulieres.',
   },
 ];
 
@@ -91,10 +87,10 @@ const inclus = [
 ];
 
 const preferentiels = [
-  { clientele: 'Résidences pour aînés', note: 'Tarif préférentiel possible selon le contexte' },
-  { clientele: 'Écoles', note: 'Tarif préférentiel possible selon le projet' },
-  { clientele: 'Organismes communautaires', note: 'Tarif préférentiel possible selon les besoins' },
-  { clientele: 'Projets pilotes', note: 'Rabais possible pendant les 3 premiers mois' },
+  { clientele: 'Ecoles', note: 'Formule groupe possible a partir de 10 $ par personne selon le projet' },
+  { clientele: 'Maisons des jeunes', note: 'Option groupe disponible pour les activites collectives et les series d ateliers' },
+  { clientele: 'Residences pour aines', note: 'Tarification adaptee possible selon le contexte et le nombre de participants' },
+  { clientele: 'Organismes et groupes prives', note: 'Formule lancement de groupe disponible pour certains mandats' },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -120,16 +116,18 @@ export default function TarifsPage() {
             Tarifs — Création Nowis
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-            Des repères clairs pour comprendre les formules proposées par Nowis Morin. La soumission finale est toujours ajustée selon le groupe, le contexte, le déplacement et le niveau d accompagnement attendu.
+            La grille officielle de Creation Nowis est maintenant simple et coherente partout sur le site. Le tarif de base universel est de 120 $ / heure, les ateliers suivent exactement cette meme logique horaire et certaines activites de groupe peuvent aussi etre offertes a partir de 10 $ par personne.
+          </p>
+          <p className="mt-4 inline-flex rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200">
+            Tarif de base : 120 $ / heure
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <a
-              href="/tarifs-creation-nowis.pdf"
-              download
-              className="cta-primary w-full justify-center gap-2 px-7 py-4 sm:w-auto"
+            <Link
+              href="/ateliers/demande"
+              className="cta-primary w-full justify-center px-7 py-4 sm:w-auto"
             >
-              <span>⬇</span> Télécharger la grille PDF
-            </a>
+              Demander un atelier
+            </Link>
             <Link
               href="/contact"
               className="cta-secondary w-full justify-center px-7 py-4 sm:w-auto"
@@ -138,7 +136,7 @@ export default function TarifsPage() {
             </Link>
           </div>
           <p className="mt-5 text-sm text-[color:var(--site-soft)]">
-            Les montants affichés servent de base de discussion. La soumission confirmée dépend toujours du projet réel.
+            Taxes en sus si applicables. Le deplacement est inclus jusqu a 100 km aller-retour depuis Drummondville.
           </p>
         </div>
       </section>
@@ -151,7 +149,7 @@ export default function TarifsPage() {
             Formules d&apos;ateliers
           </h2>
           <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
-            Animés en personne, dans un rayon de 100 km aller-retour depuis Drummondville (déplacement inclus).
+            Meme logique tarifaire partout : 60 minutes = 120 $, 90 minutes = 180 $, 2 heures = 240 $ et 3 heures = 360 $. Deplacement inclus jusqu a 100 km aller-retour depuis Drummondville.
           </p>
 
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -172,15 +170,9 @@ export default function TarifsPage() {
                 <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{a.name}</h3>
                 <span className="mt-1 text-sm font-medium text-[color:var(--site-soft)]">{a.duree}</span>
                 <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{a.desc}</p>
-                <div className="mt-5 space-y-2 border-t border-white/10 pt-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Lancement</span>
-                    <span className="text-lg font-bold text-amber-200">{a.lancement}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-[color:var(--site-soft)]">Régulier</span>
-                    <span className="text-sm text-[color:var(--site-soft)] line-through">{a.regulier}</span>
-                  </div>
+                <div className="mt-5 border-t border-white/10 pt-4">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Tarif</span>
+                  <p className="mt-1 text-2xl font-bold text-amber-200">{a.tarif}</p>
                 </div>
               </article>
             ))}
@@ -221,7 +213,9 @@ export default function TarifsPage() {
             {servicesPersonnalises.map((s) => (
               <article key={s.name} className="brand-card p-7">
                 <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
-                  <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{s.name}</h3>
+                  <div>
+                    <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{s.name}</h3>
+                  </div>
                   <span className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-sm font-bold text-primary-200">
                     {s.tarif}
                   </span>
@@ -246,7 +240,10 @@ export default function TarifsPage() {
               <h3 className="font-display text-2xl text-amber-100">{p.name}</h3>
               <span className="mt-1 text-xs font-semibold text-[color:var(--site-soft)]">{p.format}</span>
               <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{p.desc}</p>
-              <span className="mt-5 block text-2xl font-bold text-amber-200">{p.prix}</span>
+              <div className="mt-5 space-y-1">
+                <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Tarif</span>
+                <span className="block text-2xl font-bold text-amber-200">{p.tarif}</span>
+              </div>
             </article>
           ))}
         </div>
@@ -258,8 +255,8 @@ export default function TarifsPage() {
 
           {/* Préférentiels */}
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Tarifs préférentiels</p>
-            <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Certains milieux bénéficient d&apos;un tarif adapté</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Formule groupe disponible</p>
+            <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Certaines activites peuvent aussi etre offertes a partir de 10 $ par personne</h2>
             <div className="mt-6 space-y-3">
               {preferentiels.map((pref) => (
                 <div key={pref.clientele} className="glass-panel-soft flex gap-3 rounded-xl p-4">
@@ -271,6 +268,9 @@ export default function TarifsPage() {
                 </div>
               ))}
             </div>
+            <p className="mt-5 text-sm leading-7 text-[color:var(--site-muted)]">
+              Ideal pour : ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
+            </p>
           </div>
 
           {/* Déplacement */}
@@ -307,38 +307,32 @@ export default function TarifsPage() {
             <thead>
               <tr className="border-b border-[rgba(131,97,67,0.12)] bg-[rgba(255,250,244,0.82)]">
                 <th className="px-5 py-4 text-left font-semibold text-[color:var(--site-heading)]">Service</th>
-                <th className="px-5 py-4 text-right font-semibold text-amber-300">Lancement</th>
-                <th className="px-5 py-4 text-right font-semibold text-[color:var(--site-soft)]">Régulier</th>
+                <th className="px-5 py-4 text-right font-semibold text-amber-300">Tarif</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(131,97,67,0.08)]">
               {[
-                { service: 'Atelier express — 60 min', lancement: '180 $', regulier: '225 $' },
-                { service: 'Atelier découverte — 90 min', lancement: '250 $', regulier: '325 $' },
-                { service: 'Atelier créatif — 2 h', lancement: '325 $', regulier: '425 $' },
-                { service: 'Atelier immersif — 3 h', lancement: '450 $', regulier: '575 $' },
-                { service: 'Accompagnement individuel', lancement: '120 $ / h', regulier: '120 $ / h' },
-                { service: 'Chanson IA souvenir', lancement: '25 $', regulier: '25 $' },
-                { service: 'Vidéo IA avec chanson', lancement: '100 $', regulier: '100 $' },
+                { service: 'Atelier 60 minutes', tarif: '120 $' },
+                { service: 'Atelier 90 minutes', tarif: '180 $' },
+                { service: 'Atelier 2 heures', tarif: '240 $' },
+                { service: 'Atelier 3 heures', tarif: '360 $' },
+                { service: 'Tarif de base universel', tarif: '120 $ / heure' },
+                { service: 'Formule groupe', tarif: 'A partir de 10 $ / personne' },
+                { service: 'Chanson IA souvenir', tarif: '25 $' },
+                { service: 'Video IA avec chanson', tarif: '100 $' },
+                { service: 'Projet special', tarif: 'Sur soumission' },
               ].map((row, i) => (
                 <tr key={row.service} className={i % 2 === 0 ? 'bg-transparent' : 'bg-[rgba(255,248,241,0.72)]'}>
                   <td className="px-5 py-3.5 text-[color:var(--site-heading)]">{row.service}</td>
-                  <td className="px-5 py-3.5 text-right font-semibold text-amber-200">{row.lancement}</td>
-                  <td className="px-5 py-3.5 text-right text-[color:var(--site-soft)]">{row.regulier}</td>
+                  <td className="px-5 py-3.5 text-right font-semibold text-amber-200">{row.tarif}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div className="mt-6 flex flex-wrap gap-4">
-          <a
-            href="/tarifs-creation-nowis.pdf"
-            download
-            className="cta-secondary gap-2 px-6 py-3.5"
-          >
-            <span>⬇</span> Télécharger la grille complète (PDF)
-          </a>
-        </div>
+        <p className="mt-4 text-sm text-[color:var(--site-muted)]">
+          Tarification sur demande pour : projets speciaux, mandats creatifs personnalises, videos IA, reels, shorts et contenu promotionnel.
+        </p>
       </section>
 
       {/* ── CTA FINAL ── */}
