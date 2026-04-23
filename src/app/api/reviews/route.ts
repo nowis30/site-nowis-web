@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       name: true,
+      email: true,
       rating: true,
       comment: true,
       context: true,
@@ -40,10 +41,13 @@ export async function POST(request: NextRequest) {
     return applyCorsHeaders(NextResponse.json({ error: 'La note doit être entre 1 et 5.' }, { status: 400 }), request);
   }
 
-  const normalizedEmail =
-    typeof email === 'string' && email.trim().length > 0 ? email.trim().toLowerCase() : null;
+  if (!email || typeof email !== 'string' || email.trim().length === 0) {
+    return applyCorsHeaders(NextResponse.json({ error: 'L email est requis.' }, { status: 400 }), request);
+  }
 
-  if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
     return applyCorsHeaders(NextResponse.json({ error: 'Email invalide.' }, { status: 400 }), request);
   }
 

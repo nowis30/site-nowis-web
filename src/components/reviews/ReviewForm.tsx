@@ -75,7 +75,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
     >
       <h3 className="font-display text-2xl text-[color:var(--site-heading)]">Laisser un avis</h3>
       <p className="mt-1 text-sm text-[color:var(--site-muted)]">
-        Ton témoignage sera visible sur le site après validation.
+        Ton commentaire sera visible sur le site après validation, avec ton nom, ton email et ta note.
       </p>
 
       {/* Étoiles */}
@@ -103,7 +103,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="review-name" className="mb-1.5 block text-sm font-medium text-[color:var(--site-text)]">
-            Ton prénom *
+            Ton nom *
           </label>
           <input
             id="review-name"
@@ -111,17 +111,18 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Marie"
+            placeholder="Marie Tremblay"
             className="w-full rounded-xl border border-[color:var(--site-border)] bg-white/85 px-4 py-2.5 text-[color:var(--site-heading)] placeholder-[color:var(--site-muted)] focus:border-primary-400 focus:outline-none"
           />
         </div>
         <div>
           <label htmlFor="review-email" className="mb-1.5 block text-sm font-medium text-[color:var(--site-text)]">
-            Email <span className="text-[color:var(--site-muted)]">(facultatif)</span>
+            Email *
           </label>
           <input
             id="review-email"
             type="email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="marie@exemple.com"
@@ -129,6 +130,10 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
           />
         </div>
       </div>
+
+      <p className="mt-3 text-xs leading-6 text-[color:var(--site-soft)]">
+        En envoyant ton avis, tu acceptes que ton nom, ton email et ta note soient affichés après validation.
+      </p>
 
       <div className="mt-4">
         <label htmlFor="review-context" className="mb-1.5 block text-sm font-medium text-[color:var(--site-text)]">

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 import { HomepageMediaShowcase, type HomepageMediaItem } from '@/components/marketing/HomepageMediaShowcase';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 import { getYouTubeThumbnailUrl } from '@/lib/seo';
 
@@ -449,14 +450,19 @@ export const HomeScreen = async () => {
       <section className="section-warm px-6 py-16 md:py-20">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Témoignages</p>
-            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Ce que l’expérience laisse vraiment</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Commentaires visiteurs</p>
+            <h2 className="mt-4 font-display text-4xl leading-[1.05] text-white md:text-5xl">Ce que les visiteurs disent après leur expérience</h2>
             <p className="mt-4 text-[1rem] leading-8 text-slate-300">
-              Des retours vrais, laissés par des personnes qui ont vécu un atelier, une chanson ou une création avec Nowis Morin.
+              Les visiteurs peuvent laisser leur commentaire directement sur le site avec leur nom, leur email et une note sur 5 étoiles. Chaque avis est validé avant publication.
             </p>
           </div>
-          <div className="mt-10">
-            <ReviewsSection />
+          <div className="mt-10 grid gap-8 xl:grid-cols-[1.2fr_0.8fr] xl:items-start">
+            <div>
+              <ReviewsSection />
+            </div>
+            <div className="xl:sticky xl:top-36">
+              <ReviewForm />
+            </div>
           </div>
         </div>
       </section>
