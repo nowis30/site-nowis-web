@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 import { HomepageMediaShowcase, type HomepageMediaItem } from '@/components/marketing/HomepageMediaShowcase';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 import { getYouTubeThumbnailUrl } from '@/lib/seo';
@@ -166,6 +167,8 @@ export const HomeScreen = async () => {
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--site-muted)] md:text-xl">
               Nowis Morin transforme la musique, les souvenirs et l’intelligence artificielle en expériences simples, humaines et marquantes. Le visiteur comprend vite ce qu’il peut vivre, offrir ou demander.
             </p>
+
+            <LaunchOfferBanner variant="hero" />
 
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <Link
