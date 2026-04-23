@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { applyCorsHeaders, buildCorsPreflightResponse } from '@/lib/cors';
+import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { getCrmSessionFromCookieHeader } from '@/features/crm/auth/session';
+
+function getVerifiedSessionEmail(request: NextRequest) {
+  const cookieHeader = request.headers.get('cookie') ?? undefined;
+  const clientSession = getClientPortalSessionFromCookieHeader(cookieHeader);
+
+  if (clientSession?.email) {
+    return clientSession.email.trim().toLowerCase();
+  }
+
+  const crmSession = getCrmSessionFromCookieHeader(cookieHeader);
+  if (crmSession?.email) {
+    return crmSession.email.trim().toLowerCase();
+  }
+
+  return null;
+}
 
 export async function GET(request: NextRequest) {
   const reviews = await prisma.review.findMany({
@@ -46,6 +64,8 @@ export async function POST(request: NextRequest) {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
+  const verifiedSessionEmail = getVerifiedSessionEmail(request);
+  const publishedImmediately = verifiedSessionEmail === normalizedEmail;
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
     return applyCorsHeaders(NextResponse.json({ error: 'Email invalide.' }, { status: 400 }), request);
@@ -58,11 +78,11 @@ export async function POST(request: NextRequest) {
       rating: parsedRating,
       comment: comment.trim(),
       context: typeof context === 'string' && context.trim().length > 0 ? context.trim() : null,
-      status: 'pending',
+      status: publishedImmediately ? 'approved' : 'pending',
     },
   });
 
-  return applyCorsHeaders(NextResponse.json({ success: true }, { status: 201 }), request, {
+  return applyCorsHeaders(NextResponse.json({ success: true, publishedImmediately }, { status: 201 }), request, {
     methods: 'GET, POST, OPTIONS',
     headers: 'Content-Type, Authorization',
     credentials: false,

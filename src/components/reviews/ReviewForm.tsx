@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const CONTEXTS = [
   'Chanson personnalisée',
@@ -11,6 +12,7 @@ const CONTEXTS = [
 ];
 
 export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
+  const router = useRouter();
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [name, setName] = useState('');
@@ -19,6 +21,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
   const [context, setContext] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [publishedImmediately, setPublishedImmediately] = useState(false);
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
@@ -44,7 +47,14 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
         return;
       }
 
+      const data = await res.json();
+      const wasPublishedImmediately = Boolean(data.publishedImmediately);
+
+      setPublishedImmediately(wasPublishedImmediately);
       setSubmitted(true);
+      if (wasPublishedImmediately) {
+        router.refresh();
+      }
       onSuccess?.();
     } catch {
       setError('Impossible d\'envoyer l\'avis. Réessayez plus tard.');
@@ -59,7 +69,9 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
         <div className="text-4xl">⭐</div>
         <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)]">Merci pour ton avis !</h3>
         <p className="mt-2 text-[color:var(--site-text)]">
-          Ton témoignage sera publié après validation. Je l'apprécie vraiment.
+          {publishedImmediately
+            ? 'Ton témoignage est publié tout de suite parce que ton adresse email a été reconnue comme vérifiée.'
+            : 'Ton témoignage sera publié après validation. Je l\'apprécie vraiment.'}
         </p>
       </div>
     );
@@ -74,7 +86,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
     >
       <h3 className="font-display text-2xl text-[color:var(--site-heading)]">Laisser un avis</h3>
       <p className="mt-1 text-sm text-[color:var(--site-muted)]">
-        Ton commentaire sera visible sur le site après validation, avec ton nom, ton email et ta note.
+        Ton commentaire sera visible sur le site après validation. Si ton email correspond à une session déjà vérifiée, il peut être publié immédiatement.
       </p>
 
       {/* Étoiles */}
@@ -131,7 +143,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
       </div>
 
       <p className="mt-3 text-xs leading-6 text-[color:var(--site-soft)]">
-        En envoyant ton avis, tu acceptes que ton nom, ton email et ta note soient affichés après validation.
+        En envoyant ton avis, tu acceptes que ton nom, ton email et ta note soient affichés sur le site après validation ou publication immédiate si ton email est déjà vérifié.
       </p>
 
       <div className="mt-4">
