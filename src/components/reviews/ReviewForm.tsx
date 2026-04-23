@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { toPublicApiUrl } from '@/lib/public-api-url';
 
 const CONTEXTS = [
   'Chanson personnalisée',
@@ -33,7 +32,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
 
     setSubmitting(true);
     try {
-      const res = await fetch(toPublicApiUrl('/api/reviews'), {
+      const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, rating, comment, context }),
