@@ -122,41 +122,45 @@ export async function GET(request: NextRequest) {
       return redirectWithGoogleCleanup(request, 'google-email-invalid', nextPath);
     }
 
-    const result = await prisma.$transaction(async (tx) => {
-      let oauthTableMissing = false;
-      let linkedAccount: {
+    // Probe the OAuth table BEFORE starting a transaction.
+    // Inside a Postgres transaction, any thrown error puts the transaction in
+    // "aborted" state — subsequent queries fail even if the error was caught in JS.
+    let oauthTableMissing = false;
+    let linkedAccount: {
+      id: string;
+      user: {
         id: string;
-        user: {
-          id: string;
-          role: UserRole;
-          isActive: boolean;
-          contact: { id: string; fullName: string; email: string | null; tags: string[]; source: string | null } | null;
-        };
-      } | null = null;
+        role: UserRole;
+        isActive: boolean;
+        contact: { id: string; fullName: string; email: string | null; tags: string[]; source: string | null } | null;
+      };
+    } | null = null;
 
-      try {
-        linkedAccount = await tx.clientOAuthAccount.findUnique({
-          where: {
-            provider_providerAccountId: {
-              provider: 'google',
-              providerAccountId,
+    try {
+      linkedAccount = await prisma.clientOAuthAccount.findUnique({
+        where: {
+          provider_providerAccountId: {
+            provider: 'google',
+            providerAccountId,
+          },
+        },
+        include: {
+          user: {
+            include: {
+              contact: true,
             },
           },
-          include: {
-            user: {
-              include: {
-                contact: true,
-              },
-            },
-          },
-        });
-      } catch (error) {
-        if (isMissingOauthTableError(error)) {
-          oauthTableMissing = true;
-        } else {
-          throw error;
-        }
+        },
+      });
+    } catch (error) {
+      if (isMissingOauthTableError(error)) {
+        oauthTableMissing = true;
+      } else {
+        throw error;
       }
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
 
       if (linkedAccount) {
         const linkedUser = linkedAccount.user;
@@ -288,15 +292,19 @@ export async function GET(request: NextRequest) {
           include: { contact: true },
         });
 
-        await tx.activity.create({
-          data: {
-            type: 'FORM',
-            title: 'Client inscrit via Google',
-            description: `Inscription gratuite via Google: ${fullName} (${email}).`,
-            contactId: contact.id,
-            userId: user.id,
-          },
-        });
+        try {
+          await tx.activity.create({
+            data: {
+              type: 'FORM',
+              title: 'Client inscrit via Google',
+              description: `Inscription gratuite via Google: ${fullName} (${email}).`,
+              contactId: contact.id,
+              userId: user.id,
+            },
+          });
+        } catch {
+          // Non-critical: skip activity logging if table is missing or fails
+        }
       } else {
         if (!contact) {
           const existingContact = await tx.contact.findFirst({
