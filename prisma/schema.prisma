@@ -134,7 +134,46 @@ enum WorkshopFormat {
   HYBRID
 }
 
+enum WorkshopRequestType {
+  ORGANIZATION
+  CLIENT
+}
+
+enum WorkshopDeliveryFormat {
+  SUR_PLACE
+  EN_LIGNE
+  A_DETERMINER
+}
+
+enum WorkshopTargetAudience {
+  PERSONNES_AGEES
+  JEUNES
+  ADULTES
+  FAMILLE
+  ORGANISME
+  AUTRE
+}
+
+enum WorkshopDurationPreset {
+  M60
+  M90
+  M120
+  PERSONNALISE
+}
+
+enum WorkshopPricingMode {
+  HORAIRE
+  PAR_PERSONNE
+  PERSONNALISE
+}
+
 enum WorkshopRequestStatus {
+  BROUILLON
+  EN_ATTENTE_RDV
+  RDV_PLANIFIE
+  CONFIRME
+  TERMINE
+  ANNULE
   NEW
   CONTACTED
   SCHEDULED
@@ -230,6 +269,7 @@ model Contact {
   songRequests    SongRequest[]
   organizationLinks OrganizationContact[]
   workshopRequests WorkshopRequest[]
+  workshopClientRequests WorkshopRequest[] @relation("WorkshopRequestClient")
   workshopAppointments WorkshopAppointment[]
   outboundEmails  OutboundEmail[]
   userAccount     User?
@@ -285,10 +325,33 @@ model OrganizationContact {
 
 model WorkshopRequest {
   id                    String                 @id @default(uuid()) @db.Uuid
-  organizationId        String                 @db.Uuid
+  organizationId        String?                @db.Uuid
   contactId             String?                @db.Uuid
+  clientId              String?                @db.Uuid
   organizationContactId String?                @db.Uuid
   title                 String
+  workshopType          WorkshopRequestType    @default(ORGANIZATION)
+  organizationName      String?
+  contactPerson         String?
+  contactPhone          String?
+  contactEmail          String?
+  addressOrLocation     String?
+  deliveryFormat        WorkshopDeliveryFormat @default(A_DETERMINER)
+  participantEstimate   Int?
+  targetAudience        WorkshopTargetAudience @default(AUTRE)
+  durationPreset        WorkshopDurationPreset @default(M90)
+  durationCustomMinutes Int?
+  pricingMode           WorkshopPricingMode    @default(HORAIRE)
+  basePrice             Decimal?               @db.Decimal(10, 2)
+  discountPercent       Decimal?               @db.Decimal(5, 2)
+  finalPrice            Decimal?               @db.Decimal(10, 2)
+  internalNotes         String?
+  clientNotes           String?
+  calendlyEventUri      String?
+  calendlyInviteeUri    String?
+  calendlyUrl           String?
+  scheduledAt           DateTime?
+  clientAccessToken     String?                @unique
   audienceType          WorkshopAudienceType   @default(MIXED)
   ageRange              String?
   estimatedParticipants Int?
@@ -304,14 +367,17 @@ model WorkshopRequest {
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
 
-  organization          Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization          Organization?          @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   contact               Contact?               @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  client                Contact?               @relation("WorkshopRequestClient", fields: [clientId], references: [id], onDelete: SetNull)
   organizationContact   OrganizationContact?   @relation(fields: [organizationContactId], references: [id], onDelete: SetNull)
   appointments          WorkshopAppointment[]
 
   @@index([organizationId])
   @@index([contactId])
+  @@index([clientId])
   @@index([status])
+  @@index([clientAccessToken])
   @@map("workshop_requests")
 }
 

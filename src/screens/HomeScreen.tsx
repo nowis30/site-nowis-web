@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LAUNCH_DISCOUNT_PERCENT, LAUNCH_END_LABEL } from '@/data/pricing';
+import { ReviewsSection } from '@/components/reviews/ReviewsSection';
 
 const offers = [
   {
@@ -110,6 +111,26 @@ export const HomeScreen = async () => {
               {tag}
             </span>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-12 md:py-14">
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-4xl text-[color:var(--site-heading)] md:text-5xl">Commentaires</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--site-muted)]">
+              Des avis publiés par les personnes qui ont déjà vécu l'expérience Création Nowis.
+            </p>
+          </div>
+          <Link href="/contact" className="cta-secondary hidden px-5 py-3 text-sm md:inline-flex">
+            Laisser un commentaire
+          </Link>
+        </div>
+        <ReviewsSection />
+        <div className="mt-6 md:hidden">
+          <Link href="/contact" className="cta-secondary w-full justify-center px-5 py-3 text-sm">
+            Laisser un commentaire
+          </Link>
         </div>
       </section>
 

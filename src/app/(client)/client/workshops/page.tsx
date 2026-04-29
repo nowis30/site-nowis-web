@@ -26,7 +26,8 @@ export default async function ClientWorkshopsPage() {
     requestedDate: Date | null;
     requestedTime: string | null;
     format: string;
-    organization: { name: string };
+    organization: { name: string } | null;
+    organizationName: string | null;
     appointments: Array<{ id: string; title: string; startAt: Date; status: string; location: string | null }>;
   }>;
 
@@ -79,7 +80,7 @@ export default async function ClientWorkshopsPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-white">{request.title}</p>
-                    <p className="mt-1 text-sm text-slate-300">{request.organization.name} · {request.workshopTheme}</p>
+                    <p className="mt-1 text-sm text-slate-300">{request.organization?.name || request.organizationName || 'Atelier'} · {request.workshopTheme}</p>
                   </div>
                   <StatusBadge label={request.status} tone={request.status === 'COMPLETED' ? 'success' : request.status === 'CANCELLED' ? 'danger' : 'info'} />
                 </div>

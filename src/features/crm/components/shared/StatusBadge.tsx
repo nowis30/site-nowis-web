@@ -63,6 +63,12 @@ const statusMap: Record<string, { label: string; color: string }> = {
   CONTACTED: { label: 'Contactée', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
   SCHEDULED: { label: 'Planifiée', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },
   COMPLETED: { label: 'Terminée', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
+  BROUILLON: { label: 'Brouillon', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
+  EN_ATTENTE_RDV: { label: 'En attente RDV', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },
+  RDV_PLANIFIE: { label: 'RDV planifié', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },
+  CONFIRME: { label: 'Confirmé', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
+  TERMINE: { label: 'Terminé', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
+  ANNULE: { label: 'Annulé', color: 'bg-red-500/20 text-red-200 border-red-400/30' },
 
   // Task
   TODO: { label: 'À faire', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
@@ -88,6 +94,17 @@ const statusMap: Record<string, { label: string; color: string }> = {
   INBOUND: { label: 'Entrant', color: 'bg-green-500/20 text-green-200 border-green-400/30' },
   OUTBOUND: { label: 'Sortant', color: 'bg-orange-500/20 text-orange-200 border-orange-400/30' },
   WORKSHOP: { label: 'Atelier', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },
+  PERSONNES_AGEES: { label: 'Personnes âgées', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },
+  JEUNES: { label: 'Jeunes', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
+  ADULTES: { label: 'Adultes', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
+  FAMILLE: { label: 'Famille', color: 'bg-fuchsia-500/20 text-fuchsia-200 border-fuchsia-400/30' },
+  ORGANISME: { label: 'Organisme', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },
+  SUR_PLACE: { label: 'Sur place', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
+  EN_LIGNE: { label: 'En ligne', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
+  A_DETERMINER: { label: 'À déterminer', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
+  HORAIRE: { label: 'Horaire', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
+  PAR_PERSONNE: { label: 'Par personne', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },
+  PERSONNALISE: { label: 'Personnalisé', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },
 };
 
 export function StatusBadge({ value }: StatusBadgeProps) {

@@ -4,7 +4,13 @@ export const organizationTypeSchema = z.enum(['SCHOOL', 'COMMUNITY_ORG', 'DAYCAR
 export const organizationStatusSchema = z.enum(['ACTIVE', 'LEAD', 'INACTIVE']);
 export const workshopAudienceTypeSchema = z.enum(['PRESCHOOL', 'ELEMENTARY', 'TEENS', 'MIXED']);
 export const workshopFormatSchema = z.enum(['IN_PERSON', 'VIRTUAL', 'HYBRID']);
+export const workshopRequestTypeSchema = z.enum(['ORGANIZATION', 'CLIENT']);
+export const workshopDeliveryFormatSchema = z.enum(['SUR_PLACE', 'EN_LIGNE', 'A_DETERMINER']);
+export const workshopTargetAudienceSchema = z.enum(['PERSONNES_AGEES', 'JEUNES', 'ADULTES', 'FAMILLE', 'ORGANISME', 'AUTRE']);
+export const workshopDurationPresetSchema = z.enum(['M60', 'M90', 'M120', 'PERSONNALISE']);
+export const workshopPricingModeSchema = z.enum(['HORAIRE', 'PAR_PERSONNE', 'PERSONNALISE']);
 export const workshopRequestStatusSchema = z.enum(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED']);
+export const workshopAtelierStatusSchema = z.enum(['BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE']);
 export const workshopAppointmentStatusSchema = z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE']);
 
 export const workshopRequestFormSchema = z.object({
@@ -40,10 +46,32 @@ export const organizationInputSchema = z.object({
 });
 
 export const workshopRequestInputSchema = z.object({
-  organizationId: z.string().uuid('Organisation invalide'),
+  organizationId: z.string().uuid('Organisation invalide').optional().or(z.literal('')),
   contactId: z.string().uuid().optional().or(z.literal('')),
+  clientId: z.string().uuid().optional().or(z.literal('')),
   organizationContactId: z.string().uuid().optional().or(z.literal('')),
+  workshopType: workshopRequestTypeSchema.default('ORGANIZATION'),
   title: z.string().trim().min(3).max(180),
+  organizationName: z.string().trim().max(160).optional().or(z.literal('')),
+  contactPerson: z.string().trim().max(160).optional().or(z.literal('')),
+  contactPhone: z.string().trim().max(40).optional().or(z.literal('')),
+  contactEmail: z.string().trim().toLowerCase().email().optional().or(z.literal('')),
+  addressOrLocation: z.string().trim().max(240).optional().or(z.literal('')),
+  deliveryFormat: workshopDeliveryFormatSchema.default('A_DETERMINER'),
+  participantEstimate: z.coerce.number().int().min(1).max(5000).optional(),
+  targetAudience: workshopTargetAudienceSchema.default('AUTRE'),
+  durationPreset: workshopDurationPresetSchema.default('M90'),
+  durationCustomMinutes: z.coerce.number().int().min(1).max(1440).optional(),
+  pricingMode: workshopPricingModeSchema.default('HORAIRE'),
+  basePrice: z.coerce.number().min(0).max(999999).optional(),
+  discountPercent: z.coerce.number().min(0).max(100).optional(),
+  finalPrice: z.coerce.number().min(0).max(999999).optional(),
+  internalNotes: z.string().trim().max(4000).optional().or(z.literal('')),
+  clientNotes: z.string().trim().max(4000).optional().or(z.literal('')),
+  calendlyEventUri: z.string().url().optional().or(z.literal('')),
+  calendlyInviteeUri: z.string().url().optional().or(z.literal('')),
+  calendlyUrl: z.string().url().optional().or(z.literal('')),
+  scheduledAt: z.string().datetime().optional().or(z.literal('')),
   audienceType: workshopAudienceTypeSchema.default('MIXED'),
   ageRange: z.string().trim().max(120).optional().or(z.literal('')),
   estimatedParticipants: z.coerce.number().int().min(1).max(5000).optional(),
@@ -55,7 +83,7 @@ export const workshopRequestInputSchema = z.object({
   workshopTheme: z.string().trim().min(3).max(180),
   objectives: z.string().trim().min(10).max(4000),
   notes: z.string().trim().max(4000).optional().or(z.literal('')),
-  status: workshopRequestStatusSchema.default('NEW'),
+  status: z.union([workshopRequestStatusSchema, workshopAtelierStatusSchema]).default('EN_ATTENTE_RDV'),
 });
 
 export const workshopAvailabilityInputSchema = z.object({

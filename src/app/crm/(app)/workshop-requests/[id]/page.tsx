@@ -30,9 +30,9 @@ function buildCalendarCreateHref(item: WorkshopRequestDetailRecord) {
   end.setHours(end.getHours() + 1);
 
   const params = new URLSearchParams({
-    title: `Atelier - ${item.organization.name}`,
+    title: `Atelier - ${item.organization?.name || item.organizationName || item.title}`,
     description: `Suivi de la demande atelier: ${item.workshopTheme}`,
-    type: 'WORKSHOP',
+    type: 'MEETING',
     status: 'PENDING',
     startAt: start.toISOString(),
     endAt: end.toISOString(),
@@ -80,10 +80,17 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
           {
             title: 'Demande',
             fields: [
-              { label: 'Organisation', value: <Link href={`/crm/organizations/${item.organizationId}`} className="text-primary-300 hover:text-primary-200">{item.organization.name}</Link> },
+              { label: 'Organisation', value: item.organizationId && item.organization ? <Link href={`/crm/organizations/${item.organizationId}`} className="text-primary-300 hover:text-primary-200">{item.organization.name}</Link> : item.organizationName || '—' },
               { label: 'Contact', value: item.organizationContact?.fullName || item.contact?.fullName || '—' },
+              { label: 'Contact direct', value: item.contactPerson || '—' },
+              { label: 'Téléphone', value: item.contactPhone || '—' },
+              { label: 'Courriel', value: item.contactEmail || '—' },
               { label: 'Public', value: <StatusBadge value={item.audienceType} /> },
-              { label: 'Format', value: <StatusBadge value={item.format} /> },
+              { label: 'Format', value: <StatusBadge value={item.deliveryFormat || item.format} /> },
+              { label: 'Durée', value: item.durationPreset || '—' },
+              { label: 'Prix final', value: item.finalPrice ? `${Number(item.finalPrice)} $` : '—' },
+              { label: 'Lien client', value: item.clientAccessToken ? <a href={`/atelier/${item.clientAccessToken}`} target="_blank" rel="noreferrer" className="text-primary-300 hover:text-primary-200">Ouvrir la page client</a> : '—' },
+              { label: 'Lien Calendly', value: item.calendlyUrl ? <a href={item.calendlyUrl} target="_blank" rel="noreferrer" className="text-primary-300 hover:text-primary-200">Ouvrir le lien de planification</a> : '—' },
               { label: 'Date souhaitée', value: formatDate(item.requestedDate) },
               { label: 'Créée le', value: formatDate(item.createdAt) },
             ],
@@ -94,11 +101,14 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
               { label: 'Thème', value: item.workshopTheme },
               { label: 'Tranche d’âge', value: item.ageRange || '—' },
               { label: 'Participants', value: item.estimatedParticipants ?? '—' },
+              { label: 'Participants (atelier)', value: item.participantEstimate ?? '—' },
               { label: 'Jours préférés', value: item.preferredDays.join(', ') || '—' },
-              { label: 'Lieu', value: item.location || '—' },
+              { label: 'Lieu', value: item.addressOrLocation || item.location || '—' },
               { label: 'Plage préférée', value: item.requestedTime || '—' },
               { label: 'Objectifs', value: item.objectives },
               { label: 'Notes', value: item.notes || '—' },
+              { label: 'Notes client', value: item.clientNotes || '—' },
+              { label: 'Notes internes', value: item.internalNotes || '—' },
             ],
           },
         ]}
