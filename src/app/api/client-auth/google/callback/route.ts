@@ -27,6 +27,10 @@ interface GoogleUserInfo {
   picture?: string;
 }
 
+function isMissingOauthTableError(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021';
+}
+
 function buildErrorRedirect(request: NextRequest, code: string, nextPath: string) {
   const url = new URL('/connexion', request.url);
   url.searchParams.set('error', code);
@@ -119,21 +123,40 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const linkedAccount = await tx.clientOAuthAccount.findUnique({
-        where: {
-          provider_providerAccountId: {
-            provider: 'google',
-            providerAccountId,
-          },
-        },
-        include: {
-          user: {
-            include: {
-              contact: true,
+      let oauthTableMissing = false;
+      let linkedAccount: {
+        id: string;
+        user: {
+          id: string;
+          role: UserRole;
+          isActive: boolean;
+          contact: { id: string; fullName: string; email: string | null; tags: string[]; source: string | null } | null;
+        };
+      } | null = null;
+
+      try {
+        linkedAccount = await tx.clientOAuthAccount.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: 'google',
+              providerAccountId,
             },
           },
-        },
-      });
+          include: {
+            user: {
+              include: {
+                contact: true,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        if (isMissingOauthTableError(error)) {
+          oauthTableMissing = true;
+        } else {
+          throw error;
+        }
+      }
 
       if (linkedAccount) {
         const linkedUser = linkedAccount.user;
@@ -192,14 +215,16 @@ export async function GET(request: NextRequest) {
           });
         }
 
-        await tx.clientOAuthAccount.update({
-          where: { id: linkedAccount.id },
-          data: {
-            email,
-            name: fullName,
-            image: profile.picture || null,
-          },
-        });
+        if (!oauthTableMissing) {
+          await tx.clientOAuthAccount.update({
+            where: { id: linkedAccount.id },
+            data: {
+              email,
+              name: fullName,
+              image: profile.picture || null,
+            },
+          });
+        }
 
         return {
           contact,
@@ -319,28 +344,30 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      await tx.clientOAuthAccount.upsert({
-        where: {
-          userId_provider: {
+      if (!oauthTableMissing) {
+        await tx.clientOAuthAccount.upsert({
+          where: {
+            userId_provider: {
+              userId: user.id,
+              provider: 'google',
+            },
+          },
+          update: {
+            providerAccountId,
+            email,
+            name: fullName,
+            image: profile.picture || null,
+          },
+          create: {
             userId: user.id,
             provider: 'google',
+            providerAccountId,
+            email,
+            name: fullName,
+            image: profile.picture || null,
           },
-        },
-        update: {
-          providerAccountId,
-          email,
-          name: fullName,
-          image: profile.picture || null,
-        },
-        create: {
-          userId: user.id,
-          provider: 'google',
-          providerAccountId,
-          email,
-          name: fullName,
-          image: profile.picture || null,
-        },
-      });
+        });
+      }
 
       return {
         contact: contact!,
@@ -369,8 +396,6 @@ export async function GET(request: NextRequest) {
         ? 'google-role-mismatch'
         : error instanceof Error && error.message === 'GOOGLE_ACCOUNT_DISABLED'
           ? 'google-account-disabled'
-          : error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021'
-            ? 'google-db-schema-missing'
           : error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
             ? 'google-account-conflict'
             : 'google-auth-failed';
