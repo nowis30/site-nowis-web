@@ -20,7 +20,8 @@ export function getGoogleAuthBaseUrl(origin?: string) {
 }
 
 export function getGoogleCallbackUrl(origin?: string) {
-  return `${getGoogleAuthBaseUrl(origin)}/api/client-auth/google/callback`;
+  // Use the canonical Google callback path expected in most OAuth app configs.
+  return `${getGoogleAuthBaseUrl(origin)}/api/auth/callback/google`;
 }
 
 export function createGoogleOauthStateCookie(state: string) {
