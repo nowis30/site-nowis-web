@@ -177,9 +177,9 @@ export default async function ClientPortalPage({ params }: PageProps) {
       });
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_35%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] px-6 py-10 text-slate-100">
+    <main className="min-h-[100dvh] overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_35%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] px-4 py-6 pb-[calc(90px+env(safe-area-inset-bottom))] text-slate-100 sm:px-6 sm:py-8 md:pb-8">
       <div className="mx-auto max-w-5xl space-y-6">
-        <section className="rounded-[28px] border border-emerald-500/20 bg-slate-900/75 p-8 shadow-2xl shadow-black/20 backdrop-blur">
+        <section id="overview" className="rounded-[28px] border border-emerald-500/20 bg-slate-900/75 p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-8">
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">Portail client</p>
           <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -195,7 +195,18 @@ export default async function ClientPortalPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
+        <nav className="sticky top-3 z-30 hidden rounded-2xl border border-slate-800 bg-slate-950/90 p-2 backdrop-blur md:block" aria-label="Navigation portail client">
+          <div className="flex flex-wrap items-center gap-2">
+            <a href="#overview" className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 hover:border-emerald-500/50 hover:text-white">Accueil</a>
+            <a href="#documents" className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 hover:border-emerald-500/50 hover:text-white">Documents</a>
+            <a href="#messages" className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 hover:border-emerald-500/50 hover:text-white">Messages</a>
+            <a href="#invoices" className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 hover:border-emerald-500/50 hover:text-white">Factures</a>
+            <a href="#requests" className="rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 hover:border-emerald-500/50 hover:text-white">Demandes</a>
+            <a href="#booking" className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-200 hover:bg-emerald-500/20">Rendez-vous</a>
+          </div>
+        </nav>
+
+        <section id="documents" className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Documents</p>
@@ -226,7 +237,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
+        <section id="messages" className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Messages</p>
@@ -260,7 +271,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
+        <section id="invoices" className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Factures</p>
@@ -319,7 +330,27 @@ export default async function ClientPortalPage({ params }: PageProps) {
           </div>
         </section>
 
-        {contact.songRequests.map((request) => (
+        <section id="booking" className="rounded-[28px] border border-emerald-500/30 bg-emerald-500/10 p-6 shadow-xl shadow-black/15">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-emerald-200">Rendez-vous</p>
+              <p className="mt-2 text-sm text-emerald-100">
+                Pour planifier un échange, utilisez uniquement les plages horaires libres du calendrier.
+              </p>
+            </div>
+            <a
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-300"
+            >
+              Prendre rendez-vous
+            </a>
+          </div>
+        </section>
+
+        <section id="requests" className="space-y-6">
+          {contact.songRequests.map((request) => (
           <section key={request.id} className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
@@ -418,7 +449,18 @@ export default async function ClientPortalPage({ params }: PageProps) {
             </div>
           </section>
         ))}
+        </section>
       </div>
+
+      <nav aria-label="Navigation mobile du portail client" className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-700/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(2,6,23,0.22)] backdrop-blur md:hidden">
+        <div className="mx-auto grid w-full max-w-5xl grid-cols-5 gap-1 px-2 py-1.5">
+          <a href="#messages" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Messages</a>
+          <a href="#requests" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Chansons</a>
+          <a href="#booking" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Ateliers</a>
+          <a href="#documents" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Documents</a>
+          <a href="#booking" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">RDV</a>
+        </div>
+      </nav>
     </main>
   );
 }
