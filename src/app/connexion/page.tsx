@@ -43,6 +43,8 @@ export default function ConnexionPage() {
                     ? 'Jeton Google manquant. Réessayez.'
                     : externalErrorCode === 'google-profile-fetch-failed'
                       ? 'Impossible de lire votre profil Google. Réessayez.'
+                      : externalErrorCode === 'google-db-schema-missing'
+                        ? 'Connexion Google temporairement indisponible: migration base de données requise.'
           : externalErrorCode === 'google-auth-failed'
             ? 'La connexion Google a échoué. Réessayez.'
             : externalErrorCode === 'google-email-invalid'

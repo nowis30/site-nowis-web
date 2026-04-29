@@ -369,6 +369,8 @@ export async function GET(request: NextRequest) {
         ? 'google-role-mismatch'
         : error instanceof Error && error.message === 'GOOGLE_ACCOUNT_DISABLED'
           ? 'google-account-disabled'
+          : error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021'
+            ? 'google-db-schema-missing'
           : error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
             ? 'google-account-conflict'
             : 'google-auth-failed';

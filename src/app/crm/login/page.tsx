@@ -96,6 +96,11 @@ export default function CrmLoginPage() {
                   placeholder="Votre mot de passe"
                   required
                 />
+                <div className="mt-2 text-right">
+                  <a href="/crm/forgot-password" className="text-xs font-medium text-primary-300 hover:text-primary-200">
+                    Mot de passe oublié ?
+                  </a>
+                </div>
               </label>
             </>
           ) : (
