@@ -46,9 +46,9 @@ export const essentialCookies = [
 
 export const complianceNotes = {
   noMarketingCookies:
-    'Au moment de cette version, le site public n’installe pas de cookie publicitaire ou analytique non essentiel de façon déclarée.',
+    'Le site public peut charger des outils Google de mesure d’audience et d’attribution publicitaire pour mesurer certaines actions comme les appels téléphoniques et les demandes d’atelier.',
   cookieBannerRule:
-    'Si des outils d’analyse, de publicité, de reciblage ou d’intégration tiers déposant des traceurs non essentiels sont ajoutés, un mécanisme de consentement préalable devra être mis en place avant leur activation.',
+    'Si le niveau de suivi augmente ou si de nouveaux outils tiers non essentiels sont ajoutés, le mécanisme d’information et de consentement devra être revu pour rester conforme aux obligations applicables.',
   legalReview:
     'Les contenus publiés améliorent la transparence publique du site, mais ils ne remplacent pas une validation juridique professionnelle adaptée à la situation exacte de l’entreprise.',
 };

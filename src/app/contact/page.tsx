@@ -1,5 +1,6 @@
 import { ClientPortalRequestGate } from '@/components/marketing/ClientPortalRequestGate';
 import { PageHero } from '@/components/marketing/PageHero';
+import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
 import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
 import { buildMetadata } from '@/lib/seo';
@@ -161,7 +162,7 @@ export default async function ContactPage() {
             <p className="mt-3 text-sm leading-6 text-[color:var(--site-soft)]">Réponse humaine, soumission sur demande et orientation vers la bonne formule selon votre projet.</p>
             <ul className="mt-6 space-y-3 text-[color:var(--site-text)]">
               <li>Email: <a href={`mailto:${email}`} className="hover:underline">{email}</a></li>
-              <li>Telephone: <a href={phoneHref} className="hover:underline">{phone}</a></li>
+              <li>Telephone: <TrackedPhoneLink href={phoneHref} className="hover:underline">{phone}</TrackedPhoneLink></li>
             </ul>
             <div className="mt-6 flex flex-col gap-3">
               <a href={songRequestHref} className="cta-primary rounded-2xl px-5 py-3">
@@ -182,9 +183,9 @@ export default async function ContactPage() {
               <a href={`mailto:${legalConfig.privacyEmail}`} className="cta-secondary rounded-2xl px-5 py-4">
                 {legalConfig.privacyEmail}
               </a>
-              <a href={legalConfig.privacyPhoneHref} className="cta-secondary rounded-2xl px-5 py-4">
+              <TrackedPhoneLink href={legalConfig.privacyPhoneHref} className="cta-secondary rounded-2xl px-5 py-4">
                 {legalConfig.privacyPhone}
-              </a>
+              </TrackedPhoneLink>
             </div>
             <div className="mt-6 flex flex-col gap-3">
               <a href={legalLinks.legal} className="text-sm font-semibold text-[color:var(--site-accent-strong)] hover:underline">

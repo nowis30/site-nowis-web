@@ -1,3 +1,4 @@
+import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
 import { PageHero } from '@/components/marketing/PageHero';
 import { complianceNotes, conditionsContent, legalConfig, legalLinks } from '@/data/legal';
 import { songPackages, videoExtraOptions } from '@/data/songSales';
@@ -60,7 +61,7 @@ export default function ConditionsDeVentePage() {
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <dt className="font-semibold text-slate-950">Téléphone</dt>
-              <dd className="mt-1"><a href={legalConfig.contactPhoneHref} className="text-emerald-700 hover:underline">{legalConfig.contactPhone}</a></dd>
+              <dd className="mt-1"><TrackedPhoneLink href={legalConfig.contactPhoneHref} className="text-emerald-700 hover:underline">{legalConfig.contactPhone}</TrackedPhoneLink></dd>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 md:col-span-2">
               <dt className="font-semibold text-slate-950">Adresse postale</dt>

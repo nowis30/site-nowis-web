@@ -13,7 +13,7 @@ export const testimonials: Testimonial[] = [
     role: 'Fondatrice - Studio créatif',
     quote:
       "Simon a transformé mon brief en une chanson incroyable. Le résultat a dépassé mes attentes et a créé une vraie émotion.",
-    avatar: '/hero.jpg',
+    avatar: '/nowis.png',
   },
   {
     id: 't2',
@@ -21,7 +21,7 @@ export const testimonials: Testimonial[] = [
     role: 'Community manager',
     quote:
       "La vidéo reçue était parfaitement alignée à notre identité visuelle. Les retours de l'audience ont été excellents.",
-    avatar: '/hero.jpg',
+    avatar: '/nowis.png',
   },
   {
     id: 't3',
@@ -29,6 +29,6 @@ export const testimonials: Testimonial[] = [
     role: 'Entrepreneure',
     quote:
       "Rapide, pro et créatif. J'adore le côté humain malgré l'utilisation de l'IA. Je recommande vivement.",
-    avatar: '/hero.jpg',
+    avatar: '/nowis.png',
   },
 ];

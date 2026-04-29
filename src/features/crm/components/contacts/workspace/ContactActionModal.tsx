@@ -38,6 +38,13 @@ export function ContactActionModal({
     appointmentStart: '',
     appointmentEnd: '',
     appointmentType: 'MEETING',
+    organizationName: contact.companyName || '',
+    organizationType: 'OTHER',
+    organizationStatus: 'LEAD',
+    organizationEmail: contact.email || '',
+    organizationPhone: contact.phone || '',
+    organizationCity: '',
+    organizationAddress: '',
   });
 
   async function submit(event: React.FormEvent) {
@@ -69,6 +76,13 @@ export function ContactActionModal({
           appointmentStart: form.appointmentStart ? new Date(form.appointmentStart).toISOString() : undefined,
           appointmentEnd: form.appointmentEnd ? new Date(form.appointmentEnd).toISOString() : undefined,
           appointmentType: form.appointmentType,
+          organizationName: form.organizationName,
+          organizationType: form.organizationType,
+          organizationStatus: form.organizationStatus,
+          organizationEmail: form.organizationEmail,
+          organizationPhone: form.organizationPhone,
+          organizationCity: form.organizationCity,
+          organizationAddress: form.organizationAddress,
         }),
       });
       const data = await response.json().catch(() => null);
@@ -89,7 +103,7 @@ export function ContactActionModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Action rapide</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">{action === 'note' ? 'Ajouter une note' : action === 'task' ? 'Ajouter une tâche' : action === 'invoice' ? 'Ajouter une facture' : action === 'appointment' ? 'Ajouter un rendez-vous' : 'Créer une demande chanson'}</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-white">{action === 'note' ? 'Ajouter une note' : action === 'task' ? 'Ajouter une tâche' : action === 'invoice' ? 'Ajouter une facture' : action === 'appointment' ? 'Ajouter un rendez-vous' : action === 'organization' ? 'Créer une organisation' : 'Créer une demande chanson'}</h3>
           </div>
           <button type="button" onClick={onClose} className="text-sm text-slate-400 hover:text-white">Fermer</button>
         </div>
@@ -190,6 +204,43 @@ export function ContactActionModal({
                 <select value={form.appointmentType} onChange={(event) => setForm((current) => ({ ...current, appointmentType: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
                   {['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER'].map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
+              </label>
+            </>
+          ) : null}
+
+          {action === 'organization' ? (
+            <>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Nom de l'organisation</span>
+                <input value={form.organizationName} onChange={(event) => setForm((current) => ({ ...current, organizationName: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Type</span>
+                <select value={form.organizationType} onChange={(event) => setForm((current) => ({ ...current, organizationType: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
+                  {['SCHOOL', 'COMMUNITY_ORG', 'DAYCARE', 'CAMP', 'OTHER'].map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Statut</span>
+                <select value={form.organizationStatus} onChange={(event) => setForm((current) => ({ ...current, organizationStatus: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
+                  {['LEAD', 'ACTIVE', 'INACTIVE'].map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Ville</span>
+                <input value={form.organizationCity} onChange={(event) => setForm((current) => ({ ...current, organizationCity: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Email</span>
+                <input value={form.organizationEmail} onChange={(event) => setForm((current) => ({ ...current, organizationEmail: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Téléphone</span>
+                <input value={form.organizationPhone} onChange={(event) => setForm((current) => ({ ...current, organizationPhone: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
+              </label>
+              <label className="md:col-span-2">
+                <span className="mb-2 block text-sm text-slate-300">Adresse</span>
+                <input value={form.organizationAddress} onChange={(event) => setForm((current) => ({ ...current, organizationAddress: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
               </label>
             </>
           ) : null}

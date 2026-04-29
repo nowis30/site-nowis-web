@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
 const baseSchema = z.object({
-  action: z.enum(['note', 'task', 'invoice', 'appointment', 'song-request']),
+  action: z.enum(['note', 'task', 'invoice', 'appointment', 'song-request', 'organization']),
   title: z.string().trim().max(200).optional(),
   description: z.string().trim().max(4000).optional(),
   songTitle: z.string().trim().max(160).optional(),
@@ -25,7 +25,20 @@ const baseSchema = z.object({
   appointmentStart: z.string().datetime().optional(),
   appointmentEnd: z.string().datetime().optional(),
   appointmentType: z.enum(['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER']).optional(),
+  organizationName: z.string().trim().max(160).optional(),
+  organizationType: z.enum(['SCHOOL', 'COMMUNITY_ORG', 'DAYCARE', 'CAMP', 'OTHER']).optional(),
+  organizationStatus: z.enum(['ACTIVE', 'LEAD', 'INACTIVE']).optional(),
+  organizationEmail: z.string().trim().email().optional().or(z.literal('')),
+  organizationPhone: z.string().trim().max(40).optional(),
+  organizationCity: z.string().trim().max(120).optional(),
+  organizationAddress: z.string().trim().max(240).optional(),
 });
+
+function normalizeOptionalString(value?: string | null) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'contacts', 'update');
@@ -200,6 +213,52 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       await prisma.task.create({ data: songTaskData });
 
       return NextResponse.json({ item: songRequest }, { status: 201 });
+    }
+
+    if (payload.action === 'organization') {
+      if (!payload.organizationName || payload.organizationName.trim().length < 2) {
+        return NextResponse.json({ error: 'Le nom de l\'organisation est requis' }, { status: 400 });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        const organization = await tx.organization.create({
+          data: {
+            name: payload.organizationName!.trim(),
+            type: payload.organizationType || 'OTHER',
+            status: payload.organizationStatus || 'LEAD',
+            email: normalizeOptionalString(payload.organizationEmail),
+            phone: normalizeOptionalString(payload.organizationPhone) || contact.phone,
+            city: normalizeOptionalString(payload.organizationCity),
+            address: normalizeOptionalString(payload.organizationAddress),
+            notes: normalizeOptionalString(payload.description),
+          },
+        });
+
+        const organizationContact = await tx.organizationContact.create({
+          data: {
+            organizationId: organization.id,
+            contactId: contact.id,
+            fullName: contact.fullName,
+            email: contact.email,
+            phone: contact.phone,
+            isPrimary: true,
+          },
+        });
+
+        await tx.activity.create({
+          data: {
+            type: 'FORM_SUBMISSION',
+            title: 'Organisation créée depuis la fiche contact',
+            description: `${organization.name} (contact principal: ${contact.fullName})`,
+            contactId: contact.id,
+            userId: guard.session.sub,
+          },
+        });
+
+        return { organization, organizationContact };
+      });
+
+      return NextResponse.json({ item: result.organization, organizationContact: result.organizationContact }, { status: 201 });
     }
 
     return NextResponse.json({ error: 'Action non supportée' }, { status: 400 });

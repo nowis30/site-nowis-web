@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
+import { trackWorkshopRequestSubmitted } from '@/lib/tracking/google';
 import { workshopRequestFormSchema, type WorkshopRequestFormInput } from '@/features/workshops/schemas';
 
 interface WorkshopRequestFormProps {
@@ -15,6 +16,7 @@ interface WorkshopRequestFormProps {
 export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhone = '' }: WorkshopRequestFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const lastTrackedRequestIdRef = useRef<string | null>(null);
 
   const {
     register,
@@ -50,6 +52,12 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
     if (!response.ok) {
       setServerError(data?.error || 'Impossible d’envoyer la demande.');
       return;
+    }
+
+    const requestId = typeof data?.item?.id === 'string' ? data.item.id : null;
+    if (requestId && lastTrackedRequestIdRef.current !== requestId) {
+      trackWorkshopRequestSubmitted(requestId);
+      lastTrackedRequestIdRef.current = requestId;
     }
 
     reset();

@@ -19,7 +19,7 @@ export interface Listing {
   id: string;
   slug: string;
   title: string;
-  price: number; // en euros
+  price: number; // en dollars canadiens
   address?: string;
   city: string;
   postalCode?: string;

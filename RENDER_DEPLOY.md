@@ -15,21 +15,8 @@ npm run build
 - **Start Command**:
 
 ```bash
-npm run start:render
-```
-
-## 1.1 Recovery Prisma production
-
-Le demarrage Render doit passer par [package.json](package.json) avec le script [scripts/startRender.js](scripts/startRender.js), qui execute ce flux borne:
-
-```bash
-npx prisma migrate status
-npx prisma migrate resolve --rolled-back 20251026103000_add_personal_income_table
-npx prisma migrate deploy
 npm run start
 ```
-
-La resolution automatique ne s'execute que si `migrate status` signale explicitement cette migration comme echouee. Le script n'utilise plus de boucle shell et ne marque jamais une migration en `--applied`.
 
 ## 2. Variables d'environnement minimales
 
@@ -87,9 +74,9 @@ Le projet inclut maintenant une route ` /api/uploads/[fileName] ` qui lit les im
 4. Lancer un **Manual Deploy** ou laisser l'auto-deploy se déclencher après le push.
 5. Tester:
    - connexion/inscription
-   - dépôt d'annonce
    - upload d'image
-   - page publique logement
+   - portail client (connexion + demandes)
+   - CRM (contacts, tâches, calendrier)
    - formulaire contact
 
 ## 6. Limitation actuelle

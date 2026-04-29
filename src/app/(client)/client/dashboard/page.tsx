@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { CalendarClock, FileText, Inbox, MessagesSquare } from 'lucide-react';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, PortalStatCard, QuickActions, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
+import { CreateOrganizationFromContactCard } from '@/features/client-portal/components/CreateOrganizationFromContactCard';
 import { safeListMessages } from '@/lib/messages-store';
 import { prisma } from '@/lib/prisma';
 
@@ -126,6 +127,8 @@ export default async function ClientDashboardPage() {
           ]}
         />
       </SectionCard>
+
+      <CreateOrganizationFromContactCard />
 
       <div className="grid gap-4 md:grid-cols-4">
         <PortalStatCard

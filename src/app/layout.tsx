@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Alfa_Slab_One, Inter } from 'next/font/google';
 import './globals.css';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
@@ -20,6 +21,10 @@ const displayFont = Alfa_Slab_One({
   variable: '--font-display',
   display: 'swap',
 });
+
+const ga4MeasurementId = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim() || '';
+const googleAdsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID?.trim() || '';
+const googleTagId = ga4MeasurementId || googleAdsId;
 
 export const metadata: Metadata = {
   ...buildMetadata({
@@ -56,6 +61,24 @@ export default function RootLayout({
       <head>
         <meta name="theme-color" content="#f6f1ea" />
         <meta name="mobile-web-app-capable" content="yes" />
+          {googleTagId ? (
+            <>
+              <Script
+                src={`https://www.googletagmanager.com/gtag/js?id=${googleTagId}`}
+                strategy="afterInteractive"
+              />
+              <Script id="google-gtag-init" strategy="afterInteractive">
+                {`
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  window.gtag = gtag;
+                  gtag('js', new Date());
+                  ${ga4MeasurementId ? `gtag('config', '${ga4MeasurementId}');` : ''}
+                  ${googleAdsId ? `gtag('config', '${googleAdsId}');` : ''}
+                `}
+              </Script>
+            </>
+          ) : null}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Création NOWIS" />

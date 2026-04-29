@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { FaFacebookF, FaInstagram, FaSpotify, FaYoutube } from 'react-icons/fa';
+import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
@@ -141,7 +142,7 @@ export const Footer: React.FC = () => {
                 📧 <a href={`mailto:${legalConfig.contactEmail}`} className="transition-colors hover:text-[color:var(--site-accent-strong)]">{legalConfig.contactEmail}</a>
               </li>
               <li className="text-[color:var(--site-muted)]">
-                📞 <a href={legalConfig.contactPhoneHref} className="transition-colors hover:text-[color:var(--site-accent-strong)]">{legalConfig.contactPhone}</a>
+                📞 <TrackedPhoneLink href={legalConfig.contactPhoneHref} className="transition-colors hover:text-[color:var(--site-accent-strong)]">{legalConfig.contactPhone}</TrackedPhoneLink>
               </li>
               <li>
                 <ContactPrefillLink href={legalLinks.contact} className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">Parler de mon projet</ContactPrefillLink>

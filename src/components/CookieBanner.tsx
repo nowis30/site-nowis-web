@@ -39,7 +39,7 @@ export function CookieBanner() {
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded-[1.75rem] border border-[rgba(131,97,67,0.12)] bg-[rgba(255,251,247,0.76)] px-4 py-4 shadow-soft md:flex-row md:items-center md:justify-between md:px-5">
         <p className="text-sm leading-6 text-[color:var(--site-muted)] md:max-w-3xl">
-          Ce site utilise seulement des cookies utiles au fonctionnement du portail client et à la sécurité des sessions. Aucun cookie publicitaire ou de traçage tiers n&apos;est déposé.{' '}
+          Ce site utilise des cookies essentiels au fonctionnement du portail client et à la sécurité des sessions. Des outils Google de mesure d&apos;audience et d&apos;attribution publicitaire peuvent aussi être chargés pour mesurer les appels téléphoniques et les demandes d&apos;atelier.{' '}
           <Link href="/confidentialite" className="underline underline-offset-2 transition-colors hover:text-[color:var(--site-accent-strong)]">
             Politique de confidentialité
           </Link>

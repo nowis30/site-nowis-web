@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
 import { PageHero } from '@/components/marketing/PageHero';
 import { buildMetadata } from '@/lib/seo';
 import { complianceNotes, essentialCookies, legalConfig, legalLinks } from '@/data/legal';
@@ -61,7 +62,7 @@ export default function MentionsLegalesPage() {
           <h2 className="text-2xl font-bold text-slate-950">2. Coordonnées</h2>
           <div className="mt-6 space-y-3 text-sm leading-7 text-slate-700">
             <p>Courriel : <a href={`mailto:${legalConfig.contactEmail}`} className="font-medium text-emerald-700 hover:underline">{legalConfig.contactEmail}</a></p>
-            <p>Téléphone : <a href={legalConfig.contactPhoneHref} className="font-medium text-emerald-700 hover:underline">{legalConfig.contactPhone}</a></p>
+            <p>Téléphone : <TrackedPhoneLink href={legalConfig.contactPhoneHref} className="font-medium text-emerald-700 hover:underline">{legalConfig.contactPhone}</TrackedPhoneLink></p>
             <p>{legalConfig.responsiblePrivacyTitle} : {legalConfig.responsiblePrivacyName}</p>
           </div>
         </article>
