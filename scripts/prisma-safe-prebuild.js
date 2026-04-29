@@ -4,6 +4,7 @@ const DEFAULT_RECOVERY_MIGRATIONS = [
   '20251024170000_init',
   '20251026103000_add_personal_income_table',
 ];
+const MAX_RECOVERY_PASSES = 6;
 
 function getRecoveryMigrations() {
   const raw = process.env.PRISMA_RECOVERY_MIGRATIONS;
@@ -53,48 +54,60 @@ function runCommand(command, args, options = {}) {
 }
 
 async function ensurePrismaState() {
-  console.log('Checking Prisma migration status...');
-
-  const statusResult = await runCommand(getCommand('npx'), ['prisma', 'migrate', 'status'], {
-    captureOutput: true,
-  });
-
-  const output = `${statusResult.stdout}\n${statusResult.stderr}`;
-  const lowerOutput = output.toLowerCase();
-
-  const hasFailedMigration = lowerOutput.includes('p3009') || lowerOutput.includes('failed');
-  if (!hasFailedMigration) {
-    console.log('No failed Prisma migration state detected.');
-    return;
-  }
-
   const configuredMigrations = getRecoveryMigrations();
-  const migrationsToResolve = configuredMigrations.filter((migrationName) =>
-    lowerOutput.includes(migrationName.toLowerCase()),
-  );
 
-  if (migrationsToResolve.length === 0) {
-    throw new Error(
-      'Prisma reported a failed migration (P3009), but none matched PRISMA_RECOVERY_MIGRATIONS. ' +
-        'Set PRISMA_RECOVERY_MIGRATIONS="migration_name" in environment to authorize recovery.',
+  for (let pass = 1; pass <= MAX_RECOVERY_PASSES; pass += 1) {
+    console.log(`Checking Prisma migration status (pass ${pass}/${MAX_RECOVERY_PASSES})...`);
+
+    const statusResult = await runCommand(getCommand('npx'), ['prisma', 'migrate', 'status'], {
+      captureOutput: true,
+    });
+
+    const output = `${statusResult.stdout}\n${statusResult.stderr}`;
+    const lowerOutput = output.toLowerCase();
+    const hasFailedMigration = lowerOutput.includes('p3009') || lowerOutput.includes('failed migration');
+
+    if (!hasFailedMigration) {
+      console.log('No failed Prisma migration state detected.');
+      return;
+    }
+
+    const failedMigrationNames = Array.from(
+      output.matchAll(/The `([^`]+)` migration[^\n]*failed/gi),
+      (match) => match[1],
     );
-  }
 
-  for (const migrationName of migrationsToResolve) {
-    console.log(`Marking failed migration as rolled back: ${migrationName}`);
+    const migrationsToResolve = failedMigrationNames.filter((migrationName) =>
+      configuredMigrations.includes(migrationName),
+    );
 
-    const resolveResult = await runCommand(getCommand('npx'), [
-      'prisma',
-      'migrate',
-      'resolve',
-      '--rolled-back',
-      migrationName,
-    ]);
+    if (migrationsToResolve.length === 0) {
+      throw new Error(
+        'Prisma reported failed migrations (P3009), but none matched PRISMA_RECOVERY_MIGRATIONS. ' +
+          'Set PRISMA_RECOVERY_MIGRATIONS="migration_name" in environment to authorize recovery.',
+      );
+    }
 
-    if (resolveResult.code !== 0) {
-      throw new Error(`Failed to mark ${migrationName} as rolled back.`);
+    for (const migrationName of migrationsToResolve) {
+      console.log(`Marking failed migration as rolled back: ${migrationName}`);
+
+      const resolveResult = await runCommand(getCommand('npx'), [
+        'prisma',
+        'migrate',
+        'resolve',
+        '--rolled-back',
+        migrationName,
+      ]);
+
+      if (resolveResult.code !== 0) {
+        throw new Error(`Failed to mark ${migrationName} as rolled back.`);
+      }
     }
   }
+
+  throw new Error(
+    `Failed Prisma recovery after ${MAX_RECOVERY_PASSES} attempts. Please run prisma migrate resolve manually.`,
+  );
 }
 
 async function main() {
