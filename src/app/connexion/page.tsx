@@ -31,6 +31,18 @@ export default function ConnexionPage() {
         ? "Aucun compte client n'est relié à ce lien."
         : externalErrorCode === 'google-unavailable'
           ? 'La connexion Google est temporairement indisponible.'
+          : externalErrorCode === 'google-access-denied'
+            ? 'Connexion Google annulée.'
+            : externalErrorCode === 'google-provider-error'
+              ? 'Google a refusé la connexion. Réessayez.'
+              : externalErrorCode === 'google-state-invalid'
+                ? 'Session Google expirée. Réessayez la connexion.'
+                : externalErrorCode === 'google-token-exchange-failed'
+                  ? 'Échec de validation Google. Vérifiez la configuration OAuth.'
+                  : externalErrorCode === 'google-token-missing'
+                    ? 'Jeton Google manquant. Réessayez.'
+                    : externalErrorCode === 'google-profile-fetch-failed'
+                      ? 'Impossible de lire votre profil Google. Réessayez.'
           : externalErrorCode === 'google-auth-failed'
             ? 'La connexion Google a échoué. Réessayez.'
             : externalErrorCode === 'google-email-invalid'
@@ -150,6 +162,11 @@ export default function ConnexionPage() {
                   className="mt-1 block w-full rounded-lg border border-[color:var(--site-border)] bg-white px-4 py-3 text-sm text-[color:var(--site-heading)] shadow-sm focus:border-[color:var(--site-accent)] focus:ring-[color:var(--site-accent)]"
                   placeholder="••••••••"
                 />
+                <div className="mt-2 text-right">
+                  <Link href="/mot-de-passe-oublie" className="text-xs font-medium text-[color:var(--site-accent-strong)] hover:underline">
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
               </div>
 
               {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}

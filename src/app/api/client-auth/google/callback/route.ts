@@ -16,6 +16,7 @@ import { createClientPortalSessionCookie, signClientPortalSession } from '@/feat
 
 interface GoogleTokenResponse {
   access_token?: string;
+  error?: string;
 }
 
 interface GoogleUserInfo {
@@ -60,13 +61,18 @@ export async function GET(request: NextRequest) {
 
   const state = request.nextUrl.searchParams.get('state');
   const code = request.nextUrl.searchParams.get('code');
+  const providerError = request.nextUrl.searchParams.get('error');
+
+  if (providerError) {
+    return redirectWithGoogleCleanup(request, providerError === 'access_denied' ? 'google-access-denied' : 'google-provider-error', nextPath);
+  }
 
   if (!clientId || !clientSecret) {
     return redirectWithGoogleCleanup(request, 'google-unavailable', nextPath);
   }
 
   if (!state || !stateCookie || state !== stateCookie || !code) {
-    return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+    return redirectWithGoogleCleanup(request, 'google-state-invalid', nextPath);
   }
 
   try {
@@ -85,13 +91,13 @@ export async function GET(request: NextRequest) {
       cache: 'no-store',
     });
 
-    if (!tokenResponse.ok) {
-      return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+    const tokenData = (await tokenResponse.json()) as GoogleTokenResponse;
+    if (!tokenResponse.ok || tokenData.error) {
+      return redirectWithGoogleCleanup(request, 'google-token-exchange-failed', nextPath);
     }
 
-    const tokenData = (await tokenResponse.json()) as GoogleTokenResponse;
     if (!tokenData.access_token) {
-      return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+      return redirectWithGoogleCleanup(request, 'google-token-missing', nextPath);
     }
 
     const profileResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
@@ -100,7 +106,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!profileResponse.ok) {
-      return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+      return redirectWithGoogleCleanup(request, 'google-profile-fetch-failed', nextPath);
     }
 
     const profile = (await profileResponse.json()) as GoogleUserInfo;
