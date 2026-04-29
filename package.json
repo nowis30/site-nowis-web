@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:local": "next dev -p 3000",
-    "prebuild": "prisma generate",
+    "prebuild": "prisma migrate deploy && prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
