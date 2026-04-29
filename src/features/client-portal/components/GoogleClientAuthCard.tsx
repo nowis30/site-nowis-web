@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 interface GoogleClientAuthCardProps {
   nextPath?: string;
   title?: string;
@@ -30,13 +28,13 @@ export function GoogleClientAuthCard({
     <div className="glass-panel-soft rounded-[1.6rem] border border-[rgba(131,97,67,0.18)] p-5">
       <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{title}</h3>
       <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">{description}</p>
-      <Link
+      <a
         href={href}
         className="mt-4 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-[rgba(131,97,67,0.22)] bg-white px-5 py-3 text-base font-semibold text-[color:var(--site-heading)] shadow-sm transition hover:bg-[rgba(255,252,248,1)]"
       >
         <GoogleIcon />
         Continuer avec Google
-      </Link>
+      </a>
       {!compact ? (
         <p className="mt-3 text-xs leading-6 text-[color:var(--site-soft)]">
           Connecte-toi gratuitement avec Google. Aucun paiement requis. Ton espace client sera créé automatiquement.
