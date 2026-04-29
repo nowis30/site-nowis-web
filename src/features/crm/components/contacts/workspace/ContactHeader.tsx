@@ -9,12 +9,14 @@ export function ContactHeader({
   contact,
   stats,
   onAction,
+  onOpenEmails,
   canImpersonate,
   onImpersonate,
 }: {
   contact: ContactWorkspaceContact;
   stats: Array<{ label: string; value: number }>;
   onAction: (action: ContactActionType) => void;
+  onOpenEmails: () => void;
   canImpersonate: boolean;
   onImpersonate: () => Promise<void>;
 }) {
@@ -64,6 +66,7 @@ export function ContactHeader({
           ) : null}
           <button onClick={() => onAction('note')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter note</button>
           <button onClick={() => onAction('task')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter tâche</button>
+          <button onClick={onOpenEmails} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Envoyer email</button>
           <button onClick={() => onAction('invoice')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter facture</button>
           <button onClick={() => onAction('appointment')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter rendez-vous</button>
           <button onClick={() => onAction('song-request')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Créer demande chanson</button>

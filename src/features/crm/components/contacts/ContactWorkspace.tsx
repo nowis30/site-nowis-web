@@ -71,7 +71,14 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
 
   return (
     <section className="space-y-6">
-      <ContactHeader contact={contact} stats={stats} onAction={setAction} canImpersonate={canImpersonate} onImpersonate={handleImpersonationStart} />
+      <ContactHeader
+        contact={contact}
+        stats={stats}
+        onAction={setAction}
+        onOpenEmails={() => setTab('emails')}
+        canImpersonate={canImpersonate}
+        onImpersonate={handleImpersonationStart}
+      />
 
       <div className="crm-surface overflow-hidden">
         <div className="border-b border-slate-800 px-3 pt-3 sm:px-6">

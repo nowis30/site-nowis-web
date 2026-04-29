@@ -112,6 +112,13 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
           </button>
 
           <Link
+            href="/crm/dashboard"
+            className="shrink-0 rounded-lg border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 hover:border-primary-500/50 hover:bg-primary-500/10 hover:text-white"
+          >
+            Retour dashboard
+          </Link>
+
+          <Link
             href="/client/dashboard"
             target="_blank"
             rel="noreferrer"

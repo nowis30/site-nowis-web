@@ -27,6 +27,13 @@ type TaskPayload = TaskPayloadRecord & {
   eventType?: string;
 };
 
+type EmailDraft = {
+  taskId: string;
+  to: string;
+  subject: string;
+  message: string;
+};
+
 type Task = {
   id: string;
   title: string;
@@ -87,7 +94,7 @@ function isOverdue(task: Task) {
   return new Date(task.dueDate) < new Date();
 }
 
-function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
+function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: () => void; onComposeEmail: (draft: EmailDraft) => void }) {
   const [loading, setLoading] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
   const normalizedType = coerceTaskType(task.type);
@@ -190,10 +197,19 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: () => void }) {
           </a>
         ) : null}
         {normalizedType === 'EMAIL' && payload?.email ? (
-          <a href={`mailto:${payload.email}`} className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/40 bg-sky-500/10 px-2.5 py-1.5 text-xs font-medium text-sky-300 hover:bg-sky-500/20">
+          <button
+            type="button"
+            onClick={() => onComposeEmail({
+              taskId: task.id,
+              to: payload.email || '',
+              subject: payload.subject || task.title,
+              message: payload.note || description || '',
+            })}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/40 bg-sky-500/10 px-2.5 py-1.5 text-xs font-medium text-sky-300 hover:bg-sky-500/20"
+          >
             <Mail size={12} />
             Envoyer un email
-          </a>
+          </button>
         ) : null}
         {normalizedType === 'SONG' && songRequestId ? (
           <Link href={`/crm/song-requests/${songRequestId}`} className="inline-flex items-center gap-1.5 rounded-lg border border-fuchsia-500/40 bg-fuchsia-500/10 px-2.5 py-1.5 text-xs font-medium text-fuchsia-300 hover:bg-fuchsia-500/20">
@@ -434,6 +450,36 @@ interface TasksPageProps { todo: Task[]; inProgress: Task[]; done: Task[]; }
 
 export function TasksPage({ todo, inProgress, done }: TasksPageProps) {
   const router = useRouter();
+  const [emailDraft, setEmailDraft] = useState<EmailDraft | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  async function sendTaskEmail(event: React.FormEvent) {
+    event.preventDefault();
+    if (!emailDraft) return;
+
+    setSendingEmail(true);
+    setEmailError(null);
+    try {
+      const response = await fetch(`/api/crm/tasks/${emailDraft.taskId}/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: emailDraft.subject, message: emailDraft.message }),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(data?.error || 'Envoi impossible');
+      }
+
+      setEmailDraft(null);
+      router.refresh();
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setSendingEmail(false);
+    }
+  }
 
   const columns = [
     { label: 'À faire', tasks: todo, color: 'text-slate-300', accent: 'border-l-slate-500' },
@@ -466,12 +512,53 @@ export function TasksPage({ todo, inProgress, done }: TasksPageProps) {
               {col.tasks.length === 0 ? (
                 <p className="text-xs text-slate-500 italic">Aucune tâche</p>
               ) : (
-                col.tasks.map(task => <TaskCard key={task.id} task={task} onUpdate={() => router.refresh()} />)
+                col.tasks.map(task => <TaskCard key={task.id} task={task} onUpdate={() => router.refresh()} onComposeEmail={setEmailDraft} />)
               )}
             </div>
           </div>
         ))}
       </div>
+
+      {emailDraft ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm">
+          <form onSubmit={sendTaskEmail} className="w-full max-w-2xl rounded-3xl border border-slate-700 bg-slate-900 p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Envoyer un email depuis la tâche</h3>
+                <p className="mt-1 text-sm text-slate-400">Destinataire: {emailDraft.to}</p>
+              </div>
+              <button type="button" onClick={() => setEmailDraft(null)} className="text-sm text-slate-400 hover:text-white">Fermer</button>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <input
+                value={emailDraft.subject}
+                onChange={(event) => setEmailDraft((current) => current ? { ...current, subject: event.target.value } : current)}
+                required
+                placeholder="Sujet"
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
+              />
+              <textarea
+                value={emailDraft.message}
+                onChange={(event) => setEmailDraft((current) => current ? { ...current, message: event.target.value } : current)}
+                required
+                rows={6}
+                placeholder="Message"
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
+              />
+            </div>
+
+            {emailError ? <p className="mt-3 text-sm text-red-300">{emailError}</p> : null}
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" onClick={() => setEmailDraft(null)} className="rounded-xl border border-slate-600 px-4 py-2 text-sm text-slate-200">Annuler</button>
+              <button type="submit" disabled={sendingEmail} className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-60">
+                {sendingEmail ? 'Envoi...' : 'Envoyer'}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </section>
   );
 }
