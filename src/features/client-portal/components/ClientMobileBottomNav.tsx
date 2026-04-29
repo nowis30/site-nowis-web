@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, FileText, LayoutDashboard, MessageSquare, Music4, Sparkles, type LucideIcon } from 'lucide-react';
-import { clientPortalNavigation } from '@/features/client-portal/config/navigation';
+import { CalendarDays, FileText, MessageSquare, Music4, Sparkles, type LucideIcon } from 'lucide-react';
+import { clientPortalMobileBottomNavigation } from '@/features/client-portal/config/navigation';
 
 const navIcons: Record<string, LucideIcon> = {
-  '/client/dashboard': LayoutDashboard,
   '/client/messages': MessageSquare,
   '/client/song-requests': Music4,
   '/client/workshops': Sparkles,
@@ -20,10 +19,10 @@ export function ClientMobileBottomNav({ unreadMessages }: { unreadMessages: numb
   return (
     <nav
       aria-label="Navigation mobile du portail client"
-      className="fixed inset-x-2 bottom-2 z-[70] rounded-[1.6rem] border border-slate-700/90 bg-slate-950/98 px-2 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.45rem)] shadow-[0_18px_45px_rgba(2,6,23,0.55)] backdrop-blur md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-700/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(2,6,23,0.22)] backdrop-blur md:hidden"
     >
-      <div className="grid grid-cols-6 gap-1">
-        {clientPortalNavigation.map(({ href, shortLabel, matches }) => {
+      <div className="mx-auto grid w-full max-w-[88rem] grid-cols-5 gap-1 px-2 py-1.5">
+        {clientPortalMobileBottomNavigation.map(({ href, shortLabel, matches }) => {
           const isActive = matches(pathname);
           const Icon = navIcons[href];
 
@@ -34,15 +33,15 @@ export function ClientMobileBottomNav({ unreadMessages }: { unreadMessages: numb
               aria-current={isActive ? 'page' : undefined}
               title={shortLabel}
               className={[
-                'relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2.5 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 min-[375px]:flex-row min-[375px]:gap-1.5 min-[375px]:rounded-xl',
-                isActive ? 'bg-primary-500/18 text-white shadow-[0_0_0_1px_rgba(96,165,250,0.18)_inset]' : 'text-slate-300 hover:bg-slate-900/80 hover:text-white',
+                'relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60',
+                isActive ? 'bg-slate-900 text-white shadow-[0_0_0_1px_rgba(15,23,42,0.22)_inset]' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
               ].join(' ')}
             >
-              <Icon size={18} strokeWidth={2.1} />
-              <span className="min-w-0 truncate text-[10px] font-semibold leading-tight min-[375px]:text-[11px]">{shortLabel}</span>
+              <Icon size={17} strokeWidth={2.1} />
+              <span className="min-w-0 truncate text-[10px] font-semibold leading-tight">{shortLabel}</span>
               {href === '/client/messages' && unreadMessages > 0 ? (
-                <span className="absolute right-2 top-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-slate-950">
-                  {unreadMessages > 9 ? '9+' : unreadMessages}
+                <span className="absolute right-1.5 top-1.5 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                  {unreadMessages > 99 ? '99+' : unreadMessages}
                 </span>
               ) : null}
             </Link>
