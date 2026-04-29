@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
+import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
 import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
 import { sanitizeNextPath } from '@/lib/safe-next';
 
@@ -28,6 +29,18 @@ export default function ConnexionPage() {
       ? 'Le lien de connexion est invalide ou expiré.'
       : externalErrorCode === 'account-not-found'
         ? "Aucun compte client n'est relié à ce lien."
+        : externalErrorCode === 'google-unavailable'
+          ? 'La connexion Google est temporairement indisponible.'
+          : externalErrorCode === 'google-auth-failed'
+            ? 'La connexion Google a échoué. Réessayez.'
+            : externalErrorCode === 'google-email-invalid'
+              ? 'Votre compte Google doit avoir une adresse email vérifiée.'
+              : externalErrorCode === 'google-role-mismatch'
+                ? 'Cette adresse est déjà utilisée pour un compte interne. Utilisez la connexion CRM.'
+                : externalErrorCode === 'google-account-disabled'
+                  ? 'Ce compte est désactivé. Contactez le support.'
+                  : externalErrorCode === 'google-account-conflict'
+                    ? 'Un conflit de connexion Google est survenu. Contactez le support.'
         : null;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -103,6 +116,16 @@ export default function ConnexionPage() {
                 {externalErrorMessage}
               </div>
             ) : null}
+
+            <div className="mb-5">
+              <GoogleClientAuthCard nextPath={nextPath} />
+            </div>
+
+            <div className="mb-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-[color:var(--site-border)]" />
+              <span className="text-xs uppercase tracking-[0.22em] text-[color:var(--site-soft)]">ou avec email</span>
+              <div className="h-px flex-1 bg-[color:var(--site-border)]" />
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

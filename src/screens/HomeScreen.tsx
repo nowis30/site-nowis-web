@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { LAUNCH_DISCOUNT_PERCENT, LAUNCH_END_LABEL } from '@/data/pricing';
 import { ReviewsSection } from '@/components/reviews/ReviewsSection';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
+import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
 
 const offers = [
   {
@@ -112,6 +114,14 @@ export const HomeScreen = async () => {
             </span>
           ))}
         </div>
+
+        <div className="mt-8 max-w-3xl">
+          <GoogleClientAuthCard
+            nextPath="/client/dashboard"
+            title="Créer mon espace client gratuitement"
+            description="Accédez en un clic à votre portail client pour suivre vos demandes, messages, ateliers et documents."
+          />
+        </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-12 md:py-14">
@@ -122,15 +132,11 @@ export const HomeScreen = async () => {
               Des avis publiés par les personnes qui ont déjà vécu l'expérience Création Nowis.
             </p>
           </div>
-          <Link href="/contact" className="cta-secondary hidden px-5 py-3 text-sm md:inline-flex">
-            Laisser un commentaire
-          </Link>
         </div>
         <ReviewsSection />
-        <div className="mt-6 md:hidden">
-          <Link href="/contact" className="cta-secondary w-full justify-center px-5 py-3 text-sm">
-            Laisser un commentaire
-          </Link>
+
+        <div className="mt-8">
+          <ReviewForm />
         </div>
       </section>
 

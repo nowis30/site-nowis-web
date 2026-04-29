@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
+import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
 import { sanitizeNextPath } from '@/lib/safe-next';
 
 export default function InscriptionPage() {
@@ -80,6 +81,16 @@ export default function InscriptionPage() {
             Creez votre compte pour continuer vers la page demandee.
           </div>
         ) : null}
+
+        <div className="mb-5">
+          <GoogleClientAuthCard nextPath={nextPath} />
+        </div>
+
+        <div className="mb-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-[color:var(--site-border)]" />
+          <span className="text-xs uppercase tracking-[0.22em] text-[color:var(--site-soft)]">ou inscription classique</span>
+          <div className="h-px flex-1 bg-[color:var(--site-border)]" />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

@@ -110,13 +110,29 @@ select:focus {
   .crm-main-scroll input:not([type='checkbox']):not([type='radio']),
   .crm-main-scroll textarea,
   .crm-main-scroll select {
-    color: rgb(248 250 252);
-    background-color: rgb(2 6 23 / 0.7);
+    color: rgb(248 250 252) !important;
+    background-color: rgb(2 6 23 / 0.7) !important;
+    -webkit-text-fill-color: rgb(248 250 252);
+    caret-color: rgb(248 250 252);
+  }
+
+  .crm-main-scroll input:not([type='checkbox']):not([type='radio']),
+  .crm-main-scroll textarea,
+  .crm-main-scroll select,
+  .crm-main-scroll button {
+    min-height: 3rem;
   }
 
   .crm-main-scroll input::placeholder,
   .crm-main-scroll textarea::placeholder {
-    color: rgb(148 163 184);
+    color: rgb(148 163 184) !important;
+  }
+
+  .crm-main-scroll input[type='date']::-webkit-calendar-picker-indicator,
+  .crm-main-scroll input[type='datetime-local']::-webkit-calendar-picker-indicator,
+  .crm-main-scroll input[type='time']::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.4);
+    opacity: 0.9;
   }
 
   .crm-main-scroll select option {
@@ -132,6 +148,34 @@ select:focus {
     -webkit-text-fill-color: rgb(248 250 252);
     -webkit-box-shadow: 0 0 0px 1000px rgb(2 6 23 / 0.7) inset;
     transition: background-color 9999s ease-in-out 0s;
+  }
+
+  .crm-main-scroll input:-moz-autofill,
+  .crm-main-scroll textarea:-moz-autofill,
+  .crm-main-scroll select:-moz-autofill {
+    color: rgb(248 250 252) !important;
+    box-shadow: 0 0 0px 1000px rgb(2 6 23 / 0.7) inset;
+  }
+
+  @media (max-width: 768px) {
+    .crm-main-scroll input:not([type='checkbox']):not([type='radio']),
+    .crm-main-scroll textarea,
+    .crm-main-scroll select,
+    .crm-main-scroll button {
+      min-height: 3.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .crm-main-scroll textarea {
+      min-height: 6.5rem;
+    }
+
+    .crm-main-scroll input[type='checkbox'],
+    .crm-main-scroll input[type='radio'] {
+      transform: scale(1.15);
+      transform-origin: center;
+    }
   }
 
   .crm-surface {

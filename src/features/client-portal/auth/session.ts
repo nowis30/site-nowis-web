@@ -182,7 +182,7 @@ export async function getClientPortalSessionServer() {
 export async function requireClientPortalSession() {
   const session = await getClientPortalSessionServer();
   if (!session) {
-    redirect('/connexion');
+    redirect('/connexion?next=/client/dashboard');
   }
   return session;
 }

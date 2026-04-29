@@ -25,6 +25,7 @@ Voir les fichiers de documentation :
 | **TODO_ACTIONS.md** | ✅ **COMMENCE ICI** - Checklist de ce que tu dois faire |
 | **SETUP_INSTRUCTIONS.md** | 📖 Guide complet de configuration et personnalisation |
 | **DEPLOY_GOOGLE_PLAY.md** | 📱 Guide pour déployer sur Google Play |
+| **docs/google-client-auth.md** | 🔐 Connexion/inscription client gratuite avec Google |
 
 ## 🎯 Ce qui est inclus
 

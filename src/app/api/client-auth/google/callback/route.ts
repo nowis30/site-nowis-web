@@ -1,0 +1,372 @@
+import { randomUUID } from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
+import { Prisma, UserRole } from '@prisma/client';
+import { hashPassword } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import {
+  clearGoogleOauthNextCookie,
+  clearGoogleOauthStateCookie,
+  CLIENT_GOOGLE_NEXT_COOKIE_NAME,
+  CLIENT_GOOGLE_STATE_COOKIE_NAME,
+  getGoogleCallbackUrl,
+  readCookieValue,
+  sanitizeGoogleNextPath,
+} from '@/features/client-portal/auth/google';
+import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
+
+interface GoogleTokenResponse {
+  access_token?: string;
+}
+
+interface GoogleUserInfo {
+  sub?: string;
+  email?: string;
+  email_verified?: boolean;
+  name?: string;
+  picture?: string;
+}
+
+function buildErrorRedirect(request: NextRequest, code: string, nextPath: string) {
+  const url = new URL('/connexion', request.url);
+  url.searchParams.set('error', code);
+  if (nextPath && nextPath !== '/client/dashboard') {
+    url.searchParams.set('next', nextPath);
+  }
+  return url;
+}
+
+function redirectWithGoogleCleanup(request: NextRequest, code: string, nextPath: string) {
+  const response = NextResponse.redirect(buildErrorRedirect(request, code, nextPath), {
+    headers: { 'Cache-Control': 'no-store' },
+  });
+  response.headers.append('Set-Cookie', clearGoogleOauthStateCookie());
+  response.headers.append('Set-Cookie', clearGoogleOauthNextCookie());
+  return response;
+}
+
+export async function GET(request: NextRequest) {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+  const cookieHeader = request.headers.get('cookie');
+  const stateCookie = readCookieValue(cookieHeader, CLIENT_GOOGLE_STATE_COOKIE_NAME);
+  const nextCookieValue = readCookieValue(cookieHeader, CLIENT_GOOGLE_NEXT_COOKIE_NAME);
+  let nextPath = '/client/dashboard';
+  try {
+    nextPath = sanitizeGoogleNextPath(nextCookieValue ? decodeURIComponent(nextCookieValue) : '/client/dashboard');
+  } catch {
+    nextPath = '/client/dashboard';
+  }
+
+  const state = request.nextUrl.searchParams.get('state');
+  const code = request.nextUrl.searchParams.get('code');
+
+  if (!clientId || !clientSecret) {
+    return redirectWithGoogleCleanup(request, 'google-unavailable', nextPath);
+  }
+
+  if (!state || !stateCookie || state !== stateCookie || !code) {
+    return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+  }
+
+  try {
+    const callbackUrl = getGoogleCallbackUrl(request.nextUrl.origin);
+
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: callbackUrl,
+        grant_type: 'authorization_code',
+      }),
+      cache: 'no-store',
+    });
+
+    if (!tokenResponse.ok) {
+      return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+    }
+
+    const tokenData = (await tokenResponse.json()) as GoogleTokenResponse;
+    if (!tokenData.access_token) {
+      return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+    }
+
+    const profileResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      cache: 'no-store',
+    });
+
+    if (!profileResponse.ok) {
+      return redirectWithGoogleCleanup(request, 'google-auth-failed', nextPath);
+    }
+
+    const profile = (await profileResponse.json()) as GoogleUserInfo;
+    const email = profile.email?.trim().toLowerCase();
+    const providerAccountId = profile.sub?.trim();
+    const fullName = profile.name?.trim() || (email ? email.split('@')[0] : 'Client Nowis');
+
+    if (!email || !providerAccountId || profile.email_verified !== true) {
+      return redirectWithGoogleCleanup(request, 'google-email-invalid', nextPath);
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const linkedAccount = await tx.clientOAuthAccount.findUnique({
+        where: {
+          provider_providerAccountId: {
+            provider: 'google',
+            providerAccountId,
+          },
+        },
+        include: {
+          user: {
+            include: {
+              contact: true,
+            },
+          },
+        },
+      });
+
+      if (linkedAccount) {
+        const linkedUser = linkedAccount.user;
+
+        if (linkedUser.role !== UserRole.PORTAL_USER || !linkedUser.isActive) {
+          throw new Error('GOOGLE_ROLE_MISMATCH');
+        }
+
+        let contact = linkedUser.contact;
+        if (!contact) {
+          const existingContact = await tx.contact.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' } },
+          });
+
+          contact = existingContact
+            ? await tx.contact.update({
+                where: { id: existingContact.id },
+                data: {
+                  fullName,
+                  type: 'CLIENT',
+                  source: existingContact.source || 'website-google',
+                  tags: Array.from(new Set([...(existingContact.tags || []), 'portal-client', 'google-auth'])),
+                },
+              })
+            : await tx.contact.create({
+                data: {
+                  type: 'CLIENT',
+                  fullName,
+                  email,
+                  source: 'website-google',
+                  tags: ['portal-client', 'google-auth'],
+                },
+              });
+
+          await tx.user.update({
+            where: { id: linkedUser.id },
+            data: {
+              contactId: contact.id,
+              fullName,
+              email,
+            },
+          });
+        } else {
+          contact = await tx.contact.update({
+            where: { id: contact.id },
+            data: {
+              fullName,
+              email,
+              tags: Array.from(new Set([...(contact.tags || []), 'google-auth'])),
+            },
+          });
+
+          await tx.user.update({
+            where: { id: linkedUser.id },
+            data: { fullName, email },
+          });
+        }
+
+        await tx.clientOAuthAccount.update({
+          where: { id: linkedAccount.id },
+          data: {
+            email,
+            name: fullName,
+            image: profile.picture || null,
+          },
+        });
+
+        return {
+          contact,
+          email,
+          fullName,
+        };
+      }
+
+      const existingUser = await tx.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        include: { contact: true },
+      });
+
+      if (existingUser && existingUser.role !== UserRole.PORTAL_USER) {
+        throw new Error('GOOGLE_ROLE_MISMATCH');
+      }
+
+      if (existingUser && !existingUser.isActive) {
+        throw new Error('GOOGLE_ACCOUNT_DISABLED');
+      }
+
+      let user = existingUser;
+      let contact = existingUser?.contact || null;
+
+      if (!user) {
+        const existingContact = await tx.contact.findFirst({
+          where: { email: { equals: email, mode: 'insensitive' } },
+        });
+
+        contact = existingContact
+          ? await tx.contact.update({
+              where: { id: existingContact.id },
+              data: {
+                fullName,
+                type: 'CLIENT',
+                source: existingContact.source || 'website-google',
+                tags: Array.from(new Set([...(existingContact.tags || []), 'portal-client', 'google-auth'])),
+              },
+            })
+          : await tx.contact.create({
+              data: {
+                type: 'CLIENT',
+                fullName,
+                email,
+                source: 'website-google',
+                tags: ['portal-client', 'google-auth'],
+              },
+            });
+
+        const generatedPassword = await hashPassword(`google-${randomUUID()}`);
+
+        user = await tx.user.create({
+          data: {
+            email,
+            fullName,
+            passwordHash: generatedPassword,
+            role: UserRole.PORTAL_USER,
+            isActive: true,
+            contactId: contact.id,
+          },
+          include: { contact: true },
+        });
+
+        await tx.activity.create({
+          data: {
+            type: 'FORM',
+            title: 'Client inscrit via Google',
+            description: `Inscription gratuite via Google: ${fullName} (${email}).`,
+            contactId: contact.id,
+            userId: user.id,
+          },
+        });
+      } else {
+        if (!contact) {
+          const existingContact = await tx.contact.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' } },
+          });
+
+          contact = existingContact
+            ? await tx.contact.update({
+                where: { id: existingContact.id },
+                data: {
+                  fullName,
+                  type: 'CLIENT',
+                  source: existingContact.source || 'website-google',
+                  tags: Array.from(new Set([...(existingContact.tags || []), 'portal-client', 'google-auth'])),
+                },
+              })
+            : await tx.contact.create({
+                data: {
+                  type: 'CLIENT',
+                  fullName,
+                  email,
+                  source: 'website-google',
+                  tags: ['portal-client', 'google-auth'],
+                },
+              });
+        } else {
+          contact = await tx.contact.update({
+            where: { id: contact.id },
+            data: {
+              fullName,
+              email,
+              tags: Array.from(new Set([...(contact.tags || []), 'google-auth'])),
+            },
+          });
+        }
+
+        user = await tx.user.update({
+          where: { id: user.id },
+          data: {
+            fullName,
+            email,
+            contactId: contact.id,
+          },
+          include: { contact: true },
+        });
+      }
+
+      await tx.clientOAuthAccount.upsert({
+        where: {
+          userId_provider: {
+            userId: user.id,
+            provider: 'google',
+          },
+        },
+        update: {
+          providerAccountId,
+          email,
+          name: fullName,
+          image: profile.picture || null,
+        },
+        create: {
+          userId: user.id,
+          provider: 'google',
+          providerAccountId,
+          email,
+          name: fullName,
+          image: profile.picture || null,
+        },
+      });
+
+      return {
+        contact: contact!,
+        email,
+        fullName,
+      };
+    });
+
+    const sessionToken = signClientPortalSession({
+      contactId: result.contact.id,
+      tenantId: null,
+      email: result.email,
+      fullName: result.fullName,
+    });
+
+    const response = NextResponse.redirect(new URL(nextPath, request.url), {
+      headers: { 'Cache-Control': 'no-store' },
+    });
+    response.headers.append('Set-Cookie', clearGoogleOauthStateCookie());
+    response.headers.append('Set-Cookie', clearGoogleOauthNextCookie());
+    response.headers.append('Set-Cookie', createClientPortalSessionCookie(sessionToken));
+    return response;
+  } catch (error) {
+    const code =
+      error instanceof Error && error.message === 'GOOGLE_ROLE_MISMATCH'
+        ? 'google-role-mismatch'
+        : error instanceof Error && error.message === 'GOOGLE_ACCOUNT_DISABLED'
+          ? 'google-account-disabled'
+          : error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
+            ? 'google-account-conflict'
+            : 'google-auth-failed';
+
+    return redirectWithGoogleCleanup(request, code, nextPath);
+  }
+}
