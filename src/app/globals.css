@@ -106,6 +106,34 @@ select:focus {
     scroll-padding-top: 1.5rem;
   }
 
+  /* Force un contraste lisible dans tous les champs CRM, y compris sur navigateurs qui appliquent des styles natifs. */
+  .crm-main-scroll input:not([type='checkbox']):not([type='radio']),
+  .crm-main-scroll textarea,
+  .crm-main-scroll select {
+    color: rgb(248 250 252);
+    background-color: rgb(2 6 23 / 0.7);
+  }
+
+  .crm-main-scroll input::placeholder,
+  .crm-main-scroll textarea::placeholder {
+    color: rgb(148 163 184);
+  }
+
+  .crm-main-scroll select option {
+    color: rgb(15 23 42);
+    background-color: rgb(248 250 252);
+  }
+
+  .crm-main-scroll input:-webkit-autofill,
+  .crm-main-scroll input:-webkit-autofill:hover,
+  .crm-main-scroll input:-webkit-autofill:focus,
+  .crm-main-scroll textarea:-webkit-autofill,
+  .crm-main-scroll select:-webkit-autofill {
+    -webkit-text-fill-color: rgb(248 250 252);
+    -webkit-box-shadow: 0 0 0px 1000px rgb(2 6 23 / 0.7) inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
   .crm-surface {
     @apply rounded-[1.75rem] border border-slate-800 bg-slate-900/70 shadow-xl shadow-black/15;
   }
