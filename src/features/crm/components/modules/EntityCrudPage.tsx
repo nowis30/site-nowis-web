@@ -39,6 +39,10 @@ interface EntityCrudPageProps {
   fields: FieldConfig[];
   columns: DataColumn<GenericRecord>[];
   hideCreateForm?: boolean;
+  createFormLink?: {
+    href: string;
+    label: string;
+  };
   createPermission: boolean;
   updatePermission: boolean;
   deletePermission: boolean;
@@ -59,6 +63,7 @@ export function EntityCrudPage({
   fields,
   columns,
   hideCreateForm = false,
+  createFormLink,
   createPermission,
   updatePermission,
   deletePermission,
@@ -183,7 +188,17 @@ export function EntityCrudPage({
           <h2 className="text-2xl font-semibold text-white">{title}</h2>
           <p className="text-sm text-slate-400">{description}</p>
         </div>
-        <SearchBar value={search} onChange={setSearch} />
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          {hideCreateForm && createPermission && createFormLink ? (
+            <Link
+              href={createFormLink.href}
+              className="inline-flex items-center justify-center rounded-lg border border-primary-500/50 bg-primary-500/10 px-3 py-2 text-xs font-medium text-primary-200 hover:border-primary-400 hover:bg-primary-500/20 hover:text-white"
+            >
+              {createFormLink.label}
+            </Link>
+          ) : null}
+          <SearchBar value={search} onChange={setSearch} />
+        </div>
       </div>
 
       {((!hideCreateForm && (createPermission || updatePermission)) || (updatePermission && Boolean(editingId))) ? (

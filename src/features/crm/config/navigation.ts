@@ -9,7 +9,7 @@ export interface CrmNavItem {
 }
 
 export const crmNavigation: CrmNavItem[] = [
-  { label: 'Dashboard',     href: '/crm/dashboard',     module: 'dashboard',     icon: 'LayoutDashboard', section: 'Vue d\'ensemble' },
+  { label: 'Tableau de bord', href: '/crm/dashboard',     module: 'dashboard',     icon: 'LayoutDashboard', section: 'Vue d\'ensemble' },
   { label: 'Messages',      href: '/crm/notifications', module: 'notifications', icon: 'Bell',            section: 'Vue d\'ensemble' },
   { label: 'Contacts',      href: '/crm/contacts',      module: 'contacts',      icon: 'Users',           section: 'Relations' },
   { label: 'Organisations', href: '/crm/organizations', module: 'organizations', icon: 'Building2',       section: 'Relations' },

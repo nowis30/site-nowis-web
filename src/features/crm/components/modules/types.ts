@@ -7,6 +7,10 @@ export interface ModulePageConfig {
   description: string;
   endpoint: string;
   hideCreateForm?: boolean;
+  createFormLink?: {
+    href: string;
+    label: string;
+  };
   defaultValues: Record<string, unknown>;
   fields: Array<{
     name: string;

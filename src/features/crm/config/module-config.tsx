@@ -130,6 +130,11 @@ export const organizationsConfig: ModulePageConfig = {
   title: 'Organisations',
   description: 'Écoles, organismes et structures partenaires pour les ateliers.',
   endpoint: '/api/crm/organizations',
+  hideCreateForm: true,
+  createFormLink: {
+    href: '/crm/organizations/nouveau',
+    label: 'Créer une organisation',
+  },
   defaultValues: {
     name: '',
     type: 'SCHOOL',
