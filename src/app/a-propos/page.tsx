@@ -26,7 +26,24 @@ export default function AProposPage() {
               'radial-gradient(circle at 85% 8%, rgba(203,165,120,0.16), transparent 22%)',
           }}
         />
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
+        <div className="mx-auto max-w-6xl">
+          <div className="relative mx-auto mb-10 max-w-4xl">
+            <div className="overflow-hidden rounded-[2rem] border border-primary-200/20 shadow-card">
+              <div className="relative aspect-[16/9] sm:aspect-[3/2] md:aspect-[5/3]">
+                <Image
+                  src="/hero.jpg"
+                  alt="Portrait de Nowis Morin, créateur de Création Nowis et animateur d ateliers IA"
+                  fill
+                  className="brightness-[0.78] contrast-[1.04]"
+                  style={{ objectFit: 'cover', objectPosition: '50% 28%' }}
+                  priority
+                />
+                <div className="pointer-events-none absolute inset-0 hero-overlay-warm" />
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-auto max-w-4xl">
           <div>
             <span className="brand-chip inline-block">À propos</span>
             <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
@@ -52,21 +69,6 @@ export default function AProposPage() {
               </Link>
             </div>
           </div>
-
-          <div className="relative hidden lg:block">
-            <div className="overflow-hidden rounded-[2rem] border border-primary-200/20 shadow-card">
-              <div className="relative aspect-[3/4]">
-                <Image
-                  src="/hero.jpg"
-                  alt="Portrait de Nowis Morin, créateur de Création Nowis et animateur d ateliers IA"
-                  fill
-                  className="brightness-[0.75] contrast-[1.04]"
-                  style={{ objectFit: 'cover', objectPosition: '50% 25%' }}
-                  priority
-                />
-                <div className="pointer-events-none absolute inset-0 hero-overlay-warm" />
-              </div>
-            </div>
           </div>
         </div>
       </section>
