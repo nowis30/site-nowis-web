@@ -13,6 +13,7 @@ import {
   sanitizeGoogleNextPath,
 } from '@/features/client-portal/auth/google';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
+import { isClientProfileIncomplete } from '@/features/client-portal/profile';
 
 interface GoogleTokenResponse {
   access_token?: string;
@@ -132,7 +133,15 @@ export async function GET(request: NextRequest) {
         id: string;
         role: UserRole;
         isActive: boolean;
-        contact: { id: string; fullName: string; email: string | null; tags: string[]; source: string | null } | null;
+        contact: {
+          id: string;
+          fullName: string;
+          email: string | null;
+          phone: string | null;
+          notes: string | null;
+          tags: string[];
+          source: string | null;
+        } | null;
       };
     } | null = null;
 
@@ -234,6 +243,8 @@ export async function GET(request: NextRequest) {
           contact,
           email,
           fullName,
+          createdNewUser: false,
+          profileIncomplete: isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes }),
         };
       }
 
@@ -304,6 +315,22 @@ export async function GET(request: NextRequest) {
           });
         } catch {
           // Non-critical: skip activity logging if table is missing or fails
+        }
+
+        try {
+          await tx.task.create({
+            data: {
+              title: 'Nouveau client Google: completer la fiche contact',
+              description: `Inscription Google: ${fullName} (${email}). Verifier telephone, adresse de facturation et adresse postale de la demande (atelier/chanson).`,
+              type: 'FOLLOW_UP',
+              status: 'TODO',
+              priority: 'MEDIUM',
+              linkedType: 'CONTACT',
+              linkedId: contact.id,
+            },
+          });
+        } catch {
+          // Non-critical: do not block login if task table is unavailable
         }
       } else {
         if (!contact) {
@@ -381,6 +408,8 @@ export async function GET(request: NextRequest) {
         contact: contact!,
         email,
         fullName,
+        createdNewUser: !existingUser,
+        profileIncomplete: isClientProfileIncomplete({ phone: contact?.phone, notes: contact?.notes }),
       };
     });
 
@@ -391,7 +420,9 @@ export async function GET(request: NextRequest) {
       fullName: result.fullName,
     });
 
-    const response = NextResponse.redirect(new URL(nextPath, request.url), {
+    const targetPath = result.profileIncomplete ? '/client/profil' : nextPath;
+
+    const response = NextResponse.redirect(new URL(targetPath, request.url), {
       headers: { 'Cache-Control': 'no-store' },
     });
     response.headers.append('Set-Cookie', clearGoogleOauthStateCookie());

@@ -4,6 +4,7 @@ import { CalendarClock, FileText, Inbox, MessagesSquare } from 'lucide-react';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, PortalStatCard, QuickActions, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
 import { CreateOrganizationFromContactCard } from '@/features/client-portal/components/CreateOrganizationFromContactCard';
+import { isClientProfileIncomplete } from '@/features/client-portal/profile';
 import { safeListMessages } from '@/lib/messages-store';
 import { prisma } from '@/lib/prisma';
 
@@ -104,6 +105,7 @@ export default async function ClientDashboardPage() {
   }
 
   const unreadPortalMessages = messages.filter((item) => item.senderType === 'ADMIN' && !item.isRead).length;
+  const profileIncomplete = isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes });
   const upcomingAppointments = contact.appointments.filter((appointment) => appointment.startAt >= new Date());
   const recentMessages = messages.slice(0, 5);
   const recentDocuments = documents.slice(0, 5);
@@ -129,6 +131,19 @@ export default async function ClientDashboardPage() {
       </SectionCard>
 
       <CreateOrganizationFromContactCard />
+
+      {profileIncomplete ? (
+        <SectionCard title="Completer votre profil" subtitle="Merci de renseigner vos informations de contact pour accelerer le traitement de vos demandes atelier/chanson.">
+          <div className="mt-5 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+            <p>
+              Votre dossier est incomplet: telephone, adresse de facturation ou adresse postale de la demande manquante.
+            </p>
+            <Link href="/client/profil" className="mt-3 inline-flex rounded-xl border border-amber-300/50 px-3 py-2 text-xs font-semibold text-amber-100 hover:bg-amber-400/20 hover:text-white">
+              Completer mes informations
+            </Link>
+          </div>
+        </SectionCard>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-4">
         <PortalStatCard
