@@ -41,6 +41,7 @@ export function ModulePage({ role, moduleKey }: ModulePageProps) {
       fields={config.fields}
       columns={config.columns}
       defaultValues={config.defaultValues}
+      hideCreateForm={config.hideCreateForm}
       createPermission={can(role, moduleKey, 'create')}
       updatePermission={can(role, moduleKey, 'update')}
       deletePermission={can(role, moduleKey, 'delete')}

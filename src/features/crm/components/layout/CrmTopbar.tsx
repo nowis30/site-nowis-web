@@ -12,6 +12,12 @@ interface CrmTopbarProps {
   onMobileMenuOpen?: () => void;
 }
 
+function roleLabel(role: CrmTokenPayload['role']) {
+  if (role === 'ADMIN') return 'Administrateur';
+  if (role === 'ASSISTANT') return 'Assistant';
+  return 'Client portail';
+}
+
 export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
@@ -85,12 +91,12 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
             <span className="text-xs uppercase tracking-widest text-slate-500">Navigation</span>
           </div>
           <p className="text-sm text-slate-400">Connecté en tant que</p>
-          <p className="text-sm font-semibold text-white sm:text-base">{session.fullName} · {session.role}</p>
+          <p className="text-sm font-semibold text-white sm:text-base">{session.fullName} · {roleLabel(session.role)}</p>
         </div>
 
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3">
           <div ref={searchRef} className="relative min-w-0 flex-1">
-            <SearchBar value={query} onChange={handleSearchChange} placeholder="Recherche globale (contacts, dossiers, immeubles...)" />
+            <SearchBar value={query} onChange={handleSearchChange} placeholder="Recherche globale (contacts, dossiers, demandes, ateliers...)" />
             {showResults && results.length > 0 ? (
               <div className="absolute right-0 z-20 mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 shadow-soft">
                 {results.map((item) => (

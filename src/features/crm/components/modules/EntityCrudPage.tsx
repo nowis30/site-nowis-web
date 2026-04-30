@@ -38,6 +38,7 @@ interface EntityCrudPageProps {
   endpoint: string;
   fields: FieldConfig[];
   columns: DataColumn<GenericRecord>[];
+  hideCreateForm?: boolean;
   createPermission: boolean;
   updatePermission: boolean;
   deletePermission: boolean;
@@ -57,6 +58,7 @@ export function EntityCrudPage({
   endpoint,
   fields,
   columns,
+  hideCreateForm = false,
   createPermission,
   updatePermission,
   deletePermission,
@@ -184,7 +186,7 @@ export function EntityCrudPage({
         <SearchBar value={search} onChange={setSearch} />
       </div>
 
-      {(createPermission || updatePermission) ? (
+      {((!hideCreateForm && (createPermission || updatePermission)) || (updatePermission && Boolean(editingId))) ? (
         <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {computedFields.map((field) => {

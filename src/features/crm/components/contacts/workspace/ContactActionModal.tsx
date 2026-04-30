@@ -5,6 +5,36 @@ import { buildDefaultInvoiceNumber } from './formatters';
 import type { ContactWorkspaceContact } from './types';
 import type { ContactActionType } from './ContactHeader';
 
+const PRIORITY_OPTIONS = [
+  { value: 'LOW', label: 'Basse' },
+  { value: 'MEDIUM', label: 'Moyenne' },
+  { value: 'HIGH', label: 'Haute' },
+];
+
+const APPOINTMENT_TYPE_OPTIONS = [
+  { value: 'VISIT', label: 'Visite' },
+  { value: 'CALL', label: 'Appel' },
+  { value: 'FOLLOWUP', label: 'Suivi' },
+  { value: 'MEETING', label: 'Rencontre' },
+  { value: 'INSPECTION', label: 'Inspection' },
+  { value: 'DEADLINE', label: 'Échéance' },
+  { value: 'REMINDER', label: 'Rappel' },
+];
+
+const ORGANIZATION_TYPE_OPTIONS = [
+  { value: 'SCHOOL', label: 'École' },
+  { value: 'COMMUNITY_ORG', label: 'Organisme' },
+  { value: 'DAYCARE', label: 'Garderie' },
+  { value: 'CAMP', label: 'Camp' },
+  { value: 'OTHER', label: 'Autre' },
+];
+
+const ORGANIZATION_STATUS_OPTIONS = [
+  { value: 'LEAD', label: 'Prospection' },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'INACTIVE', label: 'Inactive' },
+];
+
 export function ContactActionModal({
   action,
   contact,
@@ -166,7 +196,7 @@ export function ContactActionModal({
               <label>
                 <span className="mb-2 block text-sm text-slate-300">Priorité</span>
                 <select value={form.priority} onChange={(event) => setForm((current) => ({ ...current, priority: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  {['LOW', 'MEDIUM', 'HIGH'].map((item) => <option key={item} value={item}>{item}</option>)}
+                  {PRIORITY_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </label>
             </>
@@ -202,7 +232,7 @@ export function ContactActionModal({
               <label>
                 <span className="mb-2 block text-sm text-slate-300">Type</span>
                 <select value={form.appointmentType} onChange={(event) => setForm((current) => ({ ...current, appointmentType: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  {['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER'].map((item) => <option key={item} value={item}>{item}</option>)}
+                  {APPOINTMENT_TYPE_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </label>
             </>
@@ -217,13 +247,13 @@ export function ContactActionModal({
               <label>
                 <span className="mb-2 block text-sm text-slate-300">Type</span>
                 <select value={form.organizationType} onChange={(event) => setForm((current) => ({ ...current, organizationType: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  {['SCHOOL', 'COMMUNITY_ORG', 'DAYCARE', 'CAMP', 'OTHER'].map((item) => <option key={item} value={item}>{item}</option>)}
+                  {ORGANIZATION_TYPE_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </label>
               <label>
                 <span className="mb-2 block text-sm text-slate-300">Statut</span>
                 <select value={form.organizationStatus} onChange={(event) => setForm((current) => ({ ...current, organizationStatus: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  {['LEAD', 'ACTIVE', 'INACTIVE'].map((item) => <option key={item} value={item}>{item}</option>)}
+                  {ORGANIZATION_STATUS_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </label>
               <label>

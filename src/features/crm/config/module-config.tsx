@@ -24,6 +24,7 @@ export const contactsConfig: ModulePageConfig = {
   title: 'Contacts',
   description: 'Prospects, clients, partenaires et organisations.',
   endpoint: '/api/crm/contacts',
+  hideCreateForm: true,
   defaultValues: {
     type: 'PROSPECT',
     fullName: '',

@@ -6,6 +6,7 @@ export interface ModulePageConfig {
   title: string;
   description: string;
   endpoint: string;
+  hideCreateForm?: boolean;
   defaultValues: Record<string, unknown>;
   fields: Array<{
     name: string;

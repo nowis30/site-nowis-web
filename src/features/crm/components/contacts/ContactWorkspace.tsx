@@ -82,6 +82,20 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
 
       <div className="crm-surface overflow-hidden">
         <div className="border-b border-slate-800 px-3 pt-3 sm:px-6">
+          <label className="mb-3 block md:hidden">
+            <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Section</span>
+            <select
+              value={tab}
+              onChange={(event) => setTab(event.target.value as (typeof TABS)[number]['id'])}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            >
+              {TABS.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className="flex gap-1 overflow-x-auto pb-3">
             {TABS.map((item) => {
               const Icon = item.icon;
