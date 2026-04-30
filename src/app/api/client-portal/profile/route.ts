@@ -52,17 +52,19 @@ export async function PATCH(request: NextRequest) {
 
     const nextTags = Array.from(new Set([...(contact.tags || []), 'profile-contact-complete']));
 
-    await prisma.$transaction(async (tx) => {
-      await tx.contact.update({
-        where: { id: contact.id },
-        data: {
-          phone: payload.phone,
-          notes: nextNotes,
-          tags: nextTags,
-        },
-      });
+    await prisma.contact.update({
+      where: { id: contact.id },
+      data: {
+        phone: payload.phone,
+        notes: nextNotes,
+        tags: nextTags,
+      },
+    });
 
-      await tx.activity.create({
+    // Non-bloquant: on ne doit jamais perdre la sauvegarde profil si des tables CRM
+    // secondaires sont absentes dans un environnement partiellement migré.
+    try {
+      await prisma.activity.create({
         data: {
           type: 'FORM_SUBMISSION',
           title: 'Informations client completees',
@@ -70,9 +72,12 @@ export async function PATCH(request: NextRequest) {
           contactId: contact.id,
         },
       });
+    } catch {
+    }
 
-      if (wasIncomplete) {
-        await tx.task.create({
+    if (wasIncomplete) {
+      try {
+        await prisma.task.create({
           data: {
             title: 'Verifier infos client completees',
             description: `Le client ${contact.fullName} a complete ses informations (telephone, facturation, adresse de demande).`,
@@ -83,8 +88,9 @@ export async function PATCH(request: NextRequest) {
             linkedId: contact.id,
           },
         });
+      } catch {
       }
-    });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
