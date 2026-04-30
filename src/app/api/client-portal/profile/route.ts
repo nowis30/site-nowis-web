@@ -6,8 +6,19 @@ import { prisma } from '@/lib/prisma';
 
 const profileSchema = z.object({
   phone: z.string().trim().min(7).max(40),
-  billingAddress: z.string().trim().min(5).max(300),
-  requestPostalAddress: z.string().trim().min(5).max(300),
+  billingAddress: z.object({
+    streetNumber: z.string().trim().min(1).max(20),
+    street: z.string().trim().min(2).max(140),
+    city: z.string().trim().min(2).max(120),
+    postalCode: z.string().trim().min(3).max(20),
+  }),
+  samePostalAsBilling: z.boolean().default(false),
+  requestPostalAddress: z.object({
+    streetNumber: z.string().trim().min(1).max(20),
+    street: z.string().trim().min(2).max(140),
+    city: z.string().trim().min(2).max(120),
+    postalCode: z.string().trim().min(3).max(20),
+  }),
   requestType: z.enum(['ATELIER', 'CHANSON', 'ATELIER_ET_CHANSON']),
 });
 
@@ -35,6 +46,7 @@ export async function PATCH(request: NextRequest) {
     const nextNotes = upsertClientProfileMeta(contact.notes, {
       billingAddress: payload.billingAddress,
       requestPostalAddress: payload.requestPostalAddress,
+      samePostalAsBilling: payload.samePostalAsBilling,
       requestType: payload.requestType,
     });
 

@@ -2,13 +2,14 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ClientRequestType } from '@/features/client-portal/profile';
+import type { ClientAddressFields, ClientRequestType } from '@/features/client-portal/profile';
 
 interface ClientProfileCompletionFormProps {
   initial: {
     phone: string;
-    billingAddress: string;
-    requestPostalAddress: string;
+    billingAddress: ClientAddressFields;
+    requestPostalAddress: ClientAddressFields;
+    samePostalAsBilling: boolean;
     requestType: ClientRequestType;
   };
 }
@@ -74,27 +75,160 @@ export function ClientProfileCompletionForm({ initial }: ClientProfileCompletion
           </select>
         </label>
 
-        <label className="md:col-span-2">
-          <span className="mb-1 block text-sm text-slate-300">Adresse de facturation</span>
-          <textarea
-            value={form.billingAddress}
-            onChange={(event) => setForm((current) => ({ ...current, billingAddress: event.target.value }))}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
-            rows={3}
-            required
+        <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
+          <p className="mb-3 text-sm font-medium text-white">Adresse de facturation</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Numero</span>
+              <input
+                value={form.billingAddress.streetNumber}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    billingAddress: { ...current.billingAddress, streetNumber: event.target.value },
+                    requestPostalAddress: current.samePostalAsBilling
+                      ? { ...current.requestPostalAddress, streetNumber: event.target.value }
+                      : current.requestPostalAddress,
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Rue</span>
+              <input
+                value={form.billingAddress.street}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    billingAddress: { ...current.billingAddress, street: event.target.value },
+                    requestPostalAddress: current.samePostalAsBilling
+                      ? { ...current.requestPostalAddress, street: event.target.value }
+                      : current.requestPostalAddress,
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Ville</span>
+              <input
+                value={form.billingAddress.city}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    billingAddress: { ...current.billingAddress, city: event.target.value },
+                    requestPostalAddress: current.samePostalAsBilling
+                      ? { ...current.requestPostalAddress, city: event.target.value }
+                      : current.requestPostalAddress,
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
+                required
+              />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Code postal</span>
+              <input
+                value={form.billingAddress.postalCode}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    billingAddress: { ...current.billingAddress, postalCode: event.target.value },
+                    requestPostalAddress: current.samePostalAsBilling
+                      ? { ...current.requestPostalAddress, postalCode: event.target.value }
+                      : current.requestPostalAddress,
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
+                required
+              />
+            </label>
+          </div>
+        </div>
+
+        <label className="md:col-span-2 inline-flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3 text-sm text-slate-200">
+          <input
+            type="checkbox"
+            checked={form.samePostalAsBilling}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                samePostalAsBilling: event.target.checked,
+                requestPostalAddress: event.target.checked ? { ...current.billingAddress } : current.requestPostalAddress,
+              }))
+            }
           />
+          Meme adresse postale que facturation
         </label>
 
-        <label className="md:col-span-2">
-          <span className="mb-1 block text-sm text-slate-300">Adresse postale de la demande (atelier/chanson)</span>
-          <textarea
-            value={form.requestPostalAddress}
-            onChange={(event) => setForm((current) => ({ ...current, requestPostalAddress: event.target.value }))}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white"
-            rows={3}
-            required
-          />
-        </label>
+        <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
+          <p className="mb-3 text-sm font-medium text-white">Adresse postale de la demande (atelier/chanson)</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Numero</span>
+              <input
+                value={form.requestPostalAddress.streetNumber}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    requestPostalAddress: { ...current.requestPostalAddress, streetNumber: event.target.value },
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white disabled:opacity-60"
+                required
+                disabled={form.samePostalAsBilling}
+              />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Rue</span>
+              <input
+                value={form.requestPostalAddress.street}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    requestPostalAddress: { ...current.requestPostalAddress, street: event.target.value },
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white disabled:opacity-60"
+                required
+                disabled={form.samePostalAsBilling}
+              />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Ville</span>
+              <input
+                value={form.requestPostalAddress.city}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    requestPostalAddress: { ...current.requestPostalAddress, city: event.target.value },
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white disabled:opacity-60"
+                required
+                disabled={form.samePostalAsBilling}
+              />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs text-slate-300">Code postal</span>
+              <input
+                value={form.requestPostalAddress.postalCode}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    requestPostalAddress: { ...current.requestPostalAddress, postalCode: event.target.value },
+                  }))
+                }
+                className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white disabled:opacity-60"
+                required
+                disabled={form.samePostalAsBilling}
+              />
+            </label>
+          </div>
+        </div>
       </div>
 
       {success ? <p className="text-sm text-emerald-300">{success}</p> : null}

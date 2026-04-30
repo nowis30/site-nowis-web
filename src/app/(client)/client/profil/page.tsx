@@ -35,8 +35,19 @@ export default async function ClientProfilePage() {
           <ClientProfileCompletionForm
             initial={{
               phone: contact.phone || '',
-              billingAddress: meta?.billingAddress || '',
-              requestPostalAddress: meta?.requestPostalAddress || '',
+              billingAddress: meta?.billingAddress || {
+                streetNumber: '',
+                street: '',
+                city: '',
+                postalCode: '',
+              },
+              requestPostalAddress: meta?.requestPostalAddress || {
+                streetNumber: '',
+                street: '',
+                city: '',
+                postalCode: '',
+              },
+              samePostalAsBilling: meta?.samePostalAsBilling || false,
               requestType: meta?.requestType || 'ATELIER_ET_CHANSON',
             }}
           />
