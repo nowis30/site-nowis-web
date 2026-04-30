@@ -1,12 +1,13 @@
 import { Prisma } from '@prisma/client';
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
+import { loadExternalCalendarEvents } from '@/lib/external-calendars';
 import { CrmCalendarPage } from '@/features/crm/components/calendar/CrmCalendarPage';
 
 export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   await requireCrmSession();
 
-  const [appointments, contacts, workshopAppointments, workshopAvailabilities] = await Promise.all([
+  const [appointments, contacts, workshopAppointments, workshopAvailabilities, externalCalendarEvents] = await Promise.all([
     prisma.appointment.findMany({
       include: {
         contact: { select: { fullName: true } },
@@ -37,6 +38,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') return [];
       throw error;
     }),
+    loadExternalCalendarEvents(),
   ]);
 
   const nextAvailabilityEvents = workshopAvailabilities.flatMap((item) => {
@@ -97,6 +99,19 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       contactName: item.contact?.fullName || null,
       source: 'workshop_appointment' as const,
       organizationName: item.organization?.name || null,
+    })),
+    ...externalCalendarEvents.map((item) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      startAt: item.startAt,
+      endAt: item.endAt,
+      type: item.source === 'google_calendar' ? 'GOOGLE' : 'MICROSOFT',
+      status: 'CONFIRMED',
+      contactId: null,
+      contactName: item.source === 'google_calendar' ? 'Google Calendar' : 'Microsoft Calendar',
+      source: item.source,
+      organizationName: null,
     })),
     ...nextAvailabilityEvents,
   ].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());

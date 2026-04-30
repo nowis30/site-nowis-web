@@ -19,7 +19,7 @@ type CalendarEventItem = {
   status: string;
   contactId: string | null;
   contactName: string | null;
-  source?: 'appointment' | 'workshop_appointment' | 'workshop_availability';
+  source?: 'appointment' | 'workshop_appointment' | 'workshop_availability' | 'google_calendar' | 'microsoft_calendar';
   organizationName?: string | null;
 };
 
@@ -45,6 +45,8 @@ const TYPE_COLORS: Record<string, string> = {
   REMINDER: '#64748b',
   WORKSHOP: '#9333ea',
   AVAILABILITY: '#0f766e',
+  GOOGLE: '#0b57d0',
+  MICROSOFT: '#0078d4',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -57,6 +59,8 @@ const TYPE_LABELS: Record<string, string> = {
   REMINDER: 'Rappel',
   WORKSHOP: 'Atelier',
   AVAILABILITY: 'Disponibilité',
+  GOOGLE: 'Google',
+  MICROSOFT: 'Microsoft',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -155,9 +159,9 @@ export function CrmCalendarPage({
   const events = useMemo(
     () => filteredAppointments.map((item) => ({
       ...toEventInput(item),
-      editable: item.source !== 'workshop_appointment' && item.source !== 'workshop_availability',
-      startEditable: item.source !== 'workshop_appointment' && item.source !== 'workshop_availability',
-      durationEditable: item.source !== 'workshop_appointment' && item.source !== 'workshop_availability',
+      editable: item.source === 'appointment' || !item.source,
+      startEditable: item.source === 'appointment' || !item.source,
+      durationEditable: item.source === 'appointment' || !item.source,
       classNames: item.id === selectedEventId ? ['ring-2', 'ring-primary-300'] : [],
     })),
     [filteredAppointments, selectedEventId],
@@ -319,7 +323,7 @@ export function CrmCalendarPage({
 
   async function applyEventMove(change: EventChangeArg) {
     const current = appointments.find((entry) => entry.id === change.event.id);
-    if (!current || !change.event.start || !change.event.end || current.source === 'workshop_appointment' || current.source === 'workshop_availability') return;
+    if (!current || !change.event.start || !change.event.end || (current.source && current.source !== 'appointment')) return;
 
     const payload = {
       title: current.title,
@@ -406,7 +410,7 @@ export function CrmCalendarPage({
                 <p className="font-medium text-white">{selectedEvent.title}</p>
                 <p>{selectedEvent.organizationName || selectedEvent.contactName || 'Sans contact'}</p>
                 <p>{toStatusLabel(selectedEvent.status)} · {toTypeLabel(selectedEvent.type)}</p>
-                {selectedEvent.source === 'appointment' || !selectedEvent.source ? <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button> : <p className="text-xs text-slate-500">Événement atelier synchronisé</p>}
+                {selectedEvent.source === 'appointment' || !selectedEvent.source ? <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button> : <p className="text-xs text-slate-500">Événement synchronisé (lecture seule)</p>}
               </div>
             ) : <p className="mt-3 text-sm text-slate-400">Cliquez un rendez-vous pour afficher le détail rapide.</p>}
           </div>
