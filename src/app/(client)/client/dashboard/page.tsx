@@ -3,7 +3,6 @@ import { Prisma } from '@prisma/client';
 import { CalendarClock, FileText, Inbox, MessagesSquare } from 'lucide-react';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, PortalStatCard, QuickActions, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
-import { CreateOrganizationFromContactCard } from '@/features/client-portal/components/CreateOrganizationFromContactCard';
 import { isClientProfileIncomplete } from '@/features/client-portal/profile';
 import { safeListMessages } from '@/lib/messages-store';
 import { prisma } from '@/lib/prisma';
@@ -129,8 +128,6 @@ export default async function ClientDashboardPage() {
           ]}
         />
       </SectionCard>
-
-      <CreateOrganizationFromContactCard />
 
       {profileIncomplete ? (
         <SectionCard title="Completer votre profil" subtitle="Merci de renseigner vos informations de contact pour accelerer le traitement de vos demandes atelier/chanson.">
