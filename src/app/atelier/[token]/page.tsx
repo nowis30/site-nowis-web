@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BookingEmbed } from '@/components/booking/BookingEmbed';
 import { prisma } from '@/lib/prisma';
-import { getBookingEmbedUrl } from '@/lib/booking-link';
+import { getWorkshopBookingBaseUrl } from '@/lib/booking-link';
 
 function formatMoney(value: number | null | undefined) {
   if (typeof value !== 'number') return 'A confirmer';
@@ -56,7 +56,7 @@ export default async function AtelierBookingPage({ params }: { params: { token: 
     notFound();
   }
 
-  const bookingUrl = workshop.calendlyUrl || getBookingEmbedUrl();
+  const bookingUrl = workshop.calendlyUrl || getWorkshopBookingBaseUrl();
   const companyPhone = process.env.COMPANY_PHONE || workshop.contactPhone || '';
   const companyEmail = process.env.COMPANY_EMAIL || workshop.contactEmail || 'simonmorin@nowis.store';
 

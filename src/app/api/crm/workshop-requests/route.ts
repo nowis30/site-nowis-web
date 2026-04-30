@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { workshopRequestInputSchema } from '@/features/workshops/schemas';
-import { buildBookingUrlWithPrefill } from '@/lib/booking-link';
+import { buildWorkshopBookingUrlWithPrefill } from '@/lib/booking-link';
 
 function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     const siteBaseUrl = getSiteBaseUrl(request);
     const workshopPublicUrl = `${siteBaseUrl}/atelier/${clientAccessToken}`;
 
-    const bookingUrl = payload.calendlyUrl || buildBookingUrlWithPrefill({
+    const bookingUrl = payload.calendlyUrl || buildWorkshopBookingUrlWithPrefill({
       name: payload.contactPerson,
       email: payload.contactEmail,
       notes: payload.title,
