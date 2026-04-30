@@ -40,6 +40,10 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-CA', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
+function fromLocalInputValue(value: string) {
+  return new Date(value).toISOString();
+}
+
 function AppointmentCard({ apt, onStatusChange }: { apt: Appointment; onStatusChange: () => void }) {
   const [loading, setLoading] = useState(false);
 
@@ -99,6 +103,7 @@ function AppointmentCard({ apt, onStatusChange }: { apt: Appointment; onStatusCh
 function NewAppointmentForm({ contacts, onCreated }: { contacts: { id: string; fullName: string }[]; onCreated: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: '', type: 'MEETING', status: 'PENDING', startAt: '', endAt: '',
     description: '', contactId: '',
@@ -106,16 +111,53 @@ function NewAppointmentForm({ contacts, onCreated }: { contacts: { id: string; f
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+
+    if (!form.title.trim()) {
+      setError('Le titre est obligatoire.');
+      return;
+    }
+
+    if (!form.startAt || !form.endAt) {
+      setError('Les dates de debut et de fin sont obligatoires.');
+      return;
+    }
+
+    const startDate = new Date(form.startAt);
+    const endDate = new Date(form.endAt);
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate <= startDate) {
+      setError('La date de fin doit etre posterieure a la date de debut.');
+      return;
+    }
+
     setLoading(true);
-    await fetch('/api/crm/appointments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    setLoading(false);
-    setOpen(false);
-    setForm({ title: '', type: 'MEETING', status: 'PENDING', startAt: '', endAt: '', description: '', contactId: '' });
-    onCreated();
+    try {
+      const payload = {
+        ...form,
+        title: form.title.trim(),
+        startAt: fromLocalInputValue(form.startAt),
+        endAt: fromLocalInputValue(form.endAt),
+      };
+
+      const response = await fetch('/api/crm/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(data?.error || 'Creation impossible');
+      }
+
+      setOpen(false);
+      setForm({ title: '', type: 'MEETING', status: 'PENDING', startAt: '', endAt: '', description: '', contactId: '' });
+      onCreated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (!open) {
@@ -129,15 +171,16 @@ function NewAppointmentForm({ contacts, onCreated }: { contacts: { id: string; f
   return (
     <form onSubmit={submit} className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-3">
       <h3 className="font-semibold text-white">Nouveau rendez-vous</h3>
+      {error && <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{error}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input required placeholder="Titre *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="col-span-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400" />
         <div className="flex flex-col gap-1">
           <label className="text-xs text-slate-400">Début *</label>
-          <input type="datetime-local" required value={form.startAt} onChange={e => setForm(f => ({ ...f, startAt: new Date(e.target.value).toISOString() }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
+          <input type="datetime-local" required value={form.startAt} onChange={e => setForm(f => ({ ...f, startAt: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-slate-400">Fin *</label>
-          <input type="datetime-local" required value={form.endAt} onChange={e => setForm(f => ({ ...f, endAt: new Date(e.target.value).toISOString() }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
+          <input type="datetime-local" required value={form.endAt} onChange={e => setForm(f => ({ ...f, endAt: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
         </div>
         <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
           {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -149,7 +192,10 @@ function NewAppointmentForm({ contacts, onCreated }: { contacts: { id: string; f
         <textarea placeholder="Description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="col-span-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 resize-none" />
       </div>
       <div className="flex gap-2 justify-end">
-        <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Annuler</button>
+        <button type="button" onClick={() => {
+          setOpen(false);
+          setError(null);
+        }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Annuler</button>
         <button type="submit" disabled={loading} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50">
           {loading ? 'Création...' : 'Créer'}
         </button>

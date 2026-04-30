@@ -1,4 +1,6 @@
+import { Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { appointmentInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
@@ -43,7 +45,18 @@ export async function POST(request: NextRequest) {
       },
     });
     return NextResponse.json({ item }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Données invalides', details: error.issues }, { status: 400 });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+      return NextResponse.json({ error: 'Le contact ou l\'utilisateur lie au rendez-vous est introuvable.' }, { status: 400 });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return NextResponse.json({ error: 'Le module rendez-vous n\'est pas encore disponible sur cette base de donnees.' }, { status: 503 });
+    }
+
+    console.error('[CRM_APPOINTMENTS_CREATE]', error);
+    return NextResponse.json({ error: 'Creation du rendez-vous impossible' }, { status: 500 });
   }
 }

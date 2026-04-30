@@ -30,14 +30,30 @@ export function normalizeIsoDate(value?: string) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+const appointmentDateTimeSchema = z.string().trim().refine(
+  (value) => !Number.isNaN(new Date(value).getTime()),
+  'Date de rendez-vous invalide',
+);
+
 export const appointmentInputSchema = z.object({
   title: z.string().min(2).max(200),
   description: z.string().max(4000).optional(),
-  startAt: z.string().datetime(),
-  endAt: z.string().datetime(),
+  startAt: appointmentDateTimeSchema,
+  endAt: appointmentDateTimeSchema,
   type: z.enum(['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER']).default('MEETING'),
   status: z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE']).default('PENDING'),
   contactId: z.string().uuid().optional().or(z.literal('')),
+}).superRefine((value, ctx) => {
+  const startAt = new Date(value.startAt);
+  const endAt = new Date(value.endAt);
+
+  if (!Number.isNaN(startAt.getTime()) && !Number.isNaN(endAt.getTime()) && endAt <= startAt) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['endAt'],
+      message: 'La date de fin doit etre posterieure a la date de debut',
+    });
+  }
 });
 
 export const invoiceInputSchema = z.object({
