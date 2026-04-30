@@ -121,7 +121,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
             href="/crm/dashboard"
             className="shrink-0 rounded-lg border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 hover:border-primary-500/50 hover:bg-primary-500/10 hover:text-white"
           >
-            Retour dashboard
+            Retour tableau de bord
           </Link>
 
           <Link
@@ -130,7 +130,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
             rel="noreferrer"
             className="hidden shrink-0 rounded-lg border border-primary-500/40 bg-primary-500/10 px-3 py-2 text-xs font-medium text-primary-200 hover:border-primary-400 hover:bg-primary-500/20 hover:text-white sm:inline-flex"
           >
-            Portail client (test)
+            Portail client
           </Link>
         </div>
       </div>

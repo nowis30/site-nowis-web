@@ -157,7 +157,7 @@ export function ActivitiesPage({ activities, contacts }: ActivitiesPageProps) {
     <section className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2"><Activity size={22} /> Timeline des activités</h2>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2"><Activity size={22} /> Historique des activités</h2>
           <p className="text-sm text-slate-400 mt-0.5">{activities.length} activité{activities.length > 1 ? 's' : ''} récente{activities.length > 1 ? 's' : ''}</p>
         </div>
         <NewActivityForm contacts={contacts} onCreated={() => router.refresh()} />

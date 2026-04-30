@@ -96,7 +96,7 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
               ))}
             </select>
           </label>
-          <div className="flex gap-1 overflow-x-auto pb-3">
+          <div className="hidden gap-1 overflow-x-auto pb-3 md:flex">
             {TABS.map((item) => {
               const Icon = item.icon;
               const active = tab === item.id;

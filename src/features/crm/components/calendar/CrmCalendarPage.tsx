@@ -47,6 +47,33 @@ const TYPE_COLORS: Record<string, string> = {
   AVAILABILITY: '#0f766e',
 };
 
+const TYPE_LABELS: Record<string, string> = {
+  VISIT: 'Visite',
+  CALL: 'Appel',
+  FOLLOWUP: 'Suivi',
+  MEETING: 'Rencontre',
+  INSPECTION: 'Inspection',
+  DEADLINE: 'Échéance',
+  REMINDER: 'Rappel',
+  WORKSHOP: 'Atelier',
+  AVAILABILITY: 'Disponibilité',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: 'En attente',
+  CONFIRMED: 'Confirmé',
+  CANCELLED: 'Annulé',
+  DONE: 'Terminé',
+};
+
+function toTypeLabel(value: string) {
+  return TYPE_LABELS[value] || value;
+}
+
+function toStatusLabel(value: string) {
+  return STATUS_LABELS[value] || value;
+}
+
 function toLocalInputValue(value: string) {
   const date = new Date(value);
   const offset = date.getTimezoneOffset();
@@ -335,14 +362,14 @@ export function CrmCalendarPage({
         <aside className="crm-surface space-y-4 p-4 lg:p-5">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Filtres</p>
-            <h3 className="mt-2 text-lg font-semibold text-white">Mini sidebar</h3>
+            <h3 className="mt-2 text-lg font-semibold text-white">Panneau rapide</h3>
           </div>
 
           <label>
             <span className="mb-2 block text-xs text-slate-400">Type</span>
             <select value={filterType} onChange={(event) => setFilterType(event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white">
               <option value="ALL">Tous les types</option>
-              {Object.keys(TYPE_COLORS).map((key) => <option key={key} value={key}>{key}</option>)}
+              {Object.keys(TYPE_COLORS).map((key) => <option key={key} value={key}>{toTypeLabel(key)}</option>)}
             </select>
           </label>
 
@@ -350,7 +377,7 @@ export function CrmCalendarPage({
             <span className="mb-2 block text-xs text-slate-400">Statut</span>
             <select value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white">
               <option value="ALL">Tous les statuts</option>
-              {['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'].map((key) => <option key={key} value={key}>{key}</option>)}
+              {['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'].map((key) => <option key={key} value={key}>{toStatusLabel(key)}</option>)}
             </select>
           </label>
 
@@ -378,7 +405,7 @@ export function CrmCalendarPage({
               <div className="mt-3 space-y-2 text-sm text-slate-300">
                 <p className="font-medium text-white">{selectedEvent.title}</p>
                 <p>{selectedEvent.organizationName || selectedEvent.contactName || 'Sans contact'}</p>
-                <p>{selectedEvent.status} · {selectedEvent.type}</p>
+                <p>{toStatusLabel(selectedEvent.status)} · {toTypeLabel(selectedEvent.type)}</p>
                 {selectedEvent.source === 'appointment' || !selectedEvent.source ? <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button> : <p className="text-xs text-slate-500">Événement atelier synchronisé</p>}
               </div>
             ) : <p className="mt-3 text-sm text-slate-400">Cliquez un rendez-vous pour afficher le détail rapide.</p>}
@@ -439,13 +466,13 @@ export function CrmCalendarPage({
               <label>
                 <span className="mb-2 block text-sm text-slate-300">Type</span>
                 <select value={form.type} onChange={(event) => setForm((current) => ({ ...current, type: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  {Object.keys(TYPE_COLORS).map((key) => <option key={key} value={key}>{key}</option>)}
+                  {Object.keys(TYPE_COLORS).map((key) => <option key={key} value={key}>{toTypeLabel(key)}</option>)}
                 </select>
               </label>
               <label>
                 <span className="mb-2 block text-sm text-slate-300">Statut</span>
                 <select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
-                  {['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'].map((key) => <option key={key} value={key}>{key}</option>)}
+                  {['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE'].map((key) => <option key={key} value={key}>{toStatusLabel(key)}</option>)}
                 </select>
               </label>
               <label>
