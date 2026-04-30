@@ -1,4 +1,4 @@
-const DEFAULT_BOOKING_URL = 'https://cal.com/simon-nowis-morin';
+const DEFAULT_BOOKING_URL = 'https://calendly.com/simonmorin-nowis/30min';
 
 function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, '');
@@ -17,6 +17,9 @@ export function getBookingBaseUrl() {
 
 export function getBookingEmbedUrl() {
   const baseUrl = getBookingBaseUrl();
+  if (/(^https?:\/\/)?(www\.)?calendly\.com\//i.test(baseUrl)) {
+    return baseUrl;
+  }
   return baseUrl.includes('?') ? `${baseUrl}&embed=true` : `${baseUrl}?embed=true`;
 }
 

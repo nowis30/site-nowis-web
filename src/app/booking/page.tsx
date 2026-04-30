@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { BookingEmbed } from '@/components/booking/BookingEmbed';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
+import { getBookingBaseUrl } from '@/lib/booking-link';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
@@ -9,6 +11,8 @@ export const metadata = buildMetadata({
 });
 
 export default function BookingPage() {
+  const bookingUrl = getBookingBaseUrl();
+
   return (
     <div className="site-background">
       <section className="section-warm">
@@ -27,11 +31,24 @@ export default function BookingPage() {
         </div>
 
         <div className="warm-cta-panel mt-10 rounded-3xl p-10 shadow-sm">
-          <h2 className="text-3xl font-bold text-[color:var(--site-heading)]">Prêt à en parler?</h2>
-          <p className="mt-4 max-w-3xl leading-relaxed text-[color:var(--site-text)]">Le moyen le plus simple est de me contacter directement avec ton idée. Tu peux me parler d’une chanson, d’un clip, d’un visuel ou d’une collaboration artistique plus large.</p>
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux discuter de mon projet avec Création Nowis." className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Parler de mon projet</ContactPrefillLink>
-            <a href="mailto:simonmorin@nowis.store" className="inline-flex rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-5 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">simonmorin@nowis.store</a>
+          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.25fr] lg:items-start">
+            <div>
+              <h2 className="text-3xl font-bold text-[color:var(--site-heading)]">Prêt à en parler?</h2>
+              <p className="mt-4 max-w-3xl leading-relaxed text-[color:var(--site-text)]">Le moyen le plus simple est maintenant de choisir ton créneau directement sur le site. Si tu préfères, tu peux aussi m'écrire avec ton idée pour que je te guide vers la bonne formule.</p>
+              <div className="mt-6 flex flex-col gap-4 sm:flex-row lg:flex-col xl:flex-row">
+                <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux discuter de mon projet avec Création Nowis." className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">Parler de mon projet</ContactPrefillLink>
+                <a href="mailto:simonmorin@nowis.store" className="inline-flex rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-5 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">simonmorin@nowis.store</a>
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-[1.75rem] border border-white/15 bg-white/80 p-2 shadow-2xl shadow-black/10 backdrop-blur">
+              <BookingEmbed
+                url={bookingUrl}
+                title="Calendrier de reservation Creation Nowis"
+                minHeight={700}
+                className="w-full rounded-[1.25rem] bg-white"
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { BookingEmbed } from '@/components/booking/BookingEmbed';
 import { prisma } from '@/lib/prisma';
 import { getBookingEmbedUrl } from '@/lib/booking-link';
 
@@ -123,15 +124,11 @@ export default async function AtelierBookingPage({ params }: { params: { token: 
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-[color:var(--site-border)] bg-white shadow-sm">
-          <iframe
+          <BookingEmbed
+            url={bookingUrl}
             title="Calendrier de rendez-vous atelier"
-            src={bookingUrl.includes('?') ? `${bookingUrl}&embed=true` : `${bookingUrl}?embed=true`}
-            width="100%"
-            height="860"
-            frameBorder="0"
+            minHeight={760}
             className="w-full"
-            style={{ minHeight: '760px' }}
-            allow="camera; microphone; clipboard-write"
           />
         </section>
 
