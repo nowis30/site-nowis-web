@@ -6,6 +6,21 @@ type OptionItem = { id: string; label: string };
 
 type ApiOptionItem = { id: string; fullName?: string; name?: string };
 
+type RichOrganization = {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  primaryContact?: {
+    id?: string;
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  } | null;
+};
+
 function toNumber(value: string) {
   if (!value.trim()) return undefined;
   const parsed = Number(value);
@@ -25,6 +40,7 @@ export function CrmWorkshopCreateForm() {
 
   const [contacts, setContacts] = useState<OptionItem[]>([]);
   const [organizations, setOrganizations] = useState<OptionItem[]>([]);
+  const [organizationsData, setOrganizationsData] = useState<RichOrganization[]>([]);
 
   const [form, setForm] = useState({
     workshopType: 'ORGANIZATION',
@@ -68,10 +84,12 @@ export function CrmWorkshopCreateForm() {
           })),
         );
 
+        const richOrgs = (data.organizations || []) as RichOrganization[];
+        setOrganizationsData(richOrgs);
         setOrganizations(
-          ((data.organizations || []) as ApiOptionItem[]).map((item) => ({
+          richOrgs.map((item) => ({
             id: item.id,
-            label: item.name || item.fullName || 'Organisation',
+            label: item.name || 'Organisation',
           })),
         );
       } catch (err) {
@@ -201,7 +219,29 @@ export function CrmWorkshopCreateForm() {
           </label>
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-200">Organisation existante (optionnel)</span>
-            <select value={form.organizationId} onChange={(event) => setForm((current) => ({ ...current, organizationId: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white">
+            <select
+              value={form.organizationId}
+              onChange={(event) => {
+                const orgId = event.target.value;
+                const org = organizationsData.find((item) => item.id === orgId);
+                setForm((current) => {
+                  const next = { ...current, organizationId: orgId };
+                  if (!org) return next;
+                  // Auto-remplissage: on ne remplace que les champs vides
+                  if (!current.organizationName && org.name) next.organizationName = org.name;
+                  if (!current.contactPerson && org.primaryContact?.fullName) next.contactPerson = org.primaryContact.fullName;
+                  const phone = org.phone || org.primaryContact?.phone || '';
+                  if (!current.contactPhone && phone) next.contactPhone = phone;
+                  const email = org.email || org.primaryContact?.email || '';
+                  if (!current.contactEmail && email) next.contactEmail = email;
+                  const address = [org.address, org.city].filter(Boolean).join(', ');
+                  if (!current.addressOrLocation && address) next.addressOrLocation = address;
+                  if (current.workshopType !== 'ORGANIZATION') next.workshopType = 'ORGANIZATION';
+                  return next;
+                });
+              }}
+              className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white"
+            >
               <option value="">Sélectionner</option>
               {organizations.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
             </select>

@@ -56,6 +56,17 @@ function parseInputValue(type: FieldConfig['type'], rawValue: string, checked: b
   return rawValue;
 }
 
+function asText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function buildAddressLine(address: unknown, city: unknown): string {
+  const a = asText(address);
+  const c = asText(city);
+  if (a && c) return `${a}, ${c}`;
+  return a || c;
+}
+
 export function EntityCrudPage({
   title,
   description,
@@ -106,10 +117,11 @@ export function EntityCrudPage({
   const computedFields = useMemo(() => {
     return fields.map((field) => {
       if (!field.sourceKey || !field.sourceMapper) return field;
+      const mapper = field.sourceMapper;
       const rawItems = sourceData[field.sourceKey] ?? [];
       const options = rawItems.map((item) => ({
-        value: field.sourceMapper?.value(item),
-        label: field.sourceMapper?.label(item),
+        value: mapper.value(item),
+        label: mapper.label(item),
       }));
       return {
         ...field,
@@ -131,6 +143,73 @@ export function EntityCrudPage({
   useEffect(() => {
     setCurrentPage((previous) => Math.min(previous, totalPages));
   }, [totalPages]);
+
+  function applyAutofillForWorkshopOrganization(previous: Record<string, unknown>, organizationId: string) {
+    if (endpoint !== '/api/crm/workshop-requests' || !organizationId) return previous;
+
+    const organization = sourceData.organizations.find((item) => String(item.id ?? '') === organizationId);
+    if (!organization) return previous;
+
+    const primaryContact =
+      organization.primaryContact && typeof organization.primaryContact === 'object'
+        ? (organization.primaryContact as GenericRecord)
+        : null;
+
+    const firstOrganizationContact = sourceData.organizationContacts.find(
+      (item) => String(item.organizationId ?? '') === organizationId,
+    );
+
+    const next = { ...previous };
+
+    next.workshopType = 'ORGANIZATION';
+
+    if (!asText(next.organizationName) && asText(organization.name)) {
+      next.organizationName = asText(organization.name);
+    }
+
+    if (!asText(next.contactPerson) && asText(primaryContact?.fullName)) {
+      next.contactPerson = asText(primaryContact?.fullName);
+    }
+
+    const knownPhone = asText(organization.phone) || asText(primaryContact?.phone) || asText(firstOrganizationContact?.phone);
+    if (!asText(next.contactPhone) && knownPhone) {
+      next.contactPhone = knownPhone;
+    }
+
+    const knownEmail = asText(organization.email) || asText(primaryContact?.email) || asText(firstOrganizationContact?.email);
+    if (!asText(next.contactEmail) && knownEmail) {
+      next.contactEmail = knownEmail;
+    }
+
+    const addressLine = buildAddressLine(organization.address, organization.city);
+    if (!asText(next.addressOrLocation) && addressLine) {
+      next.addressOrLocation = addressLine;
+    }
+
+    if (!asText(next.organizationContactId) && firstOrganizationContact?.id) {
+      next.organizationContactId = String(firstOrganizationContact.id);
+    }
+
+    return next;
+  }
+
+  function applyFieldChange(
+    previous: Record<string, unknown>,
+    field: Pick<FieldConfig, 'name' | 'type'>,
+    rawValue: string,
+    checked: boolean,
+  ) {
+    const next = {
+      ...previous,
+      [field.name]: parseInputValue(field.type, rawValue, checked),
+    };
+
+    if (field.name === 'organizationId' && typeof next.organizationId === 'string') {
+      return applyAutofillForWorkshopOrganization(next, next.organizationId);
+    }
+
+    return next;
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -235,7 +314,7 @@ export function EntityCrudPage({
                       value={value}
                       required={field.required}
                       onChange={(event) =>
-                        setFormValues((previous) => ({ ...previous, [field.name]: event.target.value }))
+                        setFormValues((previous) => applyFieldChange(previous, field, event.target.value, false))
                       }
                       className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
                     >

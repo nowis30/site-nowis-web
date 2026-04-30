@@ -15,11 +15,29 @@ export async function GET(request: NextRequest) {
       }),
       prisma.organization.findMany({
         orderBy: { name: 'asc' },
-        select: { id: true, name: true, type: true },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          email: true,
+          phone: true,
+          address: true,
+          city: true,
+          contacts: {
+            take: 1,
+            orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
       }).catch(() => []),
       prisma.organizationContact.findMany({
         orderBy: { fullName: 'asc' },
-        select: { id: true, fullName: true, organization: { select: { name: true } } },
+        select: { id: true, fullName: true, email: true, phone: true, organizationId: true, organization: { select: { name: true } } },
       }).catch(() => []),
     ]);
 
@@ -28,10 +46,22 @@ export async function GET(request: NextRequest) {
       properties: [],
       units: [],
       tenants: [],
-      organizations,
+      organizations: organizations.map((item) => ({
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        email: item.email,
+        phone: item.phone,
+        address: item.address,
+        city: item.city,
+        primaryContact: item.contacts[0] || null,
+      })),
       organizationContacts: organizationContacts.map((item) => ({
         id: item.id,
+        organizationId: item.organizationId,
         fullName: `${item.fullName}${item.organization?.name ? ` · ${item.organization.name}` : ''}`,
+        email: item.email,
+        phone: item.phone,
       })),
     });
   } catch (error) {
