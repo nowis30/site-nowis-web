@@ -6,6 +6,7 @@ export const contactInputSchema = z.object({
   fullName: z.string().min(2, 'Le nom doit avoir au minimum 2 caractères').max(160, 'Le nom ne peut pas dépasser 160 caractères'),
   email: z.string().email('Email invalide').optional().or(z.literal('')),
   phone: z.string().max(40, 'Numéro de téléphone invalide').optional(),
+  companyName: z.string().max(160, 'Le nom de l\'entreprise ne peut pas dépasser 160 caractères').optional(),
   source: z.string().max(120, 'La source ne peut pas dépasser 120 caractères').optional(),
   tags: z.array(z.string().min(1, 'Les tags ne peuvent pas être vides')).default([]),
   notes: z.string().max(5000, 'Les notes ne peuvent pas dépasser 5000 caractères').optional(),

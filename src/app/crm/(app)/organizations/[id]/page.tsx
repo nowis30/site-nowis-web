@@ -5,6 +5,7 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { CrmDetailCard } from '@/features/crm/components/shared/CrmDetailCard';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
+import { OrganizationEditButton } from '@/features/crm/components/organizations/OrganizationEditButton';
 
 type OrganizationDetailRecord = Prisma.OrganizationGetPayload<{
   include: {
@@ -46,7 +47,12 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
         title={item.name}
         backHref="/crm/organizations"
         backLabel="Organisations"
-        badge={<StatusBadge value={item.status} />}
+        badge={
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge value={item.status} />
+            <OrganizationEditButton organization={{ id: item.id, name: item.name, type: item.type, status: item.status, email: item.email, phone: item.phone, address: item.address, city: item.city, notes: item.notes }} />
+          </div>
+        }
         sections={[
           {
             title: 'Organisation',

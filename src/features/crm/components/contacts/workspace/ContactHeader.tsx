@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 import type { ContactWorkspaceContact } from './types';
 
@@ -12,6 +12,7 @@ export function ContactHeader({
   onOpenEmails,
   canImpersonate,
   onImpersonate,
+  onEdit,
 }: {
   contact: ContactWorkspaceContact;
   stats: Array<{ label: string; value: number }>;
@@ -19,6 +20,7 @@ export function ContactHeader({
   onOpenEmails: () => void;
   canImpersonate: boolean;
   onImpersonate: () => Promise<void>;
+  onEdit: () => void;
 }) {
   const [impersonating, setImpersonating] = useState(false);
 
@@ -45,6 +47,12 @@ export function ContactHeader({
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <h1 className="text-4xl font-semibold text-white">{contact.fullName}</h1>
             <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-3 py-1 text-sm text-primary-200">{contact.type}</span>
+            <button
+              onClick={onEdit}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-600 bg-slate-800/60 px-3 py-1 text-sm text-slate-200 hover:border-primary-500/60 hover:bg-slate-700 hover:text-white"
+            >
+              <Pencil size={13} /> Modifier la fiche
+            </button>
           </div>
           <p className="mt-3 text-sm leading-6 text-slate-300">Dossier complet centralisé avec activité, tâches, rendez-vous, factures, documents, emails, messages et demandes créatives. Le contenu reste lisible, direct et orienté suivi client.</p>
           <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-400">

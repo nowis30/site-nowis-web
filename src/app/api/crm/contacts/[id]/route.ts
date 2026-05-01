@@ -29,11 +29,24 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         fullName: payload.fullName.trim(),
         email: normalizeOptionalString(payload.email),
         phone: normalizeOptionalString(payload.phone),
+        companyName: normalizeOptionalString(payload.companyName),
         source: normalizeOptionalString(payload.source),
         tags: payload.tags,
         notes: normalizeOptionalString(payload.notes),
       },
     });
+
+    // Trace d'activité — pas de blocage si ça échoue
+    await prisma.activity.create({
+      data: {
+        type: 'NOTE',
+        title: 'Fiche client modifiée',
+        description: `Fiche de ${item.fullName} modifiée par un administrateur.`,
+        contactId: item.id,
+        userId: guard.session.sub,
+      },
+    }).catch(() => undefined);
+
     return NextResponse.json({ item });
   } catch (error) {
     return NextResponse.json({ error: 'Mise à jour impossible' }, { status: 400 });

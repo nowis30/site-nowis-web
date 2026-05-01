@@ -15,6 +15,7 @@ import { ContactEmails } from './workspace/ContactEmails';
 import { ContactActionModal } from './workspace/ContactActionModal';
 import { ContactMessages } from './workspace/ContactMessages';
 import { ContactSongRequests } from './workspace/ContactSongRequests';
+import { ContactEditModal } from './workspace/ContactEditModal';
 
 const TABS = [
   { id: 'summary', label: 'Résumé', icon: User2 },
@@ -36,6 +37,7 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
   const initialTab = TABS.some((item) => item.id === requestedTab) ? requestedTab as (typeof TABS)[number]['id'] : 'summary';
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>(initialTab);
   const [action, setAction] = useState<ContactActionType | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [unreadCount, setUnreadCount] = useState(unreadClientMessages);
 
   useEffect(() => {
@@ -78,6 +80,7 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
         onOpenEmails={() => setTab('emails')}
         canImpersonate={canImpersonate}
         onImpersonate={handleImpersonationStart}
+        onEdit={() => setIsEditing(true)}
       />
 
       <div className="crm-surface overflow-hidden">
@@ -125,6 +128,7 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
       </div>
 
       {action ? <ContactActionModal action={action} contact={contact} onClose={() => setAction(null)} onSaved={() => { setAction(null); router.refresh(); }} /> : null}
+      {isEditing ? <ContactEditModal contact={contact} onClose={() => setIsEditing(false)} onSaved={() => setIsEditing(false)} /> : null}
     </section>
   );
 }
