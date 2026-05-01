@@ -10,6 +10,7 @@ import React, { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,6 +33,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* Main Content */}
       <main className="relative z-0 flex-grow pt-24 md:pt-28">
+        <LaunchOfferBanner />
         {children}
       </main>
 

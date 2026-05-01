@@ -28,27 +28,8 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
     e.preventDefault();
     setError('');
 
-    const trimmedName = name.trim();
-    const normalizedEmail = email.trim().toLowerCase();
-    const trimmedComment = comment.trim();
-
     if (rating === 0) {
       setError('Veuillez sélectionner une note.');
-      return;
-    }
-
-    if (trimmedName.length === 0) {
-      setError('Le nom est requis.');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setError('Veuillez entrer un email valide.');
-      return;
-    }
-
-    if (trimmedComment.length < 5) {
-      setError('Le commentaire est trop court.');
       return;
     }
 
@@ -57,13 +38,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: trimmedName,
-          email: normalizedEmail,
-          rating,
-          comment: trimmedComment,
-          context,
-        }),
+        body: JSON.stringify({ name, email, rating, comment, context }),
       });
 
       if (!res.ok) {
@@ -96,7 +71,7 @@ export function ReviewForm({ onSuccess }: { onSuccess?: () => void }) {
         <p className="mt-2 text-[color:var(--site-text)]">
           {publishedImmediately
             ? 'Ton témoignage est publié tout de suite parce que ton adresse email a été reconnue comme vérifiée.'
-            : 'Ton témoignage est bien reçu avec ton email valide et sera publié après validation. Je l\'apprécie vraiment.'}
+            : 'Ton témoignage sera publié après validation. Je l\'apprécie vraiment.'}
         </p>
       </div>
     );

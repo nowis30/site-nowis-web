@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, FileText, MessageSquare, Music4, Sparkles, type LucideIcon } from 'lucide-react';
+import { CalendarDays, FileText, MessageSquare, Music4, Receipt, Sparkles, type LucideIcon } from 'lucide-react';
 import { clientPortalMobileBottomNavigation } from '@/features/client-portal/config/navigation';
 
 const navIcons: Record<string, LucideIcon> = {
@@ -11,6 +11,7 @@ const navIcons: Record<string, LucideIcon> = {
   '/client/workshops': Sparkles,
   '/client/documents': FileText,
   '/client/appointments': CalendarDays,
+  '/client/invoices': Receipt,
 } as const;
 
 export function ClientMobileBottomNav({ unreadMessages }: { unreadMessages: number }) {
@@ -21,7 +22,7 @@ export function ClientMobileBottomNav({ unreadMessages }: { unreadMessages: numb
       aria-label="Navigation mobile du portail client"
       className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-700/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(2,6,23,0.22)] backdrop-blur md:hidden"
     >
-      <div className="mx-auto grid w-full max-w-[88rem] grid-cols-5 gap-1 px-2 py-1.5">
+      <div className="mx-auto grid w-full max-w-[88rem] grid-cols-6 gap-1 px-2 py-1.5">
         {clientPortalMobileBottomNavigation.map(({ href, shortLabel, matches }) => {
           const isActive = matches(pathname);
           const Icon = navIcons[href];

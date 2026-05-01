@@ -20,10 +20,13 @@ interface CrmOtpPayload extends CrmTokenPayload {
 
 function getJwtSecret() {
   const secret = process.env.JWT_SECRET;
-  if (process.env.NODE_ENV === 'production' && !secret) {
-    console.warn('[CRM] JWT_SECRET manquante en production. Fallback temporaire active.');
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[CRM] JWT_SECRET manquante en production. Configurez la variable d\'environnement JWT_SECRET.');
+    }
+    return 'dev-only-secret-must-change-before-prod';
   }
-  return secret || 'dev-only-secret-must-change-before-prod';
+  return secret;
 }
 
 export function signCrmToken(payload: CrmTokenPayload): string {

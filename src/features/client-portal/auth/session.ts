@@ -6,10 +6,13 @@ import { prisma } from '@/lib/prisma';
 
 function getClientPortalSecret() {
   const secret = process.env.CLIENT_PORTAL_JWT_SECRET || process.env.JWT_SECRET;
-  if (process.env.NODE_ENV === 'production' && !secret) {
-    console.warn('[Portal] Secrets JWT portail manquants en production. Fallback temporaire active.');
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[Portal] Secrets JWT portail manquants en production. Configurez CLIENT_PORTAL_JWT_SECRET ou JWT_SECRET.');
+    }
+    return 'dev-only-portal-secret-must-change';
   }
-  return secret || 'dev-only-portal-secret-must-change';
+  return secret;
 }
 
 export const CLIENT_PORTAL_COOKIE_NAME = 'nowis_client_session';

@@ -42,6 +42,12 @@ export const clientPortalNavigation: ClientPortalNavItem[] = [
     shortLabel: 'RDV',
     matches: (pathname: string) => pathname === '/client/appointments',
   },
+  {
+    href: '/client/invoices',
+    label: 'Factures',
+    shortLabel: 'Factures',
+    matches: (pathname: string) => pathname === '/client/invoices' || pathname.startsWith('/client/invoices/'),
+  },
 ];
 
 export const clientPortalMobileBottomNavigation: ClientPortalNavItem[] = [
@@ -74,5 +80,11 @@ export const clientPortalMobileBottomNavigation: ClientPortalNavItem[] = [
     label: 'Rendez-vous',
     shortLabel: 'RDV',
     matches: (pathname: string) => pathname === '/client/appointments',
+  },
+  {
+    href: '/client/invoices',
+    label: 'Factures',
+    shortLabel: 'Factures',
+    matches: (pathname: string) => pathname === '/client/invoices' || pathname.startsWith('/client/invoices/'),
   },
 ];
