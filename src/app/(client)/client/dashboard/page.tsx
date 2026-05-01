@@ -104,7 +104,7 @@ export default async function ClientDashboardPage() {
   }
 
   const unreadPortalMessages = messages.filter((item) => item.senderType === 'ADMIN' && !item.isRead).length;
-  const profileIncomplete = isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes });
+  const profileIncomplete = isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes, profileMeta: contact.profileMeta });
   const upcomingAppointments = contact.appointments.filter((appointment) => appointment.startAt >= new Date());
   const recentMessages = messages.slice(0, 5);
   const recentDocuments = documents.slice(0, 5);

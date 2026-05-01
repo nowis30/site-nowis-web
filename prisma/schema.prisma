@@ -306,6 +306,7 @@ model Contact {
   source          String?
   tags            String[]
   notes           String?
+  profileMeta     Json?
   deletedAt       DateTime?
   deletedBy       String?         @db.Uuid
   deleteReason    String?

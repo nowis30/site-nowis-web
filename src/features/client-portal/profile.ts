@@ -17,6 +17,7 @@ export interface ClientProfileMeta {
 
 const META_START = '[CLIENT_PROFILE_META_START]';
 const META_END = '[CLIENT_PROFILE_META_END]';
+const META_BLOCK_PATTERN = /\[(?:CLIENT_PROFILE_META_START|ROFILE_META_START)\]([\s\S]*?)\[CLIENT_PROFILE_META_END\]/g;
 
 function normalizeText(value: string | null | undefined) {
   return (value || '').trim();
@@ -24,28 +25,13 @@ function normalizeText(value: string | null | undefined) {
 
 function splitNotes(notes: string | null | undefined) {
   const source = notes || '';
-  const startIndex = source.indexOf(META_START);
-  if (startIndex === -1) {
-    return {
-      baseNotes: source.trim(),
-      metaJson: null as string | null,
-    };
-  }
+  const matches = Array.from(source.matchAll(META_BLOCK_PATTERN));
+  const metaJsonBlocks = matches
+    .map((match) => (match[1] || '').trim())
+    .filter((entry) => entry.length > 0);
+  const baseNotes = source.replace(META_BLOCK_PATTERN, '').trim();
 
-  const endIndex = source.indexOf(META_END, startIndex + META_START.length);
-  if (endIndex === -1) {
-    return {
-      baseNotes: source.trim(),
-      metaJson: null as string | null,
-    };
-  }
-
-  const metaJson = source.slice(startIndex + META_START.length, endIndex).trim();
-  const before = source.slice(0, startIndex).trim();
-  const after = source.slice(endIndex + META_END.length).trim();
-  const baseNotes = [before, after].filter(Boolean).join('\n\n').trim();
-
-  return { baseNotes, metaJson };
+  return { baseNotes, metaJsonBlocks };
 }
 
 function normalizeAddress(value: Partial<ClientAddressFields> | null | undefined): ClientAddressFields {
@@ -61,12 +47,11 @@ function hasCompleteAddress(value: ClientAddressFields) {
   return !!(value.streetNumber && value.street && value.city && value.postalCode);
 }
 
-export function readClientProfileMeta(notes: string | null | undefined): ClientProfileMeta | null {
-  const { metaJson } = splitNotes(notes);
-  if (!metaJson) return null;
+function parseClientProfileMetaCandidate(candidate: unknown): ClientProfileMeta | null {
+  if (!candidate) return null;
 
   try {
-    const parsed = JSON.parse(metaJson) as Partial<ClientProfileMeta> & {
+    const parsed = (typeof candidate === 'string' ? JSON.parse(candidate) : candidate) as Partial<ClientProfileMeta> & {
       billingAddress?: string | Partial<ClientAddressFields>;
       requestPostalAddress?: string | Partial<ClientAddressFields>;
       samePostalAsBilling?: boolean;
@@ -101,6 +86,47 @@ export function readClientProfileMeta(notes: string | null | undefined): ClientP
   }
 }
 
+export function readClientProfileMeta(input: string | null | undefined | { notes?: string | null; profileMeta?: unknown }): ClientProfileMeta | null {
+  const notes = typeof input === 'string' || input === null || input === undefined ? input : (input.notes ?? null);
+  const profileMeta = typeof input === 'object' && input !== null && !Array.isArray(input) ? input.profileMeta : null;
+
+  const fromJsonColumn = parseClientProfileMetaCandidate(profileMeta);
+  if (fromJsonColumn) return fromJsonColumn;
+
+  const { metaJsonBlocks } = splitNotes(notes);
+  for (let index = metaJsonBlocks.length - 1; index >= 0; index -= 1) {
+    const parsed = parseClientProfileMetaCandidate(metaJsonBlocks[index]);
+    if (parsed) return parsed;
+  }
+
+  return null;
+}
+
+export function buildClientProfileMeta(payload: {
+  billingAddress: ClientAddressFields;
+  requestPostalAddress: ClientAddressFields;
+  samePostalAsBilling: boolean;
+  requestType: ClientRequestType;
+}): ClientProfileMeta {
+  const billingAddress = normalizeAddress(payload.billingAddress);
+  const requestPostalAddress = payload.samePostalAsBilling
+    ? { ...billingAddress }
+    : normalizeAddress(payload.requestPostalAddress);
+
+  return {
+    billingAddress,
+    requestPostalAddress,
+    samePostalAsBilling: payload.samePostalAsBilling,
+    requestType: payload.requestType,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export function stripClientProfileMetaFromNotes(notes: string | null | undefined) {
+  const { baseNotes } = splitNotes(notes);
+  return baseNotes || null;
+}
+
 export function upsertClientProfileMeta(
   notes: string | null | undefined,
   payload: {
@@ -111,28 +137,16 @@ export function upsertClientProfileMeta(
   },
 ) {
   const { baseNotes } = splitNotes(notes);
-
-  const billingAddress = normalizeAddress(payload.billingAddress);
-  const requestPostalAddress = payload.samePostalAsBilling
-    ? { ...billingAddress }
-    : normalizeAddress(payload.requestPostalAddress);
-
-  const meta: ClientProfileMeta = {
-    billingAddress,
-    requestPostalAddress,
-    samePostalAsBilling: payload.samePostalAsBilling,
-    requestType: payload.requestType,
-    updatedAt: new Date().toISOString(),
-  };
+  const meta = buildClientProfileMeta(payload);
 
   const metaBlock = `${META_START}${JSON.stringify(meta)}${META_END}`;
   if (!baseNotes) return metaBlock;
   return `${baseNotes}\n\n${metaBlock}`;
 }
 
-export function isClientProfileIncomplete(input: { phone: string | null | undefined; notes: string | null | undefined }) {
+export function isClientProfileIncomplete(input: { phone: string | null | undefined; notes: string | null | undefined; profileMeta?: unknown }) {
   const hasPhone = normalizeText(input.phone).length > 0;
-  const meta = readClientProfileMeta(input.notes);
+  const meta = readClientProfileMeta({ notes: input.notes, profileMeta: input.profileMeta });
 
   return !hasPhone || !meta;
 }

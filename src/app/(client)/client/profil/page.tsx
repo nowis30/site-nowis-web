@@ -14,6 +14,7 @@ export default async function ClientProfilePage() {
       fullName: true,
       phone: true,
       notes: true,
+      profileMeta: true,
     },
   });
 
@@ -21,7 +22,7 @@ export default async function ClientProfilePage() {
     return <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-slate-200">Contact introuvable.</div>;
   }
 
-  const meta = readClientProfileMeta(contact.notes);
+  const meta = readClientProfileMeta({ notes: contact.notes, profileMeta: contact.profileMeta });
 
   return (
     <section className="space-y-6">

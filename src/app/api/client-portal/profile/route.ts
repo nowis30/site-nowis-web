@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
-import { isClientProfileIncomplete, upsertClientProfileMeta } from '@/features/client-portal/profile';
+import {
+  buildClientProfileMeta,
+  isClientProfileIncomplete,
+  stripClientProfileMetaFromNotes,
+} from '@/features/client-portal/profile';
 import { prisma } from '@/lib/prisma';
 
 const profileSchema = z.object({
@@ -34,21 +39,27 @@ export async function PATCH(request: NextRequest) {
 
     const contact = await prisma.contact.findUnique({
       where: { id: session.contactId },
-      select: { id: true, fullName: true, email: true, phone: true, notes: true, tags: true },
+      select: { id: true, fullName: true, email: true, phone: true, notes: true, profileMeta: true, tags: true },
     });
 
     if (!contact) {
       return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
     }
 
-    const wasIncomplete = isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes });
+    const wasIncomplete = isClientProfileIncomplete({
+      phone: contact.phone,
+      notes: contact.notes,
+      profileMeta: contact.profileMeta,
+    });
 
-    const nextNotes = upsertClientProfileMeta(contact.notes, {
+    const nextProfileMeta = buildClientProfileMeta({
       billingAddress: payload.billingAddress,
       requestPostalAddress: payload.requestPostalAddress,
       samePostalAsBilling: payload.samePostalAsBilling,
       requestType: payload.requestType,
     });
+
+    const nextNotes = stripClientProfileMetaFromNotes(contact.notes);
 
     const nextTags = Array.from(new Set([...(contact.tags || []), 'profile-contact-complete']));
 
@@ -56,6 +67,7 @@ export async function PATCH(request: NextRequest) {
       where: { id: contact.id },
       data: {
         phone: payload.phone,
+        profileMeta: nextProfileMeta as unknown as Prisma.InputJsonValue,
         notes: nextNotes,
         tags: nextTags,
       },

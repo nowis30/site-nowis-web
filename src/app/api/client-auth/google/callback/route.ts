@@ -139,6 +139,7 @@ export async function GET(request: NextRequest) {
           email: string | null;
           phone: string | null;
           notes: string | null;
+          profileMeta: unknown;
           tags: string[];
           source: string | null;
         } | null;
@@ -244,7 +245,7 @@ export async function GET(request: NextRequest) {
           email,
           fullName,
           createdNewUser: false,
-          profileIncomplete: isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes }),
+          profileIncomplete: isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes, profileMeta: contact.profileMeta }),
         };
       }
 
@@ -409,7 +410,7 @@ export async function GET(request: NextRequest) {
         email,
         fullName,
         createdNewUser: !existingUser,
-        profileIncomplete: isClientProfileIncomplete({ phone: contact?.phone, notes: contact?.notes }),
+        profileIncomplete: isClientProfileIncomplete({ phone: contact?.phone, notes: contact?.notes, profileMeta: contact?.profileMeta }),
       };
     });
 
