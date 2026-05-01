@@ -15,6 +15,7 @@ const statusLabels: Record<SongRequestStatus, string> = {
   DELIVERED: 'Livree',
   COMPLETED: 'Terminee',
   CANCELLED: 'Annulee',
+  DELETED: 'Supprimee',
 };
 
 function statusTone(status: SongRequestStatus): 'warning' | 'info' | 'success' | 'danger' {

@@ -88,6 +88,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         description: `Rendez-vous créé: ${appointment.title} (${appointment.startAt.toISOString()}).`,
         contactId: songRequest.contactId,
         songRequestId: songRequest.id,
+        relatedType: 'APPOINTMENT',
+        relatedId: appointment.id,
+        relatedUrl: '/crm/calendar',
         userId: guard.session.sub,
       },
     });
@@ -124,6 +127,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         description: `Brouillon de facture créé (${invoice.number}).`,
         contactId: songRequest.contactId,
         songRequestId: songRequest.id,
+        relatedType: 'INVOICE',
+        relatedId: invoice.id,
+        relatedUrl: `/crm/invoices/${invoice.id}`,
         userId: guard.session.sub,
       },
     });
@@ -132,6 +138,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 
   const nextStatus =
+    payload.action === 'soft_delete'
+      ? 'DELETED'
+      : payload.action === 'restore'
+        ? 'NEW'
+        :
     payload.action === 'mark_contacted'
       ? 'CONTACTED'
       : payload.action === 'mark_in_production'
@@ -144,9 +155,18 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     return NextResponse.json({ error: 'Aucune action valide fournie' }, { status: 400 });
   }
 
+  if ((payload.action === 'soft_delete' || payload.action === 'restore') && guard.session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });
+  }
+
   const item = await prisma.songRequest.update({
     where: { id: songRequest.id },
-    data: { status: nextStatus },
+    data: {
+      status: nextStatus,
+      deletedAt: nextStatus === 'DELETED' ? new Date() : null,
+      deletedBy: nextStatus === 'DELETED' ? guard.session.sub : null,
+      deleteReason: nextStatus === 'DELETED' ? payload.reason || null : null,
+    },
   });
 
   await prisma.activity.create({

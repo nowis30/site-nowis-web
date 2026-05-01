@@ -13,9 +13,37 @@ export async function GET(request: NextRequest) {
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
+  const view = request.nextUrl.searchParams.get('view')?.trim().toLowerCase() || 'active';
   try {
     const items = await prisma.organization.findMany({
-      where: q ? { OR: [{ name: { contains: q, mode: 'insensitive' } }, { city: { contains: q, mode: 'insensitive' } }] } : {},
+      where: {
+        ...(view === 'deleted'
+          ? { crmStatus: 'DELETED' }
+          : view === 'archived'
+            ? { crmStatus: 'ARCHIVED' }
+            : { crmStatus: { not: 'DELETED' } }),
+        ...(q
+          ? {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { city: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q, mode: 'insensitive' } },
+                {
+                  contacts: {
+                    some: {
+                      OR: [
+                        { fullName: { contains: q, mode: 'insensitive' } },
+                        { email: { contains: q, mode: 'insensitive' } },
+                        { phone: { contains: q, mode: 'insensitive' } },
+                      ],
+                    },
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         contacts: { take: 1, orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }] },
@@ -43,6 +71,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: payload.name,
         type: payload.type,
+        crmStatus: 'ACTIVE',
         email: normalizeOptionalString(payload.email),
         phone: normalizeOptionalString(payload.phone),
         address: normalizeOptionalString(payload.address),

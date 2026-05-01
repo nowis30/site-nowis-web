@@ -14,6 +14,8 @@ const statusMap: Record<string, { label: string; color: string }> = {
   // Autres statuts
   DRAFT: { label: 'Brouillon', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
   SENT: { label: 'Envoyée', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
+  ARCHIVED: { label: 'Archivé', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },
+  DELETED: { label: 'Supprimé', color: 'bg-red-500/20 text-red-200 border-red-400/30' },
   ACTIVE: { label: 'Actif', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
   INACTIVE: { label: 'Inactif', color: 'bg-slate-600/20 text-slate-300 border-slate-500/30' },
   LEAD: { label: 'Prospection', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },
@@ -59,10 +61,15 @@ const statusMap: Record<string, { label: string; color: string }> = {
 
   // Inquiry
   NEW: { label: 'Nouveau', color: 'bg-sky-500/20 text-sky-200 border-sky-400/30' },
+  LU: { label: 'Lu', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
+  TRAITE: { label: 'En cours', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/30' },
+  ARCHIVE: { label: 'Archivé', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },
+  SUPPRIME: { label: 'Supprimé', color: 'bg-red-500/20 text-red-200 border-red-400/30' },
   QUALIFIED: { label: 'Qualifié', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
   CONTACTED: { label: 'Contactée', color: 'bg-blue-500/20 text-blue-200 border-blue-400/30' },
   SCHEDULED: { label: 'Planifiée', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },
   COMPLETED: { label: 'Terminée', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
+  DELIVERED: { label: 'Livré', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/30' },
   BROUILLON: { label: 'Brouillon', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
   EN_ATTENTE_RDV: { label: 'En attente RDV', color: 'bg-amber-500/20 text-amber-200 border-amber-400/30' },
   RDV_PLANIFIE: { label: 'RDV planifié', color: 'bg-violet-500/20 text-violet-200 border-violet-400/30' },

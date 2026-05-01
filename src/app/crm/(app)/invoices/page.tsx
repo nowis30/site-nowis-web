@@ -11,6 +11,7 @@ export default async function CrmInvoicesPage() {
       orderBy: { issueDate: 'desc' },
     }),
     prisma.contact.findMany({
+      where: { crmStatus: { not: 'DELETED' } },
       select: { id: true, fullName: true },
       orderBy: { fullName: 'asc' },
     }),

@@ -57,17 +57,30 @@ export async function GET(request: NextRequest) {
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
+  const status = request.nextUrl.searchParams.get('status')?.trim();
+  const workshopStatuses = new Set(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED', 'BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE', 'DELETED']);
   try {
     const items = await prisma.workshopRequest.findMany({
-      where: q ? {
-        OR: [
-          { title: { contains: q, mode: 'insensitive' } },
-          { workshopTheme: { contains: q, mode: 'insensitive' } },
-          { organizationName: { contains: q, mode: 'insensitive' } },
-          { contactPerson: { contains: q, mode: 'insensitive' } },
-          { organization: { name: { contains: q, mode: 'insensitive' } } },
-        ],
-      } : {},
+      where: {
+        ...(status
+          ? status === 'ACTIFS'
+            ? { status: { not: 'DELETED' } }
+            : workshopStatuses.has(status)
+              ? { status: status as 'NEW' | 'CONTACTED' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'BROUILLON' | 'EN_ATTENTE_RDV' | 'RDV_PLANIFIE' | 'CONFIRME' | 'TERMINE' | 'ANNULE' | 'DELETED' }
+              : { status: { not: 'DELETED' } }
+          : { status: { not: 'DELETED' } }),
+        ...(q
+          ? {
+              OR: [
+                { title: { contains: q, mode: 'insensitive' } },
+                { workshopTheme: { contains: q, mode: 'insensitive' } },
+                { organizationName: { contains: q, mode: 'insensitive' } },
+                { contactPerson: { contains: q, mode: 'insensitive' } },
+                { organization: { name: { contains: q, mode: 'insensitive' } } },
+              ],
+            }
+          : {}),
+      },
       include: {
         organization: { select: { name: true } },
         contact: { select: { fullName: true } },

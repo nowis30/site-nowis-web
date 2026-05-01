@@ -4,7 +4,7 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { z } from 'zod';
 
-const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED']);
+const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']);
 
 export async function GET(request: NextRequest) {
   const guard = requireApiPermission(request, 'invoices', 'read');
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const items = await prisma.invoice.findMany({
     where: {
       ...(q ? { OR: [{ number: { contains: q, mode: 'insensitive' } }, { description: { contains: q, mode: 'insensitive' } }] } : {}),
-      ...(parsedStatus?.success ? { status: parsedStatus.data } : {}),
+      ...(parsedStatus?.success ? { status: parsedStatus.data } : { status: { not: 'DELETED' } }),
     },
     include: { contact: { select: { fullName: true, email: true } } },
     orderBy: { issueDate: 'desc' },

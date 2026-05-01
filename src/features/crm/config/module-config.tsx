@@ -57,9 +57,11 @@ export const contactsConfig: ModulePageConfig = {
   columns: [
     { key: 'fullName', header: 'Nom', render: (row) => getText(row.fullName) },
     { key: 'type', header: 'Type', render: (row) => <StatusBadge value={row.type} /> },
+    { key: 'crmStatus', header: 'État', render: (row) => <StatusBadge value={row.crmStatus || 'ACTIVE'} /> },
+    { key: 'organizationName', header: 'Organisation', render: (row) => getText(row.organizationName) },
     { key: 'email', header: 'Email', render: (row) => getText(row.email) },
     { key: 'phone', header: 'Téléphone', render: (row) => getText(row.phone) },
-    { key: 'createdAt', header: 'Créé le', render: (row) => formatDate(row.createdAt) },
+    { key: 'lastActivityAt', header: 'Dernière activité', render: (row) => formatDate(row.lastActivityAt) },
   ],
 };
 
@@ -181,7 +183,9 @@ export const organizationsConfig: ModulePageConfig = {
     { key: 'name', header: 'Nom', render: (row) => getText(row.name) },
     { key: 'type', header: 'Type', render: (row) => <StatusBadge value={row.type} /> },
     { key: 'status', header: 'Statut', render: (row) => <StatusBadge value={row.status} /> },
+    { key: 'crmStatus', header: 'État', render: (row) => <StatusBadge value={row.crmStatus || 'ACTIVE'} /> },
     { key: 'city', header: 'Ville', render: (row) => getText(row.city) },
+    { key: 'primaryContact', header: 'Contact principal', render: (row) => getText(getRecord(row.primaryContact)?.fullName) },
     { key: 'email', header: 'Email', render: (row) => getText(row.email) },
   ],
 };

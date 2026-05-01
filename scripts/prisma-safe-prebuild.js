@@ -17,7 +17,7 @@ function getRecoveryMigrations() {
 }
 
 function getCommand(command) {
-  return process.platform === 'win32' ? `${command}.cmd` : command;
+  return command;
 }
 
 function runCommand(command, args, options = {}) {
@@ -26,6 +26,7 @@ function runCommand(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       env: process.env,
+      shell: process.platform === 'win32',
       stdio: captureOutput ? ['inherit', 'pipe', 'pipe'] : 'inherit',
     });
 

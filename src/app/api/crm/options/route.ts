@@ -10,10 +10,12 @@ export async function GET(request: NextRequest) {
   try {
     const [contacts, organizations, organizationContacts] = await Promise.all([
       prisma.contact.findMany({
+        where: { crmStatus: { not: 'DELETED' } },
         orderBy: { fullName: 'asc' },
         select: { id: true, fullName: true, type: true },
       }),
       prisma.organization.findMany({
+        where: { crmStatus: { not: 'DELETED' } },
         orderBy: { name: 'asc' },
         select: {
           id: true,

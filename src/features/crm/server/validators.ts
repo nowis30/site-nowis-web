@@ -62,7 +62,7 @@ export const invoiceInputSchema = z.object({
   issueDate: z.string().datetime().optional(),
   dueDate: z.string().datetime(),
   amount: z.coerce.number().min(0),
-  status: z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED']).default('DRAFT'),
+  status: z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']).default('DRAFT'),
   description: z.string().max(2000).optional(),
 });
 

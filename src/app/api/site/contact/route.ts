@@ -85,30 +85,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Créer une activité de type FORM
-    await prisma.activity.create({
-      data: {
-        type: 'FORM',
-        title: `Formulaire reçu : ${formLabel}`,
-        description: data.message
-          ? `Message : ${data.message.slice(0, 500)}`
-          : `Soumission via ${formLabel}`,
-        contactId: contact.id,
-      },
-    });
-
     // Créer une demande (Inquiry)
+    let inquiryId: string | null = null;
     if (data.message) {
-      await prisma.inquiry.create({
+      const inquiry = await prisma.inquiry.create({
         data: {
           subject: formLabel,
           message: data.message,
           source,
           status: 'NEW',
+          submissionStatus: 'NOUVEAU',
           contactId: contact.id,
         },
       });
+      inquiryId = inquiry.id;
     }
+
+    // Créer une activité de type FORM liée à la soumission.
+    await prisma.activity.create({
+      data: {
+        type: 'FORM_SUBMISSION',
+        title: `Formulaire reçu : ${formLabel}`,
+        description: data.message
+          ? `Message : ${data.message.slice(0, 500)}`
+          : `Soumission via ${formLabel}`,
+        contactId: contact.id,
+        relatedType: inquiryId ? 'INQUIRY' : null,
+        relatedId: inquiryId,
+        relatedUrl: inquiryId ? `/crm/submissions?focus=${inquiryId}` : null,
+      },
+    });
 
     // Créer une tâche de suivi si demandé
     if (data.createFollowUpTask) {

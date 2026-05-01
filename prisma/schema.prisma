@@ -41,6 +41,14 @@ enum InquiryStatus {
   CLOSED
 }
 
+enum SubmissionStatus {
+  NOUVEAU
+  LU
+  TRAITE
+  ARCHIVE
+  SUPPRIME
+}
+
 enum CaseType {
   CLIENT
   SUPPORT
@@ -105,6 +113,8 @@ enum InvoiceStatus {
   PAID
   OVERDUE
   CANCELLED
+  ARCHIVED
+  DELETED
 }
 
 enum ActivityType {
@@ -174,6 +184,7 @@ enum WorkshopRequestStatus {
   CONFIRME
   TERMINE
   ANNULE
+  DELETED
   NEW
   CONTACTED
   SCHEDULED
@@ -197,6 +208,7 @@ enum SongRequestStatus {
   DELIVERED
   COMPLETED
   CANCELLED
+  DELETED
 }
 
 enum LinkedType {
@@ -285,6 +297,7 @@ model PasswordResetToken {
 model Contact {
   id              String          @id @default(uuid()) @db.Uuid
   type            ContactType
+  crmStatus       String          @default("ACTIVE")
   fullName        String
   companyName     String?
   email           String?
@@ -293,6 +306,9 @@ model Contact {
   source          String?
   tags            String[]
   notes           String?
+  deletedAt       DateTime?
+  deletedBy       String?         @db.Uuid
+  deleteReason    String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -314,6 +330,8 @@ model Contact {
 
   @@index([type])
   @@index([fullName])
+  @@index([crmStatus])
+  @@index([deletedAt])
   @@map("contacts")
 }
 
@@ -321,12 +339,16 @@ model Organization {
   id                  String                 @id @default(uuid()) @db.Uuid
   name                String
   type                OrganizationType      @default(OTHER)
+  crmStatus           String                 @default("ACTIVE")
   email               String?
   phone               String?
   address             String?
   city                String?
   notes               String?
   status              OrganizationStatus    @default(LEAD)
+  deletedAt           DateTime?
+  deletedBy           String?                @db.Uuid
+  deleteReason        String?
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
 
@@ -336,6 +358,8 @@ model Organization {
 
   @@index([name])
   @@index([status])
+  @@index([crmStatus])
+  @@index([deletedAt])
   @@map("organizations")
 }
 
@@ -402,6 +426,9 @@ model WorkshopRequest {
   objectives            String
   notes                 String?
   status                WorkshopRequestStatus  @default(NEW)
+  deletedAt             DateTime?
+  deletedBy             String?                 @db.Uuid
+  deleteReason          String?
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
 
@@ -415,6 +442,7 @@ model WorkshopRequest {
   @@index([contactId])
   @@index([clientId])
   @@index([status])
+  @@index([deletedAt])
   @@index([clientAccessToken])
   @@map("workshop_requests")
 }
@@ -481,6 +509,10 @@ model Inquiry {
   message        String
   source         String?
   status         InquiryStatus @default(NEW)
+  submissionStatus SubmissionStatus @default(NOUVEAU)
+  deletedAt      DateTime?
+  deletedBy      String?      @db.Uuid
+  deleteReason   String?
   contactId      String?      @db.Uuid
   caseId         String?      @db.Uuid
   receivedAt     DateTime     @default(now())
@@ -492,6 +524,8 @@ model Inquiry {
 
   @@index([contactId])
   @@index([caseId])
+  @@index([submissionStatus])
+  @@index([deletedAt])
   @@map("inquiries")
 }
 
@@ -666,6 +700,9 @@ model Invoice {
   status      InvoiceStatus @default(DRAFT)
   description String?
   fileUrl     String?
+  deletedAt   DateTime?
+  deletedBy   String?       @db.Uuid
+  deleteReason String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -673,6 +710,7 @@ model Invoice {
 
   @@index([contactId])
   @@index([status])
+  @@index([deletedAt])
   @@map("invoices")
 }
 
@@ -685,6 +723,9 @@ model Activity {
   appointmentId String?      @db.Uuid
   invoiceId     String?      @db.Uuid
   songRequestId String?      @db.Uuid
+  relatedType   String?
+  relatedId     String?      @db.Uuid
+  relatedUrl    String?
   userId        String?      @db.Uuid
   createdAt     DateTime     @default(now())
 
@@ -694,6 +735,7 @@ model Activity {
 
   @@index([contactId])
   @@index([songRequestId])
+  @@index([relatedType, relatedId])
   @@index([createdAt])
   @@map("activities")
 }
@@ -752,6 +794,9 @@ model SongRequest {
   desiredDeadline      DateTime?
   source               String            @default("website")
   status               SongRequestStatus @default(NEW)
+  deletedAt            DateTime?
+  deletedBy            String?           @db.Uuid
+  deleteReason         String?
   convertedAppointmentId String?         @db.Uuid
   convertedInvoiceId   String?           @db.Uuid
   createdAt            DateTime          @default(now())
@@ -765,6 +810,7 @@ model SongRequest {
   @@index([contactId])
   @@index([email])
   @@index([status])
+  @@index([deletedAt])
   @@index([createdAt])
   @@map("song_requests")
 }

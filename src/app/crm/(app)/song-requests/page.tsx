@@ -30,7 +30,7 @@ export default async function CrmSongRequestsPage() {
         email: item.email || '',
         songType: item.songType || '',
         eventType: item.eventType ?? item.occasion ?? '',
-        status: item.status as 'NEW' | 'CONTACTED' | 'QUOTED' | 'IN_PROGRESS' | 'IN_PRODUCTION' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED',
+        status: item.status as 'NEW' | 'CONTACTED' | 'QUOTED' | 'IN_PROGRESS' | 'IN_PRODUCTION' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED' | 'DELETED',
         createdAt: item.createdAt.toISOString(),
         contact: {
           id: String(item.contact.id),

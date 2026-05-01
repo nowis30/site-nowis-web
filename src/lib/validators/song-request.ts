@@ -24,6 +24,7 @@ export const songRequestStatusSchema = z.enum([
   'DELIVERED',
   'COMPLETED',
   'CANCELLED',
+  'DELETED',
 ]);
 
 export const songRequestInputSchema = z.object({
@@ -67,7 +68,8 @@ export const crmSongRequestListQuerySchema = z.object({
 
 export const crmSongRequestPatchSchema = z.object({
   status: songRequestStatusSchema.optional(),
-  action: z.enum(['mark_contacted', 'convert_appointment', 'mark_quoted', 'mark_in_production', 'mark_delivered']).optional(),
+  action: z.enum(['mark_contacted', 'convert_appointment', 'mark_quoted', 'mark_in_production', 'mark_delivered', 'soft_delete', 'restore']).optional(),
+  reason: z.string().trim().max(500).optional(),
 });
 
 export type SongRequestInput = z.infer<typeof songRequestInputSchema>;

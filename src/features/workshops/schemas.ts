@@ -9,7 +9,7 @@ export const workshopDeliveryFormatSchema = z.enum(['SUR_PLACE', 'EN_LIGNE', 'A_
 export const workshopTargetAudienceSchema = z.enum(['PERSONNES_AGEES', 'JEUNES', 'ADULTES', 'FAMILLE', 'ORGANISME', 'AUTRE']);
 export const workshopDurationPresetSchema = z.enum(['M60', 'M90', 'M120', 'PERSONNALISE']);
 export const workshopPricingModeSchema = z.enum(['HORAIRE', 'PAR_PERSONNE', 'PERSONNALISE']);
-export const workshopRequestStatusSchema = z.enum(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED']);
+export const workshopRequestStatusSchema = z.enum(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED', 'DELETED']);
 export const workshopAtelierStatusSchema = z.enum(['BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE']);
 export const workshopAppointmentStatusSchema = z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE']);
 

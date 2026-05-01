@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Activity, Plus, Filter, User, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Activity, Plus, Filter, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 type ActivityItem = {
@@ -10,6 +11,7 @@ type ActivityItem = {
   title: string;
   description: string | null;
   createdAt: string;
+  relatedUrl?: string | null;
   contact: { fullName: string } | null;
   user: { fullName: string } | null;
 };
@@ -43,8 +45,21 @@ function formatRelative(iso: string) {
   return `Il y a ${days}j`;
 }
 
+function formatStableDate(iso: string) {
+  return new Intl.DateTimeFormat('fr-CA', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(iso));
+}
+
 function ActivityTimelineItem({ activity, onDelete }: { activity: ActivityItem; onDelete: () => void }) {
   const [deleting, setDeleting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   async function deleteActivity() {
     if (!confirm('Supprimer cette activité ?')) return;
@@ -65,9 +80,15 @@ function ActivityTimelineItem({ activity, onDelete }: { activity: ActivityItem; 
                 {TYPE_LABELS[activity.type] ?? activity.type}
               </span>
               <span className="text-xs text-slate-600">·</span>
-              <span className="text-xs text-slate-500">{formatRelative(activity.createdAt)}</span>
+              <span className="text-xs text-slate-500">{mounted ? formatRelative(activity.createdAt) : formatStableDate(activity.createdAt)}</span>
             </div>
-            <p className="mt-0.5 text-sm font-medium text-white">{activity.title}</p>
+            {activity.relatedUrl ? (
+              <Link href={activity.relatedUrl} className="mt-0.5 inline-block text-sm font-medium text-primary-300 hover:text-primary-200">
+                {activity.title}
+              </Link>
+            ) : (
+              <p className="mt-0.5 text-sm font-medium text-white">{activity.title}</p>
+            )}
             {activity.description && <p className="mt-0.5 text-xs text-slate-400">{activity.description}</p>}
             <div className="flex items-center gap-3 mt-2">
               {activity.contact && (
@@ -79,10 +100,24 @@ function ActivityTimelineItem({ activity, onDelete }: { activity: ActivityItem; 
             </div>
           </div>
           <button type="button" onClick={deleteActivity} disabled={deleting}
-            className="opacity-0 group-hover:opacity-100 text-xs text-slate-600 hover:text-red-400 transition-all shrink-0">
+            className="hidden opacity-0 group-hover:opacity-100 text-xs text-slate-600 hover:text-red-400 transition-all shrink-0 sm:inline">
             ✕
           </button>
         </div>
+
+        <details className="mt-2 sm:hidden">
+          <summary className="cursor-pointer rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200">Actions</summary>
+          <div className="mt-2 flex flex-col gap-1">
+            {activity.relatedUrl ? (
+              <Link href={activity.relatedUrl} className="rounded-md border border-primary-500/50 px-2 py-1 text-xs text-primary-300 hover:bg-primary-900/30">
+                Voir
+              </Link>
+            ) : null}
+            <button type="button" onClick={deleteActivity} disabled={deleting} className="rounded-md border border-red-500/50 px-2 py-1 text-left text-xs text-red-300">
+              Supprimer
+            </button>
+          </div>
+        </details>
       </div>
     </div>
   );
@@ -140,15 +175,20 @@ interface ActivitiesPageProps { activities: ActivityItem[]; contacts: Contact[];
 export function ActivitiesPage({ activities, contacts }: ActivitiesPageProps) {
   const router = useRouter();
   const [filter, setFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const filtered = filter
     ? activities.filter(a => a.type === filter)
     : activities;
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   // Group by date
   const groups: Record<string, ActivityItem[]> = {};
-  filtered.forEach(a => {
-    const key = new Date(a.createdAt).toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long' });
+  paginated.forEach(a => {
+    const key = new Date(a.createdAt).toLocaleDateString('fr-CA', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
     if (!groups[key]) groups[key] = [];
     groups[key].push(a);
   });
@@ -164,19 +204,21 @@ export function ActivitiesPage({ activities, contacts }: ActivitiesPageProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
         <Filter size={14} className="text-slate-400" />
-        <button type="button" onClick={() => setFilter('')}
+        <button type="button" onClick={() => { setFilter(''); setCurrentPage(1); }}
           className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${!filter ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
           Tous
         </button>
         {['NOTE', 'CALL', 'EMAIL', 'APPOINTMENT', 'FORM', 'FORM_SUBMISSION'].map(t => (
-          <button key={t} type="button" onClick={() => setFilter(f => f === t ? '' : t)}
+          <button key={t} type="button" onClick={() => { setFilter(f => f === t ? '' : t); setCurrentPage(1); }}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${filter === t ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
             {TYPE_LABELS[t]}
           </button>
         ))}
       </div>
+
+      <p className="text-xs text-slate-400">Affichage {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} sur {filtered.length}</p>
 
       {/* Timeline */}
       <div className="space-y-6">
@@ -197,6 +239,30 @@ export function ActivitiesPage({ activities, contacts }: ActivitiesPageProps) {
             </div>
           ))
         )}
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-xs text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+        <p>
+          Page {currentPage}/{totalPages}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
+            disabled={currentPage === 1}
+            className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
+          >
+            Précédent
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
+            disabled={currentPage >= totalPages}
+            className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
+          >
+            Suivant
+          </button>
+        </div>
       </div>
     </section>
   );

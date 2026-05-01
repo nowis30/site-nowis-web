@@ -28,6 +28,7 @@ export default async function CrmActivitiesPage() {
         title: item.title,
         description: item.description,
         createdAt: item.createdAt.toISOString(),
+        relatedUrl: item.relatedUrl,
         contact: item.contact,
         user: item.user,
       }))}

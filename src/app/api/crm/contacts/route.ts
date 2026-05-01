@@ -10,20 +10,63 @@ export async function GET(request: NextRequest) {
 
   try {
     const q = request.nextUrl.searchParams.get('q')?.trim();
+    const view = request.nextUrl.searchParams.get('view')?.trim().toLowerCase() || 'active';
+
+    const lifecycleWhere =
+      view === 'deleted'
+        ? { crmStatus: 'DELETED' as const }
+        : view === 'archived'
+          ? { crmStatus: 'ARCHIVED' as const }
+          : { crmStatus: { not: 'DELETED' as const } };
+
     const items = await prisma.contact.findMany({
-      where: q
-        ? {
-            OR: [
-              { fullName: { contains: q, mode: 'insensitive' } },
-              { email: { contains: q, mode: 'insensitive' } },
-              { phone: { contains: q, mode: 'insensitive' } },
-            ],
-          }
-        : undefined,
+      where: {
+        ...lifecycleWhere,
+        ...(q
+          ? {
+              OR: [
+                { fullName: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q, mode: 'insensitive' } },
+                {
+                  organizationLinks: {
+                    some: {
+                      organization: {
+                        name: { contains: q, mode: 'insensitive' },
+                      },
+                    },
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        organizationLinks: {
+          take: 1,
+          include: {
+            organization: {
+              select: { id: true, name: true },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        activities: {
+          select: { createdAt: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ items });
+    return NextResponse.json({
+      items: items.map((item) => ({
+        ...item,
+        organizationName: item.organizationLinks[0]?.organization?.name ?? null,
+        lastActivityAt: item.activities[0]?.createdAt ?? null,
+      })),
+    });
   } catch (error) {
     console.error('[CRM_CONTACTS_GET]', error);
     if (error instanceof Prisma.PrismaClientInitializationError) {
@@ -43,6 +86,7 @@ export async function POST(request: NextRequest) {
     const item = await prisma.contact.create({
       data: {
         type: payload.type,
+        crmStatus: 'ACTIVE',
         fullName: payload.fullName.trim(),
         email: normalizeOptionalString(payload.email),
         phone: normalizeOptionalString(payload.phone),

@@ -44,6 +44,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const guard = requireApiPermission(request, 'contacts', 'delete');
   if (guard.error) return guard.error;
 
+  if (guard.session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });
+  }
+
   try {
     const contact = await prisma.contact.findUnique({ where: { id: params.id }, select: { id: true } });
 
@@ -71,7 +75,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    await prisma.contact.delete({ where: { id: params.id } });
+    await prisma.contact.update({
+      where: { id: params.id },
+      data: {
+        crmStatus: 'DELETED',
+        deletedAt: new Date(),
+        deletedBy: guard.session.sub,
+      },
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
@@ -84,5 +95,39 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
     return NextResponse.json({ error: 'Suppression impossible' }, { status: 400 });
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  const guard = requireApiPermission(request, 'contacts', 'update');
+  if (guard.error) return guard.error;
+
+  if (guard.session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });
+  }
+
+  const body = (await request.json().catch(() => ({}))) as { action?: string; reason?: string };
+  const action = body.action;
+  const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 500) : null;
+
+  if (!action || !['archive', 'restore', 'delete'].includes(action)) {
+    return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
+  }
+
+  const data =
+    action === 'restore'
+      ? { crmStatus: 'ACTIVE', deletedAt: null, deletedBy: null, deleteReason: null }
+      : action === 'archive'
+        ? { crmStatus: 'ARCHIVED', deletedAt: null, deletedBy: null, deleteReason: null }
+        : { crmStatus: 'DELETED', deletedAt: new Date(), deletedBy: guard.session.sub, deleteReason: reason };
+
+  try {
+    const item = await prisma.contact.update({
+      where: { id: params.id },
+      data,
+    });
+    return NextResponse.json({ item });
+  } catch {
+    return NextResponse.json({ error: 'Action impossible' }, { status: 400 });
   }
 }

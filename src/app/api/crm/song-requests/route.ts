@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
             ],
           }
         : {}),
-      ...(status ? { status } : {}),
+      ...(status ? { status } : { status: { not: 'DELETED' } }),
     },
     include: {
       contact: { select: { id: true, fullName: true, email: true } },

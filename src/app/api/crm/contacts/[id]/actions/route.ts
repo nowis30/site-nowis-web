@@ -120,6 +120,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           description: payload.description?.trim() || null,
           contactId: contact.id,
           invoiceId: invoice.id,
+          relatedType: 'INVOICE',
+          relatedId: invoice.id,
+          relatedUrl: `/crm/invoices/${invoice.id}`,
           userId: guard.session.sub,
         },
       });
@@ -149,6 +152,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           description: payload.description?.trim() || null,
           contactId: contact.id,
           appointmentId: appointment.id,
+          relatedType: 'APPOINTMENT',
+          relatedId: appointment.id,
+          relatedUrl: '/crm/calendar',
           userId: guard.session.sub,
         },
       });
@@ -193,6 +199,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           description: `${songRequest.songType} · ${songRequest.occasion}`,
           contactId: contact.id,
           songRequestId: songRequest.id,
+          relatedType: 'SONG_REQUEST',
+          relatedId: songRequest.id,
+          relatedUrl: `/crm/song-requests/${songRequest.id}`,
           userId: guard.session.sub,
         },
       });

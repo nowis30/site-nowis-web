@@ -6,7 +6,7 @@ import { ConfirmDialog } from '@/features/crm/components/shared/ConfirmDialog';
 import { DataColumn, DataTable } from '@/features/crm/components/shared/DataTable';
 import { EmptyState } from '@/features/crm/components/shared/EmptyState';
 import { SearchBar } from '@/features/crm/components/shared/SearchBar';
-import { deleteResource, useCrudResource } from '@/features/crm/hooks/useCrudResource';
+import { deleteResource, patchResource, useCrudResourceWithParams } from '@/features/crm/hooks/useCrudResource';
 
 type GenericRecord = Record<string, unknown>;
 
@@ -67,6 +67,27 @@ function buildAddressLine(address: unknown, city: unknown): string {
   return a || c;
 }
 
+function getEmptyStateCopy(endpoint: string, view: 'active' | 'archived' | 'deleted', workshopStatus: string) {
+  if (endpoint === '/api/crm/contacts') {
+    if (view === 'deleted') return { title: 'Aucun contact supprimé', description: 'Aucun contact dans cette vue.' };
+    if (view === 'archived') return { title: 'Aucun contact archivé', description: 'Aucun contact archivé pour le moment.' };
+    return { title: 'Aucun contact trouvé', description: 'Ajoutez un premier contact ou ajustez vos filtres.' };
+  }
+
+  if (endpoint === '/api/crm/organizations') {
+    if (view === 'deleted') return { title: 'Aucune organisation supprimée', description: 'Aucune organisation dans cette vue.' };
+    if (view === 'archived') return { title: 'Aucune organisation archivée', description: 'Aucune organisation archivée pour le moment.' };
+    return { title: 'Aucune organisation trouvée', description: 'Ajoutez une organisation ou modifiez vos filtres.' };
+  }
+
+  if (endpoint === '/api/crm/workshop-requests') {
+    if (workshopStatus === 'DELETED') return { title: 'Aucune demande supprimée', description: 'Aucune demande d’atelier supprimée.' };
+    return { title: 'Aucune demande atelier', description: 'Ajustez vos filtres ou créez une nouvelle demande.' };
+  }
+
+  return { title: 'Aucune donnée', description: 'Ajoutez un premier enregistrement pour ce module.' };
+}
+
 export function EntityCrudPage({
   title,
   description,
@@ -81,9 +102,16 @@ export function EntityCrudPage({
   defaultValues,
   detailBasePath,
 }: EntityCrudPageProps) {
-  const PAGE_SIZE = 10;
+  const hasLifecycleView = endpoint === '/api/crm/contacts' || endpoint === '/api/crm/organizations';
+  const hasWorkshopStatusFilter = endpoint === '/api/crm/workshop-requests';
+  const PAGE_SIZE = endpoint === '/api/crm/contacts' || endpoint === '/api/crm/organizations' ? 20 : 10;
   const [search, setSearch] = useState('');
-  const { items, loading, error, reload } = useCrudResource<GenericRecord>(endpoint, search);
+  const [view, setView] = useState<'active' | 'archived' | 'deleted'>('active');
+  const [workshopStatus, setWorkshopStatus] = useState('ACTIFS');
+  const { items, loading, error, reload } = useCrudResourceWithParams<GenericRecord>(endpoint, search, {
+    ...(hasLifecycleView ? { view } : {}),
+    ...(hasWorkshopStatusFilter ? { status: workshopStatus } : {}),
+  });
   const [currentPage, setCurrentPage] = useState(1);
 
   const [formValues, setFormValues] = useState<Record<string, unknown>>(defaultValues);
@@ -134,11 +162,11 @@ export function EntityCrudPage({
   const paginatedItems = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return items.slice(start, start + PAGE_SIZE);
-  }, [items, currentPage]);
+  }, [items, currentPage, PAGE_SIZE]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [search, view, workshopStatus]);
 
   useEffect(() => {
     setCurrentPage((previous) => Math.min(previous, totalPages));
@@ -260,6 +288,32 @@ export function EntityCrudPage({
     }
   }
 
+  async function runLifecycleAction(rowId: string, action: 'archive' | 'restore' | 'delete') {
+    try {
+      setActionError(null);
+      await patchResource(endpoint, rowId, { action });
+      await reload();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Action impossible');
+    }
+  }
+
+  function getRecordLifecycle(row: GenericRecord) {
+    if (endpoint === '/api/crm/contacts' || endpoint === '/api/crm/organizations') {
+      const value = String(row.crmStatus ?? 'ACTIVE').toUpperCase();
+      if (value === 'DELETED') return 'deleted';
+      if (value === 'ARCHIVED') return 'archived';
+      return 'active';
+    }
+    if (endpoint === '/api/crm/workshop-requests') {
+      const value = String(row.status ?? '').toUpperCase();
+      return value === 'DELETED' ? 'deleted' : 'active';
+    }
+    return 'active';
+  }
+
+  const emptyStateCopy = getEmptyStateCopy(endpoint, view, workshopStatus);
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -275,6 +329,31 @@ export function EntityCrudPage({
             >
               {createFormLink.label}
             </Link>
+          ) : null}
+          {hasLifecycleView ? (
+            <select
+              value={view}
+              onChange={(event) => setView(event.target.value as 'active' | 'archived' | 'deleted')}
+              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+            >
+              <option value="active">Actifs</option>
+              <option value="archived">Archivés</option>
+              <option value="deleted">Supprimés</option>
+            </select>
+          ) : null}
+          {hasWorkshopStatusFilter ? (
+            <select
+              value={workshopStatus}
+              onChange={(event) => setWorkshopStatus(event.target.value)}
+              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+            >
+              <option value="ACTIFS">Actives</option>
+              <option value="EN_ATTENTE_RDV">Nouvelles</option>
+              <option value="RDV_PLANIFIE">Planifiées</option>
+              <option value="CONFIRME">En cours</option>
+              <option value="TERMINE">Terminées</option>
+              <option value="DELETED">Supprimées</option>
+            </select>
           ) : null}
           <SearchBar value={search} onChange={setSearch} />
         </div>
@@ -394,7 +473,7 @@ export function EntityCrudPage({
       {error ? <p className="text-sm text-red-300">{error}</p> : null}
 
       {!loading && items.length === 0 ? (
-        <EmptyState title="Aucune donnée" description="Ajoutez un premier enregistrement pour ce module." />
+        <EmptyState title={emptyStateCopy.title} description={emptyStateCopy.description} />
       ) : (
         <div className="space-y-3">
           {actionError ? <p className="rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-200">{actionError}</p> : null}
@@ -402,36 +481,114 @@ export function EntityCrudPage({
             columns={columns}
             rows={paginatedItems}
             rowKey={(row) => String(row.id ?? '')}
-            actions={(row) => (
-              <div className="flex gap-2">
-                {detailBasePath && typeof row.id === 'string' ? (
-                  <Link
-                    href={`${detailBasePath}/${row.id}`}
-                    className="rounded-md border border-primary-500/50 px-2 py-1 text-xs text-primary-300 hover:bg-primary-900/30"
-                  >
-                    Voir
-                  </Link>
-                ) : null}
-                {updatePermission ? (
-                  <button
-                    type="button"
-                    onClick={() => startEdit(row)}
-                    className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200"
-                  >
-                    Modifier
-                  </button>
-                ) : null}
-                {deletePermission ? (
-                  <button
-                    type="button"
-                    onClick={() => setDeletingId(typeof row.id === 'string' ? row.id : null)}
-                    className="rounded-md border border-red-500/50 px-2 py-1 text-xs text-red-300"
-                  >
-                    Supprimer
-                  </button>
-                ) : null}
-              </div>
-            )}
+            actions={(row) => {
+              const rowId = typeof row.id === 'string' ? row.id : null;
+              const lifecycle = getRecordLifecycle(row);
+              const isContactsOrOrganizations = endpoint === '/api/crm/contacts' || endpoint === '/api/crm/organizations';
+              const isWorkshop = endpoint === '/api/crm/workshop-requests';
+
+              return (
+                <>
+                  <details className="md:hidden">
+                    <summary className="cursor-pointer rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200">Actions</summary>
+                    <div className="mt-2 flex flex-col gap-1">
+                      {detailBasePath && rowId ? (
+                        <Link href={`${detailBasePath}/${rowId}`} className="rounded-md border border-primary-500/50 px-2 py-1 text-xs text-primary-300 hover:bg-primary-900/30">
+                          Voir
+                        </Link>
+                      ) : null}
+                      {updatePermission ? (
+                        <button type="button" onClick={() => startEdit(row)} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200 text-left">
+                          Modifier
+                        </button>
+                      ) : null}
+                      {updatePermission && rowId && isContactsOrOrganizations && lifecycle === 'active' ? (
+                        <button type="button" onClick={() => void runLifecycleAction(rowId, 'archive')} className="rounded-md border border-amber-500/50 px-2 py-1 text-xs text-amber-300 text-left">
+                          Archiver
+                        </button>
+                      ) : null}
+                      {updatePermission && rowId && isWorkshop && lifecycle === 'active' ? (
+                        <button type="button" onClick={() => void runLifecycleAction(rowId, 'archive')} className="rounded-md border border-amber-500/50 px-2 py-1 text-xs text-amber-300 text-left">
+                          Archiver
+                        </button>
+                      ) : null}
+                      {deletePermission && rowId ? (
+                        <button type="button" onClick={() => setDeletingId(rowId)} className="rounded-md border border-red-500/50 px-2 py-1 text-xs text-red-300 text-left">
+                          Supprimer
+                        </button>
+                      ) : null}
+                      {updatePermission && rowId && (
+                        (isContactsOrOrganizations && lifecycle !== 'active') ||
+                        (isWorkshop && lifecycle === 'deleted')
+                      ) ? (
+                        <button type="button" onClick={() => void runLifecycleAction(rowId, 'restore')} className="rounded-md border border-emerald-500/50 px-2 py-1 text-xs text-emerald-300 text-left">
+                          Restaurer
+                        </button>
+                      ) : null}
+                    </div>
+                  </details>
+
+                  <div className="hidden flex-wrap gap-2 md:flex">
+                    {detailBasePath && rowId ? (
+                      <Link
+                        href={`${detailBasePath}/${rowId}`}
+                        className="rounded-md border border-primary-500/50 px-2 py-1 text-xs text-primary-300 hover:bg-primary-900/30"
+                      >
+                        Voir
+                      </Link>
+                    ) : null}
+                    {updatePermission ? (
+                      <button
+                        type="button"
+                        onClick={() => startEdit(row)}
+                        className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200"
+                      >
+                        Modifier
+                      </button>
+                    ) : null}
+                    {updatePermission && rowId && isContactsOrOrganizations && lifecycle === 'active' ? (
+                      <button
+                        type="button"
+                        onClick={() => void runLifecycleAction(rowId, 'archive')}
+                        className="rounded-md border border-amber-500/50 px-2 py-1 text-xs text-amber-300"
+                      >
+                        Archiver
+                      </button>
+                    ) : null}
+                    {updatePermission && rowId && isWorkshop && lifecycle === 'active' ? (
+                      <button
+                        type="button"
+                        onClick={() => void runLifecycleAction(rowId, 'archive')}
+                        className="rounded-md border border-amber-500/50 px-2 py-1 text-xs text-amber-300"
+                      >
+                        Archiver
+                      </button>
+                    ) : null}
+                    {deletePermission && rowId ? (
+                      <button
+                        type="button"
+                        onClick={() => setDeletingId(rowId)}
+                        className="rounded-md border border-red-500/50 px-2 py-1 text-xs text-red-300"
+                      >
+                        Supprimer
+                      </button>
+                    ) : null}
+                    {updatePermission && rowId && (
+                      (isContactsOrOrganizations && lifecycle !== 'active') ||
+                      (isWorkshop && lifecycle === 'deleted')
+                    ) ? (
+                      <button
+                        type="button"
+                        onClick={() => void runLifecycleAction(rowId, 'restore')}
+                        className="rounded-md border border-emerald-500/50 px-2 py-1 text-xs text-emerald-300"
+                      >
+                        Restaurer
+                      </button>
+                    ) : null}
+                  </div>
+                </>
+              );
+            }}
           />
 
           <div className="flex flex-col gap-2 rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-xs text-slate-300 sm:flex-row sm:items-center sm:justify-between">
@@ -466,7 +623,7 @@ export function EntityCrudPage({
       <ConfirmDialog
         open={Boolean(deletingId)}
         title="Confirmer la suppression"
-        description="Cette action est irréversible."
+        description="Cette action enverra l’élément dans la vue des éléments supprimés."
         onCancel={() => setDeletingId(null)}
         onConfirm={() => void confirmDelete()}
       />

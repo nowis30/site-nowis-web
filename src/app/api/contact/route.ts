@@ -97,22 +97,26 @@ Consentement portfolio: ${portfolioConsent === 'accept' ? 'Accord donné' : port
         },
       });
 
-      await tx.activity.create({
-        data: {
-          type: 'FORM',
-          title: `Formulaire recu : ${formLabel}`,
-          description: message.trim(),
-          contactId: upsertedContact.id,
-        },
-      });
-
-      await tx.inquiry.create({
+      const inquiry = await tx.inquiry.create({
         data: {
           subject,
           message: message.trim(),
           source: 'site-contact',
           status: 'NEW',
+          submissionStatus: 'NOUVEAU',
           contactId: upsertedContact.id,
+        },
+      });
+
+      await tx.activity.create({
+        data: {
+          type: 'FORM_SUBMISSION',
+          title: `Formulaire recu : ${formLabel}`,
+          description: message.trim(),
+          contactId: upsertedContact.id,
+          relatedType: 'INQUIRY',
+          relatedId: inquiry.id,
+          relatedUrl: `/crm/submissions?focus=${inquiry.id}`,
         },
       });
 
