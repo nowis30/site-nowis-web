@@ -24,18 +24,26 @@ function normalizeText(value: string | null | undefined) {
 
 function splitNotes(notes: string | null | undefined) {
   const source = notes || '';
-  const pattern = new RegExp(`${META_START}([\\s\\S]*?)${META_END}`);
-  const match = source.match(pattern);
-
-  if (!match) {
+  const startIndex = source.indexOf(META_START);
+  if (startIndex === -1) {
     return {
       baseNotes: source.trim(),
       metaJson: null as string | null,
     };
   }
 
-  const metaJson = (match[1] || '').trim();
-  const baseNotes = source.replace(pattern, '').trim();
+  const endIndex = source.indexOf(META_END, startIndex + META_START.length);
+  if (endIndex === -1) {
+    return {
+      baseNotes: source.trim(),
+      metaJson: null as string | null,
+    };
+  }
+
+  const metaJson = source.slice(startIndex + META_START.length, endIndex).trim();
+  const before = source.slice(0, startIndex).trim();
+  const after = source.slice(endIndex + META_END.length).trim();
+  const baseNotes = [before, after].filter(Boolean).join('\n\n').trim();
 
   return { baseNotes, metaJson };
 }
