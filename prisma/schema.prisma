@@ -98,6 +98,9 @@ enum AppointmentType {
   INSPECTION
   DEADLINE
   REMINDER
+  WORKSHOP
+  SONG_MEETING
+  OTHER
 }
 
 enum AppointmentStatus {
@@ -379,6 +382,8 @@ model Organization {
   contacts            OrganizationContact[]
   workshopRequests    WorkshopRequest[]
   workshopAppointments WorkshopAppointment[]
+  appointments        Appointment[]
+  songRequests        SongRequest[]
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedOrganization")
 
   @@index([name])
@@ -438,6 +443,10 @@ model WorkshopRequest {
   calendlyInviteeUri    String?
   calendlyUrl           String?
   scheduledAt           DateTime?
+  startAt               DateTime?
+  endAt                 DateTime?
+  durationMinutes       Int?
+  meetingType           String?
   clientAccessToken     String?                @unique
   audienceType          WorkshopAudienceType   @default(MIXED)
   ageRange              String?
@@ -462,6 +471,7 @@ model WorkshopRequest {
   client                Contact?               @relation("WorkshopRequestClient", fields: [clientId], references: [id], onDelete: SetNull)
   organizationContact   OrganizationContact?   @relation(fields: [organizationContactId], references: [id], onDelete: SetNull)
   appointments          WorkshopAppointment[]
+  crmAppointments       Appointment[]
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedWorkshopRequest")
 
   @@index([organizationId])
@@ -703,8 +713,14 @@ model Appointment {
   endAt       DateTime
   type        AppointmentType   @default(MEETING)
   status      AppointmentStatus @default(PENDING)
+  appointmentType AppointmentType?
   contactId   String?           @db.Uuid
+  organizationId String?        @db.Uuid
+  workshopRequestId String?     @db.Uuid
+  songRequestId String?         @db.Uuid
   userId      String?           @db.Uuid
+  location    String?
+  notes       String?
   calendarConnectionId String?  @db.Uuid
   externalProvider CalendarProvider?
   externalEventId String?
@@ -713,11 +729,17 @@ model Appointment {
   updatedAt   DateTime          @updatedAt
 
   contact     Contact?          @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  workshopRequest WorkshopRequest? @relation(fields: [workshopRequestId], references: [id], onDelete: SetNull)
+  songRequest SongRequest?      @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
   user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   calendarConnection CalendarConnection? @relation(fields: [calendarConnectionId], references: [id], onDelete: SetNull)
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedAppointment")
 
   @@index([contactId])
+  @@index([organizationId])
+  @@index([workshopRequestId])
+  @@index([songRequestId])
   @@index([calendarConnectionId])
   @@index([externalProvider, externalEventId])
   @@index([startAt])
@@ -864,6 +886,7 @@ model OutboundEmail {
 model SongRequest {
   id                   String            @id @default(uuid()) @db.Uuid
   contactId            String            @db.Uuid
+  organizationId       String?           @db.Uuid
   title                String?
   fullName             String
   email                String
@@ -888,6 +911,14 @@ model SongRequest {
   details              String
   budget               Decimal?          @db.Decimal(10, 2)
   desiredDeadline      DateTime?
+  meetingDate          DateTime?
+  scheduledAt          DateTime?
+  startAt              DateTime?
+  endAt                DateTime?
+  durationMinutes      Int?
+  meetingType          String?
+  location             String?
+  meetingNotes         String?
   source               String            @default("website")
   status               SongRequestStatus @default(NEW)
   deletedAt            DateTime?
@@ -899,11 +930,14 @@ model SongRequest {
   updatedAt            DateTime          @updatedAt
 
   contact              Contact           @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  organization         Organization?     @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   activities           Activity[]
   fileDocuments        FileDocument[]
   tasks                Task[]
+  appointments         Appointment[]
 
   @@index([contactId])
+  @@index([organizationId])
   @@index([email])
   @@index([status])
   @@index([deletedAt])

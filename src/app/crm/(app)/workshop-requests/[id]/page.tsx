@@ -12,6 +12,7 @@ type WorkshopRequestDetailRecord = Prisma.WorkshopRequestGetPayload<{
     client: true;
     organizationContact: true;
     appointments: true;
+    crmAppointments: true;
   };
 }>;
 
@@ -28,6 +29,7 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
         client: true,
         organizationContact: true,
         appointments: { orderBy: { startAt: 'asc' } },
+        crmAppointments: { orderBy: { startAt: 'asc' } },
       },
     });
   } catch (error) {
@@ -63,6 +65,11 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
         finalPrice: item.finalPrice?.toString() || null,
         requestedDate: item.requestedDate?.toISOString() || null,
         requestedTime: item.requestedTime,
+        scheduledAt: item.scheduledAt?.toISOString() || null,
+        startAt: item.startAt?.toISOString() || null,
+        endAt: item.endAt?.toISOString() || null,
+        durationMinutes: item.durationMinutes ?? null,
+        meetingType: item.meetingType ?? null,
         durationPreset: item.durationPreset,
         objectives: item.objectives,
         notes: item.notes,
@@ -77,6 +84,15 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
           startAt: appointment.startAt.toISOString(),
           endAt: appointment.endAt.toISOString(),
           status: appointment.status,
+          location: appointment.location,
+        })),
+        crmAppointments: item.crmAppointments.map((appointment) => ({
+          id: appointment.id,
+          title: appointment.title,
+          startAt: appointment.startAt.toISOString(),
+          endAt: appointment.endAt.toISOString(),
+          status: appointment.status,
+          type: appointment.type,
           location: appointment.location,
         })),
       }}

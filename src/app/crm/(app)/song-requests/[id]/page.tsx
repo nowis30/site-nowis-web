@@ -3,6 +3,18 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { SongRequestDetailPage } from '@/features/crm/components/song-requests/SongRequestDetailPage';
 import { buildClientPortalUrl, signClientPortalToken } from '@/lib/client-portal';
+import { Prisma } from '@prisma/client';
+
+type SongRequestDetailRecord = Prisma.SongRequestGetPayload<{
+  include: {
+    organization: { select: { id: true; name: true } };
+    contact: { select: { id: true; fullName: true; email: true; phone: true } };
+    appointments: true;
+    fileDocuments: true;
+    activities: { include: { user: { select: { id: true; fullName: true } } } };
+    tasks: true;
+  };
+}>;
 
 interface PageProps {
   params: { id: string };
@@ -14,7 +26,12 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
   const item = await prisma.songRequest.findUnique({
     where: { id: params.id },
     include: {
+      organization: { select: { id: true, name: true } },
       contact: { select: { id: true, fullName: true, email: true, phone: true } },
+      appointments: {
+        orderBy: { startAt: 'asc' },
+        take: 20,
+      },
       fileDocuments: {
         orderBy: { createdAt: 'desc' },
         take: 60,
@@ -31,53 +48,72 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
   });
 
   if (!item) notFound();
+  const song: SongRequestDetailRecord = item;
 
   const clientPortalToken = signClientPortalToken({
-    contactId: String(item.contact.id),
-    email: item.email,
-    fullName: item.fullName,
+    contactId: String(song.contact.id),
+    email: song.email,
+    fullName: song.fullName,
   });
 
   return (
     <SongRequestDetailPage
       item={{
-        id: String(item.id),
-        fullName: item.fullName || '',
-        email: item.email || '',
-        phone: item.phone || '',
-        title: item.title ?? 'Demande de chanson',
-        language: item.language ?? 'Non précisée',
-        songType: item.songType || '',
-        tempo: (item.tempo === 'LENT' || item.tempo === 'RAPIDE' ? item.tempo : 'MOYEN'),
-        occasion: item.occasion || '',
-        eventType: item.eventType ?? item.occasion ?? '',
-        recipientName: item.recipientName || '',
-        specialMessage: item.specialMessage,
-        style: item.style || '',
-        mood: item.mood || '',
-        theme: item.theme ?? 'Non précisé',
-        description: item.description ?? item.details ?? '',
-        inspirations: item.inspirations,
-        lyrics: item.lyrics,
-        structureVerse: item.structureVerse ?? '—',
-        structureChorus: item.structureChorus ?? '—',
-        structureBridge: item.structureBridge,
-        fileUrl: item.fileUrl,
-        details: item.details || '',
-        budget: item.budget?.toString() ?? null,
-        desiredDeadline: item.desiredDeadline?.toISOString() ?? null,
-        source: item.source || '',
-        status: item.status as 'NEW' | 'CONTACTED' | 'QUOTED' | 'IN_PROGRESS' | 'IN_PRODUCTION' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED',
-        convertedAppointmentId: item.convertedAppointmentId ? String(item.convertedAppointmentId) : null,
-        convertedInvoiceId: item.convertedInvoiceId ? String(item.convertedInvoiceId) : null,
-        createdAt: item.createdAt.toISOString(),
+        id: String(song.id),
+        fullName: song.fullName || '',
+        email: song.email || '',
+        phone: song.phone || '',
+        title: song.title ?? 'Demande de chanson',
+        language: song.language ?? 'Non précisée',
+        songType: song.songType || '',
+        tempo: (song.tempo === 'LENT' || song.tempo === 'RAPIDE' ? song.tempo : 'MOYEN'),
+        occasion: song.occasion || '',
+        eventType: song.eventType ?? song.occasion ?? '',
+        recipientName: song.recipientName || '',
+        specialMessage: song.specialMessage,
+        style: song.style || '',
+        mood: song.mood || '',
+        theme: song.theme ?? 'Non précisé',
+        description: song.description ?? song.details ?? '',
+        inspirations: song.inspirations,
+        lyrics: song.lyrics,
+        structureVerse: song.structureVerse ?? '—',
+        structureChorus: song.structureChorus ?? '—',
+        structureBridge: song.structureBridge,
+        fileUrl: song.fileUrl,
+        details: song.details || '',
+        budget: song.budget?.toString() ?? null,
+        desiredDeadline: song.desiredDeadline?.toISOString() ?? null,
+        meetingDate: song.meetingDate?.toISOString() ?? null,
+        scheduledAt: song.scheduledAt?.toISOString() ?? null,
+        startAt: song.startAt?.toISOString() ?? null,
+        endAt: song.endAt?.toISOString() ?? null,
+        durationMinutes: song.durationMinutes ?? null,
+        meetingType: song.meetingType ?? null,
+        location: song.location ?? null,
+        meetingNotes: song.meetingNotes ?? null,
+        source: song.source || '',
+        status: song.status as 'NEW' | 'CONTACTED' | 'QUOTED' | 'IN_PROGRESS' | 'IN_PRODUCTION' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED',
+        convertedAppointmentId: song.convertedAppointmentId ? String(song.convertedAppointmentId) : null,
+        convertedInvoiceId: song.convertedInvoiceId ? String(song.convertedInvoiceId) : null,
+        createdAt: song.createdAt.toISOString(),
         contact: {
-          id: String(item.contact.id),
-          fullName: item.contact.fullName || '',
-          email: item.contact.email || null,
-          phone: item.contact.phone || null,
+          id: String(song.contact.id),
+          fullName: song.contact.fullName || '',
+          email: song.contact.email || null,
+          phone: song.contact.phone || null,
         },
-        activities: item.activities.map((activity) => ({
+        organization: song.organization ? { id: song.organization.id, name: song.organization.name } : null,
+        appointments: song.appointments.map((appointment) => ({
+          id: String(appointment.id),
+          title: appointment.title,
+          startAt: appointment.startAt.toISOString(),
+          endAt: appointment.endAt.toISOString(),
+          status: appointment.status,
+          type: appointment.type,
+          location: appointment.location,
+        })),
+        activities: song.activities.map((activity) => ({
           id: String(activity.id),
           type: activity.type,
           title: activity.title || '',
@@ -87,7 +123,7 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
             fullName: activity.user.fullName || '',
           } : null,
         })),
-        tasks: item.tasks.map((task) => ({
+        tasks: song.tasks.map((task) => ({
           id: String(task.id),
           title: task.title || '',
           description: task.description,
@@ -95,7 +131,7 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
           priority: task.priority as 'LOW' | 'MEDIUM' | 'HIGH',
           dueDate: task.dueDate?.toISOString() ?? null,
         })),
-        files: item.fileDocuments.map((file) => ({
+        files: song.fileDocuments.map((file) => ({
           id: String(file.id),
           filename: file.filename || '',
           originalName: file.originalName || '',

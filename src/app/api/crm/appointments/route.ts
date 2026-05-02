@@ -13,14 +13,27 @@ export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get('q')?.trim();
   const from = request.nextUrl.searchParams.get('from');
   const to = request.nextUrl.searchParams.get('to');
+  const contactId = request.nextUrl.searchParams.get('contactId')?.trim();
+  const organizationId = request.nextUrl.searchParams.get('organizationId')?.trim();
+  const workshopRequestId = request.nextUrl.searchParams.get('workshopRequestId')?.trim();
+  const songRequestId = request.nextUrl.searchParams.get('songRequestId')?.trim();
 
   const items = await prisma.appointment.findMany({
     where: {
       ...(q ? { title: { contains: q, mode: 'insensitive' } } : {}),
       ...(from ? { startAt: { gte: new Date(from) } } : {}),
       ...(to ? { startAt: { lte: new Date(to) } } : {}),
+      ...(contactId ? { contactId } : {}),
+      ...(organizationId ? { organizationId } : {}),
+      ...(workshopRequestId ? { workshopRequestId } : {}),
+      ...(songRequestId ? { songRequestId } : {}),
     },
-    include: { contact: { select: { fullName: true, email: true } } },
+    include: {
+      contact: { select: { id: true, fullName: true, email: true } },
+      organization: { select: { id: true, name: true } },
+      workshopRequest: { select: { id: true, title: true, status: true } },
+      songRequest: { select: { id: true, title: true, occasion: true, status: true } },
+    },
     orderBy: { startAt: 'asc' },
   });
 
@@ -33,15 +46,22 @@ export async function POST(request: NextRequest) {
 
   try {
     const payload = appointmentInputSchema.parse(await request.json());
+    const normalizedType = payload.type === 'OTHER' ? 'REMINDER' : payload.type;
     const item = await prisma.appointment.create({
       data: {
         title: payload.title.trim(),
         description: normalizeOptionalString(payload.description),
         startAt: new Date(payload.startAt),
         endAt: new Date(payload.endAt),
-        type: payload.type,
+        type: normalizedType,
+        appointmentType: payload.appointmentType || normalizedType,
         status: payload.status,
         contactId: payload.contactId || null,
+        organizationId: payload.organizationId || null,
+        workshopRequestId: payload.workshopRequestId || null,
+        songRequestId: payload.songRequestId || null,
+        location: normalizeOptionalString(payload.location),
+        notes: normalizeOptionalString(payload.notes),
         calendarConnectionId: payload.calendarConnectionId || null,
         userId: guard.session.sub,
       },
@@ -57,6 +77,7 @@ export async function POST(request: NextRequest) {
           endAt: item.endAt,
           linkedCrmAppointmentId: item.id,
           linkedClientId: item.contactId,
+          linkedOrganizationId: payload.organizationId || null,
         });
 
         const syncedItem = await prisma.appointment.update({

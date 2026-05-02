@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
+import { AppointmentSelector } from '@/features/crm/components/appointments/AppointmentSelector';
 
 type WorkshopPageProps = {
   item: {
@@ -27,6 +28,11 @@ type WorkshopPageProps = {
     finalPrice: string | null;
     requestedDate: string | null;
     requestedTime: string | null;
+    scheduledAt: string | null;
+    startAt: string | null;
+    endAt: string | null;
+    durationMinutes: number | null;
+    meetingType: string | null;
     durationPreset: string;
     objectives: string;
     notes: string | null;
@@ -36,6 +42,7 @@ type WorkshopPageProps = {
     client: { id: string; fullName: string } | null;
     organizationContact: { id: string; contactId: string | null; fullName: string } | null;
     appointments: Array<{ id: string; title: string; startAt: string; endAt: string; status: string; location: string | null }>;
+    crmAppointments: Array<{ id: string; title: string; startAt: string; endAt: string; status: string; type: string; location: string | null }>;
   };
   calendarConnections: Array<{ id: string; provider: string; accountName: string | null; accountEmail: string | null; status: string }>;
 };
@@ -92,11 +99,14 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
     status: item.status,
   });
   const [schedule, setSchedule] = useState({
-    date: toDateInput(item.requestedDate),
-    startTime: '09:00',
-    endTime: '10:00',
+    date: toDateInput(item.scheduledAt || item.startAt || item.requestedDate),
+    startTime: item.startAt ? item.startAt.slice(11, 16) : '09:00',
+    endTime: item.endAt ? item.endAt.slice(11, 16) : '10:00',
+    durationMinutes: String(item.durationMinutes || 60),
+    meetingType: item.meetingType || 'en_personne',
     location: item.location || item.addressOrLocation || '',
     calendarConnectionId: '',
+    linkedAppointmentId: '',
   });
 
   async function saveWorkshop() {
@@ -113,11 +123,16 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
           basePrice: Number(form.basePrice || 0),
           discountPercent: Number(form.discountPercent || 0),
           requestedDate: form.requestedDate || undefined,
+          scheduledAt: schedule.date ? new Date(`${schedule.date}T${schedule.startTime}:00`).toISOString() : undefined,
+          startAt: schedule.date ? new Date(`${schedule.date}T${schedule.startTime}:00`).toISOString() : undefined,
+          endAt: schedule.date ? new Date(`${schedule.date}T${schedule.endTime}:00`).toISOString() : undefined,
+          durationMinutes: Number(schedule.durationMinutes || 0) || undefined,
+          meetingType: schedule.meetingType,
         }),
       });
       const data = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(data?.error || 'Modification impossible');
-      setMessage('Atelier modifié.');
+      setMessage('Demande d\'atelier modifiée par l\'admin.');
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Modification impossible');
@@ -146,15 +161,63 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
           startAt: startAt.toISOString(),
           endAt: endAt.toISOString(),
           location: schedule.location,
+          durationMinutes: Number(schedule.durationMinutes || 0) || undefined,
+          meetingType: schedule.meetingType,
           calendarConnectionId: schedule.calendarConnectionId || undefined,
         }),
       });
       const data = await response.json().catch(() => null) as { error?: string; warning?: string | null } | null;
       if (!response.ok) throw new Error(data?.error || 'Planification impossible');
-      setMessage(data?.warning ? `Horaire créé, mais sync externe partielle: ${data.warning}` : 'Horaire planifié pour l’atelier.');
+      setMessage(data?.warning ? `Horaire créé, mais sync externe partielle: ${data.warning}` : 'Horaire d’atelier confirmé.');
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Planification impossible');
+    } finally {
+      setScheduling(false);
+    }
+  }
+
+  async function linkExistingAppointment(appointmentId: string) {
+    if (!appointmentId) {
+      setMessage('Saisir un identifiant de rendez-vous.');
+      return;
+    }
+
+    setScheduling(true);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}/appointments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'link_existing', appointmentId }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Liaison impossible');
+      setSchedule((current) => ({ ...current, linkedAppointmentId: '' }));
+      setMessage('Rendez-vous lié à l’atelier.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Liaison impossible');
+    } finally {
+      setScheduling(false);
+    }
+  }
+
+  async function unlinkCrmAppointment(appointmentId: string) {
+    setScheduling(true);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}/appointments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unlink', appointmentId }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Déliaison impossible');
+      setMessage('Rendez-vous délié.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Déliaison impossible');
     } finally {
       setScheduling(false);
     }
@@ -212,15 +275,20 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
 
           <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-white">Horaire</h2>
+              <h2 className="text-lg font-semibold text-white">Planification de l’atelier</h2>
               <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.appointments.length}</span>
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Date</span><input type="date" value={schedule.date} onChange={(event) => setSchedule((current) => ({ ...current, date: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Début</span><input type="time" value={schedule.startTime} onChange={(event) => setSchedule((current) => ({ ...current, startTime: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Fin</span><input type="time" value={schedule.endTime} onChange={(event) => setSchedule((current) => ({ ...current, endTime: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Durée</span><input type="number" min={1} max={1440} value={schedule.durationMinutes} onChange={(event) => setSchedule((current) => ({ ...current, durationMinutes: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Type</span><select value={schedule.meetingType} onChange={(event) => setSchedule((current) => ({ ...current, meetingType: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"><option value="en_personne">En personne</option><option value="telephone">Téléphone</option><option value="visio">Visio</option><option value="autre">Autre</option></select></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Calendrier connecté</span><select value={schedule.calendarConnectionId} onChange={(event) => setSchedule((current) => ({ ...current, calendarConnectionId: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"><option value="">CRM seulement</option>{calendarConnections.filter((connection) => connection.status !== 'DISCONNECTED').map((connection) => <option key={connection.id} value={connection.id}>{connection.provider} · {connection.accountName || connection.accountEmail || connection.id}</option>)}</select></label>
               <label className="md:col-span-2 xl:col-span-4"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Lieu</span><input value={schedule.location} onChange={(event) => setSchedule((current) => ({ ...current, location: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-md border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Enregistrer l’horaire'}</button>
             </div>
             <div className="mt-5 space-y-3">
               {item.appointments.length === 0 ? <p className="text-sm text-slate-400">Aucun rendez-vous atelier lié.</p> : item.appointments.map((appointment) => (
@@ -233,6 +301,39 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
                   {appointment.location ? <p className="mt-1 text-slate-500">{appointment.location}</p> : null}
                 </article>
               ))}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-white">Rendez-vous liés</h2>
+              <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.crmAppointments.length}</span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {item.crmAppointments.length === 0 ? <p className="text-sm text-slate-400">Aucun rendez-vous CRM lié.</p> : item.crmAppointments.map((appointment) => (
+                <article key={appointment.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-white">{appointment.title}</p>
+                    <StatusBadge value={appointment.status} />
+                  </div>
+                  <p className="mt-2 text-slate-400">{new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(appointment.startAt))}</p>
+                  <p className="mt-1 text-slate-500">{appointment.type}{appointment.location ? ` · ${appointment.location}` : ''}</p>
+                  <button type="button" onClick={() => void unlinkCrmAppointment(appointment.id)} disabled={scheduling} className="mt-2 rounded-md border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-60">Délier</button>
+                </article>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap items-end gap-2">
+              <AppointmentSelector
+                onSelect={linkExistingAppointment}
+                loading={scheduling}
+                contactId={item.contactId}
+                organizationId={item.organizationId}
+                onlyUnlinked={true}
+                excludeTypes={[]}
+                label="Lier un rendez-vous existant"
+                placeholder="Chercher par titre, contact, date..."
+              />
+              <button type="button" onClick={() => void scheduleWorkshop()} disabled={scheduling} className="rounded-md border border-primary-500/40 px-3 py-2 text-xs text-primary-200 hover:text-white disabled:opacity-60">Créer un rendez-vous lié</button>
             </div>
           </section>
         </div>

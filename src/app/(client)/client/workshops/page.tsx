@@ -18,6 +18,8 @@ function formatDateTime(value: Date | null | undefined) {
   return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(value);
 }
 
+const CLIENT_EDITABLE_STATUSES = new Set(['BROUILLON', 'NEW', 'CONTACTED', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'SCHEDULED']);
+
 export default async function ClientWorkshopsPage() {
   const session = await requireClientPortalSession();
 
@@ -26,6 +28,7 @@ export default async function ClientWorkshopsPage() {
     title: string;
     workshopTheme: string;
     status: string;
+    scheduledAt: Date | null;
     requestedDate: Date | null;
     requestedTime: string | null;
     format: string;
@@ -100,6 +103,21 @@ export default async function ClientWorkshopsPage() {
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Format</p>
                     <p className="mt-1">{request.format}</p>
                   </div>
+                </div>
+
+                <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/35 p-3 text-sm text-slate-300">
+                  {request.scheduledAt
+                    ? `Date prevue: ${formatDateTime(request.scheduledAt)}`
+                    : 'En attente de planification'}
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href={`/client/workshops/${request.id}`} className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white">Voir</Link>
+                  {CLIENT_EDITABLE_STATUSES.has(request.status) ? (
+                    <Link href={`/client/workshops/${request.id}`} className="rounded-xl border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-100 transition hover:bg-primary-500/20">Modifier</Link>
+                  ) : (
+                    <a href={OUTLOOK_MESSAGE_URL} target="_blank" rel="noreferrer" className="rounded-xl border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-100 transition hover:bg-primary-500/20">Envoyer un message</a>
+                  )}
                 </div>
 
                 <div className="mt-5 space-y-3">

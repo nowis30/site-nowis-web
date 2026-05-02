@@ -41,9 +41,15 @@ export const appointmentInputSchema = z.object({
   description: z.string().max(4000).optional(),
   startAt: appointmentDateTimeSchema,
   endAt: appointmentDateTimeSchema,
-  type: z.enum(['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER']).default('MEETING'),
+  type: z.enum(['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER', 'WORKSHOP', 'SONG_MEETING', 'OTHER']).default('MEETING'),
   status: z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE']).default('PENDING'),
+  appointmentType: z.enum(['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER', 'WORKSHOP', 'SONG_MEETING', 'OTHER']).optional(),
   contactId: z.string().uuid().optional().or(z.literal('')),
+  organizationId: z.string().uuid().optional().or(z.literal('')),
+  workshopRequestId: z.string().uuid().optional().or(z.literal('')),
+  songRequestId: z.string().uuid().optional().or(z.literal('')),
+  location: z.string().max(240).optional().or(z.literal('')),
+  notes: z.string().max(4000).optional().or(z.literal('')),
   calendarConnectionId: z.string().uuid().optional().or(z.literal('')),
 }).superRefine((value, ctx) => {
   const startAt = new Date(value.startAt);

@@ -7,16 +7,47 @@ import { CrmCalendarPage } from '@/features/crm/components/calendar/CrmCalendarP
 export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   await requireCrmSession();
 
-  const [appointments, contacts, workshopAppointments, workshopAvailabilities, externalCalendarEvents, calendarConnections] = await Promise.all([
+  const [appointments, contacts, organizations, workshopRequests, songRequests, workshopAppointments, workshopAvailabilities, externalCalendarEvents, calendarConnections] = await Promise.all([
     prisma.appointment.findMany({
       include: {
         contact: { select: { fullName: true } },
+        organization: { select: { id: true, name: true } },
+        workshopRequest: { select: { id: true, title: true } },
+        songRequest: { select: { id: true, title: true, occasion: true } },
       },
       orderBy: { startAt: 'asc' },
     }),
     prisma.contact.findMany({
       orderBy: { fullName: 'asc' },
       select: { id: true, fullName: true },
+      take: 300,
+    }),
+    prisma.organization.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true },
+      take: 300,
+    }),
+    prisma.workshopRequest.findMany({
+      where: { status: { not: 'DELETED' } },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        contactId: true,
+        organizationId: true,
+      },
+      take: 300,
+    }),
+    prisma.songRequest.findMany({
+      where: { status: { not: 'DELETED' } },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        occasion: true,
+        contactId: true,
+        organizationId: true,
+      },
       take: 300,
     }),
     prisma.workshopAppointment.findMany({
@@ -102,8 +133,13 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       contactName: item.contact?.fullName || null,
       calendarConnectionId: item.calendarConnectionId,
       meetingUrl: item.meetingUrl,
+      organizationId: item.organizationId,
+      organizationName: item.organization?.name || null,
+      workshopRequestId: item.workshopRequestId,
+      workshopRequestTitle: item.workshopRequest?.title || null,
+      songRequestId: item.songRequestId,
+      songRequestTitle: item.songRequest?.title || item.songRequest?.occasion || null,
       source: 'appointment' as const,
-      organizationName: null,
     })),
     ...workshopAppointments.map((item) => ({
       id: item.id,
@@ -148,6 +184,9 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
   const prefillContactId = getParam('contactId');
   const prefillType = getParam('type');
   const prefillStatus = getParam('status');
+  const prefillOrganizationId = getParam('organizationId');
+  const prefillWorkshopRequestId = getParam('workshopRequestId');
+  const prefillSongRequestId = getParam('songRequestId');
 
   const initialPrefill = prefillTitle || prefillContactId || prefillStart
     ? {
@@ -158,6 +197,9 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
         type: prefillType,
         status: prefillStatus,
         contactId: prefillContactId,
+        organizationId: prefillOrganizationId,
+        workshopRequestId: prefillWorkshopRequestId,
+        songRequestId: prefillSongRequestId,
       }
     : undefined;
 
@@ -165,6 +207,9 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
     <CrmCalendarPage
       initialAppointments={initialAppointments}
       contacts={contacts.map((item) => ({ id: item.id, label: item.fullName }))}
+      organizations={organizations.map((item) => ({ id: item.id, label: item.name }))}
+      workshopRequests={workshopRequests.map((item) => ({ id: item.id, label: item.title, contactId: item.contactId, organizationId: item.organizationId }))}
+      songRequests={songRequests.map((item) => ({ id: item.id, label: item.title || item.occasion || 'Demande de chanson', contactId: item.contactId, organizationId: item.organizationId }))}
       calendarConnections={calendarConnections.map((item) => ({
         id: item.id,
         label: `${item.provider} · ${item.accountEmail || item.accountName || 'Compte connecté'}`,

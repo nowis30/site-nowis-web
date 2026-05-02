@@ -12,7 +12,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
   const item = await prisma.appointment.findUnique({
     where: { id: params.id },
-    include: { contact: true },
+    include: {
+      contact: true,
+      organization: { select: { id: true, name: true } },
+      workshopRequest: { select: { id: true, title: true, status: true } },
+      songRequest: { select: { id: true, title: true, occasion: true, status: true } },
+    },
   });
   if (!item) return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
   return NextResponse.json({ item });
@@ -24,6 +29,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
   try {
     const payload = appointmentInputSchema.parse(await request.json());
+    const normalizedType = payload.type === 'OTHER' ? 'REMINDER' : payload.type;
     const item = await prisma.appointment.update({
       where: { id: params.id },
       data: {
@@ -31,9 +37,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         description: normalizeOptionalString(payload.description),
         startAt: new Date(payload.startAt),
         endAt: new Date(payload.endAt),
-        type: payload.type,
+        type: normalizedType,
+        appointmentType: payload.appointmentType || normalizedType,
         status: payload.status,
         contactId: payload.contactId || null,
+        organizationId: payload.organizationId || null,
+        workshopRequestId: payload.workshopRequestId || null,
+        songRequestId: payload.songRequestId || null,
+        location: normalizeOptionalString(payload.location),
+        notes: normalizeOptionalString(payload.notes),
         calendarConnectionId: payload.calendarConnectionId || null,
       },
     });

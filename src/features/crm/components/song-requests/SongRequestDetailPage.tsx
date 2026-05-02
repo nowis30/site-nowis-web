@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { SongRequestFilesPanel } from './SongRequestFilesPanel';
+import { AppointmentSelector } from '@/features/crm/components/appointments/AppointmentSelector';
 
 type ActivityItem = {
   id: string;
@@ -49,12 +50,30 @@ type SongRequestDetail = {
   details: string;
   budget: string | number | null;
   desiredDeadline: string | null;
+  meetingDate: string | null;
+  scheduledAt: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  durationMinutes: number | null;
+  meetingType: string | null;
+  location: string | null;
+  meetingNotes: string | null;
   source: string;
   status: 'NEW' | 'CONTACTED' | 'QUOTED' | 'IN_PROGRESS' | 'IN_PRODUCTION' | 'DELIVERED' | 'COMPLETED' | 'CANCELLED';
   convertedAppointmentId: string | null;
   convertedInvoiceId: string | null;
   createdAt: string;
   contact: { id: string; fullName: string; email: string | null; phone: string | null };
+  organization: { id: string; name: string } | null;
+  appointments: Array<{
+    id: string;
+    title: string;
+    startAt: string;
+    endAt: string;
+    status: string;
+    type: string;
+    location: string | null;
+  }>;
   activities: ActivityItem[];
   tasks: TaskItem[];
   files: Array<{
@@ -90,6 +109,16 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
   const router = useRouter();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [planning, setPlanning] = useState({
+    title: item.title ? `Rencontre chanson - ${item.title}` : `Rencontre chanson - ${item.fullName}`,
+    startAt: item.startAt ? item.startAt.slice(0, 16) : '',
+    endAt: item.endAt ? item.endAt.slice(0, 16) : '',
+    durationMinutes: String(item.durationMinutes || 45),
+    meetingType: item.meetingType || 'visio',
+    location: item.location || '',
+    meetingNotes: item.meetingNotes || '',
+    appointmentId: '',
+  });
 
   async function runAction(action: 'mark_contacted' | 'convert_appointment' | 'mark_quoted' | 'mark_in_production' | 'mark_delivered') {
     setLoadingAction(action);
@@ -116,6 +145,79 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
   }
 
   const budgetLabel = item.budget === null ? '—' : new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(item.budget));
+
+  async function planSongMeeting() {
+    setLoadingAction('plan_meeting');
+    setError(null);
+    try {
+      const response = await fetch(`/api/crm/song-requests/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'plan_meeting',
+          title: planning.title,
+          startAt: planning.startAt ? new Date(planning.startAt).toISOString() : undefined,
+          endAt: planning.endAt ? new Date(planning.endAt).toISOString() : undefined,
+          durationMinutes: Number(planning.durationMinutes || 45),
+          meetingType: planning.meetingType,
+          location: planning.location,
+          meetingNotes: planning.meetingNotes,
+          organizationId: item.organization?.id,
+        }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Planification impossible');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function linkAppointment(appointmentId: string) {
+    if (!appointmentId) return;
+    setLoadingAction('link_appointment');
+    setError(null);
+    try {
+      const response = await fetch(`/api/crm/song-requests/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'link_appointment',
+          appointmentId,
+          organizationId: item.organization?.id,
+        }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Liaison impossible');
+      setPlanning((current) => ({ ...current, appointmentId: '' }));
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function unlinkAppointment(appointmentId: string) {
+    setLoadingAction(`unlink_${appointmentId}`);
+    setError(null);
+    try {
+      const response = await fetch(`/api/crm/song-requests/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unlink_appointment', appointmentId }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Déliaison impossible');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -271,7 +373,87 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
               </p>
             ) : null}
             <p className="mt-3 break-all"><span className="text-slate-500">Lien client:</span> {clientPortalUrl}</p>
+            <p className="mt-2"><span className="text-slate-500">Organisation:</span> {item.organization?.name || '—'}</p>
+            <p><span className="text-slate-500">Date rencontre:</span> {item.meetingDate ? new Date(item.meetingDate).toLocaleString('fr-CA') : '—'}</p>
           </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Planifier une rencontre chanson</h3>
+            <div className="mt-4 grid gap-3">
+              <label>
+                <span className="mb-1 block text-xs text-slate-400">Titre</span>
+                <input value={planning.title} onChange={(event) => setPlanning((current) => ({ ...current, title: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label>
+                  <span className="mb-1 block text-xs text-slate-400">Début</span>
+                  <input type="datetime-local" value={planning.startAt} onChange={(event) => setPlanning((current) => ({ ...current, startAt: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                </label>
+                <label>
+                  <span className="mb-1 block text-xs text-slate-400">Fin</span>
+                  <input type="datetime-local" value={planning.endAt} onChange={(event) => setPlanning((current) => ({ ...current, endAt: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                </label>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <label>
+                  <span className="mb-1 block text-xs text-slate-400">Durée (min)</span>
+                  <input type="number" min={1} max={1440} value={planning.durationMinutes} onChange={(event) => setPlanning((current) => ({ ...current, durationMinutes: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                </label>
+                <label>
+                  <span className="mb-1 block text-xs text-slate-400">Type</span>
+                  <select value={planning.meetingType} onChange={(event) => setPlanning((current) => ({ ...current, meetingType: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+                    <option value="telephone">Téléphone</option>
+                    <option value="visio">Visio</option>
+                    <option value="en_personne">En personne</option>
+                    <option value="autre">Autre</option>
+                  </select>
+                </label>
+                <label>
+                  <span className="mb-1 block text-xs text-slate-400">Lieu / lien</span>
+                  <input value={planning.location} onChange={(event) => setPlanning((current) => ({ ...current, location: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+                </label>
+              </div>
+              <label>
+                <span className="mb-1 block text-xs text-slate-400">Notes internes</span>
+                <textarea rows={3} value={planning.meetingNotes} onChange={(event) => setPlanning((current) => ({ ...current, meetingNotes: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
+              </label>
+              <button type="button" onClick={planSongMeeting} disabled={loadingAction === 'plan_meeting'} className="rounded-lg border border-primary-500/40 px-3 py-2 text-sm text-primary-200 hover:text-white disabled:opacity-60">
+                {loadingAction === 'plan_meeting' ? 'Planification...' : 'Planifier la rencontre'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Rendez-vous liés</h3>
+          <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.appointments.length}</span>
+        </div>
+        <div className="mt-4 space-y-3">
+          {item.appointments.length === 0 ? <p className="text-sm text-slate-500">Aucun rendez-vous lié.</p> : item.appointments.map((appointment) => (
+            <article key={appointment.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 text-sm text-slate-200">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium text-white">{appointment.title}</p>
+                <span className="text-xs text-slate-400">{appointment.status}</span>
+              </div>
+              <p className="mt-1 text-xs text-slate-400">{new Date(appointment.startAt).toLocaleString('fr-CA')} - {new Date(appointment.endAt).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</p>
+              <p className="text-xs text-slate-500">{appointment.type} {appointment.location ? `· ${appointment.location}` : ''}</p>
+              <button type="button" onClick={() => unlinkAppointment(appointment.id)} disabled={loadingAction === `unlink_${appointment.id}`} className="mt-2 rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-60">Délier</button>
+            </article>
+          ))}
+        </div>
+        <div className="mt-4">
+          <AppointmentSelector
+            onSelect={linkAppointment}
+            loading={loadingAction === 'link_appointment'}
+            contactId={item.contact.id}
+            organizationId={item.organization?.id || null}
+            onlyUnlinked={true}
+            excludeTypes={[]}
+            label="Lier un rendez-vous existant"
+            placeholder="Chercher par titre, contact, date..."
+          />
         </div>
       </div>
 

@@ -162,6 +162,10 @@ export async function POST(request: NextRequest) {
         objectives: payload.objectives || payload.clientNotes || 'Atelier créé depuis le CRM.',
         notes: normalizeOptionalString(payload.notes),
         status: payload.status || 'EN_ATTENTE_RDV',
+          startAt: payload.startAt ? new Date(payload.startAt) : null,
+          endAt: payload.endAt ? new Date(payload.endAt) : null,
+          durationMinutes: payload.durationMinutes ?? null,
+          meetingType: normalizeOptionalString(payload.meetingType),
       },
     });
 

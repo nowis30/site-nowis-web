@@ -68,7 +68,18 @@ export const crmSongRequestListQuerySchema = z.object({
 
 export const crmSongRequestPatchSchema = z.object({
   status: songRequestStatusSchema.optional(),
-  action: z.enum(['mark_contacted', 'convert_appointment', 'mark_quoted', 'mark_in_production', 'mark_delivered', 'soft_delete', 'restore']).optional(),
+  action: z.enum(['mark_contacted', 'convert_appointment', 'mark_quoted', 'mark_in_production', 'mark_delivered', 'soft_delete', 'restore', 'plan_meeting', 'link_appointment', 'unlink_appointment']).optional(),
+  title: optionalText(160),
+  meetingDate: z.string().datetime().optional().or(z.literal('')),
+  scheduledAt: z.string().datetime().optional().or(z.literal('')),
+  startAt: z.string().datetime().optional().or(z.literal('')),
+  endAt: z.string().datetime().optional().or(z.literal('')),
+  durationMinutes: z.coerce.number().int().min(1).max(1440).optional(),
+  meetingType: optionalText(80),
+  location: optionalText(240),
+  meetingNotes: optionalText(4000),
+  organizationId: z.string().uuid().optional().or(z.literal('')),
+  appointmentId: z.string().uuid().optional().or(z.literal('')),
   reason: z.string().trim().max(500).optional(),
 });
 

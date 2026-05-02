@@ -23,6 +23,8 @@ type OrganizationDetailRecord = Prisma.OrganizationGetPayload<{
     };
     workshopRequests: true;
     workshopAppointments: true;
+    appointments: true;
+    songRequests: true;
   };
 }>;
 
@@ -67,6 +69,8 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
         },
         workshopRequests: { orderBy: { createdAt: 'desc' }, take: 20 },
         workshopAppointments: { orderBy: { startAt: 'desc' }, take: 20 },
+        appointments: { orderBy: { startAt: 'desc' }, take: 30 },
+        songRequests: { orderBy: { createdAt: 'desc' }, take: 20 },
       },
     });
   } catch (error) {
@@ -165,9 +169,19 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
       <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-white">Rendez-vous liés</h3>
-          <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.workshopAppointments.length}</span>
+          <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.appointments.length + item.workshopAppointments.length}</span>
         </div>
         <div className="mt-4 space-y-3">
+          {item.appointments.length === 0 ? null : item.appointments.map((appointment) => (
+            <article key={appointment.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium text-white">{appointment.title}</p>
+                <StatusBadge value={appointment.status} />
+              </div>
+              <p className="mt-2 text-slate-400">{formatDateTime(appointment.startAt)}</p>
+              {appointment.location ? <p className="mt-1 text-slate-500">{appointment.location}</p> : null}
+            </article>
+          ))}
           {item.workshopAppointments.length === 0 ? <p className="text-sm text-slate-400">Aucun rendez-vous atelier lié.</p> : item.workshopAppointments.map((appointment) => (
             <article key={appointment.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">
               <div className="flex items-center justify-between gap-3">
@@ -176,6 +190,24 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
               </div>
               <p className="mt-2 text-slate-400">{formatDateTime(appointment.startAt)}</p>
               {appointment.location ? <p className="mt-1 text-slate-500">{appointment.location}</p> : null}
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-white">Demandes chanson liées</h3>
+          <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.songRequests.length}</span>
+        </div>
+        <div className="mt-4 space-y-3">
+          {item.songRequests.length === 0 ? <p className="text-sm text-slate-400">Aucune demande de chanson liée.</p> : item.songRequests.map((request) => (
+            <article key={request.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">
+              <div className="flex items-center justify-between gap-3">
+                <Link href={`/crm/song-requests/${request.id}`} className="font-medium text-white hover:text-primary-200">{request.title || request.occasion}</Link>
+                <StatusBadge value={request.status} />
+              </div>
+              <p className="mt-2 text-slate-400">Date rencontre: {formatDateTime(request.meetingDate || request.startAt)}</p>
             </article>
           ))}
         </div>

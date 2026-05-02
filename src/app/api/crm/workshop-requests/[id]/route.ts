@@ -4,6 +4,43 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { workshopRequestInputSchema } from '@/features/workshops/schemas';
 
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const guard = requireApiPermission(request, 'workshopRequests', 'read');
+  if (guard.error) return guard.error;
+
+  try {
+    const item = await prisma.workshopRequest.findUnique({
+      where: { id: params.id },
+      include: {
+        organization: { select: { id: true, name: true } },
+        contact: { select: { id: true, fullName: true, email: true, phone: true } },
+        client: { select: { id: true, fullName: true, email: true, phone: true } },
+        appointments: { select: { id: true, title: true, startAt: true, endAt: true, status: true, location: true }, orderBy: { startAt: 'asc' } },
+        crmAppointments: {
+          select: {
+            id: true,
+            title: true,
+            startAt: true,
+            endAt: true,
+            status: true,
+            type: true,
+            location: true,
+            contactId: true,
+            organizationId: true,
+            songRequestId: true,
+          },
+          orderBy: { startAt: 'asc' },
+        },
+      },
+    });
+
+    if (!item) return NextResponse.json({ error: 'Atelier introuvable' }, { status: 404 });
+    return NextResponse.json({ item });
+  } catch {
+    return NextResponse.json({ error: 'Lecture impossible' }, { status: 400 });
+  }
+}
+
 function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
 }
@@ -73,6 +110,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         calendlyInviteeUri: normalizeOptionalString(payload.calendlyInviteeUri),
         calendlyUrl: normalizeOptionalString(payload.calendlyUrl),
         scheduledAt: payload.scheduledAt ? new Date(payload.scheduledAt) : null,
+        startAt: payload.startAt ? new Date(payload.startAt) : null,
+        endAt: payload.endAt ? new Date(payload.endAt) : null,
+        durationMinutes: payload.durationMinutes ?? null,
+        meetingType: normalizeOptionalString(payload.meetingType),
         audienceType: payload.audienceType,
         ageRange: normalizeOptionalString(payload.ageRange),
         estimatedParticipants: payload.estimatedParticipants ?? payload.participantEstimate ?? null,
@@ -146,11 +187,95 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });
   }
 
-  const body = (await request.json().catch(() => ({}))) as { action?: string; reason?: string };
+  const body = (await request.json().catch(() => ({}))) as {
+    action?: string;
+    reason?: string;
+    status?: string;
+    organizationId?: string | null;
+    contactId?: string | null;
+    organizationContactId?: string | null;
+    clientId?: string | null;
+    contactPerson?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
+    location?: string | null;
+    requestedDate?: string | null;
+    requestedTime?: string | null;
+    scheduledAt?: string | null;
+    startAt?: string | null;
+    endAt?: string | null;
+    durationMinutes?: number | null;
+    meetingType?: string | null;
+    internalNotes?: string | null;
+    clientNotes?: string | null;
+    finalPrice?: number | null;
+    linkedAppointmentId?: string | null;
+  };
   const action = body.action;
   const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 500) : null;
+  const statusValues = ['BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE', 'DELETED', 'NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED'] as const;
+  const nextStatus = typeof body.status === 'string' && (statusValues as readonly string[]).includes(body.status)
+    ? body.status as (typeof statusValues)[number]
+    : undefined;
 
-  if (!action || !['archive', 'restore', 'delete'].includes(action)) {
+  if (!action) {
+    try {
+      const item = await prisma.workshopRequest.update({
+        where: { id: params.id },
+        data: {
+          status: nextStatus,
+          organizationId: body.organizationId || null,
+          contactId: body.contactId || null,
+          organizationContactId: body.organizationContactId || null,
+          clientId: body.clientId || null,
+          contactPerson: normalizeOptionalString(body.contactPerson || undefined),
+          contactEmail: normalizeOptionalString(body.contactEmail || undefined),
+          contactPhone: normalizeOptionalString(body.contactPhone || undefined),
+          location: normalizeOptionalString(body.location || undefined),
+          requestedDate: body.requestedDate ? new Date(body.requestedDate) : null,
+          requestedTime: normalizeOptionalString(body.requestedTime || undefined),
+          scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
+          startAt: body.startAt ? new Date(body.startAt) : null,
+          endAt: body.endAt ? new Date(body.endAt) : null,
+          durationMinutes: typeof body.durationMinutes === 'number' ? body.durationMinutes : null,
+          meetingType: normalizeOptionalString(body.meetingType || undefined),
+          internalNotes: normalizeOptionalString(body.internalNotes || undefined),
+          clientNotes: normalizeOptionalString(body.clientNotes || undefined),
+          finalPrice: typeof body.finalPrice === 'number' ? body.finalPrice : undefined,
+        },
+      });
+
+      if (body.linkedAppointmentId) {
+        await prisma.appointment.update({
+          where: { id: body.linkedAppointmentId },
+          data: {
+            workshopRequestId: item.id,
+            contactId: item.contactId || item.clientId || null,
+            organizationId: item.organizationId || null,
+          },
+        }).catch(() => undefined);
+      }
+
+      await prisma.activity.create({
+        data: {
+          type: 'APPOINTMENT',
+          title: 'Demande d’atelier modifiée par l’admin',
+          description: `Atelier ${item.title} mis à jour depuis le CRM.`,
+          contactId: item.contactId || item.clientId || null,
+          relatedType: 'WORKSHOP_REQUEST',
+          relatedId: item.id,
+          relatedUrl: `/crm/workshop-requests/${item.id}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+
+      return NextResponse.json({ item });
+    } catch {
+      return NextResponse.json({ error: 'Modification impossible' }, { status: 400 });
+    }
+  }
+
+  if (!['archive', 'restore', 'delete'].includes(action)) {
     return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
   }
 

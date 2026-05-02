@@ -4,6 +4,7 @@ import { FileMusic, Music2 } from 'lucide-react';
 
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
+import { ClientSongRequestEditor } from '@/features/client-portal/components/song-requests/ClientSongRequestEditor';
 import { SongRequestFilesPanel } from '@/features/crm/components/song-requests/SongRequestFilesPanel';
 import { prisma } from '@/lib/prisma';
 
@@ -59,6 +60,13 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
       details: true,
       budget: true,
       desiredDeadline: true,
+      meetingDate: true,
+      startAt: true,
+      endAt: true,
+      durationMinutes: true,
+      meetingType: true,
+      location: true,
+      meetingNotes: true,
       status: true,
       createdAt: true,
       updatedAt: true,
@@ -134,6 +142,29 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
           {request.details ? <p>{request.details}</p> : null}
           {!request.description && !request.details ? <EmptyState icon={<Music2 size={18} />} title="Aucun brief fourni" description="Aucun détail supplémentaire n'a été saisi pour cette demande." /> : null}
         </div>
+      </SectionCard>
+
+      <SectionCard title="Rencontre chanson" subtitle="Proposez une date et des details de rencontre tant que la demande est modifiable.">
+        <div className="mb-3 rounded-xl border border-slate-800 bg-slate-950/45 p-3 text-sm text-slate-300">
+          Date de rencontre: {request.meetingDate ? formatDateTime(request.meetingDate) : 'Aucune date enregistree'}
+        </div>
+        <ClientSongRequestEditor
+          initialItem={{
+            id: request.id,
+            status: request.status,
+            title: request.title,
+            description: request.description,
+            details: request.details,
+            meetingDate: request.meetingDate ? new Date(String(request.meetingDate)).toISOString() : null,
+            startAt: request.startAt ? new Date(String(request.startAt)).toISOString() : null,
+            endAt: request.endAt ? new Date(String(request.endAt)).toISOString() : null,
+            durationMinutes: request.durationMinutes,
+            meetingType: request.meetingType,
+            location: request.location,
+            meetingNotes: request.meetingNotes,
+          }}
+          canEditInitially={!['QUOTED', 'DELIVERED', 'COMPLETED', 'DELETED'].includes(request.status)}
+        />
       </SectionCard>
 
       <SectionCard title="Fichiers du projet" subtitle="Deposez vos paroles, poemes, notes, demos et documents lies a cette demande.">

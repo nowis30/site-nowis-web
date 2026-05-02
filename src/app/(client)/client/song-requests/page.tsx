@@ -57,6 +57,7 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
       status: true,
       budget: true,
       desiredDeadline: true,
+      meetingDate: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -101,9 +102,11 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
                 <p className="mt-2 text-sm text-slate-300">Destinataire: {request.recipientName}</p>
                 {request.budget ? <p className="mt-1 text-sm text-slate-400">Budget: {Number(request.budget).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}</p> : null}
                 {request.desiredDeadline ? <p className="mt-1 text-sm text-slate-400">Date souhaitee: {formatDate(request.desiredDeadline)}</p> : null}
+                {request.meetingDate ? <p className="mt-1 text-sm text-slate-400">Date de rencontre: {formatDate(request.meetingDate)}</p> : null}
                 <p className="mt-2 text-xs text-slate-500">Creee le {formatDateTime(request.createdAt)} · Maj {formatDateTime(request.updatedAt)}</p>
                 <div className="mt-3 flex items-center gap-2">
                   <Link href={`/client/song-requests/${request.id}`} className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Voir détail</Link>
+                  {!['QUOTED', 'DELIVERED', 'COMPLETED', 'DELETED'].includes(request.status) ? <Link href={`/client/song-requests/${request.id}`} className="rounded-xl border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-100 transition hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Modifier</Link> : <a href="https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client" target="_blank" rel="noreferrer" className="rounded-xl border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-100 transition hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Envoyer un message</a>}
                 </div>
               </article>
             ))}

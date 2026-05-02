@@ -21,6 +21,13 @@ type CalendarEventItem = {
   contactName: string | null;
   calendarConnectionId?: string | null;
   meetingUrl?: string | null;
+  organizationId?: string | null;
+  workshopRequestId?: string | null;
+  workshopRequestTitle?: string | null;
+  songRequestId?: string | null;
+  songRequestTitle?: string | null;
+  location?: string | null;
+  notes?: string | null;
   source?: 'appointment' | 'workshop_appointment' | 'workshop_availability' | 'google_calendar' | 'microsoft_calendar' | 'calendly';
   organizationName?: string | null;
 };
@@ -34,6 +41,13 @@ type ConnectionOptionItem = {
   status: string;
 };
 
+type LinkedRequestOption = {
+  id: string;
+  label: string;
+  contactId: string | null;
+  organizationId: string | null;
+};
+
 type CalendarPrefill = {
   title?: string;
   description?: string;
@@ -42,6 +56,9 @@ type CalendarPrefill = {
   type?: string;
   status?: string;
   contactId?: string;
+  organizationId?: string;
+  workshopRequestId?: string;
+  songRequestId?: string;
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -53,6 +70,8 @@ const TYPE_COLORS: Record<string, string> = {
   DEADLINE: '#dc2626',
   REMINDER: '#64748b',
   WORKSHOP: '#9333ea',
+  SONG_MEETING: '#2563eb',
+  OTHER: '#475569',
   AVAILABILITY: '#0f766e',
   GOOGLE: '#0b57d0',
   MICROSOFT: '#0078d4',
@@ -68,6 +87,8 @@ const TYPE_LABELS: Record<string, string> = {
   DEADLINE: 'Échéance',
   REMINDER: 'Rappel',
   WORKSHOP: 'Atelier',
+  SONG_MEETING: 'Rencontre chanson',
+  OTHER: 'Autre',
   AVAILABILITY: 'Disponibilité',
   GOOGLE: 'Google',
   MICROSOFT: 'Microsoft',
@@ -121,11 +142,17 @@ function toEventInput(item: CalendarEventItem): EventInput {
 export function CrmCalendarPage({
   initialAppointments,
   contacts,
+  organizations,
+  workshopRequests,
+  songRequests,
   calendarConnections,
   initialPrefill,
 }: {
   initialAppointments: CalendarEventItem[];
   contacts: OptionItem[];
+  organizations: OptionItem[];
+  workshopRequests: LinkedRequestOption[];
+  songRequests: LinkedRequestOption[];
   calendarConnections: ConnectionOptionItem[];
   initialPrefill?: CalendarPrefill;
 }) {
@@ -148,6 +175,11 @@ export function CrmCalendarPage({
     type: 'MEETING',
     status: 'PENDING',
     contactId: '',
+    organizationId: '',
+    workshopRequestId: '',
+    songRequestId: '',
+    location: '',
+    notes: '',
     calendarConnectionId: '',
   });
   const [prefillApplied, setPrefillApplied] = useState(false);
@@ -203,6 +235,11 @@ export function CrmCalendarPage({
       type: initialPrefill.type || 'MEETING',
       status: initialPrefill.status || 'PENDING',
       contactId: initialPrefill.contactId || '',
+      organizationId: initialPrefill.organizationId || '',
+      workshopRequestId: initialPrefill.workshopRequestId || '',
+      songRequestId: initialPrefill.songRequestId || '',
+      location: '',
+      notes: '',
       calendarConnectionId: '',
     });
     setError(null);
@@ -220,6 +257,11 @@ export function CrmCalendarPage({
       type: 'MEETING',
       status: 'PENDING',
       contactId: '',
+      organizationId: '',
+      workshopRequestId: '',
+      songRequestId: '',
+      location: '',
+      notes: '',
       calendarConnectionId: '',
     });
     setError(null);
@@ -242,6 +284,11 @@ export function CrmCalendarPage({
       type: item.type,
       status: item.status,
       contactId: item.contactId || '',
+      organizationId: item.organizationId || '',
+      workshopRequestId: item.workshopRequestId || '',
+      songRequestId: item.songRequestId || '',
+      location: item.location || '',
+      notes: item.notes || item.description || '',
       calendarConnectionId: item.calendarConnectionId || '',
     });
     setError(null);
@@ -280,6 +327,11 @@ export function CrmCalendarPage({
       type: form.type,
       status: form.status,
       contactId: form.contactId,
+      organizationId: form.organizationId,
+      workshopRequestId: form.workshopRequestId,
+      songRequestId: form.songRequestId,
+      location: form.location,
+      notes: form.notes,
       calendarConnectionId: form.calendarConnectionId,
     };
 
@@ -308,8 +360,16 @@ export function CrmCalendarPage({
           status: item.status,
           contactId: item.contactId,
           contactName,
+          organizationId: item.organizationId || form.organizationId || null,
+          workshopRequestId: item.workshopRequestId || form.workshopRequestId || null,
+          songRequestId: item.songRequestId || form.songRequestId || null,
+          location: item.location || form.location || null,
+          notes: item.notes || form.notes || null,
           calendarConnectionId: item.calendarConnectionId || form.calendarConnectionId || null,
           meetingUrl: item.meetingUrl || null,
+          organizationName: item.organizationName || organizations.find((entry) => entry.id === (item.organizationId || form.organizationId))?.label || null,
+          workshopRequestTitle: item.workshopRequestTitle || workshopRequests.find((entry) => entry.id === (item.workshopRequestId || form.workshopRequestId))?.label || null,
+          songRequestTitle: item.songRequestTitle || songRequests.find((entry) => entry.id === (item.songRequestId || form.songRequestId))?.label || null,
         }].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
       });
       setSelectedEventId(item.id);
@@ -355,6 +415,11 @@ export function CrmCalendarPage({
       type: current.type,
       status: current.status,
       contactId: current.contactId || '',
+      organizationId: current.organizationId || '',
+      workshopRequestId: current.workshopRequestId || '',
+      songRequestId: current.songRequestId || '',
+      location: current.location || '',
+      notes: current.notes || '',
       calendarConnectionId: current.calendarConnectionId || '',
     };
 
@@ -445,6 +510,8 @@ export function CrmCalendarPage({
               <div className="mt-3 space-y-2 text-sm text-slate-300">
                 <p className="font-medium text-white">{selectedEvent.title}</p>
                 <p>{selectedEvent.organizationName || selectedEvent.contactName || 'Sans contact'}</p>
+                {selectedEvent.workshopRequestTitle ? <p className="text-xs text-slate-500">Atelier: {selectedEvent.workshopRequestTitle}</p> : null}
+                {selectedEvent.songRequestTitle ? <p className="text-xs text-slate-500">Chanson: {selectedEvent.songRequestTitle}</p> : null}
                 <p>{toStatusLabel(selectedEvent.status)} · {toTypeLabel(selectedEvent.type)}</p>
                 {selectedEvent.meetingUrl ? <a href={selectedEvent.meetingUrl} target="_blank" rel="noreferrer" className="inline-flex text-xs text-primary-300 hover:text-primary-200">Ouvrir le lien de réunion</a> : null}
                 {selectedEvent.source === 'appointment' || !selectedEvent.source ? <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button> : <p className="text-xs text-slate-500">Événement synchronisé (lecture seule)</p>}
@@ -524,6 +591,51 @@ export function CrmCalendarPage({
                 </select>
               </label>
               <label>
+                <span className="mb-2 block text-sm text-slate-300">Organisation</span>
+                <select value={form.organizationId} onChange={(event) => setForm((current) => ({ ...current, organizationId: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
+                  <option value="">Aucune</option>
+                  {organizations.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Lier a un atelier</span>
+                <select value={form.workshopRequestId} onChange={(event) => {
+                  const workshopId = event.target.value;
+                  const linkedWorkshop = workshopRequests.find((item) => item.id === workshopId);
+                  setForm((current) => ({
+                    ...current,
+                    workshopRequestId: workshopId,
+                    type: workshopId ? 'WORKSHOP' : current.type,
+                    contactId: workshopId && linkedWorkshop?.contactId ? linkedWorkshop.contactId : current.contactId,
+                    organizationId: workshopId && linkedWorkshop?.organizationId ? linkedWorkshop.organizationId : current.organizationId,
+                  }));
+                }} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
+                  <option value="">Aucun atelier</option>
+                  {workshopRequests.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Lier a une demande chanson</span>
+                <select value={form.songRequestId} onChange={(event) => {
+                  const songId = event.target.value;
+                  const linkedSong = songRequests.find((item) => item.id === songId);
+                  setForm((current) => ({
+                    ...current,
+                    songRequestId: songId,
+                    type: songId ? 'SONG_MEETING' : current.type,
+                    contactId: songId && linkedSong?.contactId ? linkedSong.contactId : current.contactId,
+                    organizationId: songId && linkedSong?.organizationId ? linkedSong.organizationId : current.organizationId,
+                  }));
+                }} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
+                  <option value="">Aucune demande</option>
+                  {songRequests.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Lieu</span>
+                <input value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
+              </label>
+              <label>
                 <span className="mb-2 block text-sm text-slate-300">Ajouter au calendrier connecté</span>
                 <select value={form.calendarConnectionId} onChange={(event) => setForm((current) => ({ ...current, calendarConnectionId: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
                   <option value="">Calendrier interne seulement</option>
@@ -533,6 +645,10 @@ export function CrmCalendarPage({
               <label className="md:col-span-2">
                 <span className="mb-2 block text-sm text-slate-300">Description</span>
                 <textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} rows={4} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
+              </label>
+              <label className="md:col-span-2">
+                <span className="mb-2 block text-sm text-slate-300">Notes</span>
+                <textarea value={form.notes} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} rows={3} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
               </label>
             </div>
 

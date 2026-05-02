@@ -12,6 +12,13 @@ const scheduleSchema = z.object({
   endAt: z.string().datetime(),
   location: z.string().max(240).optional(),
   calendarConnectionId: z.string().uuid().optional().or(z.literal('')),
+  meetingType: z.string().max(80).optional(),
+  durationMinutes: z.number().int().min(1).max(1440).optional(),
+});
+
+const linkSchema = z.object({
+  action: z.enum(['link_existing', 'unlink']),
+  appointmentId: z.string().uuid(),
 });
 
 function normalizeOptionalString(value?: string) {
@@ -51,9 +58,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         description: normalizeOptionalString(payload.description),
         startAt: new Date(payload.startAt),
         endAt: new Date(payload.endAt),
-        type: 'MEETING',
+        type: 'WORKSHOP',
+        appointmentType: 'WORKSHOP',
         status: 'CONFIRMED',
         contactId: workshop.contactId || workshop.clientId || null,
+        organizationId: workshop.organizationId || null,
+        workshopRequestId: workshop.id,
+        location: normalizeOptionalString(payload.location) || workshop.location || workshop.addressOrLocation,
+        notes: normalizeOptionalString(payload.description),
         calendarConnectionId: payload.calendarConnectionId || null,
         userId: guard.session.sub,
       },
@@ -91,7 +103,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     await prisma.activity.create({
       data: {
         type: 'APPOINTMENT',
-        title: 'Horaire planifié pour l’atelier',
+        title: 'Horaire d’atelier confirmé',
         description: payload.title,
         contactId: appointment.contactId,
         appointmentId: appointment.id,
@@ -112,5 +124,61 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     return NextResponse.json({ error: 'Planification impossible' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  const guard = requireApiPermission(request, 'appointments', 'update');
+  if (guard.error) return guard.error;
+
+  try {
+    const payload = linkSchema.parse(await request.json());
+    const workshop = await prisma.workshopRequest.findUnique({ where: { id: params.id } });
+    if (!workshop) {
+      return NextResponse.json({ error: 'Atelier introuvable.' }, { status: 404 });
+    }
+
+    if (payload.action === 'link_existing') {
+      const linked = await prisma.appointment.update({
+        where: { id: payload.appointmentId },
+        data: {
+          workshopRequestId: workshop.id,
+          contactId: workshop.contactId || workshop.clientId || null,
+          organizationId: workshop.organizationId || null,
+          appointmentType: 'WORKSHOP',
+          type: 'WORKSHOP',
+        },
+      });
+
+      await prisma.activity.create({
+        data: {
+          type: 'APPOINTMENT',
+          title: 'Rendez-vous lié à l’atelier',
+          description: linked.title,
+          contactId: linked.contactId,
+          appointmentId: linked.id,
+          relatedType: 'WORKSHOP_REQUEST',
+          relatedId: workshop.id,
+          relatedUrl: `/crm/workshop-requests/${workshop.id}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+
+      return NextResponse.json({ item: linked });
+    }
+
+    const unlinked = await prisma.appointment.update({
+      where: { id: payload.appointmentId },
+      data: {
+        workshopRequestId: null,
+      },
+    });
+
+    return NextResponse.json({ item: unlinked });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Données invalides', details: error.issues }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Mise à jour des liaisons impossible' }, { status: 500 });
   }
 }
