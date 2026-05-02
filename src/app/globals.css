@@ -78,32 +78,6 @@ html {
   @apply transition-colors duration-200;
 }
 
-/* Texte rose dans tous les champs de saisie du site public */
-input:not([type='checkbox']):not([type='radio']):not([type='file']),
-textarea,
-select {
-  color: #d9277a;
-  caret-color: #d9277a;
-  -webkit-text-fill-color: #d9277a;
-}
-
-input:not([type='checkbox']):not([type='radio']):not([type='file'])::placeholder,
-textarea::placeholder {
-  color: #f0a0c8 !important;
-  -webkit-text-fill-color: #f0a0c8;
-  opacity: 1;
-}
-
-/* Autofill: conserver le texte rose même après saisie auto du navigateur */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-select:-webkit-autofill {
-  -webkit-text-fill-color: #d9277a !important;
-  transition: background-color 9999s ease-in-out 0s;
-}
-
 button:focus,
 a:focus,
 input:focus,

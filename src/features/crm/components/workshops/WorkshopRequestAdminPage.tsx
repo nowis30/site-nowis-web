@@ -66,6 +66,7 @@ const DELETABLE_STATUSES = ['ANNULE', 'DELETED', 'CANCELLED', 'TERMINE', 'COMPLE
 
 export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = false }: WorkshopPageProps) {
   const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [scheduling, setScheduling] = useState(false);
@@ -142,6 +143,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
       const data = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(data?.error || 'Modification impossible');
       setMessage('Demande d\'atelier modifiée par l\'admin.');
+      setIsEditing(false);
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Modification impossible');
@@ -353,6 +355,56 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
   }
 
   const responsibleHref = item.organizationContact?.contactId || item.contact?.id || item.client?.id;
+
+  function resetEditState() {
+    setForm({
+      title: item.title,
+      workshopType: item.workshopType,
+      organizationId: item.organizationId || '',
+      contactId: item.contactId || '',
+      clientId: item.clientId || '',
+      organizationContactId: item.organizationContactId || '',
+      organizationName: item.organizationName || item.organization?.name || '',
+      contactPerson: item.contactPerson || item.organizationContact?.fullName || item.contact?.fullName || item.client?.fullName || '',
+      contactEmail: item.contactEmail || '',
+      contactPhone: item.contactPhone || '',
+      addressOrLocation: item.addressOrLocation || item.location || '',
+      deliveryFormat: 'SUR_PLACE',
+      participantEstimate: String(item.participantEstimate || item.estimatedParticipants || 0),
+      targetAudience: 'AUTRE',
+      durationPreset: item.durationPreset || 'M90',
+      pricingMode: 'HORAIRE',
+      basePrice: item.finalPrice || '',
+      discountPercent: '0',
+      internalNotes: item.internalNotes || '',
+      clientNotes: '',
+      audienceType: 'MIXED',
+      ageRange: '',
+      estimatedParticipants: String(item.estimatedParticipants || item.participantEstimate || 0),
+      requestedDate: toDateInput(item.requestedDate),
+      requestedTime: item.requestedTime || '',
+      preferredDays: [] as string[],
+      format: 'IN_PERSON',
+      location: item.location || item.addressOrLocation || '',
+      workshopTheme: item.workshopTheme,
+      objectives: item.objectives,
+      notes: item.notes || '',
+      status: item.status,
+    });
+    setSchedule({
+      date: toDateInput(item.scheduledAt || item.startAt || item.requestedDate),
+      startTime: item.startAt ? item.startAt.slice(11, 16) : '09:00',
+      endTime: item.endAt ? item.endAt.slice(11, 16) : '10:00',
+      durationMinutes: String(item.durationMinutes || 60),
+      meetingType: item.meetingType || 'en_personne',
+      location: item.location || item.addressOrLocation || '',
+      calendarConnectionId: '',
+      linkedAppointmentId: '',
+    });
+    setIsEditing(false);
+    setMessage(null);
+  }
+
   const invoiceHref = (item.contactId || item.clientId)
     ? `/crm/invoices?contactId=${item.contactId || item.clientId}&workshopId=${item.id}&description=${encodeURIComponent(`Atelier - ${form.title}`)}&amount=${encodeURIComponent(item.finalPrice || '')}`
     : '/crm/invoices';
@@ -378,10 +430,47 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
             <p className="mt-4 max-w-3xl text-sm text-slate-300">Fiche d’action atelier pour modifier rapidement les informations, planifier un horaire, préparer la facture et communiquer avec le responsable.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:w-[28rem]">
-            <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Modifier l’atelier'}</button>
+            <button
+              type="button"
+              onClick={() => {
+                if (isEditing) {
+                  void saveWorkshop();
+                } else {
+                  setIsEditing(true);
+                  setMessage(null);
+                }
+              }}
+              disabled={saving}
+              className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60"
+            >
+              {saving ? 'Enregistrement...' : isEditing ? 'Enregistrer les modifications' : 'Modifier l’atelier'}
+            </button>
             <Link href={invoiceHref} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une facture</Link>
             <Link href={`/crm/commercial-quotes/new?workshopRequestId=${item.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
-            <button type="button" onClick={() => void scheduleWorkshop()} disabled={scheduling} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60">{scheduling ? 'Planification...' : 'Planifier un horaire'}</button>
+            <button
+              type="button"
+              onClick={() => {
+                if (isEditing) {
+                  void scheduleWorkshop();
+                } else {
+                  setIsEditing(true);
+                  setMessage('Mode édition activé. Ajustez la planification puis enregistrez.');
+                }
+              }}
+              disabled={scheduling}
+              className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60"
+            >
+              {scheduling ? 'Planification...' : 'Planifier un horaire'}
+            </button>
+            {isEditing ? (
+              <button
+                type="button"
+                onClick={resetEditState}
+                className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-300 hover:text-white"
+              >
+                Annuler l’édition
+              </button>
+            ) : null}
           </div>
         </div>
         {message ? <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-sm text-slate-200">{message}</div> : null}
@@ -391,7 +480,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
         <div className="space-y-6">
           <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
             <h2 className="text-lg font-semibold text-white">Informations de l’atelier</h2>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <fieldset disabled={!isEditing} className="mt-4 grid gap-4 md:grid-cols-2 disabled:opacity-90">
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Titre</span><input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Statut</span><select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))} className={workshopSelectClassName}><option value="EN_ATTENTE_RDV">En attente RDV</option><option value="RDV_PLANIFIE">RDV planifié</option><option value="CONFIRME">Confirmé</option><option value="TERMINE">Terminé</option><option value="ANNULE">Annulé</option><option value="BROUILLON">Brouillon</option></select></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Organisation</span><input value={form.organizationName} onChange={(event) => setForm((current) => ({ ...current, organizationName: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
@@ -406,7 +495,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Thème</span><input value={form.workshopTheme} onChange={(event) => setForm((current) => ({ ...current, workshopTheme: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label className="md:col-span-2"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Objectifs</span><textarea value={form.objectives} onChange={(event) => setForm((current) => ({ ...current, objectives: event.target.value }))} className="min-h-[100px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label className="md:col-span-2"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Notes internes</span><textarea value={form.internalNotes} onChange={(event) => setForm((current) => ({ ...current, internalNotes: event.target.value }))} className="min-h-[100px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
-            </div>
+            </fieldset>
           </section>
 
           <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
@@ -414,7 +503,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
               <h2 className="text-lg font-semibold text-white">Planification de l’atelier</h2>
               <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.appointments.length}</span>
             </div>
-            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <fieldset disabled={!isEditing} className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4 disabled:opacity-90">
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Date</span><input type="date" value={schedule.date} onChange={(event) => setSchedule((current) => ({ ...current, date: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Début</span><input type="time" value={schedule.startTime} onChange={(event) => setSchedule((current) => ({ ...current, startTime: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Fin</span><input type="time" value={schedule.endTime} onChange={(event) => setSchedule((current) => ({ ...current, endTime: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
@@ -422,9 +511,11 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Type</span><select value={schedule.meetingType} onChange={(event) => setSchedule((current) => ({ ...current, meetingType: event.target.value }))} className={workshopSelectClassName}><option value="en_personne">En personne</option><option value="telephone">Téléphone</option><option value="visio">Visio</option><option value="autre">Autre</option></select></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Calendrier connecté</span><select value={schedule.calendarConnectionId} onChange={(event) => setSchedule((current) => ({ ...current, calendarConnectionId: event.target.value }))} className={workshopSelectClassName}><option value="">CRM seulement</option>{calendarConnections.filter((connection) => connection.status !== 'DISCONNECTED').map((connection) => <option key={connection.id} value={connection.id}>{connection.provider} · {connection.accountName || connection.accountEmail || connection.id}</option>)}</select></label>
               <label className="md:col-span-2 xl:col-span-4"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Lieu</span><input value={schedule.location} onChange={(event) => setSchedule((current) => ({ ...current, location: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
-            </div>
+            </fieldset>
             <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-md border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Enregistrer l’horaire'}</button>
+              {isEditing ? (
+                <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-md border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Enregistrer l’horaire'}</button>
+              ) : null}
               <button type="button" onClick={() => void removeWorkshopFromCalendar()} disabled={saving} className="rounded-md border border-red-700/60 px-3 py-2 text-xs text-red-300 hover:bg-red-900/30 hover:text-red-200 disabled:opacity-60">Retirer cet atelier du calendrier</button>
             </div>
             <div className="mt-5 space-y-3">

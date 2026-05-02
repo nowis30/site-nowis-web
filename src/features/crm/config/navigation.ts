@@ -25,5 +25,6 @@ export const crmNavigation: CrmNavItem[] = [
   { label: 'Dossiers',      href: '/crm/cases',         module: 'cases',         icon: 'FolderOpen',      section: 'Administration' },
   { label: 'Calendriers connectés', href: '/crm/admin/calendar-connections', module: 'settings', icon: 'Calendar', section: 'Administration' },
   { label: 'Paramètres',    href: '/crm/settings',      module: 'settings',      icon: 'Wrench',          section: 'Administration' },
+  { label: 'Commentaires publics', href: '/crm/public-comments', module: 'reviews', icon: 'MessageSquare', section: 'Administration' },
   { label: 'Avis clients',  href: '/crm/avis',          module: 'reviews',       icon: 'Star',            section: 'Administration' },
 ];

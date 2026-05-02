@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
+import { PublicCommentsSection } from '@/components/public-comments/PublicCommentsSection';
 
 const quickOffers = [
   {
@@ -31,38 +32,38 @@ const reasons = [
 
 export function HomeScreen() {
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-16 pt-12 text-slate-100 md:pt-16">
+    <div className="mx-auto max-w-6xl px-6 pb-16 pt-12 text-[color:var(--site-text)] md:pt-16">
       <LaunchOfferBanner variant="hero" />
 
-      <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary-300">Création musicale et IA</p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight text-white md:text-6xl">Création Nowis</h1>
-        <p className="mt-2 text-lg font-medium text-primary-200">De la guitare à l’IA</p>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+      <section className="mt-8 rounded-3xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] p-6 shadow-soft md:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Création musicale et IA</p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight text-[color:var(--site-heading)] md:text-6xl">Création Nowis</h1>
+        <p className="mt-2 text-lg font-medium text-[color:var(--site-accent)]">De la guitare à l’IA</p>
+        <p className="mt-5 max-w-3xl text-base leading-7 text-[color:var(--site-muted)] md:text-lg">
           Ateliers musicaux, chansons personnalisées et créations vidéo avec l’intelligence artificielle.
           Une approche simple, humaine et créative pour transformer une idée en chanson, en souvenir ou en projet.
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <Link href="/booking" className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-5 py-3 text-sm font-semibold text-white hover:bg-primary-500">
+          <Link href="/booking" className="inline-flex items-center justify-center rounded-xl bg-[color:var(--site-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:brightness-110">
             Réserver un atelier
           </Link>
-          <Link href="/commander-une-chanson" className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-950/70 px-5 py-3 text-sm font-semibold text-slate-100 hover:border-primary-500/50 hover:text-white">
+          <Link href="/commander-une-chanson" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">
             Demander une chanson
           </Link>
-          <Link href="/creations" className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-950/70 px-5 py-3 text-sm font-semibold text-slate-100 hover:border-primary-500/50 hover:text-white">
+          <Link href="/creations" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">
             Voir mes créations
           </Link>
         </div>
       </section>
 
       <section className="mt-10">
-        <h2 className="text-2xl font-semibold text-white md:text-3xl">Ce que je fais</h2>
+        <h2 className="text-2xl font-semibold text-[color:var(--site-heading)] md:text-3xl">Ce que je fais</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {quickOffers.map((offer) => (
-            <article key={offer.title} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-              <h3 className="text-lg font-semibold text-white">{offer.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-300">{offer.description}</p>
-              <Link href={offer.href} className="mt-4 inline-flex text-sm font-semibold text-primary-200 hover:text-white">
+            <article key={offer.title} className="rounded-2xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] p-5 shadow-sm">
+              <h3 className="text-lg font-semibold text-[color:var(--site-heading)]">{offer.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{offer.description}</p>
+              <Link href={offer.href} className="mt-4 inline-flex text-sm font-semibold text-[color:var(--site-accent-strong)] hover:brightness-110">
                 {offer.cta}
               </Link>
             </article>
@@ -70,35 +71,37 @@ export function HomeScreen() {
         </div>
       </section>
 
-      <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-        <h2 className="text-2xl font-semibold text-white">Pourquoi Création Nowis</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300 md:text-base">
+      <section className="mt-10 rounded-2xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] p-6">
+        <h2 className="text-2xl font-semibold text-[color:var(--site-heading)]">Pourquoi Création Nowis</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-[color:var(--site-muted)] md:text-base">
           Une approche humaine, accessible et créative. Pas besoin d’être musicien : on part d’une idée,
           d’une histoire ou d’un moment, puis on crée quelque chose de vrai.
         </p>
-        <ul className="mt-4 grid gap-2 text-sm text-slate-200 md:grid-cols-2">
+        <ul className="mt-4 grid gap-2 text-sm text-[color:var(--site-text)] md:grid-cols-2">
           {reasons.map((item) => (
-            <li key={item} className="rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2">
+            <li key={item} className="rounded-lg border border-[color:var(--site-border)] bg-white/65 px-3 py-2">
               {item}
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mt-10 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 text-center md:p-10">
-        <h2 className="text-2xl font-bold text-white md:text-4xl">Vous avez une idée de chanson ou d’atelier ?</h2>
-        <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-slate-200 md:text-base">
+      <section className="mt-10 rounded-3xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] p-6 text-center md:p-10">
+        <h2 className="text-2xl font-bold text-[color:var(--site-heading)] md:text-4xl">Vous avez une idée de chanson ou d’atelier ?</h2>
+        <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-[color:var(--site-muted)] md:text-base">
           Parlez-moi de votre projet. On peut partir d’un souvenir, d’une personne, d’un groupe ou d’une simple idée.
         </p>
         <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-950/70 px-6 py-3 text-sm font-semibold text-slate-100 hover:border-primary-500/50 hover:text-white">
+          <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-6 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">
             Me contacter
           </Link>
-          <Link href="/booking" className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-500">
+          <Link href="/booking" className="inline-flex items-center justify-center rounded-xl bg-[color:var(--site-accent)] px-6 py-3 text-sm font-semibold text-white hover:brightness-110">
             Demander un atelier
           </Link>
         </div>
       </section>
+
+      <PublicCommentsSection />
     </div>
   );
 }

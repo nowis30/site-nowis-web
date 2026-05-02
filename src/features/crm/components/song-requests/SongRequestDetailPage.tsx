@@ -107,6 +107,7 @@ interface SongRequestDetailPageProps {
 
 export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDetailPageProps) {
   const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [planning, setPlanning] = useState({
@@ -284,10 +285,18 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
           <h2 className="text-2xl font-semibold text-white">{item.fullName}</h2>
           <p className="text-sm text-slate-400">Soumise le {new Date(item.createdAt).toLocaleDateString('fr-CA')}</p>
         </div>
-
-        <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-300">
-          {STATUS_LABELS[item.status]}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-300">
+            {STATUS_LABELS[item.status]}
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsEditing((current) => !current)}
+            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white"
+          >
+            {isEditing ? 'Annuler l’édition' : 'Modifier'}
+          </button>
+        </div>
       </div>
 
       {error ? <div className="rounded-xl border border-red-700/30 bg-red-950/30 px-4 py-3 text-sm text-red-300">{error}</div> : null}
@@ -369,57 +378,71 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
                 Ouvrir le portail client
               </a>
 
-              <button
-                type="button"
-                onClick={() => runAction('mark_contacted')}
-                disabled={loadingAction !== null}
-                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-indigo-500/40 hover:text-indigo-300 disabled:opacity-60"
-              >
-                {loadingAction === 'mark_contacted' ? 'Mise à jour...' : 'Marquer comme contacté'}
-              </button>
+              {!isEditing ? (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="w-full rounded-lg border border-primary-700/60 px-3 py-2 text-left text-sm text-primary-200 hover:bg-primary-900/30 hover:text-white"
+                >
+                  Planifier rencontre / Modifier
+                </button>
+              ) : null}
 
-              <button
-                type="button"
-                onClick={() => runAction('convert_appointment')}
-                disabled={loadingAction !== null}
-                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-amber-500/40 hover:text-amber-300 disabled:opacity-60"
-              >
-                {loadingAction === 'convert_appointment' ? 'Conversion...' : 'Convertir en rendez-vous'}
-              </button>
+              {isEditing ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => runAction('mark_contacted')}
+                    disabled={loadingAction !== null}
+                    className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-indigo-500/40 hover:text-indigo-300 disabled:opacity-60"
+                  >
+                    {loadingAction === 'mark_contacted' ? 'Mise à jour...' : 'Marquer comme contacté'}
+                  </button>
 
-              <Link
-                href={`/crm/commercial-quotes/new?songRequestId=${item.id}`}
-                className="block w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-purple-500/40 hover:text-purple-300"
-              >
-                Créer une soumission commerciale
-              </Link>
+                  <button
+                    type="button"
+                    onClick={() => runAction('convert_appointment')}
+                    disabled={loadingAction !== null}
+                    className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-amber-500/40 hover:text-amber-300 disabled:opacity-60"
+                  >
+                    {loadingAction === 'convert_appointment' ? 'Conversion...' : 'Convertir en rendez-vous'}
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => runAction('mark_in_production')}
-                disabled={loadingAction !== null}
-                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-fuchsia-500/40 hover:text-fuchsia-300 disabled:opacity-60"
-              >
-                {loadingAction === 'mark_in_production' ? 'Mise à jour...' : 'Marquer en production'}
-              </button>
+                  <Link
+                    href={`/crm/commercial-quotes/new?songRequestId=${item.id}`}
+                    className="block w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-purple-500/40 hover:text-purple-300"
+                  >
+                    Créer une soumission commerciale
+                  </Link>
 
-              <button
-                type="button"
-                onClick={() => runAction('mark_delivered')}
-                disabled={loadingAction !== null}
-                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-60"
-              >
-                {loadingAction === 'mark_delivered' ? 'Mise à jour...' : 'Marquer comme livré'}
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => runAction('mark_in_production')}
+                    disabled={loadingAction !== null}
+                    className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-fuchsia-500/40 hover:text-fuchsia-300 disabled:opacity-60"
+                  >
+                    {loadingAction === 'mark_in_production' ? 'Mise à jour...' : 'Marquer en production'}
+                  </button>
 
-              <button
-                type="button"
-                onClick={removeSongMeetingFromCalendar}
-                disabled={loadingAction !== null}
-                className="w-full rounded-lg border border-red-700/60 px-3 py-2 text-left text-sm text-red-300 hover:bg-red-900/30 hover:text-red-200 disabled:opacity-60"
-              >
-                {loadingAction === 'remove_song_calendar' ? 'Retrait...' : 'Retirer la rencontre du calendrier'}
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => runAction('mark_delivered')}
+                    disabled={loadingAction !== null}
+                    className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-60"
+                  >
+                    {loadingAction === 'mark_delivered' ? 'Mise à jour...' : 'Marquer comme livré'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={removeSongMeetingFromCalendar}
+                    disabled={loadingAction !== null}
+                    className="w-full rounded-lg border border-red-700/60 px-3 py-2 text-left text-sm text-red-300 hover:bg-red-900/30 hover:text-red-200 disabled:opacity-60"
+                  >
+                    {loadingAction === 'remove_song_calendar' ? 'Retrait...' : 'Retirer la rencontre du calendrier'}
+                  </button>
+                </>
+              ) : null}
             </div>
           </div>
 
@@ -443,7 +466,19 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Planifier une rencontre chanson</h3>
-            <div className="mt-4 grid gap-3">
+            {!isEditing ? (
+              <div className="mt-4 space-y-3 text-sm text-slate-300">
+                <p>Mode lecture seule. Utilisez le bouton Modifier pour planifier ou ajuster la rencontre.</p>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="rounded-lg border border-primary-500/40 px-3 py-2 text-sm text-primary-200 hover:text-white"
+                >
+                  Activer l’édition
+                </button>
+              </div>
+            ) : (
+              <div className="mt-4 grid gap-3">
               <label>
                 <span className="mb-1 block text-xs text-slate-400">Titre</span>
                 <input value={planning.title} onChange={(event) => setPlanning((current) => ({ ...current, title: event.target.value }))} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" />
@@ -485,6 +520,7 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
                 {loadingAction === 'plan_meeting' ? 'Planification...' : 'Planifier la rencontre'}
               </button>
             </div>
+            )}
           </div>
         </div>
       </div>
@@ -513,16 +549,20 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
           ))}
         </div>
         <div className="mt-4">
-          <AppointmentSelector
-            onSelect={linkAppointment}
-            loading={loadingAction === 'link_appointment'}
-            contactId={item.contact.id}
-            organizationId={item.organization?.id || null}
-            onlyUnlinked={true}
-            excludeTypes={[]}
-            label="Lier un rendez-vous existant"
-            placeholder="Chercher par titre, contact, date..."
-          />
+          {isEditing ? (
+            <AppointmentSelector
+              onSelect={linkAppointment}
+              loading={loadingAction === 'link_appointment'}
+              contactId={item.contact.id}
+              organizationId={item.organization?.id || null}
+              onlyUnlinked={true}
+              excludeTypes={[]}
+              label="Lier un rendez-vous existant"
+              placeholder="Chercher par titre, contact, date..."
+            />
+          ) : (
+            <p className="text-sm text-slate-500">Passez en mode édition pour lier un rendez-vous existant.</p>
+          )}
         </div>
       </div>
 
