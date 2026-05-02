@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
+import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 
 export const metadata = buildMetadata({
   title: 'Tarifs — Création Nowis | Ateliers, chansons personnalisées et services créatifs',
@@ -98,6 +99,7 @@ const preferentiels = [
 export default function TarifsPage() {
   return (
     <main className="text-[color:var(--site-text)]">
+      <LaunchOfferBanner />
 
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">

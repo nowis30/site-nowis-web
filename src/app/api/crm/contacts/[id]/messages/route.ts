@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from 'next/server';
 
-const DISABLED_MESSAGE = 'La messagerie interne CRM a été remplacée par le courriel externe.';
+const DISABLED_MESSAGE = 'Ce canal CRM est indisponible. Utilisez le courriel externe.';
 
 export async function GET() {
   return NextResponse.json({

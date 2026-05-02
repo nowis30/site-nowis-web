@@ -247,7 +247,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
           </div>
 
           <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-            <p className="text-sm text-slate-300">La messagerie interne a été remplacée par le courriel.</p>
+            <p className="text-sm text-slate-300">Utilisez le courriel pour communiquer avec l'équipe.</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <a href={OUTLOOK_MESSAGE_URL} target="_blank" rel="noreferrer" className="rounded-xl border border-primary-400/40 bg-primary-400/15 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-400/25">Envoyer un message</a>
               <a href={MAILTO_MESSAGE_URL} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Courriel (fallback)</a>

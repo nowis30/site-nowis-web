@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from 'next/server';
 
-const DISABLED_MESSAGE = 'La messagerie interne a été remplacée par le courriel (Outlook/mailto).';
+const DISABLED_MESSAGE = 'Ce canal de messagerie est indisponible. Utilisez le courriel (Outlook/mailto).';
 
 export async function GET() {
   return NextResponse.json({

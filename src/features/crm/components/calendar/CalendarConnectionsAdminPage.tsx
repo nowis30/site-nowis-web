@@ -230,7 +230,7 @@ export function CalendarConnectionsAdminPage({
             </p>
           </div>
           <div className="mt-5 rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-3 text-sm text-slate-400">
-            Pas encore disponible dans cette version.
+            Connexion iCloud non prise en charge pour le moment.
           </div>
         </article>
       </div>

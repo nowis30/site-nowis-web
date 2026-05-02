@@ -7,8 +7,8 @@ export function ClientMessagesRetiredCard() {
   return (
     <section className="space-y-4">
       <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-        <h1 className="text-xl font-semibold text-white">Messagerie remplacée</h1>
-        <p className="mt-2 text-sm text-slate-300">La messagerie interne a été remplacée par le courriel.</p>
+        <h1 className="text-xl font-semibold text-white">Contacter par courriel</h1>
+        <p className="mt-2 text-sm text-slate-300">Utilisez le courriel pour nous joindre rapidement depuis le portail client.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <a
             href={OUTLOOK_MESSAGE_URL}
