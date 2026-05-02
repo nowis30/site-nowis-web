@@ -233,7 +233,14 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
       <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <Link href="/crm/workshop-requests" className="text-sm text-slate-400 hover:text-white">Retour aux ateliers</Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/crm/calendar" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                Calendrier
+              </Link>
+              <span className="text-slate-600">·</span>
+              <Link href="/crm/workshop-requests" className="text-sm text-slate-400 hover:text-white">Tous les ateliers</Link>
+            </div>
             <h1 className="mt-3 text-3xl font-semibold text-white">{item.title}</h1>
             <div className="mt-3 flex flex-wrap gap-2">
               <StatusBadge value={item.status} />

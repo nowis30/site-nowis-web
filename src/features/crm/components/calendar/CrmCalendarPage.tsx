@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -9,7 +10,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import type { DateClickArg } from '@fullcalendar/interaction';
 import type { EventChangeArg, EventClickArg, EventInput } from '@fullcalendar/core';
 import frLocale from '@fullcalendar/core/locales/fr';
-import { CrmCalendarEventDetailPanel } from '@/features/crm/components/calendar/CrmCalendarEventDetailPanel';
 
 type CalendarEventItem = {
   id: string;
@@ -160,13 +160,13 @@ export function CrmCalendarPage({
   calendarConnections: ConnectionOptionItem[];
   initialPrefill?: CalendarPrefill;
 }) {
+  const router = useRouter();
   const [appointments, setAppointments] = useState(initialAppointments);
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
   const [filterType, setFilterType] = useState('ALL');
   const [filterSource, setFilterSource] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
@@ -261,8 +261,25 @@ export function CrmCalendarPage({
     };
   }, [modalOpen]);
 
+  function navigateToEvent(item: CalendarEventItem) {
+    const src = item.source || 'appointment';
+    if (src === 'workshop_appointment' || src === 'workshop_availability') {
+      router.push(item.workshopRequestId ? `/crm/workshop-requests/${item.workshopRequestId}` : `/crm/appointments/${item.id}`);
+      return;
+    }
+    if (src === 'google_calendar' || src === 'microsoft_calendar' || src === 'calendly') {
+      return;
+    }
+    if (item.type === 'WORKSHOP' && item.workshopRequestId) {
+      router.push(`/crm/workshop-requests/${item.workshopRequestId}`);
+    } else if (item.type === 'SONG_MEETING' && item.songRequestId) {
+      router.push(`/crm/song-requests/${item.songRequestId}`);
+    } else {
+      router.push(`/crm/appointments/${item.id}`);
+    }
+  }
+
   function openCreateModal(startAt: string) {
-    setDetailOpen(false);
     setEditingId(null);
     setForm({
       title: '',
@@ -286,7 +303,7 @@ export function CrmCalendarPage({
   function openEditModal(item: CalendarEventItem) {
     if (item.source && item.source !== 'appointment') {
       setSelectedEventId(item.id);
-      setDetailOpen(true);
+      navigateToEvent(item);
       return;
     }
 
@@ -308,7 +325,6 @@ export function CrmCalendarPage({
       calendarConnectionId: item.calendarConnectionId || '',
     });
     setError(null);
-    setDetailOpen(false);
     setModalOpen(true);
   }
 
@@ -442,20 +458,6 @@ export function CrmCalendarPage({
     setAppointments((items) => items.map((entry) => entry.id === current.id ? { ...entry, startAt: change.event.start!.toISOString(), endAt: change.event.end!.toISOString() } : entry));
   }
 
-  function handlePanelUpdated(nextItem: CalendarEventItem) {
-    setAppointments((current) => current.map((entry) => entry.id === nextItem.id ? { ...entry, ...nextItem } : entry));
-  }
-
-  function handlePanelDeleted(eventId: string, workshopRequestId?: string | null) {
-    setAppointments((current) => current.filter((entry) => {
-      if (entry.id === eventId) return false;
-      if (workshopRequestId && entry.workshopRequestId === workshopRequestId) return false;
-      return true;
-    }));
-    setSelectedEventId(null);
-    setDetailOpen(false);
-  }
-
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -531,8 +533,7 @@ export function CrmCalendarPage({
                 <p>{selectedEvent.organizationName || selectedEvent.contactName || 'Sans contact'}</p>
                 <p>{toStatusLabel(selectedEvent.status)} · {toTypeLabel(selectedEvent.type)}</p>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setDetailOpen(true)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Voir detail</button>
-                  {(selectedEvent.source === 'appointment' || !selectedEvent.source) ? <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button> : null}
+                  <button onClick={() => navigateToEvent(selectedEvent)} className="rounded-xl border border-primary-600/60 bg-primary-950/30 px-3 py-2 text-xs text-primary-200 hover:bg-primary-900/40 hover:text-white">Ouvrir fiche</button>
                   {selectedEvent.contactId ? <Link href={`/crm/contacts/${selectedEvent.contactId}`} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Contact</Link> : null}
                 </div>
               </div>
@@ -557,26 +558,13 @@ export function CrmCalendarPage({
             eventClick={(info: EventClickArg) => {
               const item = info.event.extendedProps as CalendarEventItem;
               setSelectedEventId(item.id);
-              setDetailOpen(true);
+              navigateToEvent(item);
             }}
             eventDrop={applyEventMove}
             eventResize={applyEventMove}
           />
         </div>
       </div>
-
-      {detailOpen && selectedEvent ? (
-        <CrmCalendarEventDetailPanel
-          event={selectedEvent}
-          contacts={contacts}
-          organizations={organizations}
-          workshopRequests={workshopRequests}
-          songRequests={songRequests}
-          onClose={() => setDetailOpen(false)}
-          onUpdated={handlePanelUpdated}
-          onDeleted={handlePanelDeleted}
-        />
-      ) : null}
 
       {modalOpen ? (
         <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-slate-950/75 p-2 backdrop-blur-sm sm:items-center sm:p-4">
