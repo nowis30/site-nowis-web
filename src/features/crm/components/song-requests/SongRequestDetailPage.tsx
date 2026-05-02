@@ -219,6 +219,59 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
     }
   }
 
+  async function cancelAppointment(appointmentId: string) {
+    setLoadingAction(`cancel_${appointmentId}`);
+    setError(null);
+    try {
+      const response = await fetch(`/api/crm/appointments/${appointmentId}`, { method: 'DELETE' });
+      const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !data?.success) throw new Error(data?.error || 'Annulation impossible');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function removeSongMeetingFromCalendar() {
+    setLoadingAction('remove_song_calendar');
+    setError(null);
+    try {
+      const response = await fetch('/api/crm/calendar/remove-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceType: 'song-request', sourceId: item.id }),
+      });
+      const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !data?.success) throw new Error(data?.error || 'Retrait du calendrier impossible');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function removeAppointmentFromCalendar(appointmentId: string) {
+    setLoadingAction(`remove_${appointmentId}`);
+    setError(null);
+    try {
+      const response = await fetch('/api/crm/calendar/remove-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceType: 'appointment', sourceId: appointmentId }),
+      });
+      const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !data?.success) throw new Error(data?.error || 'Retrait du calendrier impossible');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -358,6 +411,15 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
               >
                 {loadingAction === 'mark_delivered' ? 'Mise à jour...' : 'Marquer comme livré'}
               </button>
+
+              <button
+                type="button"
+                onClick={removeSongMeetingFromCalendar}
+                disabled={loadingAction !== null}
+                className="w-full rounded-lg border border-red-700/60 px-3 py-2 text-left text-sm text-red-300 hover:bg-red-900/30 hover:text-red-200 disabled:opacity-60"
+              >
+                {loadingAction === 'remove_song_calendar' ? 'Retrait...' : 'Retirer la rencontre du calendrier'}
+              </button>
             </div>
           </div>
 
@@ -441,7 +503,12 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
               </div>
               <p className="mt-1 text-xs text-slate-400">{new Date(appointment.startAt).toLocaleString('fr-CA')} - {new Date(appointment.endAt).toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' })}</p>
               <p className="text-xs text-slate-500">{appointment.type} {appointment.location ? `· ${appointment.location}` : ''}</p>
-              <button type="button" onClick={() => unlinkAppointment(appointment.id)} disabled={loadingAction === `unlink_${appointment.id}`} className="mt-2 rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-60">Délier</button>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button type="button" onClick={() => cancelAppointment(appointment.id)} disabled={loadingAction === `cancel_${appointment.id}`} className="rounded-md border border-amber-700/60 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30 hover:text-amber-200 disabled:opacity-60">Annuler</button>
+                <button type="button" onClick={() => unlinkAppointment(appointment.id)} disabled={loadingAction === `unlink_${appointment.id}`} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-60">Délier</button>
+                <button type="button" onClick={() => removeAppointmentFromCalendar(appointment.id)} disabled={loadingAction === `remove_${appointment.id}`} className="rounded-md border border-red-700/60 px-2 py-1 text-xs text-red-300 hover:bg-red-900/30 hover:text-red-200 disabled:opacity-60">Retirer du calendrier</button>
+                <Link href={`/crm/appointments/${appointment.id}`} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white">Ouvrir</Link>
+              </div>
             </article>
           ))}
         </div>

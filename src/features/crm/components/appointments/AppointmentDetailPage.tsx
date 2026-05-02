@@ -234,6 +234,27 @@ export function AppointmentDetailPage({
     }
   }
 
+  async function handleRemoveFromCalendar() {
+    if (!confirm('Retirer cet événement du calendrier CRM ?')) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/crm/calendar/remove-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceType: 'appointment', sourceId: item.id }),
+      });
+      const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error ?? 'Retrait du calendrier impossible');
+      }
+      router.push('/crm/calendar');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setDeleting(false);
+    }
+  }
+
   function handleCopy() {
     const text = [
       item.title,
@@ -299,6 +320,13 @@ export function AppointmentDetailPage({
             className="rounded-xl border border-red-800/60 px-4 py-2 text-sm text-red-200 hover:bg-red-950/30 disabled:opacity-60"
           >
             {deleting ? 'Annulation...' : 'Annuler / Supprimer'}
+          </button>
+          <button
+            onClick={() => void handleRemoveFromCalendar()}
+            disabled={deleting}
+            className="rounded-xl border border-red-700/60 px-4 py-2 text-sm text-red-200 hover:bg-red-950/30 disabled:opacity-60"
+          >
+            {deleting ? 'Retrait...' : 'Retirer du calendrier'}
           </button>
         </div>
       </div>

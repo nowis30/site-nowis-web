@@ -13,6 +13,9 @@ import frLocale from '@fullcalendar/core/locales/fr';
 
 type CalendarEventItem = {
   id: string;
+  sourceType: 'appointment' | 'workshop' | 'song-request' | 'external' | 'availability';
+  sourceId: string;
+  canRemoveFromCalendar: boolean;
   title: string;
   description: string | null;
   startAt: string;
@@ -143,6 +146,10 @@ function toEventInput(item: CalendarEventItem): EventInput {
   };
 }
 
+function toCalendarEventId(sourceType: CalendarEventItem['sourceType'], sourceId: string) {
+  return `${sourceType}:${sourceId}`;
+}
+
 export function CrmCalendarPage({
   initialAppointments,
   contacts,
@@ -196,7 +203,7 @@ export function CrmCalendarPage({
 
   const filteredAppointments = useMemo(() => appointments.filter((item) => {
     if (filterType !== 'ALL' && item.type !== filterType) return false;
-    if (filterSource !== 'ALL' && (item.source || 'appointment') !== filterSource) return false;
+    if (filterSource !== 'ALL' && item.sourceType !== filterSource) return false;
     if (filterStatus !== 'ALL' && item.status !== filterStatus) return false;
     if (filterContactId !== 'ALL' && item.contactId !== filterContactId) return false;
     if (contactSearch && item.contactName && !item.contactName.toLowerCase().includes(contactSearch.toLowerCase())) return false;
@@ -212,9 +219,9 @@ export function CrmCalendarPage({
   const events = useMemo(
     () => filteredAppointments.map((item) => ({
       ...toEventInput(item),
-      editable: item.source === 'appointment' || !item.source,
-      startEditable: item.source === 'appointment' || !item.source,
-      durationEditable: item.source === 'appointment' || !item.source,
+      editable: item.sourceType === 'appointment',
+      startEditable: item.sourceType === 'appointment',
+      durationEditable: item.sourceType === 'appointment',
       classNames: item.id === selectedEventId ? ['ring-2', 'ring-primary-300'] : [],
     })),
     [filteredAppointments, selectedEventId],
@@ -262,12 +269,15 @@ export function CrmCalendarPage({
   }, [modalOpen]);
 
   function navigateToEvent(item: CalendarEventItem) {
-    const src = item.source || 'appointment';
-    if (src === 'workshop_appointment' || src === 'workshop_availability') {
-      router.push(item.workshopRequestId ? `/crm/workshop-requests/${item.workshopRequestId}` : `/crm/appointments/${item.id}`);
+    if (item.sourceType === 'workshop' || item.sourceType === 'availability') {
+      router.push(item.workshopRequestId ? `/crm/workshop-requests/${item.workshopRequestId}` : `/crm/workshop-requests`);
       return;
     }
-    if (src === 'google_calendar' || src === 'microsoft_calendar' || src === 'calendly') {
+    if (item.sourceType === 'external') {
+      return;
+    }
+    if (item.sourceType === 'song-request' && item.songRequestId) {
+      router.push(`/crm/song-requests/${item.songRequestId}`);
       return;
     }
     if (item.type === 'WORKSHOP' && item.workshopRequestId) {
@@ -275,7 +285,7 @@ export function CrmCalendarPage({
     } else if (item.type === 'SONG_MEETING' && item.songRequestId) {
       router.push(`/crm/song-requests/${item.songRequestId}`);
     } else {
-      router.push(`/crm/appointments/${item.id}`);
+      router.push(`/crm/appointments/${item.sourceId}`);
     }
   }
 
@@ -301,7 +311,7 @@ export function CrmCalendarPage({
   }
 
   function openEditModal(item: CalendarEventItem) {
-    if (item.source && item.source !== 'appointment') {
+    if (item.sourceType !== 'appointment') {
       setSelectedEventId(item.id);
       navigateToEvent(item);
       return;
@@ -326,6 +336,38 @@ export function CrmCalendarPage({
     });
     setError(null);
     setModalOpen(true);
+  }
+
+  async function removeFromCalendar(item: CalendarEventItem) {
+    if (!item.canRemoveFromCalendar) return;
+    if (!confirm('Retirer cet événement du calendrier CRM ?')) return;
+
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/crm/calendar/remove-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceType: item.sourceType, sourceId: item.sourceId }),
+      });
+      const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || 'Retrait du calendrier impossible');
+      }
+
+      setAppointments((current) => current.filter((entry) => {
+        if (entry.id === item.id) return false;
+        if (item.sourceType === 'workshop' && entry.workshopRequestId === item.sourceId) return false;
+        if (item.sourceType === 'song-request' && entry.songRequestId === item.sourceId) return false;
+        return true;
+      }));
+      setSelectedEventId(null);
+      router.refresh();
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : 'Erreur inconnue');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function saveAppointment() {
@@ -372,29 +414,69 @@ export function CrmCalendarPage({
           calendarConnectionId: form.calendarConnectionId,
         }),
       });
-      const data = await response.json().catch(() => null) as { item?: CalendarEventItem; error?: string } | null;
+      const data = await response.json().catch(() => null) as {
+        item?: {
+          id: string;
+          title: string;
+          description: string | null;
+          startAt: string;
+          endAt: string;
+          type: string;
+          status: string;
+          contactId: string | null;
+          organizationId?: string | null;
+          workshopRequestId?: string | null;
+          songRequestId?: string | null;
+          calendarConnectionId?: string | null;
+          meetingUrl?: string | null;
+          location?: string | null;
+          notes?: string | null;
+          source?: CalendarEventItem['source'];
+        };
+        error?: string;
+      } | null;
       if (!response.ok || !data?.item) {
         throw new Error(data?.error || 'Enregistrement impossible');
       }
 
       const item = data.item;
+      const sourceId = item.id;
       setAppointments((current) => {
-        const next = current.filter((entry) => entry.id !== item.id);
+        const next = current.filter((entry) => entry.id !== toCalendarEventId('appointment', sourceId));
         const contactName = contacts.find((entry) => entry.id === item.contactId)?.label || null;
         const organizationName = organizations.find((entry) => entry.id === item.organizationId)?.label || null;
         const workshopRequestTitle = workshopRequests.find((entry) => entry.id === item.workshopRequestId)?.label || null;
         const songRequestTitle = songRequests.find((entry) => entry.id === item.songRequestId)?.label || null;
 
-        return [...next, {
-          ...item,
+        const normalizedItem: CalendarEventItem = {
+          id: toCalendarEventId('appointment', sourceId),
+          sourceType: 'appointment',
+          sourceId,
+          canRemoveFromCalendar: true,
+          title: item.title,
+          description: item.description,
+          startAt: item.startAt,
+          endAt: item.endAt,
+          type: item.type,
+          status: item.status,
+          contactId: item.contactId,
           contactName,
+          calendarConnectionId: item.calendarConnectionId || null,
+          meetingUrl: item.meetingUrl || null,
+          organizationId: item.organizationId || null,
           organizationName,
+          workshopRequestId: item.workshopRequestId || null,
           workshopRequestTitle,
+          songRequestId: item.songRequestId || null,
           songRequestTitle,
+          location: item.location || null,
+          notes: item.notes || null,
           source: item.source || 'appointment',
-        }].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+        };
+
+        return [...next, normalizedItem].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
       });
-      setSelectedEventId(item.id);
+      setSelectedEventId(toCalendarEventId('appointment', sourceId));
       setModalOpen(false);
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Erreur inconnue');
@@ -410,7 +492,9 @@ export function CrmCalendarPage({
     setSaving(true);
     setError(null);
     try {
-      const response = await fetch(`/api/crm/appointments/${editingId}`, { method: 'DELETE' });
+      const selected = appointments.find((entry) => entry.id === editingId);
+      if (!selected) throw new Error('Événement introuvable');
+      const response = await fetch(`/api/crm/appointments/${selected.sourceId}`, { method: 'DELETE' });
       const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
       if (!response.ok || !data?.success) {
         throw new Error(data?.error || 'Suppression impossible');
@@ -428,9 +512,9 @@ export function CrmCalendarPage({
 
   async function applyEventMove(change: EventChangeArg) {
     const current = appointments.find((entry) => entry.id === change.event.id);
-    if (!current || !change.event.start || !change.event.end || (current.source && current.source !== 'appointment')) return;
+    if (!current || !change.event.start || !change.event.end || current.sourceType !== 'appointment') return;
 
-    const response = await fetch(`/api/crm/appointments/${current.id}`, {
+    const response = await fetch(`/api/crm/appointments/${current.sourceId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -490,12 +574,11 @@ export function CrmCalendarPage({
             <span className="mb-2 block text-xs text-slate-400">Source</span>
             <select value={filterSource} onChange={(event) => setFilterSource(event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white">
               <option value="ALL">Toutes les sources</option>
-              <option value="appointment">CRM interne</option>
-              <option value="google_calendar">Google</option>
-              <option value="microsoft_calendar">Microsoft</option>
-              <option value="calendly">Calendly</option>
-              <option value="workshop_appointment">Ateliers</option>
-              <option value="workshop_availability">Disponibilites atelier</option>
+              <option value="appointment">Rendez-vous</option>
+              <option value="workshop">Ateliers</option>
+              <option value="song-request">Demandes chanson</option>
+              <option value="external">Externe</option>
+              <option value="availability">Disponibilités</option>
             </select>
           </label>
 
@@ -534,8 +617,14 @@ export function CrmCalendarPage({
                 <p>{toStatusLabel(selectedEvent.status)} · {toTypeLabel(selectedEvent.type)}</p>
                 <div className="flex flex-wrap gap-2">
                   <button onClick={() => navigateToEvent(selectedEvent)} className="rounded-xl border border-primary-600/60 bg-primary-950/30 px-3 py-2 text-xs text-primary-200 hover:bg-primary-900/40 hover:text-white">Ouvrir fiche</button>
+                  {selectedEvent.canRemoveFromCalendar ? <button onClick={() => void removeFromCalendar(selectedEvent)} disabled={saving} className="rounded-xl border border-red-700/60 px-3 py-2 text-xs text-red-200 hover:bg-red-950/30 disabled:opacity-60">{saving ? 'Retrait...' : 'Retirer du calendrier'}</button> : null}
                   {selectedEvent.contactId ? <Link href={`/crm/contacts/${selectedEvent.contactId}`} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Contact</Link> : null}
                 </div>
+                {process.env.NODE_ENV !== 'production' ? (
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs text-slate-400">
+                    sourceType: {selectedEvent.sourceType} · sourceId: {selectedEvent.sourceId} · source: {selectedEvent.source || 'appointment'}
+                  </div>
+                ) : null}
               </div>
             ) : <p className="mt-3 text-sm text-slate-400">Cliquez un evenement pour afficher le detail.</p>}
           </div>

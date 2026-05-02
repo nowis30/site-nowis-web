@@ -7,6 +7,11 @@ import { CrmCalendarPage } from '@/features/crm/components/calendar/CrmCalendarP
 export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   await requireCrmSession();
 
+  const isAppointmentVisible = (status: string) => !['CANCELLED', 'DELETED', 'ARCHIVED', 'CANCELLED_BY_CLIENT'].includes(status);
+  const isWorkshopVisible = (status: string) => !['CANCELLED', 'DELETED', 'ARCHIVED', 'ANNULE'].includes(status);
+  const isSongVisible = (status: string) => !['CANCELLED', 'DELETED', 'ARCHIVED'].includes(status);
+  const isUuid = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
   const [appointments, contacts, organizations, workshopRequests, songRequests, workshopAppointments, workshopAvailabilities, externalCalendarEvents, calendarConnections] = await Promise.all([
     prisma.appointment.findMany({
       where: { status: { not: 'CANCELLED' } },
@@ -34,8 +39,21 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       select: {
         id: true,
         title: true,
+        status: true,
+        startAt: true,
+        endAt: true,
+        scheduledAt: true,
+        durationMinutes: true,
+        location: true,
+        addressOrLocation: true,
         contactId: true,
         organizationId: true,
+        contact: { select: { fullName: true } },
+        organization: { select: { name: true } },
+        crmAppointments: {
+          where: { status: { not: 'CANCELLED' } },
+          select: { id: true, startAt: true, endAt: true, status: true },
+        },
       },
       take: 300,
     }),
@@ -46,8 +64,21 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
         id: true,
         title: true,
         occasion: true,
+        status: true,
+        meetingDate: true,
+        scheduledAt: true,
+        startAt: true,
+        endAt: true,
+        durationMinutes: true,
+        location: true,
         contactId: true,
         organizationId: true,
+        contact: { select: { fullName: true } },
+        organization: { select: { name: true } },
+        appointments: {
+          where: { status: { not: 'CANCELLED' } },
+          select: { id: true, startAt: true, endAt: true, status: true },
+        },
       },
       take: 300,
     }),
@@ -122,9 +153,76 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
     return events;
   });
 
+  const workshopFallbackEvents = workshopRequests
+    .filter((item) => {
+      if (!isWorkshopVisible(item.status)) return false;
+      const start = item.startAt || item.scheduledAt;
+      const end = item.endAt || (start && item.durationMinutes ? new Date(start.getTime() + item.durationMinutes * 60_000) : null);
+      if (!start || !end) return false;
+      const hasActiveLinkedAppointment = item.crmAppointments.some((appointment) => isAppointmentVisible(appointment.status));
+      return !hasActiveLinkedAppointment;
+    })
+    .map((item) => {
+      const start = item.startAt || item.scheduledAt!;
+      const end = item.endAt || new Date(start.getTime() + (item.durationMinutes || 60) * 60_000);
+      return {
+        id: `workshop:${item.id}`,
+        sourceType: 'workshop' as const,
+        sourceId: item.id,
+        canRemoveFromCalendar: true,
+        title: item.title,
+        description: 'Atelier planifié',
+        startAt: start.toISOString(),
+        endAt: end.toISOString(),
+        type: 'WORKSHOP',
+        status: item.status,
+        contactId: item.contactId,
+        contactName: item.contact?.fullName || null,
+        organizationId: item.organizationId,
+        organizationName: item.organization?.name || null,
+        workshopRequestId: item.id,
+        workshopRequestTitle: item.title,
+      };
+    });
+
+  const songFallbackEvents = songRequests
+    .filter((item) => {
+      if (!isSongVisible(item.status)) return false;
+      const start = item.startAt || item.scheduledAt || item.meetingDate;
+      const end = item.endAt || (start && item.durationMinutes ? new Date(start.getTime() + item.durationMinutes * 60_000) : null);
+      if (!start || !end) return false;
+      const hasActiveLinkedAppointment = item.appointments.some((appointment) => isAppointmentVisible(appointment.status));
+      return !hasActiveLinkedAppointment;
+    })
+    .map((item) => {
+      const start = item.startAt || item.scheduledAt || item.meetingDate!;
+      const end = item.endAt || new Date(start.getTime() + (item.durationMinutes || 45) * 60_000);
+      return {
+        id: `song-request:${item.id}`,
+        sourceType: 'song-request' as const,
+        sourceId: item.id,
+        canRemoveFromCalendar: true,
+        title: item.title || item.occasion || 'Rencontre chanson',
+        description: item.occasion || 'Demande chanson planifiée',
+        startAt: start.toISOString(),
+        endAt: end.toISOString(),
+        type: 'SONG_MEETING',
+        status: item.status,
+        contactId: item.contactId,
+        contactName: item.contact?.fullName || null,
+        organizationId: item.organizationId,
+        organizationName: item.organization?.name || null,
+        songRequestId: item.id,
+        songRequestTitle: item.title || item.occasion || null,
+      };
+    });
+
   const initialAppointments = [
     ...appointments.map((item) => ({
-      id: item.id,
+      id: `appointment:${item.id}`,
+      sourceType: 'appointment' as const,
+      sourceId: item.id,
+      canRemoveFromCalendar: true,
       title: item.title,
       description: item.description,
       startAt: item.startAt.toISOString(),
@@ -146,7 +244,10 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       source: 'appointment' as const,
     })),
     ...workshopAppointments.map((item) => ({
-      id: item.id,
+      id: `workshop:${item.id}`,
+      sourceType: 'workshop' as const,
+      sourceId: item.workshopRequestId,
+      canRemoveFromCalendar: true,
       title: item.title,
       description: item.description,
       startAt: item.startAt.toISOString(),
@@ -161,8 +262,13 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       workshopRequestId: item.workshopRequestId,
       organizationName: item.organization?.name || null,
     })),
+    ...workshopFallbackEvents,
+    ...songFallbackEvents,
     ...externalCalendarEvents.map((item) => ({
-      id: item.id,
+      id: `external:${item.id}`,
+      sourceType: 'external' as const,
+      sourceId: item.id,
+      canRemoveFromCalendar: isUuid(item.id),
       title: item.title,
       description: item.description,
       startAt: item.startAt,
@@ -176,7 +282,12 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       source: item.source,
       organizationName: null,
     })),
-    ...nextAvailabilityEvents,
+    ...nextAvailabilityEvents.map((item) => ({
+      ...item,
+      sourceType: 'availability' as const,
+      sourceId: item.id,
+      canRemoveFromCalendar: false,
+    })),
   ].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 
   const getParam = (key: string) => {

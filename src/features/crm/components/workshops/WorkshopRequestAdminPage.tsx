@@ -291,6 +291,47 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
     }
   }
 
+  async function removeWorkshopFromCalendar() {
+    if (!window.confirm('Retirer cet atelier du calendrier CRM ? Les horaires liés seront nettoyés.')) return;
+    setSaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/crm/calendar/remove-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceType: 'workshop', sourceId: item.id }),
+      });
+      const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !data?.success) throw new Error(data?.error || 'Retrait du calendrier impossible');
+      setMessage('Atelier retiré du calendrier.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Retrait du calendrier impossible');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeAppointmentFromCalendar(appointmentId: string) {
+    setActionLoading((current) => ({ ...current, [appointmentId]: true }));
+    setMessage(null);
+    try {
+      const response = await fetch('/api/crm/calendar/remove-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceType: 'appointment', sourceId: appointmentId }),
+      });
+      const data = await response.json().catch(() => null) as { success?: boolean; error?: string } | null;
+      if (!response.ok || !data?.success) throw new Error(data?.error || 'Retrait du calendrier impossible');
+      setMessage('Rendez-vous retiré du calendrier.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Retrait du calendrier impossible');
+    } finally {
+      setActionLoading((current) => ({ ...current, [appointmentId]: false }));
+    }
+  }
+
   async function permanentDelete() {
     setDeleting(true);
     setMessage(null);
@@ -382,6 +423,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-md border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Enregistrer l’horaire'}</button>
+              <button type="button" onClick={() => void removeWorkshopFromCalendar()} disabled={saving} className="rounded-md border border-red-700/60 px-3 py-2 text-xs text-red-300 hover:bg-red-900/30 hover:text-red-200 disabled:opacity-60">Retirer cet atelier du calendrier</button>
             </div>
             <div className="mt-5 space-y-3">
               {item.appointments.length === 0 ? <p className="text-sm text-slate-400">Aucun horaire planifié.</p> : (() => {
@@ -461,6 +503,14 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
                       className="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
                     >
                       Délier de l’atelier
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void removeAppointmentFromCalendar(appointment.id)}
+                      disabled={actionLoading[appointment.id] ?? false}
+                      className="rounded-md border border-red-700/60 px-3 py-1.5 text-xs text-red-300 hover:bg-red-900/30 hover:text-red-200 disabled:opacity-50"
+                    >
+                      Retirer du calendrier
                     </button>
                     <Link href={`/crm/appointments/${appointment.id}`} className="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white">
                       Ouvrir
