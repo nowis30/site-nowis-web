@@ -9,6 +9,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
 
   const [appointments, contacts, organizations, workshopRequests, songRequests, workshopAppointments, workshopAvailabilities, externalCalendarEvents, calendarConnections] = await Promise.all([
     prisma.appointment.findMany({
+      where: { status: { not: 'CANCELLED' } },
       include: {
         contact: { select: { fullName: true } },
         organization: { select: { id: true, name: true } },
@@ -51,6 +52,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       take: 300,
     }),
     prisma.workshopAppointment.findMany({
+      where: { status: { not: 'CANCELLED' } },
       include: {
         organization: { select: { name: true } },
         contact: { select: { fullName: true } },
