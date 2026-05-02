@@ -512,11 +512,11 @@ export function EntityCrudPage({
                     ? `/crm/invoices?organizationId=${organizationId}`
                     : '';
               const submissionHref = endpoint === '/api/crm/workshop-requests' && rowId
-                ? `/crm/submissions?workshopId=${rowId}`
+                ? `/crm/commercial-quotes/new?workshopRequestId=${rowId}`
                 : endpoint === '/api/crm/contacts' && rowId
-                  ? `/crm/submissions?contactId=${rowId}`
+                  ? `/crm/commercial-quotes/new?contactId=${rowId}`
                   : endpoint === '/api/crm/organizations' && rowId
-                    ? `/crm/submissions?organizationId=${rowId}`
+                    ? `/crm/commercial-quotes/new?organizationId=${rowId}`
                     : '';
               const appointmentHref = endpoint === '/api/crm/contacts' && rowId
                 ? `/crm/calendar?contactId=${rowId}`

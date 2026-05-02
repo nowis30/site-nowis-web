@@ -81,6 +81,50 @@ export const activityInputSchema = z.object({
   contactId: z.string().uuid().optional().or(z.literal('')),
 });
 
+export const commercialQuoteLineInputSchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().or(z.literal('')),
+  quantity: z.coerce.number().positive().max(100000),
+  unitPrice: z.coerce.number().min(0).max(10000000),
+  taxable: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0).default(0),
+});
+
+const commercialQuoteStatusSchema = z.enum(['DRAFT', 'SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED', 'CONVERTED', 'ARCHIVED']);
+
+export const commercialQuoteCreateSchema = z.object({
+  title: z.string().min(2).max(240),
+  description: z.string().max(4000).optional().or(z.literal('')),
+  contactId: z.string().uuid().optional().or(z.literal('')),
+  organizationId: z.string().uuid().optional().or(z.literal('')),
+  workshopRequestId: z.string().uuid().optional().or(z.literal('')),
+  songRequestId: z.string().uuid().optional().or(z.literal('')),
+  appointmentId: z.string().uuid().optional().or(z.literal('')),
+  currency: z.string().min(3).max(8).default('CAD'),
+  validUntil: z.string().datetime().optional().or(z.literal('')),
+  notes: z.string().max(6000).optional().or(z.literal('')),
+  internalNotes: z.string().max(6000).optional().or(z.literal('')),
+  lines: z.array(commercialQuoteLineInputSchema).min(1),
+  status: commercialQuoteStatusSchema.optional(),
+});
+
+export const commercialQuotePatchSchema = z.object({
+  title: z.string().min(2).max(240).optional(),
+  description: z.string().max(4000).optional().or(z.literal('')),
+  contactId: z.string().uuid().optional().or(z.literal('')),
+  organizationId: z.string().uuid().optional().or(z.literal('')),
+  workshopRequestId: z.string().uuid().optional().or(z.literal('')),
+  songRequestId: z.string().uuid().optional().or(z.literal('')),
+  appointmentId: z.string().uuid().optional().or(z.literal('')),
+  currency: z.string().min(3).max(8).optional(),
+  validUntil: z.string().datetime().optional().or(z.literal('')),
+  notes: z.string().max(6000).optional().or(z.literal('')),
+  internalNotes: z.string().max(6000).optional().or(z.literal('')),
+  lines: z.array(commercialQuoteLineInputSchema).min(1).optional(),
+  status: commercialQuoteStatusSchema.optional(),
+});
+
 export const taskInputSchema = z.object({
   title: z.string().min(2).max(200),
   description: z.string().max(2000).optional(),

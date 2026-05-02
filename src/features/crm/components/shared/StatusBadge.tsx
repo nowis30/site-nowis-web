@@ -22,6 +22,10 @@ const statusMap: Record<string, { label: string; color: string }> = {
   ENDED: { label: 'Terminé', color: 'bg-slate-500/20 text-slate-200 border-slate-400/30' },
   TERMINATED: { label: 'Résilié', color: 'bg-red-500/20 text-red-200 border-red-400/30' },
   OVERDUE: { label: 'En retard', color: 'bg-red-500/20 text-red-200 border-red-400/30' },
+  ACCEPTED: { label: 'Acceptée', color: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/30' },
+  DECLINED: { label: 'Refusée', color: 'bg-rose-500/20 text-rose-200 border-rose-400/30' },
+  EXPIRED: { label: 'Expirée', color: 'bg-orange-500/20 text-orange-200 border-orange-400/30' },
+  CONVERTED: { label: 'Convertie', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/30' },
 
   // Statuts d'unité
   VACANT: { label: 'Vacant', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/30' },

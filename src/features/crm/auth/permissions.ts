@@ -11,6 +11,7 @@ export type CrmModuleKey =
   | 'tasks'
   | 'appointments'
   | 'invoices'
+  | 'commercialQuotes'
   | 'activities'
   | 'songRequests'
   | 'workshopRequests'
@@ -27,6 +28,7 @@ const ADMIN_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   tasks:        ['read', 'create', 'update', 'delete'],
   appointments: ['read', 'create', 'update', 'delete'],
   invoices:     ['read', 'create', 'update', 'delete'],
+  commercialQuotes: ['read', 'create', 'update', 'delete'],
   activities:   ['read', 'create', 'update', 'delete'],
   songRequests: ['read', 'create', 'update', 'delete'],
   workshopRequests: ['read', 'create', 'update', 'delete'],
@@ -44,6 +46,7 @@ const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   tasks:        ['read', 'create', 'update'],
   appointments: ['read', 'create', 'update'],
   invoices:     ['read', 'create', 'update'],
+  commercialQuotes: [],
   activities:   ['read', 'create'],
   songRequests: ['read', 'create', 'update'],
   workshopRequests: ['read', 'create', 'update'],
@@ -61,6 +64,7 @@ const PORTAL_USER_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   tasks:        [],
   appointments: ['read'],
   invoices:     ['read'],
+  commercialQuotes: [],
   activities:   [],
   songRequests: [],
   workshopRequests: [],

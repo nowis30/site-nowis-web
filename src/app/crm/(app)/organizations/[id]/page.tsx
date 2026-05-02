@@ -116,6 +116,7 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <a href={item.email ? buildOutlookHref(item.email) : '#'} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Envoyer un courriel</a>
         <a href={item.phone ? buildTelHref(item.phone) : '#'} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Appeler</a>
+        <Link href={`/crm/commercial-quotes/new?organizationId=${item.id}`} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
         <Link href={`/crm/workshop-requests/create?organizationId=${item.id}`} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer un atelier</Link>
         <Link href={`/crm/calendar?organizationId=${item.id}`} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Planifier un rendez-vous</Link>
       </div>

@@ -275,7 +275,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
           <div className="grid gap-3 sm:grid-cols-2 xl:w-[28rem]">
             <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Modifier l’atelier'}</button>
             <Link href={invoiceHref} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une facture</Link>
-            <Link href={`/crm/submissions?workshopId=${item.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
+            <Link href={`/crm/commercial-quotes/new?workshopRequestId=${item.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
             <button type="button" onClick={() => void scheduleWorkshop()} disabled={scheduling} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60">{scheduling ? 'Planification...' : 'Planifier un horaire'}</button>
           </div>
         </div>
@@ -404,7 +404,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
           </section>
 
           <section className="rounded-2xl border border-slate-700/50 bg-slate-900/40 px-5 py-4 text-sm text-slate-400">
-            La création de soumission commerciale dédiée n’a pas encore de modèle Prisma distinct dans ce CRM. Le bouton ci-dessus redirige vers le module actuel de soumissions entrantes en attendant une vraie table de devis.
+            Les soumissions commerciales utilisent maintenant un module dédié (devis CRM), distinct des soumissions entrantes du site.
           </section>
           {isAdmin && DELETABLE_STATUSES.includes(item.status) && (
             <section className="rounded-2xl border border-red-900/40 bg-red-950/20 p-5">

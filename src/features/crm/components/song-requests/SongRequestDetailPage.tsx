@@ -334,14 +334,12 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
                 {loadingAction === 'convert_appointment' ? 'Conversion...' : 'Convertir en rendez-vous'}
               </button>
 
-              <button
-                type="button"
-                onClick={() => runAction('mark_quoted')}
-                disabled={loadingAction !== null}
-                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-purple-500/40 hover:text-purple-300 disabled:opacity-60"
+              <Link
+                href={`/crm/commercial-quotes/new?songRequestId=${item.id}`}
+                className="block w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-purple-500/40 hover:text-purple-300"
               >
-                {loadingAction === 'mark_quoted' ? 'Conversion...' : 'Convertir en soumission'}
-              </button>
+                Créer une soumission commerciale
+              </Link>
 
               <button
                 type="button"

@@ -141,6 +141,16 @@ enum InvoiceStatus {
   DELETED
 }
 
+enum CommercialQuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CONVERTED
+  ARCHIVED
+}
+
 enum ActivityType {
   NOTE
   CALL
@@ -344,6 +354,7 @@ model Contact {
   messages        Message[]
   appointments    Appointment[]
   invoices        Invoice[]
+  commercialQuotes CommercialQuote[]
   activities      Activity[]
   fileDocuments   FileDocument[]
   songRequests    SongRequest[]
@@ -383,6 +394,7 @@ model Organization {
   workshopRequests    WorkshopRequest[]
   workshopAppointments WorkshopAppointment[]
   appointments        Appointment[]
+  commercialQuotes    CommercialQuote[]
   songRequests        SongRequest[]
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedOrganization")
 
@@ -472,6 +484,7 @@ model WorkshopRequest {
   organizationContact   OrganizationContact?   @relation(fields: [organizationContactId], references: [id], onDelete: SetNull)
   appointments          WorkshopAppointment[]
   crmAppointments       Appointment[]
+  commercialQuotes      CommercialQuote[]
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedWorkshopRequest")
 
   @@index([organizationId])
@@ -732,6 +745,7 @@ model Appointment {
   organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   workshopRequest WorkshopRequest? @relation(fields: [workshopRequestId], references: [id], onDelete: SetNull)
   songRequest SongRequest?      @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+  commercialQuotes CommercialQuote[]
   user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   calendarConnection CalendarConnection? @relation(fields: [calendarConnectionId], references: [id], onDelete: SetNull)
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedAppointment")
@@ -825,6 +839,7 @@ model Invoice {
   updatedAt   DateTime      @updatedAt
 
   contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  convertedFromQuote CommercialQuote?
 
   @@index([contactId])
   @@index([status])
@@ -935,6 +950,7 @@ model SongRequest {
   fileDocuments        FileDocument[]
   tasks                Task[]
   appointments         Appointment[]
+  commercialQuotes     CommercialQuote[]
 
   @@index([contactId])
   @@index([organizationId])
@@ -943,6 +959,67 @@ model SongRequest {
   @@index([deletedAt])
   @@index([createdAt])
   @@map("song_requests")
+}
+
+model CommercialQuote {
+  id                    String               @id @default(uuid()) @db.Uuid
+  quoteNumber           String               @unique
+  title                 String
+  description           String?
+  contactId             String?              @db.Uuid
+  organizationId        String?              @db.Uuid
+  workshopRequestId     String?              @db.Uuid
+  songRequestId         String?              @db.Uuid
+  appointmentId         String?              @db.Uuid
+  status                CommercialQuoteStatus @default(DRAFT)
+  subtotal              Decimal              @default(0) @db.Decimal(10, 2)
+  taxAmount             Decimal              @default(0) @db.Decimal(10, 2)
+  totalAmount           Decimal              @default(0) @db.Decimal(10, 2)
+  currency              String               @default("CAD")
+  validUntil            DateTime?
+  notes                 String?
+  internalNotes         String?
+  acceptedAt            DateTime?
+  declinedAt            DateTime?
+  convertedToInvoiceId  String?              @unique @db.Uuid
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  contact               Contact?             @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  organization          Organization?        @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  workshopRequest       WorkshopRequest?     @relation(fields: [workshopRequestId], references: [id], onDelete: SetNull)
+  songRequest           SongRequest?         @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+  appointment           Appointment?         @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  convertedToInvoice    Invoice?             @relation(fields: [convertedToInvoiceId], references: [id], onDelete: SetNull)
+  lines                 CommercialQuoteLine[]
+
+  @@index([contactId])
+  @@index([organizationId])
+  @@index([workshopRequestId])
+  @@index([songRequestId])
+  @@index([appointmentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("commercial_quotes")
+}
+
+model CommercialQuoteLine {
+  id            String          @id @default(uuid()) @db.Uuid
+  quoteId       String          @db.Uuid
+  title         String
+  description   String?
+  quantity      Decimal         @default(1) @db.Decimal(10, 2)
+  unitPrice     Decimal         @default(0) @db.Decimal(10, 2)
+  subtotal      Decimal         @default(0) @db.Decimal(10, 2)
+  taxable       Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  quote         CommercialQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@index([quoteId, sortOrder])
+  @@map("commercial_quote_lines")
 }
 
 model Review {
