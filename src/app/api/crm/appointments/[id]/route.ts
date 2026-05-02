@@ -26,6 +26,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 async function updateAppointment(request: NextRequest, params: { id: string }) {
   const guard = requireApiPermission(request, 'appointments', 'update');
   if (guard.error) return guard.error;
+  if (guard.session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });
+  }
 
   try {
     const payload = appointmentInputSchema.parse(await request.json());
@@ -85,6 +88,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'appointments', 'delete');
   if (guard.error) return guard.error;
+  if (guard.session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });
+  }
 
   try {
     const existing = await prisma.appointment.findUnique({ where: { id: params.id } });
@@ -106,7 +112,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       relatedId: item.id,
     });
 
-    return NextResponse.json({ ok: true, item });
+    return NextResponse.json({ success: true, item });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
       return NextResponse.json({ error: 'Le module rendez-vous n\'est pas encore disponible sur cette base de donnees.' }, { status: 503 });
