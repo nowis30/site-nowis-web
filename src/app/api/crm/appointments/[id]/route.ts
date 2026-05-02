@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   return NextResponse.json({ item });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+async function updateAppointment(request: NextRequest, params: { id: string }) {
   const guard = requireApiPermission(request, 'appointments', 'update');
   if (guard.error) return guard.error;
 
@@ -74,10 +74,43 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  return updateAppointment(request, params);
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  return updateAppointment(request, params);
+}
+
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'appointments', 'delete');
   if (guard.error) return guard.error;
 
-  await prisma.appointment.delete({ where: { id: params.id } });
-  return NextResponse.json({ ok: true });
+  try {
+    const existing = await prisma.appointment.findUnique({ where: { id: params.id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Rendez-vous introuvable' }, { status: 404 });
+    }
+
+    const item = await prisma.appointment.update({
+      where: { id: params.id },
+      data: {
+        status: 'CANCELLED',
+      },
+    });
+
+    await recordCalendarActivity({
+      title: 'Rendez-vous CRM annulé',
+      description: item.title,
+      userId: guard.session.sub,
+      relatedId: item.id,
+    });
+
+    return NextResponse.json({ ok: true, item });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return NextResponse.json({ error: 'Le module rendez-vous n\'est pas encore disponible sur cette base de donnees.' }, { status: 503 });
+    }
+    return NextResponse.json({ error: 'Annulation du rendez-vous impossible' }, { status: 500 });
+  }
 }
