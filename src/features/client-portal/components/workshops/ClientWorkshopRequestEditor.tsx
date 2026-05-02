@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { workshopSelectClassName } from '@/components/forms/select-styles';
 
 const OUTLOOK_MESSAGE_URL = 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client';
 const MAILTO_MESSAGE_URL = 'mailto:simonmorin@nowis.store?subject=Demande%20depuis%20le%20portail%20client';
@@ -113,7 +114,7 @@ export function ClientWorkshopRequestEditor({ initialItem, canEditInitially }: {
             </label>
             <label>
               <span className="mb-1 block text-xs text-slate-400">Type de rencontre</span>
-              <select value={item.meetingType || 'autre'} onChange={(event) => setItem((current) => ({ ...current, meetingType: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+              <select value={item.meetingType || 'autre'} onChange={(event) => setItem((current) => ({ ...current, meetingType: event.target.value }))} className={workshopSelectClassName}>
                 <option value="telephone">Telephone</option>
                 <option value="visio">Visio</option>
                 <option value="en_personne">En personne</option>

@@ -120,7 +120,7 @@ export function AppointmentSelector({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="relative space-y-3 overflow-visible">
       <div>
         <label>
           <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">{label}</span>
@@ -138,7 +138,7 @@ export function AppointmentSelector({
       </div>
 
       {isOpen && (
-        <div className="rounded-xl border border-slate-700 bg-slate-950 p-4 space-y-3">
+        <div className="absolute left-0 right-0 top-full mt-2 z-[1100] rounded-xl border border-slate-600 bg-slate-900 p-4 shadow-2xl shadow-black/40 space-y-3">
           {/* Search input */}
           <div>
             <input
@@ -147,13 +147,13 @@ export function AppointmentSelector({
               onChange={(e) => handleSearch(e.target.value)}
               placeholder={placeholder}
               disabled={searching}
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500"
+              className="w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 placeholder-slate-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
             />
             {searching && <p className="mt-2 text-xs text-slate-400">Recherche en cours...</p>}
           </div>
 
           {/* Results list */}
-          <div className="max-h-[400px] overflow-y-auto space-y-2">
+          <div className="max-h-[min(50vh,24rem)] overflow-y-auto pr-1 space-y-2">
             {appointments.length === 0 ? (
               <p className="text-sm text-slate-400">
                 {searching ? 'Recherche...' : 'Aucun rendez-vous trouvé.'}
@@ -165,7 +165,7 @@ export function AppointmentSelector({
                   type="button"
                   onClick={() => handleSelectAppointment(appointment.id)}
                   disabled={selectLoading}
-                  className="w-full text-left rounded-lg border border-slate-800 bg-slate-900/50 p-3 hover:border-slate-600 hover:bg-slate-900 transition-colors disabled:opacity-60"
+                  className="w-full text-left rounded-lg border border-slate-700 bg-slate-950/70 p-3 hover:border-primary-500/40 hover:bg-slate-900 transition-colors disabled:opacity-60"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
@@ -199,18 +199,18 @@ export function AppointmentSelector({
           </div>
 
           {/* Close button */}
-          <div className="flex gap-2 pt-2 border-t border-slate-800">
+          <div className="flex gap-2 pt-2 border-t border-slate-700">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="flex-1 rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white"
+              className="flex-1 rounded-lg border border-slate-600 px-3 py-2 text-xs text-slate-200 hover:text-white"
             >
               Fermer
             </button>
             <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex-1 rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white"
+              className="flex-1 rounded-lg border border-slate-600 px-3 py-2 text-xs text-slate-200 hover:text-white"
             >
               {showAdvanced ? 'Masquer avancé' : 'Mode avancé'}
             </button>

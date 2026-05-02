@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { workshopSelectLgClassName } from '@/components/forms/select-styles';
 
 type OptionItem = { id: string; label: string };
 
@@ -212,7 +213,7 @@ export function CrmWorkshopCreateForm() {
           </label>
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-200">Client existant (optionnel)</span>
-            <select value={form.clientId} onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white">
+            <select value={form.clientId} onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value }))} className={workshopSelectLgClassName}>
               <option value="">Sélectionner</option>
               {contacts.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
             </select>
@@ -240,7 +241,7 @@ export function CrmWorkshopCreateForm() {
                   return next;
                 });
               }}
-              className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white"
+              className={workshopSelectLgClassName}
             >
               <option value="">Sélectionner</option>
               {organizations.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
@@ -270,7 +271,7 @@ export function CrmWorkshopCreateForm() {
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-200">Format</span>
-            <select value={form.deliveryFormat} onChange={(event) => setForm((current) => ({ ...current, deliveryFormat: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white">
+            <select value={form.deliveryFormat} onChange={(event) => setForm((current) => ({ ...current, deliveryFormat: event.target.value }))} className={workshopSelectLgClassName}>
               <option value="SUR_PLACE">Sur place</option>
               <option value="EN_LIGNE">En ligne</option>
               <option value="A_DETERMINER">À déterminer</option>
@@ -286,7 +287,7 @@ export function CrmWorkshopCreateForm() {
           </label>
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-200">Public cible</span>
-            <select value={form.targetAudience} onChange={(event) => setForm((current) => ({ ...current, targetAudience: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white">
+            <select value={form.targetAudience} onChange={(event) => setForm((current) => ({ ...current, targetAudience: event.target.value }))} className={workshopSelectLgClassName}>
               <option value="PERSONNES_AGEES">Personnes âgées</option>
               <option value="JEUNES">Jeunes</option>
               <option value="ADULTES">Adultes</option>
@@ -297,7 +298,7 @@ export function CrmWorkshopCreateForm() {
           </label>
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-200">Durée prévue</span>
-            <select value={form.durationPreset} onChange={(event) => setForm((current) => ({ ...current, durationPreset: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white">
+            <select value={form.durationPreset} onChange={(event) => setForm((current) => ({ ...current, durationPreset: event.target.value }))} className={workshopSelectLgClassName}>
               <option value="M60">60 minutes</option>
               <option value="M90">90 minutes</option>
               <option value="M120">120 minutes</option>
@@ -318,7 +319,7 @@ export function CrmWorkshopCreateForm() {
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-200">Mode de tarif</span>
-            <select value={form.pricingMode} onChange={(event) => setForm((current) => ({ ...current, pricingMode: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white">
+            <select value={form.pricingMode} onChange={(event) => setForm((current) => ({ ...current, pricingMode: event.target.value }))} className={workshopSelectLgClassName}>
               <option value="HORAIRE">120 $/h</option>
               <option value="PAR_PERSONNE">10 $/personne</option>
               <option value="PERSONNALISE">Prix personnalisé</option>

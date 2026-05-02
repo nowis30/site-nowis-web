@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
+import { workshopSelectClassName } from '@/components/forms/select-styles';
 import { trackWorkshopRequestSubmitted } from '@/lib/tracking/google';
 import { workshopRequestFormSchema, type WorkshopRequestFormInput } from '@/features/workshops/schemas';
 
@@ -92,7 +93,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
         </label>
         <label>
           <span className="mb-2 block text-sm font-medium text-white">Type d’organisation</span>
-          <select {...register('organizationType')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white">
+          <select {...register('organizationType')} className={workshopSelectClassName}>
             <option value="SCHOOL">École</option>
             <option value="COMMUNITY_ORG">Organisme</option>
             <option value="DAYCARE">Garderie</option>
@@ -118,7 +119,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
         </label>
         <label>
           <span className="mb-2 block text-sm font-medium text-white">Format</span>
-          <select {...register('format')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white">
+          <select {...register('format')} className={workshopSelectClassName}>
             <option value="IN_PERSON">Sur place</option>
             <option value="VIRTUAL">Virtuel</option>
             <option value="HYBRID">Hybride</option>
@@ -130,7 +131,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
         </label>
         <label>
           <span className="mb-2 block text-sm font-medium text-white">Public visé</span>
-          <select {...register('audienceType')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white">
+          <select {...register('audienceType')} className={workshopSelectClassName}>
             <option value="PRESCHOOL">Préscolaire</option>
             <option value="ELEMENTARY">Primaire</option>
             <option value="TEENS">Adolescents</option>
