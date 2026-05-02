@@ -70,6 +70,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteConfirm2, setDeleteConfirm2] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
     title: item.title,
     workshopType: item.workshopType,
@@ -229,6 +230,67 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
     }
   }
 
+  async function cancelWorkshopAppt(waId: string) {
+    setActionLoading((current) => ({ ...current, [waId]: true }));
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}/appointments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel_workshop_appointment', workshopAppointmentId: waId }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Annulation impossible');
+      setMessage('Horaire annulé.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Annulation impossible');
+    } finally {
+      setActionLoading((current) => ({ ...current, [waId]: false }));
+    }
+  }
+
+  async function deleteWorkshopAppt(waId: string) {
+    if (!window.confirm('Supprimer définitivement cet horaire\u00a0? Cette action est irréversible.')) return;
+    setActionLoading((current) => ({ ...current, [waId]: true }));
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}/appointments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_workshop_appointment', workshopAppointmentId: waId }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Suppression impossible');
+      setMessage('Horaire supprimé définitivement.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Suppression impossible');
+    } finally {
+      setActionLoading((current) => ({ ...current, [waId]: false }));
+    }
+  }
+
+  async function cancelCrmAppt(appointmentId: string) {
+    setActionLoading((current) => ({ ...current, [appointmentId]: true }));
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}/appointments`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel', appointmentId }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Annulation impossible');
+      setMessage('Rendez-vous annulé.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Annulation impossible');
+    } finally {
+      setActionLoading((current) => ({ ...current, [appointmentId]: false }));
+    }
+  }
+
   async function permanentDelete() {
     setDeleting(true);
     setMessage(null);
@@ -322,16 +384,48 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
               <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-md border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Enregistrer l’horaire'}</button>
             </div>
             <div className="mt-5 space-y-3">
-              {item.appointments.length === 0 ? <p className="text-sm text-slate-400">Aucun rendez-vous atelier lié.</p> : item.appointments.map((appointment) => (
-                <article key={appointment.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-white">{appointment.title}</p>
-                    <StatusBadge value={appointment.status} />
-                  </div>
-                  <p className="mt-2 text-slate-400">{new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(appointment.startAt))}</p>
-                  {appointment.location ? <p className="mt-1 text-slate-500">{appointment.location}</p> : null}
-                </article>
-              ))}
+              {item.appointments.length === 0 ? <p className="text-sm text-slate-400">Aucun horaire planifié.</p> : (() => {
+                const startTimes = item.appointments.map((a) => a.startAt.slice(0, 16));
+                return item.appointments.map((appointment) => {
+                  const isDuplicate = startTimes.filter((t) => t === appointment.startAt.slice(0, 16)).length > 1;
+                  const loading = actionLoading[appointment.id] ?? false;
+                  return (
+                    <article key={appointment.id} className={`rounded-xl border p-4 text-sm text-slate-200 ${isDuplicate ? 'border-amber-600/50 bg-amber-950/20' : 'border-slate-800 bg-slate-950/50'}`}>
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <p className="font-medium text-white">{appointment.title}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {isDuplicate && <span className="rounded-full border border-amber-600/60 px-2 py-0.5 text-xs text-amber-400">Doublon possible</span>}
+                          <StatusBadge value={appointment.status} />
+                        </div>
+                      </div>
+                      <p className="mt-2 text-slate-400">{new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(appointment.startAt))}</p>
+                      {appointment.location ? <p className="mt-1 text-slate-500">{appointment.location}</p> : null}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {appointment.status !== 'CANCELLED' && (
+                          <button
+                            type="button"
+                            onClick={() => void cancelWorkshopAppt(appointment.id)}
+                            disabled={loading}
+                            className="rounded-md border border-amber-700/60 px-3 py-1.5 text-xs text-amber-300 hover:bg-amber-900/30 hover:text-amber-200 disabled:opacity-50"
+                          >
+                            {loading ? 'En cours…' : 'Annuler cet horaire'}
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => void deleteWorkshopAppt(appointment.id)}
+                            disabled={loading}
+                            className="rounded-md border border-red-700/60 px-3 py-1.5 text-xs text-red-400 hover:bg-red-900/30 hover:text-red-300 disabled:opacity-50"
+                          >
+                            {loading ? 'En cours…' : 'Supprimer définitivement'}
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  );
+                });
+              })()}
             </div>
           </section>
 
@@ -349,7 +443,29 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
                   </div>
                   <p className="mt-2 text-slate-400">{new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(appointment.startAt))}</p>
                   <p className="mt-1 text-slate-500">{appointment.type}{appointment.location ? ` · ${appointment.location}` : ''}</p>
-                  <button type="button" onClick={() => void unlinkCrmAppointment(appointment.id)} disabled={scheduling} className="mt-2 rounded-md border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-60">Délier</button>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {appointment.status !== 'CANCELLED' && (
+                      <button
+                        type="button"
+                        onClick={() => void cancelCrmAppt(appointment.id)}
+                        disabled={actionLoading[appointment.id] ?? false}
+                        className="rounded-md border border-amber-700/60 px-3 py-1.5 text-xs text-amber-300 hover:bg-amber-900/30 hover:text-amber-200 disabled:opacity-50"
+                      >
+                        {(actionLoading[appointment.id] ?? false) ? 'En cours…' : 'Annuler'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => void unlinkCrmAppointment(appointment.id)}
+                      disabled={scheduling || (actionLoading[appointment.id] ?? false)}
+                      className="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
+                    >
+                      Délier de l’atelier
+                    </button>
+                    <Link href={`/crm/appointments/${appointment.id}`} className="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white">
+                      Ouvrir
+                    </Link>
+                  </div>
                 </article>
               ))}
             </div>

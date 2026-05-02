@@ -17,8 +17,9 @@ const scheduleSchema = z.object({
 });
 
 const linkSchema = z.object({
-  action: z.enum(['link_existing', 'unlink']),
-  appointmentId: z.string().uuid(),
+  action: z.enum(['link_existing', 'unlink', 'cancel', 'cancel_workshop_appointment', 'delete_workshop_appointment', 'delete_appointment']),
+  appointmentId: z.string().uuid().optional(),
+  workshopAppointmentId: z.string().uuid().optional(),
 });
 
 function normalizeOptionalString(value?: string) {
@@ -35,6 +36,22 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     if (!workshop || !workshop.organizationId) {
       return NextResponse.json({ error: 'Atelier introuvable ou organisation manquante.' }, { status: 404 });
+    }
+
+    // Anti-doublon : vérifier qu'il n'existe pas déjà un horaire à la même date/heure
+    const startAtDate = new Date(payload.startAt);
+    const existingSlot = await prisma.workshopAppointment.findFirst({
+      where: {
+        workshopRequestId: workshop.id,
+        startAt: startAtDate,
+        status: { not: 'CANCELLED' },
+      },
+    });
+    if (existingSlot) {
+      return NextResponse.json(
+        { error: `Un horaire existe déjà pour cette date et cette heure (${new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(startAtDate)}). Annulez-le d'abord ou choisissez une autre heure.` },
+        { status: 409 }
+      );
     }
 
     const workshopAppointment = await prisma.workshopAppointment.create({
@@ -138,7 +155,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Atelier introuvable.' }, { status: 404 });
     }
 
+    // --- Lier un rendez-vous existant ---
     if (payload.action === 'link_existing') {
+      if (!payload.appointmentId) return NextResponse.json({ error: 'appointmentId requis.' }, { status: 400 });
       const linked = await prisma.appointment.update({
         where: { id: payload.appointmentId },
         data: {
@@ -149,11 +168,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           type: 'WORKSHOP',
         },
       });
-
       await prisma.activity.create({
         data: {
           type: 'APPOINTMENT',
-          title: 'Rendez-vous lié à l’atelier',
+          title: `Rendez-vous lié à l'atelier`,
           description: linked.title,
           contactId: linked.contactId,
           appointmentId: linked.id,
@@ -163,18 +181,124 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           userId: guard.session.sub,
         },
       }).catch(() => undefined);
-
       return NextResponse.json({ item: linked });
     }
 
-    const unlinked = await prisma.appointment.update({
-      where: { id: payload.appointmentId },
-      data: {
-        workshopRequestId: null,
-      },
-    });
+    // --- Délier un rendez-vous CRM ---
+    if (payload.action === 'unlink') {
+      if (!payload.appointmentId) return NextResponse.json({ error: 'appointmentId requis.' }, { status: 400 });
+      const unlinked = await prisma.appointment.update({
+        where: { id: payload.appointmentId },
+        data: { workshopRequestId: null },
+      });
+      await prisma.activity.create({
+        data: {
+          type: 'APPOINTMENT',
+          title: `Rendez-vous délié de l'atelier`,
+          description: unlinked.title,
+          contactId: unlinked.contactId,
+          appointmentId: unlinked.id,
+          relatedType: 'WORKSHOP_REQUEST',
+          relatedId: workshop.id,
+          relatedUrl: `/crm/workshop-requests/${workshop.id}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+      return NextResponse.json({ item: unlinked });
+    }
 
-    return NextResponse.json({ item: unlinked });
+    // --- Annuler un rendez-vous CRM (garde le lien à l'atelier) ---
+    if (payload.action === 'cancel') {
+      if (!payload.appointmentId) return NextResponse.json({ error: 'appointmentId requis.' }, { status: 400 });
+      const cancelled = await prisma.appointment.update({
+        where: { id: payload.appointmentId, workshopRequestId: workshop.id },
+        data: { status: 'CANCELLED' },
+      });
+      await prisma.activity.create({
+        data: {
+          type: 'APPOINTMENT',
+          title: 'Rendez-vous annulé',
+          description: cancelled.title,
+          contactId: cancelled.contactId,
+          appointmentId: cancelled.id,
+          relatedType: 'WORKSHOP_REQUEST',
+          relatedId: workshop.id,
+          relatedUrl: `/crm/workshop-requests/${workshop.id}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+      return NextResponse.json({ item: cancelled });
+    }
+
+    // --- Annuler un horaire atelier (WorkshopAppointment) ---
+    if (payload.action === 'cancel_workshop_appointment') {
+      if (!payload.workshopAppointmentId) return NextResponse.json({ error: 'workshopAppointmentId requis.' }, { status: 400 });
+      const cancelled = await prisma.workshopAppointment.update({
+        where: { id: payload.workshopAppointmentId, workshopRequestId: workshop.id },
+        data: { status: 'CANCELLED' },
+      });
+      await prisma.activity.create({
+        data: {
+          type: 'APPOINTMENT',
+          title: `Horaire d'atelier annulé`,
+          description: cancelled.title,
+          contactId: workshop.contactId,
+          relatedType: 'WORKSHOP_REQUEST',
+          relatedId: workshop.id,
+          relatedUrl: `/crm/workshop-requests/${workshop.id}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+      return NextResponse.json({ item: cancelled });
+    }
+
+    // --- Supprimer définitivement un horaire atelier (admin seulement) ---
+    if (payload.action === 'delete_workshop_appointment') {
+      if (!payload.workshopAppointmentId) return NextResponse.json({ error: 'workshopAppointmentId requis.' }, { status: 400 });
+      if (guard.session.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Réservé aux administrateurs.' }, { status: 403 });
+      }
+      await prisma.workshopAppointment.delete({
+        where: { id: payload.workshopAppointmentId, workshopRequestId: workshop.id },
+      });
+      return NextResponse.json({ success: true });
+    }
+
+    // --- Supprimer définitivement un rendez-vous CRM (admin, sans soumission liée) ---
+    if (payload.action === 'delete_appointment') {
+      if (!payload.appointmentId) return NextResponse.json({ error: 'appointmentId requis.' }, { status: 400 });
+      if (guard.session.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Réservé aux administrateurs.' }, { status: 403 });
+      }
+      const linkedQuotes = await prisma.commercialQuote.count({ where: { appointmentId: payload.appointmentId } });
+      if (linkedQuotes > 0) {
+        return NextResponse.json(
+          { error: `Ce rendez-vous est lié à ${linkedQuotes} soumission(s) commerciale(s). Supprimez d'abord les soumissions liées.` },
+          { status: 409 }
+        );
+      }
+      const appt = await prisma.appointment.findUnique({
+        where: { id: payload.appointmentId, workshopRequestId: workshop.id },
+        select: { id: true, title: true, contactId: true },
+      });
+      if (!appt) return NextResponse.json({ error: 'Rendez-vous introuvable ou non lié à cet atelier.' }, { status: 404 });
+      await prisma.appointment.delete({ where: { id: appt.id } });
+      await prisma.activity.create({
+        data: {
+          type: 'APPOINTMENT',
+          title: 'Rendez-vous supprimé définitivement',
+          description: appt.title,
+          contactId: appt.contactId,
+          relatedType: 'WORKSHOP_REQUEST',
+          relatedId: workshop.id,
+          relatedUrl: `/crm/workshop-requests/${workshop.id}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: 'Action non reconnue.' }, { status: 400 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Données invalides', details: error.issues }, { status: 400 });
