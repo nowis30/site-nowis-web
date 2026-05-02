@@ -17,7 +17,8 @@ type WorkshopRequestDetailRecord = Prisma.WorkshopRequestGetPayload<{
 }>;
 
 export default async function WorkshopRequestDetailPage({ params }: { params: { id: string } }) {
-  await requireCrmSession();
+  const session = await requireCrmSession();
+  const isAdmin = session.role === 'ADMIN';
 
   let item: WorkshopRequestDetailRecord | null = null;
   try {
@@ -103,6 +104,7 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
         accountEmail: connection.accountEmail,
         status: connection.status,
       }))}
+      isAdmin={isAdmin}
     />
   );
 }

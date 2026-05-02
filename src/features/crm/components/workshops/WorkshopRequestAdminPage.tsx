@@ -45,6 +45,7 @@ type WorkshopPageProps = {
     crmAppointments: Array<{ id: string; title: string; startAt: string; endAt: string; status: string; type: string; location: string | null }>;
   };
   calendarConnections: Array<{ id: string; provider: string; accountName: string | null; accountEmail: string | null; status: string }>;
+  isAdmin?: boolean;
 };
 
 function toDateInput(iso: string | null) {
@@ -59,11 +60,16 @@ function buildTelHref(phone: string) {
   return `tel:${phone.replace(/\s+/g, '')}`;
 }
 
-export function WorkshopRequestAdminPage({ item, calendarConnections }: WorkshopPageProps) {
+const DELETABLE_STATUSES = ['ANNULE', 'DELETED', 'CANCELLED', 'TERMINE', 'COMPLETED'];
+
+export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = false }: WorkshopPageProps) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [scheduling, setScheduling] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteConfirm2, setDeleteConfirm2] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     title: item.title,
     workshopType: item.workshopType,
@@ -220,6 +226,24 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
       setMessage(error instanceof Error ? error.message : 'Déliaison impossible');
     } finally {
       setScheduling(false);
+    }
+  }
+
+  async function permanentDelete() {
+    setDeleting(true);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}/permanent`, {
+        method: 'DELETE',
+      });
+      const data = await response.json().catch(() => null) as { error?: string; deletedTitle?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Suppression impossible');
+      router.push('/crm/workshop-requests');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Suppression impossible');
+      setDeleting(false);
+      setConfirmDelete(false);
+      setDeleteConfirm2(false);
     }
   }
 
@@ -382,7 +406,67 @@ export function WorkshopRequestAdminPage({ item, calendarConnections }: Workshop
           <section className="rounded-2xl border border-slate-700/50 bg-slate-900/40 px-5 py-4 text-sm text-slate-400">
             La création de soumission commerciale dédiée n’a pas encore de modèle Prisma distinct dans ce CRM. Le bouton ci-dessus redirige vers le module actuel de soumissions entrantes en attendant une vraie table de devis.
           </section>
-        </div>
+          {isAdmin && DELETABLE_STATUSES.includes(item.status) && (
+            <section className="rounded-2xl border border-red-900/40 bg-red-950/20 p-5">
+              <h2 className="text-base font-semibold text-red-400">Zone de danger — Admin</h2>
+              {!confirmDelete && (
+                <div className="mt-4">
+                  <p className="text-sm text-slate-400">Cette action supprimera définitivement l'atelier, tous ses rendez-vous d'horaire, et les liens vers les rendez-vous CRM. Cette opération est irréversible.</p>
+                  <button
+                    type="button"
+                    onClick={() => { setConfirmDelete(true); setDeleteConfirm2(false); }}
+                    className="mt-4 rounded-md border border-red-700/60 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                  >
+                    Supprimer définitivement…
+                  </button>
+                </div>
+              )}
+              {confirmDelete && !deleteConfirm2 && (
+                <div className="mt-4 space-y-3">
+                  <p className="text-sm font-medium text-red-300">Êtes-vous sûr(e) ? Cette action est irréversible. L'atelier «&nbsp;{item.title}&nbsp;» sera supprimé définitivement.</p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirm2(true)}
+                      className="rounded-md bg-red-800/40 border border-red-700/60 px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-800/70"
+                    >
+                      Confirmer — je veux supprimer définitivement
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setConfirmDelete(false); setDeleteConfirm2(false); }}
+                      className="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-400 hover:text-white"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+              {confirmDelete && deleteConfirm2 && (
+                <div className="mt-4 space-y-3">
+                  <p className="text-sm font-medium text-red-200">Dernière confirmation requise.</p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void permanentDelete()}
+                      disabled={deleting}
+                      className="rounded-md bg-red-700 px-4 py-2 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-60"
+                    >
+                      {deleting ? 'Suppression en cours…' : 'Oui, supprimer définitivement'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setConfirmDelete(false); setDeleteConfirm2(false); }}
+                      disabled={deleting}
+                      className="rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-400 hover:text-white disabled:opacity-60"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}        </div>
       </div>
     </section>
   );
