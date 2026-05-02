@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { appointmentInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { createExternalCalendarEvent, recordCalendarActivity } from '@/lib/calendar/service';
 
 export async function GET(request: NextRequest) {
   const guard = requireApiPermission(request, 'appointments', 'read');
@@ -41,9 +42,54 @@ export async function POST(request: NextRequest) {
         type: payload.type,
         status: payload.status,
         contactId: payload.contactId || null,
+        calendarConnectionId: payload.calendarConnectionId || null,
         userId: guard.session.sub,
       },
     });
+
+    if (payload.calendarConnectionId) {
+      try {
+        const externalEvent = await createExternalCalendarEvent({
+          connectionId: payload.calendarConnectionId,
+          title: item.title,
+          description: item.description,
+          startAt: item.startAt,
+          endAt: item.endAt,
+          linkedCrmAppointmentId: item.id,
+          linkedClientId: item.contactId,
+        });
+
+        const syncedItem = await prisma.appointment.update({
+          where: { id: item.id },
+          data: {
+            externalProvider: externalEvent.provider,
+            externalEventId: externalEvent.externalEventId,
+            meetingUrl: externalEvent.meetingUrl,
+          },
+        });
+
+        await recordCalendarActivity({
+          title: 'Rendez-vous CRM créé vers calendrier connecté',
+          description: `${externalEvent.provider} · ${syncedItem.title}`,
+          userId: guard.session.sub,
+          relatedId: payload.calendarConnectionId,
+        });
+
+        return NextResponse.json({ item: syncedItem }, { status: 201 });
+      } catch (calendarError) {
+        await prisma.appointment.delete({ where: { id: item.id } }).catch(() => undefined);
+        const message = calendarError instanceof Error ? calendarError.message : 'Synchronisation externe impossible';
+        return NextResponse.json({ error: message }, { status: 502 });
+      }
+    }
+
+    await recordCalendarActivity({
+      title: 'Rendez-vous CRM créé',
+      description: item.title,
+      userId: guard.session.sub,
+      relatedId: item.id,
+    });
+
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

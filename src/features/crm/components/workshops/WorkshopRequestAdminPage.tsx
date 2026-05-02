@@ -1,0 +1,281 @@
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
+
+type WorkshopPageProps = {
+  item: {
+    id: string;
+    title: string;
+    status: string;
+    workshopType: string;
+    workshopTheme: string;
+    organizationId: string | null;
+    organizationName: string | null;
+    contactId: string | null;
+    clientId: string | null;
+    organizationContactId: string | null;
+    contactPerson: string | null;
+    contactEmail: string | null;
+    contactPhone: string | null;
+    addressOrLocation: string | null;
+    location: string | null;
+    estimatedParticipants: number | null;
+    participantEstimate: number | null;
+    finalPrice: string | null;
+    requestedDate: string | null;
+    requestedTime: string | null;
+    durationPreset: string;
+    objectives: string;
+    notes: string | null;
+    internalNotes: string | null;
+    organization: { id: string; name: string } | null;
+    contact: { id: string; fullName: string } | null;
+    client: { id: string; fullName: string } | null;
+    organizationContact: { id: string; contactId: string | null; fullName: string } | null;
+    appointments: Array<{ id: string; title: string; startAt: string; endAt: string; status: string; location: string | null }>;
+  };
+  calendarConnections: Array<{ id: string; provider: string; accountName: string | null; accountEmail: string | null; status: string }>;
+};
+
+function toDateInput(iso: string | null) {
+  return iso ? iso.slice(0, 10) : '';
+}
+
+function buildOutlookHref(email: string) {
+  return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(email)}`;
+}
+
+function buildTelHref(phone: string) {
+  return `tel:${phone.replace(/\s+/g, '')}`;
+}
+
+export function WorkshopRequestAdminPage({ item, calendarConnections }: WorkshopPageProps) {
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [scheduling, setScheduling] = useState(false);
+  const [form, setForm] = useState({
+    title: item.title,
+    workshopType: item.workshopType,
+    organizationId: item.organizationId || '',
+    contactId: item.contactId || '',
+    clientId: item.clientId || '',
+    organizationContactId: item.organizationContactId || '',
+    organizationName: item.organizationName || item.organization?.name || '',
+    contactPerson: item.contactPerson || item.organizationContact?.fullName || item.contact?.fullName || item.client?.fullName || '',
+    contactEmail: item.contactEmail || '',
+    contactPhone: item.contactPhone || '',
+    addressOrLocation: item.addressOrLocation || item.location || '',
+    deliveryFormat: 'SUR_PLACE',
+    participantEstimate: String(item.participantEstimate || item.estimatedParticipants || 0),
+    targetAudience: 'AUTRE',
+    durationPreset: item.durationPreset || 'M90',
+    pricingMode: 'HORAIRE',
+    basePrice: item.finalPrice || '',
+    discountPercent: '0',
+    internalNotes: item.internalNotes || '',
+    clientNotes: '',
+    audienceType: 'MIXED',
+    ageRange: '',
+    estimatedParticipants: String(item.estimatedParticipants || item.participantEstimate || 0),
+    requestedDate: toDateInput(item.requestedDate),
+    requestedTime: item.requestedTime || '',
+    preferredDays: [] as string[],
+    format: 'IN_PERSON',
+    location: item.location || item.addressOrLocation || '',
+    workshopTheme: item.workshopTheme,
+    objectives: item.objectives,
+    notes: item.notes || '',
+    status: item.status,
+  });
+  const [schedule, setSchedule] = useState({
+    date: toDateInput(item.requestedDate),
+    startTime: '09:00',
+    endTime: '10:00',
+    location: item.location || item.addressOrLocation || '',
+    calendarConnectionId: '',
+  });
+
+  async function saveWorkshop() {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          participantEstimate: Number(form.participantEstimate || 0),
+          estimatedParticipants: Number(form.estimatedParticipants || 0),
+          basePrice: Number(form.basePrice || 0),
+          discountPercent: Number(form.discountPercent || 0),
+          requestedDate: form.requestedDate || undefined,
+        }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(data?.error || 'Modification impossible');
+      setMessage('Atelier modifié.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Modification impossible');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function scheduleWorkshop() {
+    if (!schedule.date) {
+      setMessage('Choisis une date pour planifier.');
+      return;
+    }
+
+    setScheduling(true);
+    setMessage(null);
+    try {
+      const startAt = new Date(`${schedule.date}T${schedule.startTime}:00`);
+      const endAt = new Date(`${schedule.date}T${schedule.endTime}:00`);
+      const response = await fetch(`/api/crm/workshop-requests/${item.id}/appointments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `Atelier - ${form.title}`,
+          description: form.workshopTheme,
+          startAt: startAt.toISOString(),
+          endAt: endAt.toISOString(),
+          location: schedule.location,
+          calendarConnectionId: schedule.calendarConnectionId || undefined,
+        }),
+      });
+      const data = await response.json().catch(() => null) as { error?: string; warning?: string | null } | null;
+      if (!response.ok) throw new Error(data?.error || 'Planification impossible');
+      setMessage(data?.warning ? `Horaire créé, mais sync externe partielle: ${data.warning}` : 'Horaire planifié pour l’atelier.');
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Planification impossible');
+    } finally {
+      setScheduling(false);
+    }
+  }
+
+  const responsibleHref = item.organizationContact?.contactId || item.contact?.id || item.client?.id;
+  const invoiceHref = (item.contactId || item.clientId)
+    ? `/crm/invoices?contactId=${item.contactId || item.clientId}&workshopId=${item.id}&description=${encodeURIComponent(`Atelier - ${form.title}`)}&amount=${encodeURIComponent(item.finalPrice || '')}`
+    : '/crm/invoices';
+
+  return (
+    <section className="space-y-6">
+      <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <Link href="/crm/workshop-requests" className="text-sm text-slate-400 hover:text-white">Retour aux ateliers</Link>
+            <h1 className="mt-3 text-3xl font-semibold text-white">{item.title}</h1>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <StatusBadge value={item.status} />
+              <StatusBadge value={item.workshopType} />
+            </div>
+            <p className="mt-4 max-w-3xl text-sm text-slate-300">Fiche d’action atelier pour modifier rapidement les informations, planifier un horaire, préparer la facture et communiquer avec le responsable.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:w-[28rem]">
+            <button type="button" onClick={() => void saveWorkshop()} disabled={saving} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60">{saving ? 'Enregistrement...' : 'Modifier l’atelier'}</button>
+            <Link href={invoiceHref} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une facture</Link>
+            <Link href={`/crm/submissions?workshopId=${item.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
+            <button type="button" onClick={() => void scheduleWorkshop()} disabled={scheduling} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60">{scheduling ? 'Planification...' : 'Planifier un horaire'}</button>
+          </div>
+        </div>
+        {message ? <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-sm text-slate-200">{message}</div> : null}
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="space-y-6">
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <h2 className="text-lg font-semibold text-white">Informations de l’atelier</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Titre</span><input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Statut</span><select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"><option value="EN_ATTENTE_RDV">En attente RDV</option><option value="RDV_PLANIFIE">RDV planifié</option><option value="CONFIRME">Confirmé</option><option value="TERMINE">Terminé</option><option value="ANNULE">Annulé</option><option value="BROUILLON">Brouillon</option></select></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Organisation</span><input value={form.organizationName} onChange={(event) => setForm((current) => ({ ...current, organizationName: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Responsable</span><input value={form.contactPerson} onChange={(event) => setForm((current) => ({ ...current, contactPerson: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Courriel</span><input value={form.contactEmail} onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Téléphone</span><input value={form.contactPhone} onChange={(event) => setForm((current) => ({ ...current, contactPhone: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Date souhaitée</span><input type="date" value={form.requestedDate} onChange={(event) => setForm((current) => ({ ...current, requestedDate: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Horaire souhaité</span><input value={form.requestedTime} onChange={(event) => setForm((current) => ({ ...current, requestedTime: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Lieu</span><input value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value, addressOrLocation: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Participants</span><input type="number" value={form.estimatedParticipants} onChange={(event) => setForm((current) => ({ ...current, estimatedParticipants: event.target.value, participantEstimate: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Prix</span><input type="number" step="0.01" value={form.basePrice} onChange={(event) => setForm((current) => ({ ...current, basePrice: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Thème</span><input value={form.workshopTheme} onChange={(event) => setForm((current) => ({ ...current, workshopTheme: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label className="md:col-span-2"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Objectifs</span><textarea value={form.objectives} onChange={(event) => setForm((current) => ({ ...current, objectives: event.target.value }))} className="min-h-[100px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label className="md:col-span-2"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Notes internes</span><textarea value={form.internalNotes} onChange={(event) => setForm((current) => ({ ...current, internalNotes: event.target.value }))} className="min-h-[100px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-white">Horaire</h2>
+              <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.appointments.length}</span>
+            </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Date</span><input type="date" value={schedule.date} onChange={(event) => setSchedule((current) => ({ ...current, date: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Début</span><input type="time" value={schedule.startTime} onChange={(event) => setSchedule((current) => ({ ...current, startTime: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Fin</span><input type="time" value={schedule.endTime} onChange={(event) => setSchedule((current) => ({ ...current, endTime: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Calendrier connecté</span><select value={schedule.calendarConnectionId} onChange={(event) => setSchedule((current) => ({ ...current, calendarConnectionId: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"><option value="">CRM seulement</option>{calendarConnections.filter((connection) => connection.status !== 'DISCONNECTED').map((connection) => <option key={connection.id} value={connection.id}>{connection.provider} · {connection.accountName || connection.accountEmail || connection.id}</option>)}</select></label>
+              <label className="md:col-span-2 xl:col-span-4"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Lieu</span><input value={schedule.location} onChange={(event) => setSchedule((current) => ({ ...current, location: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+            </div>
+            <div className="mt-5 space-y-3">
+              {item.appointments.length === 0 ? <p className="text-sm text-slate-400">Aucun rendez-vous atelier lié.</p> : item.appointments.map((appointment) => (
+                <article key={appointment.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-white">{appointment.title}</p>
+                    <StatusBadge value={appointment.status} />
+                  </div>
+                  <p className="mt-2 text-slate-400">{new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(appointment.startAt))}</p>
+                  {appointment.location ? <p className="mt-1 text-slate-500">{appointment.location}</p> : null}
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="space-y-6">
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <h2 className="text-lg font-semibold text-white">Responsable</h2>
+            <div className="mt-4 space-y-3 text-sm text-slate-300">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Nom</p>
+                {responsibleHref ? <Link href={`/crm/contacts/${responsibleHref}`} className="mt-1 inline-block text-primary-200 hover:text-white">{form.contactPerson || 'Responsable'}</Link> : <p className="mt-1 text-white">{form.contactPerson || '—'}</p>}
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Courriel</p>
+                {form.contactEmail ? <a href={buildOutlookHref(form.contactEmail)} target="_blank" rel="noreferrer" className="mt-1 inline-block text-primary-200 hover:text-white">{form.contactEmail}</a> : <p className="mt-1 text-white">—</p>}
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Téléphone</p>
+                {form.contactPhone ? <a href={buildTelHref(form.contactPhone)} className="mt-1 inline-block text-primary-200 hover:text-white">{form.contactPhone}</a> : <p className="mt-1 text-white">—</p>}
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {form.contactEmail ? <a href={buildOutlookHref(form.contactEmail)} target="_blank" rel="noreferrer" className="rounded-md border border-primary-500/40 px-3 py-2 text-xs text-primary-200 hover:text-white">Envoyer un courriel</a> : null}
+              {form.contactPhone ? <a href={buildTelHref(form.contactPhone)} className="rounded-md border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white">Appeler</a> : null}
+              {(form.contactEmail || form.contactPhone) ? <button type="button" onClick={() => void navigator.clipboard.writeText([form.contactPerson, form.contactEmail, form.contactPhone].filter(Boolean).join(' · '))} className="rounded-md border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:text-white">Copier les coordonnées</button> : null}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <h2 className="text-lg font-semibold text-white">Repères rapides</h2>
+            <div className="mt-4 space-y-3 text-sm text-slate-300">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">Organisation : {item.organization?.id ? <Link href={`/crm/organizations/${item.organization.id}`} className="text-primary-200 hover:text-white">{item.organization.name}</Link> : (form.organizationName || '—')}</div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">Prix prévu : {item.finalPrice ? `${item.finalPrice} $` : '—'}</div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">Lieu : {form.location || form.addressOrLocation || '—'}</div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">Participants : {form.estimatedParticipants || '—'}</div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-700/50 bg-slate-900/40 px-5 py-4 text-sm text-slate-400">
+            La création de soumission commerciale dédiée n’a pas encore de modèle Prisma distinct dans ce CRM. Le bouton ci-dessus redirige vers le module actuel de soumissions entrantes en attendant une vraie table de devis.
+          </section>
+        </div>
+      </div>
+    </section>
+  );
+}

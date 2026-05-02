@@ -48,10 +48,36 @@ export async function GET(request: NextRequest) {
       include: {
         contacts: { take: 1, orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }] },
         workshopRequests: { select: { id: true } },
+        workshopAppointments: {
+          where: { startAt: { gte: new Date() } },
+          select: { startAt: true },
+          orderBy: { startAt: 'asc' },
+          take: 1,
+        },
+        linkedCalendarExternalEvents: {
+          where: { startAt: { gte: new Date() }, status: { not: 'DELETED' } },
+          select: { startAt: true },
+          orderBy: { startAt: 'asc' },
+          take: 1,
+        },
+        _count: {
+          select: {
+            contacts: true,
+            workshopRequests: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json({ items: items.map((item) => ({ ...item, primaryContact: item.contacts[0] || null, requestCount: item.workshopRequests.length })) });
+    return NextResponse.json({ items: items.map((item) => ({
+      ...item,
+      primaryContact: item.contacts[0] || null,
+      contactCount: item._count.contacts,
+      workshopCount: item._count.workshopRequests,
+      nextEventAt: item.workshopAppointments[0]?.startAt || item.linkedCalendarExternalEvents[0]?.startAt || null,
+      activeCommercialItems: 'À lier via un contact',
+      lastActivityAt: item.updatedAt,
+    })) });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
       return NextResponse.json({ items: [], unavailable: true });

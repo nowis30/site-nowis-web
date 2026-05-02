@@ -7,7 +7,7 @@ import { CrmCalendarPage } from '@/features/crm/components/calendar/CrmCalendarP
 export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   await requireCrmSession();
 
-  const [appointments, contacts, workshopAppointments, workshopAvailabilities, externalCalendarEvents] = await Promise.all([
+  const [appointments, contacts, workshopAppointments, workshopAvailabilities, externalCalendarEvents, calendarConnections] = await Promise.all([
     prisma.appointment.findMany({
       include: {
         contact: { select: { fullName: true } },
@@ -39,6 +39,22 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       throw error;
     }),
     loadExternalCalendarEvents(),
+    prisma.calendarConnection.findMany({
+      where: {
+        status: { in: ['CONNECTED', 'EXPIRED', 'ERROR'] },
+      },
+      orderBy: [{ provider: 'asc' }, { accountEmail: 'asc' }],
+      select: {
+        id: true,
+        provider: true,
+        accountEmail: true,
+        accountName: true,
+        status: true,
+      },
+    }).catch((error) => {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') return [];
+      throw error;
+    }),
   ]);
 
   const nextAvailabilityEvents = workshopAvailabilities.flatMap((item) => {
@@ -84,6 +100,8 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       status: item.status,
       contactId: item.contactId,
       contactName: item.contact?.fullName || null,
+      calendarConnectionId: item.calendarConnectionId,
+      meetingUrl: item.meetingUrl,
       source: 'appointment' as const,
       organizationName: null,
     })),
@@ -106,10 +124,12 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       description: item.description,
       startAt: item.startAt,
       endAt: item.endAt,
-      type: item.source === 'google_calendar' ? 'GOOGLE' : 'MICROSOFT',
+      type: item.source === 'google_calendar' ? 'GOOGLE' : item.source === 'microsoft_calendar' ? 'MICROSOFT' : 'CALENDLY',
       status: 'CONFIRMED',
       contactId: null,
-      contactName: item.source === 'google_calendar' ? 'Google Calendar' : 'Microsoft Calendar',
+      contactName: item.source === 'google_calendar' ? 'Google Calendar' : item.source === 'microsoft_calendar' ? 'Microsoft Calendar' : 'Calendly',
+      calendarConnectionId: null,
+      meetingUrl: null,
       source: item.source,
       organizationName: null,
     })),
@@ -145,6 +165,12 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
     <CrmCalendarPage
       initialAppointments={initialAppointments}
       contacts={contacts.map((item) => ({ id: item.id, label: item.fullName }))}
+      calendarConnections={calendarConnections.map((item) => ({
+        id: item.id,
+        label: `${item.provider} · ${item.accountEmail || item.accountName || 'Compte connecté'}`,
+        provider: item.provider,
+        status: item.status,
+      }))}
       initialPrefill={initialPrefill}
     />
   );

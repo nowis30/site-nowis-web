@@ -6,6 +6,7 @@ export interface DataColumn<T> {
   key: string;
   header: string;
   render: (row: T) => unknown;
+  mobileHidden?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -16,13 +17,15 @@ interface DataTableProps<T> {
 }
 
 export function DataTable<T>({ columns, rows, rowKey, actions }: DataTableProps<T>) {
+  const mobileColumns = columns.filter((column) => !column.mobileHidden);
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80">
       <div className="space-y-3 p-3 md:hidden">
         {rows.map((row) => (
           <article key={rowKey(row)} className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
             <div className="space-y-2">
-              {columns.map((column) => (
+              {mobileColumns.map((column) => (
                 <div key={column.key} className="space-y-1">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{column.header}</p>
                   <div className="text-sm text-slate-200">{column.render(row) as React.ReactNode}</div>

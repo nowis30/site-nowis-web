@@ -67,6 +67,20 @@ function buildAddressLine(address: unknown, city: unknown): string {
   return a || c;
 }
 
+function getText(value: unknown) {
+  return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+}
+
+function buildOutlookHref(email: unknown) {
+  const text = getText(email);
+  return text ? `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(text)}` : '';
+}
+
+function buildTelHref(phone: unknown) {
+  const text = getText(phone);
+  return text ? `tel:${text.replace(/\s+/g, '')}` : '';
+}
+
 function getEmptyStateCopy(endpoint: string, view: 'active' | 'archived' | 'deleted', workshopStatus: string) {
   if (endpoint === '/api/crm/contacts') {
     if (view === 'deleted') return { title: 'Aucun contact supprimé', description: 'Aucun contact dans cette vue.' };
@@ -486,6 +500,31 @@ export function EntityCrudPage({
               const lifecycle = getRecordLifecycle(row);
               const isContactsOrOrganizations = endpoint === '/api/crm/contacts' || endpoint === '/api/crm/organizations';
               const isWorkshop = endpoint === '/api/crm/workshop-requests';
+              const emailHref = buildOutlookHref(row.email || row.contactEmail);
+              const phoneHref = buildTelHref(row.phone || row.contactPhone);
+              const contactId = getText(row.contactId);
+              const organizationId = getText(row.organizationId);
+              const invoiceHref = endpoint === '/api/crm/contacts' && rowId
+                ? `/crm/invoices?contactId=${rowId}`
+                : endpoint === '/api/crm/workshop-requests' && contactId
+                  ? `/crm/invoices?contactId=${contactId}&workshopId=${rowId}`
+                  : endpoint === '/api/crm/organizations' && organizationId
+                    ? `/crm/invoices?organizationId=${organizationId}`
+                    : '';
+              const submissionHref = endpoint === '/api/crm/workshop-requests' && rowId
+                ? `/crm/submissions?workshopId=${rowId}`
+                : endpoint === '/api/crm/contacts' && rowId
+                  ? `/crm/submissions?contactId=${rowId}`
+                  : endpoint === '/api/crm/organizations' && rowId
+                    ? `/crm/submissions?organizationId=${rowId}`
+                    : '';
+              const appointmentHref = endpoint === '/api/crm/contacts' && rowId
+                ? `/crm/calendar?contactId=${rowId}`
+                : endpoint === '/api/crm/organizations' && rowId
+                  ? `/crm/calendar?organizationId=${rowId}`
+                  : rowId
+                    ? `/crm/workshop-requests/${rowId}`
+                    : '/crm/calendar';
 
               return (
                 <>
@@ -502,6 +541,11 @@ export function EntityCrudPage({
                           Modifier
                         </button>
                       ) : null}
+                      {emailHref ? <a href={emailHref} target="_blank" rel="noreferrer" className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200 text-left">Envoyer courriel</a> : null}
+                      {phoneHref ? <a href={phoneHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200 text-left">Appeler</a> : null}
+                      {endpoint === '/api/crm/contacts' ? <Link href={appointmentHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Créer rendez-vous</Link> : null}
+                      {invoiceHref ? <Link href={invoiceHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Créer facture</Link> : null}
+                      {submissionHref ? <Link href={submissionHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Créer soumission</Link> : null}
                       {updatePermission && rowId && isContactsOrOrganizations && lifecycle === 'active' ? (
                         <button type="button" onClick={() => void runLifecycleAction(rowId, 'archive')} className="rounded-md border border-amber-500/50 px-2 py-1 text-xs text-amber-300 text-left">
                           Archiver
@@ -546,6 +590,11 @@ export function EntityCrudPage({
                         Modifier
                       </button>
                     ) : null}
+                    {emailHref ? <a href={emailHref} target="_blank" rel="noreferrer" className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Courriel</a> : null}
+                    {phoneHref ? <a href={phoneHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Appeler</a> : null}
+                    {endpoint === '/api/crm/contacts' ? <Link href={appointmentHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Rendez-vous</Link> : null}
+                    {invoiceHref ? <Link href={invoiceHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Facture</Link> : null}
+                    {submissionHref ? <Link href={submissionHref} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Soumission</Link> : null}
                     {updatePermission && rowId && isContactsOrOrganizations && lifecycle === 'active' ? (
                       <button
                         type="button"

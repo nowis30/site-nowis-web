@@ -16,11 +16,10 @@ interface ClientPortalShellProps {
       adminRole: 'ADMIN';
     } | null;
   } | null;
-  unreadMessages: number;
   children: React.ReactNode;
 }
 
-export function ClientPortalShell({ session, unreadMessages, children }: ClientPortalShellProps) {
+export function ClientPortalShell({ session, children }: ClientPortalShellProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -96,19 +95,17 @@ export function ClientPortalShell({ session, unreadMessages, children }: ClientP
                   className={[
                     'whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60',
                     isActive ? 'border-primary-500/50 bg-primary-500/10 text-primary-100' : 'border-slate-700 text-slate-300 hover:border-primary-500/40 hover:text-white',
-                    href === '/client/messages' ? 'inline-flex items-center gap-2' : '',
                   ].join(' ')}
                 >
                   <span>{label}</span>
-                  {href === '/client/messages' && unreadMessages > 0 ? <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-slate-950">{unreadMessages}</span> : null}
                 </Link>
               );
             })}
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-[88rem] overflow-x-hidden px-4 py-6 pb-[calc(90px+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 md:pb-8 lg:px-8">{children}</main>
-      <ClientMobileBottomNav unreadMessages={unreadMessages} />
+      <main className="mx-auto w-full max-w-[88rem] overflow-x-hidden px-4 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 md:pb-8 lg:px-8">{children}</main>
+      <ClientMobileBottomNav />
     </div>
   );
 }

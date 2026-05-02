@@ -3,7 +3,6 @@ import { verifyClientPortalToken } from '@/lib/client-portal';
 import { prisma } from '@/lib/prisma';
 import { ClientFileUploadForm, ClientPortalDeleteFileButton } from '@/features/crm/components/client-portal/ClientFileUploadForm';
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
-import { PortalMessageForm } from '@/features/crm/components/portals/PortalMessageForm';
 import { getBookingEmbedUrl } from '@/lib/booking-link';
 
 interface PageProps {
@@ -40,6 +39,8 @@ const INVOICE_STATUS_LABELS: Record<string, string> = {
 };
 
 const BOOKING_URL = getBookingEmbedUrl();
+const OUTLOOK_MESSAGE_URL = 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client';
+const MAILTO_MESSAGE_URL = 'mailto:simonmorin@nowis.store?subject=Demande%20depuis%20le%20portail%20client';
 
 function formatCurrency(value: number | null) {
   if (value === null) return '—';
@@ -240,34 +241,17 @@ export default async function ClientPortalPage({ params }: PageProps) {
         <section id="messages" className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/15">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Messages</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Communiquer avec Nowis</h2>
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Contact</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Envoyer un message</h2>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
-              <div className="space-y-3">
-                {contact.activities.filter((activity) => activity.type === 'MESSAGE').length === 0 ? (
-                  <p className="text-sm text-slate-400">Aucun message visible pour le moment.</p>
-                ) : (
-                  contact.activities.filter((activity) => activity.type === 'MESSAGE').map((activity) => (
-                    <article key={activity.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                      <p className="text-sm font-medium text-white">{activity.title}</p>
-                      {activity.description ? <p className="mt-1 whitespace-pre-wrap text-sm text-slate-300">{activity.description}</p> : null}
-                      <p className="mt-2 text-xs text-slate-500">{formatDateTime(activity.createdAt)}</p>
-                    </article>
-                  ))
-                )}
-              </div>
+          <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
+            <p className="text-sm text-slate-300">La messagerie interne a été remplacée par le courriel.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <a href={OUTLOOK_MESSAGE_URL} target="_blank" rel="noreferrer" className="rounded-xl border border-primary-400/40 bg-primary-400/15 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-400/25">Envoyer un message</a>
+              <a href={MAILTO_MESSAGE_URL} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Courriel (fallback)</a>
             </div>
-
-            <PortalMessageForm
-              actionUrl="/api/client-portal/messages"
-              subjectPlaceholder="Objet du message"
-              buttonLabel="Envoyer le message"
-              extraPayload={{ token: params.token }}
-            />
           </div>
         </section>
 
@@ -438,12 +422,13 @@ export default async function ClientPortalPage({ params }: PageProps) {
                     </a>
                   </div>
                   <ClientFileUploadForm token={params.token} songRequestId={request.id} />
-                  <PortalMessageForm
-                    actionUrl="/api/client-portal/messages"
-                    subjectPlaceholder="Question sur cette demande"
-                    buttonLabel="Envoyer sur la demande"
-                    extraPayload={{ token: params.token, songRequestId: request.id }}
-                  />
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                    <p className="text-sm text-slate-300">Pour poser une question sur cette demande, utilisez le courriel.</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <a href={OUTLOOK_MESSAGE_URL} target="_blank" rel="noreferrer" className="rounded-xl border border-primary-400/40 bg-primary-400/15 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-400/25">Envoyer un message</a>
+                      <a href={MAILTO_MESSAGE_URL} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Courriel (fallback)</a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -454,7 +439,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
 
       <nav aria-label="Navigation mobile du portail client" className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-700/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(2,6,23,0.22)] backdrop-blur md:hidden">
         <div className="mx-auto grid w-full max-w-5xl grid-cols-5 gap-1 px-2 py-1.5">
-          <a href="#messages" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Messages</a>
+          <a href="#messages" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Contact</a>
           <a href="#requests" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Chansons</a>
           <a href="#booking" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Ateliers</a>
           <a href="#documents" className="flex min-w-0 items-center justify-center rounded-xl px-1 py-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900">Documents</a>

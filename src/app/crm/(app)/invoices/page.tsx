@@ -2,7 +2,11 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { InvoicesPage } from '@/features/crm/components/invoices/InvoicesPage';
 
-export default async function CrmInvoicesPage() {
+export default async function CrmInvoicesPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   await requireCrmSession();
 
   const [invoices, contacts, stats] = await Promise.all([
@@ -41,6 +45,12 @@ export default async function CrmInvoicesPage() {
         _count: row._count,
         _sum: { amount: row._sum.amount?.toString() ?? null },
       }))}
+      initialForm={{
+        contactId: typeof searchParams?.contactId === 'string' ? searchParams.contactId : undefined,
+        description: typeof searchParams?.description === 'string' ? searchParams.description : undefined,
+        amount: typeof searchParams?.amount === 'string' ? searchParams.amount : undefined,
+        sourceWorkshopRequestId: typeof searchParams?.workshopId === 'string' ? searchParams.workshopId : undefined,
+      }}
     />
   );
 }

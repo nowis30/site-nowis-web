@@ -8,20 +8,14 @@ export interface ClientPortalNavItem {
 export const clientPortalNavigation: ClientPortalNavItem[] = [
   {
     href: '/client/dashboard',
-    label: 'Tableau de bord',
+    label: 'Accueil',
     shortLabel: 'Accueil',
     matches: (pathname: string) => pathname === '/client/dashboard',
   },
   {
-    href: '/client/messages',
-    label: 'Messages',
-    shortLabel: 'Messages',
-    matches: (pathname: string) => pathname === '/client/messages',
-  },
-  {
     href: '/client/song-requests',
-    label: 'Demandes chanson',
-    shortLabel: 'Chansons',
+    label: 'Demandes',
+    shortLabel: 'Demandes',
     matches: (pathname: string) => pathname === '/client/song-requests' || pathname.startsWith('/client/song-requests/'),
   },
   {
@@ -41,26 +35,20 @@ export const clientPortalNavigation: ClientPortalNavItem[] = [
     label: 'Rendez-vous',
     shortLabel: 'RDV',
     matches: (pathname: string) => pathname === '/client/appointments',
-  },
-  {
-    href: '/client/invoices',
-    label: 'Factures',
-    shortLabel: 'Factures',
-    matches: (pathname: string) => pathname === '/client/invoices' || pathname.startsWith('/client/invoices/'),
   },
 ];
 
 export const clientPortalMobileBottomNavigation: ClientPortalNavItem[] = [
   {
-    href: '/client/messages',
-    label: 'Messages',
-    shortLabel: 'Messages',
-    matches: (pathname: string) => pathname === '/client/messages',
+    href: '/client/dashboard',
+    label: 'Accueil',
+    shortLabel: 'Accueil',
+    matches: (pathname: string) => pathname === '/client/dashboard',
   },
   {
     href: '/client/song-requests',
-    label: 'Demandes chanson',
-    shortLabel: 'Chansons',
+    label: 'Demandes',
+    shortLabel: 'Demandes',
     matches: (pathname: string) => pathname === '/client/song-requests' || pathname.startsWith('/client/song-requests/'),
   },
   {
@@ -80,11 +68,5 @@ export const clientPortalMobileBottomNavigation: ClientPortalNavItem[] = [
     label: 'Rendez-vous',
     shortLabel: 'RDV',
     matches: (pathname: string) => pathname === '/client/appointments',
-  },
-  {
-    href: '/client/invoices',
-    label: 'Factures',
-    shortLabel: 'Factures',
-    matches: (pathname: string) => pathname === '/client/invoices' || pathname.startsWith('/client/invoices/'),
   },
 ];

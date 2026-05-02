@@ -11,8 +11,9 @@ export type ContactWorkspaceContact = {
   tags: string[];
   notes: string | null;
   createdAt: string;
+  organizations: Array<{ id: string; name: string; role: string | null; isPrimary: boolean; city: string | null; address: string | null }>;
+  workshopRequests: Array<{ id: string; title: string; status: string; requestedDate: string | null; contactEmail: string | null; contactPhone: string | null }>;
   communications: Array<{ id: string; subject: string | null; body: string; channel: string; direction: string; sentAt: string }>;
-  messages: Array<{ id: string; senderType: 'ADMIN' | 'CLIENT'; content: string; createdAt: string; isRead: boolean }>;
   outboundEmails: Array<{ id: string; recipientEmail: string; subject: string; messagePreview: string; sentAt: string; openedAt: string | null }>;
   songRequests: Array<{
     id: string;
@@ -76,6 +77,5 @@ export type ContactWorkspaceProps = {
   invoices: ContactInvoiceItem[];
   files: ContactFileItem[];
   timeline: TimelineItem[];
-  unreadClientMessages: number;
   canImpersonate: boolean;
 };

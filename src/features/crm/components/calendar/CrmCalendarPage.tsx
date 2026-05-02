@@ -19,11 +19,20 @@ type CalendarEventItem = {
   status: string;
   contactId: string | null;
   contactName: string | null;
-  source?: 'appointment' | 'workshop_appointment' | 'workshop_availability' | 'google_calendar' | 'microsoft_calendar';
+  calendarConnectionId?: string | null;
+  meetingUrl?: string | null;
+  source?: 'appointment' | 'workshop_appointment' | 'workshop_availability' | 'google_calendar' | 'microsoft_calendar' | 'calendly';
   organizationName?: string | null;
 };
 
 type OptionItem = { id: string; label: string };
+
+type ConnectionOptionItem = {
+  id: string;
+  label: string;
+  provider: string;
+  status: string;
+};
 
 type CalendarPrefill = {
   title?: string;
@@ -47,6 +56,7 @@ const TYPE_COLORS: Record<string, string> = {
   AVAILABILITY: '#0f766e',
   GOOGLE: '#0b57d0',
   MICROSOFT: '#0078d4',
+  CALENDLY: '#0f766e',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -61,6 +71,7 @@ const TYPE_LABELS: Record<string, string> = {
   AVAILABILITY: 'Disponibilité',
   GOOGLE: 'Google',
   MICROSOFT: 'Microsoft',
+  CALENDLY: 'Calendly',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -110,10 +121,12 @@ function toEventInput(item: CalendarEventItem): EventInput {
 export function CrmCalendarPage({
   initialAppointments,
   contacts,
+  calendarConnections,
   initialPrefill,
 }: {
   initialAppointments: CalendarEventItem[];
   contacts: OptionItem[];
+  calendarConnections: ConnectionOptionItem[];
   initialPrefill?: CalendarPrefill;
 }) {
   const [appointments, setAppointments] = useState(initialAppointments);
@@ -123,6 +136,7 @@ export function CrmCalendarPage({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState('ALL');
+  const [filterSource, setFilterSource] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [filterContactId, setFilterContactId] = useState('ALL');
   const [contactSearch, setContactSearch] = useState('');
@@ -134,6 +148,7 @@ export function CrmCalendarPage({
     type: 'MEETING',
     status: 'PENDING',
     contactId: '',
+    calendarConnectionId: '',
   });
   const [prefillApplied, setPrefillApplied] = useState(false);
 
@@ -144,12 +159,13 @@ export function CrmCalendarPage({
 
   const filteredAppointments = useMemo(() => appointments.filter((item) => {
     if (filterType !== 'ALL' && item.type !== filterType) return false;
+    if (filterSource !== 'ALL' && (item.source || 'appointment') !== filterSource) return false;
     if (filterStatus !== 'ALL' && item.status !== filterStatus) return false;
     if (filterContactId !== 'ALL' && item.contactId !== filterContactId) return false;
     if (contactSearch && item.contactName && !item.contactName.toLowerCase().includes(contactSearch.toLowerCase())) return false;
     if (contactSearch && !item.contactName && filterContactId === 'ALL') return false;
     return true;
-  }), [appointments, contactSearch, filterContactId, filterStatus, filterType]);
+  }), [appointments, contactSearch, filterContactId, filterSource, filterStatus, filterType]);
 
   const selectedEvent = useMemo(
     () => appointments.find((item) => item.id === selectedEventId) || null,
@@ -187,6 +203,7 @@ export function CrmCalendarPage({
       type: initialPrefill.type || 'MEETING',
       status: initialPrefill.status || 'PENDING',
       contactId: initialPrefill.contactId || '',
+      calendarConnectionId: '',
     });
     setError(null);
     setModalOpen(true);
@@ -203,6 +220,7 @@ export function CrmCalendarPage({
       type: 'MEETING',
       status: 'PENDING',
       contactId: '',
+      calendarConnectionId: '',
     });
     setError(null);
     setModalOpen(true);
@@ -224,6 +242,7 @@ export function CrmCalendarPage({
       type: item.type,
       status: item.status,
       contactId: item.contactId || '',
+      calendarConnectionId: item.calendarConnectionId || '',
     });
     setError(null);
     setModalOpen(true);
@@ -261,6 +280,7 @@ export function CrmCalendarPage({
       type: form.type,
       status: form.status,
       contactId: form.contactId,
+      calendarConnectionId: form.calendarConnectionId,
     };
 
     try {
@@ -288,6 +308,8 @@ export function CrmCalendarPage({
           status: item.status,
           contactId: item.contactId,
           contactName,
+          calendarConnectionId: item.calendarConnectionId || form.calendarConnectionId || null,
+          meetingUrl: item.meetingUrl || null,
         }].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
       });
       setSelectedEventId(item.id);
@@ -333,6 +355,7 @@ export function CrmCalendarPage({
       type: current.type,
       status: current.status,
       contactId: current.contactId || '',
+      calendarConnectionId: current.calendarConnectionId || '',
     };
 
     const response = await fetch(`/api/crm/appointments/${current.id}`, {
@@ -378,6 +401,19 @@ export function CrmCalendarPage({
           </label>
 
           <label>
+            <span className="mb-2 block text-xs text-slate-400">Source</span>
+            <select value={filterSource} onChange={(event) => setFilterSource(event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white">
+              <option value="ALL">Toutes les sources</option>
+              <option value="appointment">CRM interne</option>
+              <option value="google_calendar">Google</option>
+              <option value="microsoft_calendar">Microsoft</option>
+              <option value="calendly">Calendly</option>
+              <option value="workshop_appointment">Ateliers</option>
+              <option value="workshop_availability">Disponibilités atelier</option>
+            </select>
+          </label>
+
+          <label>
             <span className="mb-2 block text-xs text-slate-400">Statut</span>
             <select value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-white">
               <option value="ALL">Tous les statuts</option>
@@ -410,6 +446,7 @@ export function CrmCalendarPage({
                 <p className="font-medium text-white">{selectedEvent.title}</p>
                 <p>{selectedEvent.organizationName || selectedEvent.contactName || 'Sans contact'}</p>
                 <p>{toStatusLabel(selectedEvent.status)} · {toTypeLabel(selectedEvent.type)}</p>
+                {selectedEvent.meetingUrl ? <a href={selectedEvent.meetingUrl} target="_blank" rel="noreferrer" className="inline-flex text-xs text-primary-300 hover:text-primary-200">Ouvrir le lien de réunion</a> : null}
                 {selectedEvent.source === 'appointment' || !selectedEvent.source ? <button onClick={() => openEditModal(selectedEvent)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:border-primary-500/40 hover:text-white">Modifier</button> : <p className="text-xs text-slate-500">Événement synchronisé (lecture seule)</p>}
               </div>
             ) : <p className="mt-3 text-sm text-slate-400">Cliquez un rendez-vous pour afficher le détail rapide.</p>}
@@ -484,6 +521,13 @@ export function CrmCalendarPage({
                 <select value={form.contactId} onChange={(event) => setForm((current) => ({ ...current, contactId: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
                   <option value="">Aucun</option>
                   {contacts.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span className="mb-2 block text-sm text-slate-300">Ajouter au calendrier connecté</span>
+                <select value={form.calendarConnectionId} onChange={(event) => setForm((current) => ({ ...current, calendarConnectionId: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
+                  <option value="">Calendrier interne seulement</option>
+                  {calendarConnections.filter((item) => item.provider !== 'CALENDLY').map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
                 </select>
               </label>
               <label className="md:col-span-2">

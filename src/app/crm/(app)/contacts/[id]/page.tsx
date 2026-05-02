@@ -1,6 +1,4 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
-import { buildContactMessageTaskHref, extractIncomingMessageTaskMeta } from '@/lib/contact-message-tasks';
-import { safeListMessages } from '@/lib/messages-store';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { ContactWorkspace } from '@/features/crm/components/contacts/ContactWorkspace';
@@ -9,6 +7,17 @@ import { ActivityType, Prisma } from '@prisma/client';
 
 interface PageProps {
   params: { id: string };
+}
+
+const LEGACY_TASK_MARKER_REGEX = /\n\n\[[a-z-]+:[0-9a-f-]{36}\]\s*$/i;
+
+function stripLegacyMessageTaskMeta(description: string | null | undefined) {
+  if (!description) {
+    return null;
+  }
+
+  const cleanedDescription = description.replace(LEGACY_TASK_MARKER_REGEX, '').trim();
+  return cleanedDescription || null;
 }
 
 export default async function ContactDetailPage({ params }: PageProps) {
@@ -32,7 +41,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
     return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021';
   }
 
-  const [contact, tasks, files, messages] = await Promise.all([
+  const [contact, tasks, files] = await Promise.all([
     prisma.contact.findUnique({
       where: { id: params.id },
       include: {
@@ -40,6 +49,21 @@ export default async function ContactDetailPage({ params }: PageProps) {
         appointments: { orderBy: { startAt: 'desc' }, take: 20 },
         invoices: { orderBy: { issueDate: 'desc' } },
         activities: { include: { user: { select: { fullName: true } } }, orderBy: { createdAt: 'desc' }, take: 40 },
+        organizationLinks: {
+          include: {
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                city: true,
+                address: true,
+              },
+            },
+          },
+          orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+        },
+        workshopRequests: { orderBy: { createdAt: 'desc' }, take: 10 },
+        workshopClientRequests: { orderBy: { createdAt: 'desc' }, take: 10 },
         songRequests: { orderBy: { createdAt: 'desc' }, take: 20 },
         communications: { orderBy: { sentAt: 'desc' }, take: 30 },
         outboundEmails: { orderBy: { sentAt: 'desc' }, take: 30 },
@@ -53,12 +77,30 @@ export default async function ContactDetailPage({ params }: PageProps) {
             appointments: { orderBy: { startAt: 'desc' }, take: 20 },
             invoices: { orderBy: { issueDate: 'desc' } },
             activities: { include: { user: { select: { fullName: true } } }, orderBy: { createdAt: 'desc' }, take: 40 },
+            organizationLinks: {
+              include: {
+                organization: {
+                  select: {
+                    id: true,
+                    name: true,
+                    city: true,
+                    address: true,
+                  },
+                },
+              },
+              orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+            },
+            workshopRequests: { orderBy: { createdAt: 'desc' }, take: 10 },
+            workshopClientRequests: { orderBy: { createdAt: 'desc' }, take: 10 },
             communications: { orderBy: { sentAt: 'desc' }, take: 30 },
           },
         }).then((contactWithoutOptionalModules) => {
           if (!contactWithoutOptionalModules) return null;
           return {
             ...contactWithoutOptionalModules,
+            organizationLinks: contactWithoutOptionalModules.organizationLinks,
+            workshopRequests: contactWithoutOptionalModules.workshopRequests,
+            workshopClientRequests: contactWithoutOptionalModules.workshopClientRequests,
             songRequests: [],
             outboundEmails: [],
           };
@@ -96,7 +138,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
       if (isMissingTable(error)) return [];
       throw error;
     }),
-    safeListMessages(params.id),
   ]);
 
   if (!contact) notFound();
@@ -119,15 +160,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
       date: item.sentAt.toISOString(),
       badge: item.direction,
       meta: item.channel,
-    })),
-    ...messages.map((item) => ({
-      id: `message-${item.id}`,
-      kind: 'message' as const,
-      title: item.senderType === 'CLIENT' ? 'Message client' : 'Message Nowis',
-      description: item.content,
-      date: item.createdAt.toISOString(),
-      badge: item.senderType,
-      meta: item.isRead ? 'Lu' : 'Non lu',
     })),
     ...contact.appointments.map((item) => ({
       id: `appointment-${item.id}`,
@@ -183,6 +215,22 @@ export default async function ContactDetailPage({ params }: PageProps) {
         tags: contact.tags,
         notes: contact.notes,
         createdAt: contact.createdAt.toISOString(),
+        organizations: contact.organizationLinks.map((item) => ({
+          id: item.organization.id,
+          name: item.organization.name,
+          role: item.role,
+          isPrimary: item.isPrimary,
+          city: item.organization.city,
+          address: item.organization.address,
+        })),
+        workshopRequests: [...contact.workshopRequests, ...contact.workshopClientRequests].slice(0, 10).map((item) => ({
+          id: item.id,
+          title: item.title,
+          status: item.status,
+          requestedDate: item.requestedDate?.toISOString() || null,
+          contactEmail: item.contactEmail,
+          contactPhone: item.contactPhone,
+        })),
         communications: contact.communications.map((item) => ({
           id: item.id,
           subject: item.subject,
@@ -190,13 +238,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
           channel: item.channel,
           direction: item.direction,
           sentAt: item.sentAt.toISOString(),
-        })),
-        messages: messages.map((item) => ({
-          id: item.id,
-          senderType: item.senderType,
-          content: item.content,
-          createdAt: item.createdAt.toISOString(),
-          isRead: item.isRead,
         })),
         outboundEmails: contact.outboundEmails.map((item) => ({
           id: item.id,
@@ -221,14 +262,11 @@ export default async function ContactDetailPage({ params }: PageProps) {
       tasks={tasks.map((item) => ({
         id: item.id,
         title: item.title,
-        description: extractIncomingMessageTaskMeta(item.description).description,
+        description: stripLegacyMessageTaskMeta(item.description),
         status: item.status,
         priority: item.priority,
         dueDate: item.dueDate?.toISOString() || null,
-        href: item.linkedType === 'CONTACT' ? (() => {
-          const { messageId } = extractIncomingMessageTaskMeta(item.description);
-          return messageId ? buildContactMessageTaskHref(contact.id, messageId) : null;
-        })() : null,
+        href: null,
       }))}
       appointments={contact.appointments.map((item) => ({
         id: item.id,
@@ -260,7 +298,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
         visibility: item.visibility,
       }))}
       timeline={timeline}
-      unreadClientMessages={messages.filter((item) => item.senderType === 'CLIENT' && !item.isRead).length}
       canImpersonate={session.role === 'ADMIN'}
     />
   );

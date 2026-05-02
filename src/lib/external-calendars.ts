@@ -1,4 +1,7 @@
-type ExternalCalendarSource = 'google_calendar' | 'microsoft_calendar';
+import { Prisma } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+
+type ExternalCalendarSource = 'google_calendar' | 'microsoft_calendar' | 'calendly';
 
 type ParsedExternalCalendarEvent = {
   id: string;
@@ -100,6 +103,32 @@ async function fetchIcsCalendar(url: string, source: ExternalCalendarSource) {
 }
 
 export async function loadExternalCalendarEvents() {
+  const now = Date.now();
+  const maxHorizon = now + 1000 * 60 * 60 * 24 * 180;
+
+  const storedEvents = await prisma.calendarExternalEvent.findMany({
+    where: {
+      status: { not: 'DELETED' },
+      startAt: {
+        gte: new Date(now - 1000 * 60 * 60 * 24 * 30),
+        lte: new Date(maxHorizon),
+      },
+      connection: {
+        status: { not: 'DISCONNECTED' },
+      },
+    },
+    include: {
+      connection: true,
+    },
+    orderBy: { startAt: 'asc' },
+    take: 500,
+  }).catch((error) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return [];
+    }
+    throw error;
+  });
+
   const googleIcsUrl = process.env.CRM_GOOGLE_CALENDAR_ICS_URL?.trim();
   const microsoftIcsUrl = process.env.CRM_MICROSOFT_CALENDAR_ICS_URL?.trim();
 
@@ -108,10 +137,20 @@ export async function loadExternalCalendarEvents() {
     microsoftIcsUrl ? fetchIcsCalendar(microsoftIcsUrl, 'microsoft_calendar') : Promise.resolve([] as ParsedExternalCalendarEvent[]),
   ]);
 
-  const now = Date.now();
-  const maxHorizon = now + 1000 * 60 * 60 * 24 * 180;
+  const dbEvents = storedEvents.map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    startAt: item.startAt.toISOString(),
+    endAt: item.endAt.toISOString(),
+    source: item.provider === 'GOOGLE'
+      ? 'google_calendar'
+      : item.provider === 'MICROSOFT'
+        ? 'microsoft_calendar'
+        : 'calendly' as ExternalCalendarSource,
+  }));
 
-  return [...googleEvents, ...microsoftEvents]
+  return [...dbEvents, ...googleEvents, ...microsoftEvents]
     .filter((item) => {
       const start = new Date(item.startAt).getTime();
       return Number.isFinite(start) && start >= now - 1000 * 60 * 60 * 24 * 30 && start <= maxHorizon;

@@ -87,6 +87,20 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         status: payload.status || 'EN_ATTENTE_RDV',
       },
     });
+
+    await prisma.activity.create({
+      data: {
+        type: 'NOTE',
+        title: 'Atelier modifié',
+        description: `Atelier ${item.title} mis à jour depuis la fiche atelier.`,
+        contactId: item.contactId || item.clientId || null,
+        relatedType: 'WORKSHOP_REQUEST',
+        relatedId: item.id,
+        relatedUrl: `/crm/workshop-requests/${item.id}`,
+        userId: guard.session.sub,
+      },
+    }).catch(() => undefined);
+
     return NextResponse.json({ item });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {

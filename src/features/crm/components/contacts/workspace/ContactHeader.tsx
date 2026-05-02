@@ -24,6 +24,14 @@ export function ContactHeader({
 }) {
   const [impersonating, setImpersonating] = useState(false);
 
+  function buildOutlookHref(email: string) {
+    return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(email)}`;
+  }
+
+  function buildTelHref(phone: string) {
+    return `tel:${phone.replace(/\s+/g, '')}`;
+  }
+
   async function handleImpersonate() {
     if (impersonating) return;
     setImpersonating(true);
@@ -54,10 +62,10 @@ export function ContactHeader({
               <Pencil size={13} /> Modifier la fiche
             </button>
           </div>
-          <p className="mt-3 text-sm leading-6 text-slate-300">Dossier complet centralisé avec activité, tâches, rendez-vous, factures, documents, emails, messages et demandes créatives. Le contenu reste lisible, direct et orienté suivi client.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">Dossier complet centralisé avec activité, tâches, rendez-vous, factures, documents, courriels et ateliers liés pour agir rapidement.</p>
           <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-400">
-            {contact.email ? <span>{contact.email}</span> : null}
-            {contact.phone ? <span>{contact.phone}</span> : null}
+            {contact.email ? <a href={buildOutlookHref(contact.email)} target="_blank" rel="noreferrer" className="hover:text-white">{contact.email}</a> : null}
+            {contact.phone ? <a href={buildTelHref(contact.phone)} className="hover:text-white">{contact.phone}</a> : null}
             {contact.companyName ? <span>{contact.companyName}</span> : null}
           </div>
         </div>
@@ -74,7 +82,8 @@ export function ContactHeader({
           ) : null}
           <button onClick={() => onAction('note')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter note</button>
           <button onClick={() => onAction('task')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter tâche</button>
-          <button onClick={onOpenEmails} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Envoyer email</button>
+          {contact.email ? <a href={buildOutlookHref(contact.email)} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Envoyer courriel</a> : <button onClick={onOpenEmails} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Envoyer courriel</button>}
+          {contact.phone ? <a href={buildTelHref(contact.phone)} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Appeler</a> : null}
           <button onClick={() => onAction('invoice')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter facture</button>
           <button onClick={() => onAction('appointment')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter rendez-vous</button>
           <button onClick={() => onAction('song-request')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Créer demande chanson</button>

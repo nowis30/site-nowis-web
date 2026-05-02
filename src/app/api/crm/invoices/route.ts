@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
   if (guard.error) return guard.error;
 
   try {
-    const payload = invoiceInputSchema.parse(await request.json());
+    const rawPayload = await request.json();
+    const sourceWorkshopRequestId = typeof rawPayload?.sourceWorkshopRequestId === 'string' ? rawPayload.sourceWorkshopRequestId : null;
+    const payload = invoiceInputSchema.parse(rawPayload);
     const item = await prisma.invoice.create({
       data: {
         number: payload.number.trim(),
@@ -43,6 +45,23 @@ export async function POST(request: NextRequest) {
         description: normalizeOptionalString(payload.description),
       },
     });
+
+    if (sourceWorkshopRequestId) {
+      await prisma.activity.create({
+        data: {
+          type: 'INVOICE',
+          title: 'Facture créée depuis l’atelier',
+          description: `Facture ${item.number} créée depuis un atelier.`,
+          contactId: item.contactId,
+          invoiceId: item.id,
+          relatedType: 'WORKSHOP_REQUEST',
+          relatedId: sourceWorkshopRequestId,
+          relatedUrl: `/crm/workshop-requests/${sourceWorkshopRequestId}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+    }
+
     return NextResponse.json({ item }, { status: 201 });
   } catch {
     return NextResponse.json({ error: 'Données invalides' }, { status: 400 });

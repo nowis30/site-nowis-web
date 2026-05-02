@@ -214,10 +214,46 @@ function InvoiceCard({ inv, onStatusChange }: { inv: Invoice; onStatusChange: ()
   );
 }
 
-function NewInvoiceForm({ contacts, onCreated }: { contacts: Contact[]; onCreated: () => void }) {
-  const [open, setOpen] = useState(false);
+function NewInvoiceForm({
+  contacts,
+  onCreated,
+  initialForm,
+}: {
+  contacts: Contact[];
+  onCreated: () => void;
+  initialForm?: {
+    contactId?: string;
+    description?: string;
+    amount?: string;
+    sourceWorkshopRequestId?: string;
+  } | null;
+}) {
+  const defaultDueDate = new Date();
+  defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+  const [open, setOpen] = useState(Boolean(initialForm?.contactId || initialForm?.description || initialForm?.amount));
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ number: '', contactId: '', issueDate: '', dueDate: '', amount: '', description: '', status: 'DRAFT' });
+  const [form, setForm] = useState({
+    number: '',
+    contactId: initialForm?.contactId || '',
+    issueDate: '',
+    dueDate: defaultDueDate.toISOString().slice(0, 10),
+    amount: initialForm?.amount || '',
+    description: initialForm?.description || '',
+    status: 'DRAFT',
+    sourceWorkshopRequestId: initialForm?.sourceWorkshopRequestId || '',
+  });
+
+  useEffect(() => {
+    if (!initialForm) return;
+    setOpen(Boolean(initialForm.contactId || initialForm.description || initialForm.amount));
+    setForm((current) => ({
+      ...current,
+      contactId: initialForm.contactId || current.contactId,
+      amount: initialForm.amount || current.amount,
+      description: initialForm.description || current.description,
+      sourceWorkshopRequestId: initialForm.sourceWorkshopRequestId || current.sourceWorkshopRequestId,
+    }));
+  }, [initialForm]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -231,11 +267,12 @@ function NewInvoiceForm({ contacts, onCreated }: { contacts: Contact[]; onCreate
         issueDate: form.issueDate ? new Date(form.issueDate).toISOString() : undefined,
         dueDate: new Date(form.dueDate).toISOString(),
         amount: parseFloat(form.amount),
+        sourceWorkshopRequestId: form.sourceWorkshopRequestId || undefined,
       }),
     });
     setLoading(false);
     setOpen(false);
-    setForm({ number: '', contactId: '', issueDate: '', dueDate: '', amount: '', description: '', status: 'DRAFT' });
+    setForm({ number: '', contactId: '', issueDate: '', dueDate: defaultDueDate.toISOString().slice(0, 10), amount: '', description: '', status: 'DRAFT', sourceWorkshopRequestId: '' });
     onCreated();
   }
 
@@ -280,9 +317,15 @@ interface InvoicesPageProps {
   invoices: Invoice[];
   contacts: Contact[];
   stats: StatRow[];
+  initialForm?: {
+    contactId?: string;
+    description?: string;
+    amount?: string;
+    sourceWorkshopRequestId?: string;
+  } | null;
 }
 
-export function InvoicesPage({ invoices, contacts, stats }: InvoicesPageProps) {
+export function InvoicesPage({ invoices, contacts, stats, initialForm }: InvoicesPageProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<'ALL' | string>('ALL');
@@ -323,7 +366,7 @@ export function InvoicesPage({ invoices, contacts, stats }: InvoicesPageProps) {
           <h2 className="text-2xl font-bold text-white flex items-center gap-2"><FileText size={22} /> Factures</h2>
           <p className="text-sm text-slate-400 mt-0.5">Suivi de facturation</p>
         </div>
-        <NewInvoiceForm contacts={contacts} onCreated={() => router.refresh()} />
+        <NewInvoiceForm contacts={contacts} onCreated={() => router.refresh()} initialForm={initialForm} />
       </div>
 
       {/* Stats */}

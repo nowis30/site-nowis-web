@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { appointmentInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { recordCalendarActivity } from '@/lib/calendar/service';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'appointments', 'read');
@@ -33,8 +34,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         type: payload.type,
         status: payload.status,
         contactId: payload.contactId || null,
+        calendarConnectionId: payload.calendarConnectionId || null,
       },
     });
+
+    await recordCalendarActivity({
+      title: 'Rendez-vous CRM modifié',
+      description: item.title,
+      userId: guard.session.sub,
+      relatedId: item.id,
+    });
+
     return NextResponse.json({ item });
   } catch (error) {
     if (error instanceof z.ZodError) {

@@ -44,6 +44,7 @@ export const appointmentInputSchema = z.object({
   type: z.enum(['VISIT', 'CALL', 'FOLLOWUP', 'MEETING', 'INSPECTION', 'DEADLINE', 'REMINDER']).default('MEETING'),
   status: z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE']).default('PENDING'),
   contactId: z.string().uuid().optional().or(z.literal('')),
+  calendarConnectionId: z.string().uuid().optional().or(z.literal('')),
 }).superRefine((value, ctx) => {
   const startAt = new Date(value.startAt);
   const endAt = new Date(value.endAt);

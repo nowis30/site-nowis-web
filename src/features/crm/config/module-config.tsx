@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
 import { ModulePageConfig } from '@/features/crm/components/modules/types';
 
@@ -18,6 +19,74 @@ function formatDate(value: unknown): string {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleDateString('fr-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function shortText(value: unknown, maxLength = 28) {
+  const text = getText(value);
+  if (text === '—' || text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1)}…`;
+}
+
+function buildOutlookHref(email: unknown) {
+  const text = getText(email, '');
+  return text ? `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(text)}` : '#';
+}
+
+function buildMailtoHref(email: unknown) {
+  const text = getText(email, '');
+  return text ? `mailto:${text}` : '#';
+}
+
+function buildTelHref(phone: unknown) {
+  const text = getText(phone, '');
+  return text ? `tel:${text.replace(/\s+/g, '')}` : '#';
+}
+
+function CopyButton({ value, label }: { value: unknown; label: string }) {
+  const text = getText(value, '');
+  if (!text) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => void navigator.clipboard.writeText(text)}
+      className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-300 hover:border-primary-500/50 hover:text-white"
+    >
+      {label}
+    </button>
+  );
+}
+
+function InlineLinkActions({
+  primaryHref,
+  primaryLabel,
+  secondaryHref,
+  secondaryLabel,
+  copyValue,
+  copyLabel,
+}: {
+  primaryHref?: string | null;
+  primaryLabel?: string;
+  secondaryHref?: string | null;
+  secondaryLabel?: string;
+  copyValue?: unknown;
+  copyLabel?: string;
+}) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {primaryHref ? (
+        <a href={primaryHref} target="_blank" rel="noreferrer" className="rounded-md border border-primary-500/30 px-2 py-1 text-[11px] text-primary-200 hover:border-primary-400 hover:text-white">
+          {primaryLabel || 'Ouvrir'}
+        </a>
+      ) : null}
+      {secondaryHref ? (
+        <a href={secondaryHref} className="rounded-md border border-slate-700 px-2 py-1 text-[11px] text-slate-300 hover:border-slate-500 hover:text-white">
+          {secondaryLabel || 'Action'}
+        </a>
+      ) : null}
+      {copyLabel ? <CopyButton value={copyValue} label={copyLabel} /> : null}
+    </div>
+  );
 }
 
 export const contactsConfig: ModulePageConfig = {
@@ -55,13 +124,65 @@ export const contactsConfig: ModulePageConfig = {
     { name: 'notes', label: 'Notes', type: 'textarea' },
   ],
   columns: [
-    { key: 'fullName', header: 'Nom', render: (row) => getText(row.fullName) },
-    { key: 'type', header: 'Type', render: (row) => <StatusBadge value={row.type} /> },
-    { key: 'crmStatus', header: 'État', render: (row) => <StatusBadge value={row.crmStatus || 'ACTIVE'} /> },
-    { key: 'organizationName', header: 'Organisation', render: (row) => getText(row.organizationName) },
-    { key: 'email', header: 'Email', render: (row) => getText(row.email) },
-    { key: 'phone', header: 'Téléphone', render: (row) => getText(row.phone) },
-    { key: 'lastActivityAt', header: 'Dernière activité', render: (row) => formatDate(row.lastActivityAt) },
+    {
+      key: 'fullName',
+      header: 'Nom complet',
+      render: (row) => (
+        <div>
+          <Link href={`/crm/contacts/${getText(row.id, '')}`} className="font-medium text-white hover:text-primary-200">
+            {getText(row.fullName)}
+          </Link>
+          <div className="mt-1 flex flex-wrap gap-2">
+            <StatusBadge value={row.type} />
+            <StatusBadge value={row.crmStatus || 'ACTIVE'} />
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'organizationName',
+      header: 'Organisation liée',
+      render: (row) => {
+        const organizationId = getText(row.organizationId, '');
+        const organizationName = getText(row.organizationName);
+        return organizationId ? <Link href={`/crm/organizations/${organizationId}`} className="text-primary-200 hover:text-white">{organizationName}</Link> : organizationName;
+      },
+    },
+    {
+      key: 'email',
+      header: 'Courriel',
+      render: (row) => {
+        const email = getText(row.email, '');
+        if (!email) return '—';
+        return (
+          <div>
+            <a href={buildOutlookHref(email)} target="_blank" rel="noreferrer" className="text-primary-200 hover:text-white">{email}</a>
+            <InlineLinkActions primaryHref={buildOutlookHref(email)} primaryLabel="Outlook" secondaryHref={buildMailtoHref(email)} secondaryLabel="Mailto" copyValue={email} copyLabel="Copier courriel" />
+          </div>
+        );
+      },
+    },
+    {
+      key: 'phone',
+      header: 'Téléphone',
+      render: (row) => {
+        const phone = getText(row.phone, '');
+        if (!phone) return '—';
+        return (
+          <div>
+            <a href={buildTelHref(phone)} className="text-primary-200 hover:text-white">{phone}</a>
+            <InlineLinkActions secondaryHref={buildTelHref(phone)} secondaryLabel="Appeler" copyValue={phone} copyLabel="Copier téléphone" />
+          </div>
+        );
+      },
+    },
+    { key: 'city', header: 'Ville', mobileHidden: true, render: (row) => getText(row.city) },
+    { key: 'shortAddress', header: 'Adresse', mobileHidden: true, render: (row) => shortText(row.shortAddress) },
+    { key: 'lastActivityAt', header: 'Dernière activité', mobileHidden: true, render: (row) => formatDate(row.lastActivityAt) },
+    { key: 'nextAppointmentAt', header: 'Prochain rendez-vous', mobileHidden: true, render: (row) => formatDate(row.nextAppointmentAt) },
+    { key: 'linkedWorkshopTitle', header: 'Atelier lié', mobileHidden: true, render: (row) => getText(row.linkedWorkshopTitle) },
+    { key: 'activeCommercialItems', header: 'Facture / soumission', mobileHidden: true, render: (row) => getText(row.activeCommercialItems) },
+    { key: 'createdAt', header: 'Créé le', mobileHidden: true, render: (row) => formatDate(row.createdAt) },
   ],
 };
 
@@ -180,13 +301,68 @@ export const organizationsConfig: ModulePageConfig = {
     { name: 'notes', label: 'Notes', type: 'textarea' },
   ],
   columns: [
-    { key: 'name', header: 'Nom', render: (row) => getText(row.name) },
-    { key: 'type', header: 'Type', render: (row) => <StatusBadge value={row.type} /> },
-    { key: 'status', header: 'Statut', render: (row) => <StatusBadge value={row.status} /> },
-    { key: 'crmStatus', header: 'État', render: (row) => <StatusBadge value={row.crmStatus || 'ACTIVE'} /> },
-    { key: 'city', header: 'Ville', render: (row) => getText(row.city) },
-    { key: 'primaryContact', header: 'Contact principal', render: (row) => getText(getRecord(row.primaryContact)?.fullName) },
-    { key: 'email', header: 'Email', render: (row) => getText(row.email) },
+    {
+      key: 'name',
+      header: 'Organisation',
+      render: (row) => (
+        <div>
+          <Link href={`/crm/organizations/${getText(row.id, '')}`} className="font-medium text-white hover:text-primary-200">
+            {getText(row.name)}
+          </Link>
+          <div className="mt-1 flex flex-wrap gap-2">
+            <StatusBadge value={row.type} />
+            <StatusBadge value={row.status} />
+            <StatusBadge value={row.crmStatus || 'ACTIVE'} />
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'primaryContact',
+      header: 'Responsable principal',
+      render: (row) => {
+        const contact = getRecord(row.primaryContact);
+        const contactId = getText(contact?.contactId || contact?.id, '');
+        const label = getText(contact?.fullName);
+        return contactId ? <Link href={`/crm/contacts/${contactId}`} className="text-primary-200 hover:text-white">{label}</Link> : label;
+      },
+    },
+    {
+      key: 'email',
+      header: 'Courriel principal',
+      render: (row) => {
+        const email = getText(row.email, '');
+        if (!email) return '—';
+        return (
+          <div>
+            <a href={buildOutlookHref(email)} target="_blank" rel="noreferrer" className="text-primary-200 hover:text-white">{email}</a>
+            <InlineLinkActions primaryHref={buildOutlookHref(email)} primaryLabel="Outlook" secondaryHref={buildMailtoHref(email)} secondaryLabel="Mailto" copyValue={email} copyLabel="Copier courriel" />
+          </div>
+        );
+      },
+    },
+    {
+      key: 'phone',
+      header: 'Téléphone principal',
+      render: (row) => {
+        const phone = getText(row.phone, '');
+        if (!phone) return '—';
+        return (
+          <div>
+            <a href={buildTelHref(phone)} className="text-primary-200 hover:text-white">{phone}</a>
+            <InlineLinkActions secondaryHref={buildTelHref(phone)} secondaryLabel="Appeler" copyValue={phone} copyLabel="Copier téléphone" />
+          </div>
+        );
+      },
+    },
+    { key: 'city', header: 'Ville', mobileHidden: true, render: (row) => getText(row.city) },
+    { key: 'address', header: 'Adresse', mobileHidden: true, render: (row) => shortText(row.address) },
+    { key: 'contactCount', header: 'Contacts', mobileHidden: true, render: (row) => getText(row.contactCount) },
+    { key: 'workshopCount', header: 'Ateliers liés', mobileHidden: true, render: (row) => getText(row.workshopCount) },
+    { key: 'nextEventAt', header: 'Prochain événement', mobileHidden: true, render: (row) => formatDate(row.nextEventAt) },
+    { key: 'activeCommercialItems', header: 'Factures / soumissions', mobileHidden: true, render: (row) => getText(row.activeCommercialItems) },
+    { key: 'lastActivityAt', header: 'Dernière activité', mobileHidden: true, render: (row) => formatDate(row.lastActivityAt) },
+    { key: 'createdAt', header: 'Créée le', mobileHidden: true, render: (row) => formatDate(row.createdAt) },
   ],
 };
 
@@ -390,12 +566,51 @@ export const workshopRequestsConfig: ModulePageConfig = {
     { name: 'notes', label: 'Notes', type: 'textarea' },
   ],
   columns: [
-    { key: 'title', header: 'Titre', render: (row) => getText(row.title) },
-    { key: 'workshopType', header: 'Type', render: (row) => <StatusBadge value={row.workshopType} /> },
+    {
+      key: 'title',
+      header: 'Atelier',
+      render: (row) => (
+        <div>
+          <Link href={`/crm/workshop-requests/${getText(row.id, '')}`} className="font-medium text-white hover:text-primary-200">
+            {getText(row.title)}
+          </Link>
+          <div className="mt-1 flex flex-wrap gap-2">
+            <StatusBadge value={row.workshopType} />
+            <StatusBadge value={row.status} />
+          </div>
+        </div>
+      ),
+    },
     { key: 'workshopTheme', header: 'Thème', render: (row) => getText(row.workshopTheme) },
-    { key: 'organization', header: 'Organisation', render: (row) => getText(getRecord(row.organization)?.name, getText(row.organizationName)) },
-    { key: 'status', header: 'Statut', render: (row) => <StatusBadge value={row.status} /> },
-    { key: 'finalPrice', header: 'Prix final', render: (row) => getText(row.finalPrice) },
-    { key: 'requestedDate', header: 'Date souhaitée', render: (row) => formatDate(row.requestedDate) },
+    {
+      key: 'organization',
+      header: 'Organisation / client',
+      render: (row) => {
+        const organization = getRecord(row.organization);
+        const contact = getRecord(row.contact) || getRecord(row.client);
+        if (organization?.id) {
+          return <Link href={`/crm/organizations/${getText(organization.id, '')}`} className="text-primary-200 hover:text-white">{getText(organization.name, getText(row.organizationName))}</Link>;
+        }
+        if (contact?.id) {
+          return <Link href={`/crm/contacts/${getText(contact.id, '')}`} className="text-primary-200 hover:text-white">{getText(contact.fullName)}</Link>;
+        }
+        return getText(row.organizationName);
+      },
+    },
+    {
+      key: 'responsible',
+      header: 'Responsable',
+      render: (row) => {
+        const contact = getRecord(row.organizationContact) || getRecord(row.contact) || getRecord(row.client);
+        const contactId = getText(contact?.contactId || contact?.id, '');
+        const label = getText(contact?.fullName, getText(row.contactPerson));
+        return contactId ? <Link href={`/crm/contacts/${contactId}`} className="text-primary-200 hover:text-white">{label}</Link> : label;
+      },
+    },
+    { key: 'contactEmail', header: 'Courriel', mobileHidden: true, render: (row) => getText(row.contactEmail) },
+    { key: 'contactPhone', header: 'Téléphone', mobileHidden: true, render: (row) => getText(row.contactPhone) },
+    { key: 'finalPrice', header: 'Prix', mobileHidden: true, render: (row) => getText(row.finalPrice) },
+    { key: 'requestedDate', header: 'Date souhaitée', mobileHidden: true, render: (row) => formatDate(row.requestedDate) },
+    { key: 'nextAppointmentAt', header: 'Horaire', mobileHidden: true, render: (row) => formatDate(row.nextAppointmentAt) },
   ],
 };

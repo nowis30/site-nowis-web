@@ -82,10 +82,15 @@ export async function GET(request: NextRequest) {
           : {}),
       },
       include: {
-        organization: { select: { name: true } },
-        contact: { select: { fullName: true } },
-        client: { select: { fullName: true } },
-        organizationContact: { select: { fullName: true } },
+        organization: { select: { id: true, name: true } },
+        contact: { select: { id: true, fullName: true } },
+        client: { select: { id: true, fullName: true } },
+        organizationContact: { select: { id: true, contactId: true, fullName: true } },
+        appointments: {
+          select: { startAt: true },
+          orderBy: { startAt: 'asc' },
+          take: 1,
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

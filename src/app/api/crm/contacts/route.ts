@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
           take: 1,
           include: {
             organization: {
-              select: { id: true, name: true },
+              select: { id: true, name: true, city: true, address: true },
             },
           },
           orderBy: { createdAt: 'asc' },
@@ -56,6 +56,32 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: 'desc' },
           take: 1,
         },
+        appointments: {
+          where: { startAt: { gte: new Date() } },
+          select: { startAt: true },
+          orderBy: { startAt: 'asc' },
+          take: 1,
+        },
+        workshopRequests: {
+          where: { status: { not: 'DELETED' } },
+          select: { title: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        workshopClientRequests: {
+          where: { status: { not: 'DELETED' } },
+          select: { title: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        invoices: {
+          where: { status: { in: ['DRAFT', 'SENT', 'OVERDUE'] } },
+          select: { id: true },
+        },
+        inquiries: {
+          where: { submissionStatus: { in: ['NOUVEAU', 'LU', 'TRAITE'] } },
+          select: { id: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -63,8 +89,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       items: items.map((item) => ({
         ...item,
+        organizationId: item.organizationLinks[0]?.organization?.id ?? null,
         organizationName: item.organizationLinks[0]?.organization?.name ?? null,
+        city: item.organizationLinks[0]?.organization?.city ?? null,
+        shortAddress: item.organizationLinks[0]?.organization?.address ?? null,
         lastActivityAt: item.activities[0]?.createdAt ?? null,
+        nextAppointmentAt: item.appointments[0]?.startAt ?? null,
+        linkedWorkshopTitle: item.workshopRequests[0]?.title ?? item.workshopClientRequests[0]?.title ?? null,
+        activeCommercialItems: `${item.invoices.length} facture(s) · ${item.inquiries.length} soumission(s)`,
       })),
     });
   } catch (error) {

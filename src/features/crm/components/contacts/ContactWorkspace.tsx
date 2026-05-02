@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar, CheckSquare, Mail, MessageSquare, NotebookPen, Paperclip, Receipt, User2 } from 'lucide-react';
+import { Calendar, CheckSquare, Mail, NotebookPen, Paperclip, Receipt, User2 } from 'lucide-react';
 import type { ContactWorkspaceProps } from './workspace/types';
 import { ContactHeader, type ContactActionType } from './workspace/ContactHeader';
 import { ContactSummary } from './workspace/ContactSummary';
@@ -13,7 +13,6 @@ import { ContactInvoices } from './workspace/ContactInvoices';
 import { ContactFilesPanel } from './workspace/ContactFilesPanel';
 import { ContactEmails } from './workspace/ContactEmails';
 import { ContactActionModal } from './workspace/ContactActionModal';
-import { ContactMessages } from './workspace/ContactMessages';
 import { ContactSongRequests } from './workspace/ContactSongRequests';
 import { ContactEditModal } from './workspace/ContactEditModal';
 
@@ -25,20 +24,17 @@ const TABS = [
   { id: 'invoices', label: 'Factures', icon: Receipt },
   { id: 'files', label: 'Fichiers', icon: Paperclip },
   { id: 'emails', label: 'Emails', icon: Mail },
-  { id: 'messages', label: 'Messages', icon: MessageSquare },
   { id: 'song-requests', label: 'Demandes chanson', icon: Receipt },
 ] as const;
 
-export function ContactWorkspace({ contact, tasks, appointments, invoices, files, timeline, unreadClientMessages, canImpersonate }: ContactWorkspaceProps) {
+export function ContactWorkspace({ contact, tasks, appointments, invoices, files, timeline, canImpersonate }: ContactWorkspaceProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get('tab');
-  const highlightedMessageId = searchParams.get('message');
   const initialTab = TABS.some((item) => item.id === requestedTab) ? requestedTab as (typeof TABS)[number]['id'] : 'summary';
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>(initialTab);
   const [action, setAction] = useState<ContactActionType | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(unreadClientMessages);
 
   useEffect(() => {
     setTab(initialTab);
@@ -52,7 +48,6 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
   ]), [appointments.length, files.length, invoices.length, tasks]);
 
   const tabBadges: Partial<Record<(typeof TABS)[number]['id'], number>> = {
-    messages: unreadCount,
     'song-requests': contact.songRequests.length,
   };
 
@@ -122,7 +117,6 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
           {tab === 'invoices' ? <ContactInvoices invoices={invoices} /> : null}
           {tab === 'files' ? <ContactFilesPanel contactId={contact.id} files={files} /> : null}
           {tab === 'emails' ? <ContactEmails contact={contact} /> : null}
-          {tab === 'messages' ? <ContactMessages contactId={contact.id} initialMessages={contact.messages} highlightedMessageId={highlightedMessageId} onUnreadCountChange={setUnreadCount} /> : null}
           {tab === 'song-requests' ? <ContactSongRequests items={contact.songRequests} /> : null}
         </div>
       </div>

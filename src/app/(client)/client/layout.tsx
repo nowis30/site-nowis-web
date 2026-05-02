@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { getClientPortalSessionServer } from '@/features/client-portal/auth/session';
 import { ClientPortalShell } from '@/features/client-portal/components/ClientPortalShell';
-import { safeCountUnreadAdminMessages } from '@/lib/messages-store';
 
 export const metadata: Metadata = {
   robots: {
@@ -22,12 +21,5 @@ export default async function ClientAreaLayout({ children }: { children: React.R
     return <>{children}</>;
   }
 
-  let unreadMessages = 0;
-  try {
-    unreadMessages = await safeCountUnreadAdminMessages(session.contactId);
-  } catch {
-    unreadMessages = 0;
-  }
-
-  return <ClientPortalShell session={session} unreadMessages={unreadMessages}>{children}</ClientPortalShell>;
+  return <ClientPortalShell session={session}>{children}</ClientPortalShell>;
 }

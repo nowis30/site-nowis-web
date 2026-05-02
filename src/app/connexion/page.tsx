@@ -101,7 +101,7 @@ export default function ConnexionPage() {
           <div className="mt-8 grid gap-3">
             {[
               'Suivre une demande de chanson ou d’atelier',
-              'Retrouver vos rendez-vous et messages',
+              'Retrouver vos rendez-vous et documents',
               'Accéder à un espace protégé par session sécurisée',
             ].map((item) => (
               <div key={item} className="glass-panel-soft flex items-start gap-3 rounded-[1.25rem] px-4 py-3">
