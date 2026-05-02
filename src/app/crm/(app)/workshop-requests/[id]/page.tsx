@@ -13,6 +13,7 @@ type WorkshopRequestDetailRecord = Prisma.WorkshopRequestGetPayload<{
     organizationContact: true;
     appointments: true;
     crmAppointments: true;
+    commercialQuotes: true;
   };
 }>;
 
@@ -31,6 +32,7 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
         organizationContact: true,
         appointments: { orderBy: { startAt: 'asc' } },
         crmAppointments: { orderBy: { startAt: 'asc' } },
+        commercialQuotes: { orderBy: { createdAt: 'desc' }, take: 12 },
       },
     });
   } catch (error) {
@@ -95,6 +97,15 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
           status: appointment.status,
           type: appointment.type,
           location: appointment.location,
+        })),
+        commercialQuotes: item.commercialQuotes.map((quote) => ({
+          id: quote.id,
+          quoteNumber: quote.quoteNumber,
+          title: quote.title,
+          status: quote.status,
+          totalAmount: quote.totalAmount.toString(),
+          currency: quote.currency,
+          createdAt: quote.createdAt.toISOString(),
         })),
       }}
       calendarConnections={calendarConnections.map((connection) => ({

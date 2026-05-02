@@ -43,6 +43,7 @@ type WorkshopPageProps = {
     organizationContact: { id: string; contactId: string | null; fullName: string } | null;
     appointments: Array<{ id: string; title: string; startAt: string; endAt: string; status: string; location: string | null }>;
     crmAppointments: Array<{ id: string; title: string; startAt: string; endAt: string; status: string; type: string; location: string | null }>;
+    commercialQuotes: Array<{ id: string; quoteNumber: string; title: string; status: string; totalAmount: string; currency: string; createdAt: string }>;
   };
   calendarConnections: Array<{ id: string; provider: string; accountName: string | null; accountEmail: string | null; status: string }>;
   isAdmin?: boolean;
@@ -569,8 +570,26 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-700/50 bg-slate-900/40 px-5 py-4 text-sm text-slate-400">
-            Les soumissions commerciales utilisent maintenant un module dédié (devis CRM), distinct des soumissions entrantes du site.
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-white">Devis liés</h2>
+              <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.commercialQuotes.length}</span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {item.commercialQuotes.length === 0 ? <p className="text-sm text-slate-400">Aucun devis lié.</p> : item.commercialQuotes.map((quote) => (
+                <article key={quote.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-white">{quote.quoteNumber} · {quote.title}</p>
+                    <StatusBadge value={quote.status} />
+                  </div>
+                  <p className="mt-2 text-slate-400">{new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(quote.createdAt))}</p>
+                  <p className="mt-1 text-slate-500">{quote.totalAmount} {quote.currency}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href={`/crm/commercial-quotes/${quote.id}`} className="rounded-md border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white">Ouvrir</Link>
+                  </div>
+                </article>
+              ))}
+            </div>
           </section>
           {isAdmin && DELETABLE_STATUSES.includes(item.status) && (
             <section className="rounded-2xl border border-red-900/40 bg-red-950/20 p-5">

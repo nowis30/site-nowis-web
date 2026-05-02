@@ -31,6 +31,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           },
           orderBy: { startAt: 'asc' },
         },
+        commercialQuotes: {
+          select: {
+            id: true,
+            quoteNumber: true,
+            title: true,
+            status: true,
+            totalAmount: true,
+            currency: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 12,
+        },
       },
     });
 
