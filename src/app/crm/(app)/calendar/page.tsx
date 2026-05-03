@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { loadExternalCalendarEvents } from '@/lib/external-calendars';
 import { CrmCalendarPage } from '@/features/crm/components/calendar/CrmCalendarPage';
 
-export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
+export default async function CalendarPage() {
   await requireCrmSession();
 
   const isAppointmentVisible = (status: string) => !['CANCELLED', 'DELETED', 'ARCHIVED', 'CANCELLED_BY_CLIENT'].includes(status);
@@ -12,7 +12,7 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
   const isSongVisible = (status: string) => !['CANCELLED', 'DELETED', 'ARCHIVED'].includes(status);
   const isUuid = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-  const [appointments, contacts, organizations, workshopRequests, songRequests, workshopAppointments, workshopAvailabilities, externalCalendarEvents, calendarConnections] = await Promise.all([
+  const [appointments, contacts, organizations, workshopRequests, songRequests, workshopAppointments, workshopAvailabilities, externalCalendarEvents] = await Promise.all([
     prisma.appointment.findMany({
       where: { status: { not: 'CANCELLED' } },
       include: {
@@ -103,22 +103,6 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
       throw error;
     }),
     loadExternalCalendarEvents(),
-    prisma.calendarConnection.findMany({
-      where: {
-        status: { in: ['CONNECTED', 'EXPIRED', 'ERROR'] },
-      },
-      orderBy: [{ provider: 'asc' }, { accountEmail: 'asc' }],
-      select: {
-        id: true,
-        provider: true,
-        accountEmail: true,
-        accountName: true,
-        status: true,
-      },
-    }).catch((error) => {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') return [];
-      throw error;
-    }),
   ]);
 
   const nextAvailabilityEvents = workshopAvailabilities.flatMap((item) => {
@@ -290,51 +274,11 @@ export default async function CalendarPage({ searchParams }: { searchParams?: { 
     })),
   ].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 
-  const getParam = (key: string) => {
-    const value = searchParams?.[key];
-    return typeof value === 'string' ? value : undefined;
-  };
-
-  const prefillStart = getParam('startAt');
-  const prefillEnd = getParam('endAt');
-  const prefillTitle = getParam('title');
-  const prefillDescription = getParam('description');
-  const prefillContactId = getParam('contactId');
-  const prefillType = getParam('type');
-  const prefillStatus = getParam('status');
-  const prefillOrganizationId = getParam('organizationId');
-  const prefillWorkshopRequestId = getParam('workshopRequestId');
-  const prefillSongRequestId = getParam('songRequestId');
-
-  const initialPrefill = prefillTitle || prefillContactId || prefillStart
-    ? {
-        title: prefillTitle,
-        description: prefillDescription,
-        startAt: prefillStart,
-        endAt: prefillEnd,
-        type: prefillType,
-        status: prefillStatus,
-        contactId: prefillContactId,
-        organizationId: prefillOrganizationId,
-        workshopRequestId: prefillWorkshopRequestId,
-        songRequestId: prefillSongRequestId,
-      }
-    : undefined;
-
   return (
     <CrmCalendarPage
       initialAppointments={initialAppointments}
       contacts={contacts.map((item) => ({ id: item.id, label: item.fullName }))}
       organizations={organizations.map((item) => ({ id: item.id, label: item.name }))}
-      workshopRequests={workshopRequests.map((item) => ({ id: item.id, label: item.title, contactId: item.contactId, organizationId: item.organizationId }))}
-      songRequests={songRequests.map((item) => ({ id: item.id, label: item.title || item.occasion || 'Demande de chanson', contactId: item.contactId, organizationId: item.organizationId }))}
-      calendarConnections={calendarConnections.map((item) => ({
-        id: item.id,
-        label: `${item.provider} · ${item.accountEmail || item.accountName || 'Compte connecté'}`,
-        provider: item.provider,
-        status: item.status,
-      }))}
-      initialPrefill={initialPrefill}
     />
   );
 }
