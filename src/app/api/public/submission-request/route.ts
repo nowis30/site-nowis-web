@@ -28,7 +28,7 @@ const songSchema = z.object({
   if (!emailStr && !phoneStr) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['email'], message: 'Veuillez fournir un courriel ou un numero de telephone.' });
   }
-  if (emailStr && !z.string().email().safeParse(emailStr).success) {
+  if (emailStr && !phoneStr && !z.string().email().safeParse(emailStr).success) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['email'], message: "Format d'email invalide." });
   }
 });

@@ -101,8 +101,15 @@ export function SubmissionFormClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = (await response.json().catch(() => null)) as { error?: string; message?: string } | null;
-      if (!response.ok) throw new Error(data?.error || 'Envoi impossible');
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+        message?: string;
+        details?: Array<{ message?: string }>;
+      } | null;
+      if (!response.ok) {
+        const firstDetail = data?.details?.[0]?.message;
+        throw new Error(firstDetail || data?.error || 'Envoi impossible');
+      }
 
       setSuccess(data?.message || 'Demande envoyée avec succès. Nous vous contacterons sous peu.');
       setForm(EMPTY_FORM);
@@ -138,7 +145,7 @@ export function SubmissionFormClient() {
         <form onSubmit={(e) => void submit(e)} className="grid gap-3 sm:grid-cols-2">
           <input required placeholder="Nom *" value={form.fullName} onChange={f('fullName')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
           <input
-            type="email"
+            type={type === 'song' ? 'text' : 'email'}
             required={type !== 'song'}
             placeholder={type === 'song' ? 'Courriel (optionnel si téléphone fourni)' : 'Courriel *'}
             value={form.email}
