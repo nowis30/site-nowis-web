@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { SongRequestStatus } from '@prisma/client';
-import { FileMusic, Music2 } from 'lucide-react';
 
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
 import { ClientSongRequestEditor } from '@/features/client-portal/components/song-requests/ClientSongRequestEditor';
+import { ClientSongRequestInfoEditor } from '@/features/client-portal/components/song-requests/ClientSongRequestInfoEditor';
 import { SongRequestFilesPanel } from '@/features/crm/components/song-requests/SongRequestFilesPanel';
 import { prisma } from '@/lib/prisma';
 
@@ -25,10 +25,6 @@ function statusTone(status: SongRequestStatus): 'warning' | 'info' | 'success' |
   if (status === 'IN_PROGRESS' || status === 'IN_PRODUCTION' || status === 'QUOTED') return 'info';
   if (status === 'DELIVERED' || status === 'COMPLETED') return 'success';
   return 'danger';
-}
-
-function formatDate(value: Date) {
-  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium' }).format(value);
 }
 
 function formatDateTime(value: Date) {
@@ -109,42 +105,26 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
         </div>
       </SectionCard>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <SectionCard title="Informations principales">
-          <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Destinataire: <span className="font-medium text-slate-100">{request.recipientName}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Type: <span className="font-medium text-slate-100">{request.songType}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Occasion: <span className="font-medium text-slate-100">{request.occasion}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Style: <span className="font-medium text-slate-100">{request.style}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Ambiance: <span className="font-medium text-slate-100">{request.mood}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Langue: <span className="font-medium text-slate-100">{request.language || '—'}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Budget: <span className="font-medium text-slate-100">{request.budget ? Number(request.budget).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' }) : '—'}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Date souhaitée: <span className="font-medium text-slate-100">{request.desiredDeadline ? formatDate(request.desiredDeadline) : '—'}</span></p>
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Coordonnées de la demande">
-          <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Nom: <span className="font-medium text-slate-100">{request.fullName}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Email: <span className="font-medium break-all text-slate-100">{request.email}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Téléphone: <span className="font-medium text-slate-100">{request.phone}</span></p>
-            <p className="break-words rounded-xl border border-slate-800 bg-slate-950/45 p-3">Créée le: <span className="font-medium text-slate-100">{formatDateTime(request.createdAt)}</span></p>
-          </div>
-        </SectionCard>
-      </div>
-
-      <SectionCard title="Brief">
-        <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/45 p-4 text-sm leading-7 text-slate-300">
-          <div className="mb-1 inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-slate-400">
-            <FileMusic size={14} /> Dossier créatif
-          </div>
-          {request.description ? <p>{request.description}</p> : null}
-          {request.details ? <p>{request.details}</p> : null}
-          {!request.description && !request.details ? <EmptyState icon={<Music2 size={18} />} title="Aucun brief fourni" description="Aucun détail supplémentaire n'a été saisi pour cette demande." /> : null}
-        </div>
+      <SectionCard title="Informations de la demande">
+        <ClientSongRequestInfoEditor
+          initial={{
+            id: request.id,
+            status: request.status,
+            title: request.title,
+            recipientName: request.recipientName,
+            occasion: request.occasion,
+            style: request.style,
+            mood: request.mood,
+            language: request.language,
+            description: request.description,
+            details: request.details,
+            desiredDeadline: request.desiredDeadline ? new Date(String(request.desiredDeadline)).toISOString() : null,
+          }}
+          canEdit={!['QUOTED', 'DELIVERED', 'COMPLETED', 'DELETED'].includes(request.status)}
+        />
       </SectionCard>
 
-      <SectionCard title="Rencontre chanson" subtitle="Proposez une date et des details de rencontre tant que la demande est modifiable.">
+      <SectionCard title="Rencontre chanson" subtitle="Proposez une date et des détails de rencontre tant que la demande est modifiable.">
         <div className="mb-3 rounded-xl border border-slate-800 bg-slate-950/45 p-3 text-sm text-slate-300">
           Date de rencontre: {request.meetingDate ? formatDateTime(request.meetingDate) : 'Aucune date enregistree'}
         </div>
