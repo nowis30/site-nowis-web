@@ -7,13 +7,10 @@ import type { FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
-import { songRequestInputSchema } from '@/lib/validators/song-request';
+import { songRequestPortalInputSchema } from '@/lib/validators/song-request';
 import { toPublicApiUrl } from '@/lib/public-api-url';
 
-const songRequestFormSchema = songRequestInputSchema.omit({
-  occasion: true,
-  details: true,
-});
+const songRequestFormSchema = songRequestPortalInputSchema;
 
 type SongRequestFormValues = z.input<typeof songRequestFormSchema>;
 
@@ -132,7 +129,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
     setSubmitError(null);
 
     try {
-      const payload: z.input<typeof songRequestInputSchema> = {
+      const payload: z.input<typeof songRequestPortalInputSchema> = {
         ...values,
         occasion: values.eventType,
         details: values.description,

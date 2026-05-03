@@ -61,6 +61,36 @@ export const songRequestInputSchema = z.object({
   antiSpam: z.string().trim().max(0).optional().or(z.literal('')),
 });
 
+export const songRequestPortalInputSchema = z.object({
+  fullName: requiredText('Le nom complet', 2, 160),
+  email: z.string().trim().email('Le courriel est invalide').max(190, 'Le courriel est trop long').optional(),
+  phone: optionalText(40),
+  title: optionalText(160),
+  language: optionalText(80),
+  songType: optionalText(80),
+  tempo: z.enum(['LENT', 'MOYEN', 'RAPIDE']).optional(),
+  occasion: optionalText(120),
+  eventType: optionalText(120),
+  recipientName: optionalText(160),
+  specialMessage: optionalText(800),
+  style: optionalText(120),
+  mood: optionalText(120),
+  theme: optionalText(120),
+  description: optionalText(4000),
+  inspirations: optionalText(2000),
+  lyrics: optionalText(8000),
+  structureVerse: optionalText(1200),
+  structureChorus: optionalText(1200),
+  structureBridge: optionalText(1200),
+  fileUrl: optionalText(500),
+  details: optionalText(4000),
+  budget: z.string().trim().max(30, 'Le budget est invalide').optional().or(z.literal('')),
+  desiredDeadline: z.string().trim().max(40, 'La date souhaitée est invalide').optional().or(z.literal('')),
+  consentToBeContacted: z.boolean().optional(),
+  source: z.string().trim().max(80).optional().default('website'),
+  antiSpam: z.string().trim().max(0).optional().or(z.literal('')),
+});
+
 export const crmSongRequestListQuerySchema = z.object({
   q: optionalText(190),
   status: songRequestStatusSchema.optional().or(z.literal('')),
@@ -84,4 +114,5 @@ export const crmSongRequestPatchSchema = z.object({
 });
 
 export type SongRequestInput = z.infer<typeof songRequestInputSchema>;
+export type SongRequestPortalInput = z.infer<typeof songRequestPortalInputSchema>;
 export type CrmSongRequestPatchInput = z.infer<typeof crmSongRequestPatchSchema>;
