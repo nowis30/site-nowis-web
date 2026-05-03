@@ -839,6 +839,16 @@ model Invoice {
   status      InvoiceStatus @default(DRAFT)
   description String?
   fileUrl     String?
+  paypalInvoiceId String?
+  paypalInvoiceUrl String?
+  paypalStatus String?
+  paypalSentAt DateTime?
+  paypalPaidAt DateTime?
+  paypalLastWebhookAt DateTime?
+  paymentProvider String?
+  paymentStatus String?
+  paymentAmount Decimal?    @db.Decimal(10, 2)
+  paymentCurrency String?   @default("CAD")
   deletedAt   DateTime?
   deletedBy   String?       @db.Uuid
   deleteReason String?
@@ -850,6 +860,8 @@ model Invoice {
 
   @@index([contactId])
   @@index([status])
+  @@index([paypalInvoiceId])
+  @@index([paymentStatus])
   @@index([deletedAt])
   @@map("invoices")
 }

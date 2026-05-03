@@ -3,7 +3,6 @@ import { requireCrmSession } from "@/features/crm/auth/session";
 import { prisma } from "@/lib/prisma";
 import { DashboardUploader } from "@/features/crm/components/shared/DashboardUploader";
 import { StatusBadge } from "@/features/crm/components/shared/StatusBadge";
-import { ZohoBillingButton } from "@/features/crm/components/shared/ZohoBillingButton";
 import { Calendar, CheckSquare, FileText, Activity, AlertCircle, Clock, User } from "lucide-react";
 
 export default async function CrmDashboardPage() {
@@ -142,6 +141,7 @@ export default async function CrmDashboardPage() {
     VISIT: "Visite", CALL: "Appel", FOLLOWUP: "Suivi", MEETING: "Rencontre",
     INSPECTION: "Inspection", DEADLINE: "Échéance", REMINDER: "Rappel",
   };
+  const paypalBillingUrl = process.env.NEXT_PUBLIC_PAYPAL_BILLING_URL || process.env.PAYPAL_BILLING_URL;
 
   return (
     <section className="space-y-6">
@@ -349,7 +349,26 @@ export default async function CrmDashboardPage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className="font-semibold text-white text-sm">Statistiques</h3>
-            <ZohoBillingButton />
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href="/crm/invoices" className="rounded-xl border border-primary-600/50 bg-primary-950/30 px-3 py-1.5 text-xs font-medium text-primary-200 hover:bg-primary-900/40 hover:text-white">
+                Créer facture CRM
+              </Link>
+              <Link href="/crm/invoices" className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:border-primary-500/40 hover:text-white">
+                Envoyer facture PayPal
+              </Link>
+              {paypalBillingUrl ? (
+                <a href={paypalBillingUrl} target="_blank" rel="noreferrer" className="rounded-xl border border-emerald-600/50 bg-emerald-950/30 px-3 py-1.5 text-xs font-medium text-emerald-200 hover:bg-emerald-900/40 hover:text-white">
+                  Ouvrir lien PayPal
+                </a>
+              ) : (
+                <span className="rounded-xl border border-amber-700/50 bg-amber-950/20 px-3 py-1.5 text-xs font-medium text-amber-200">
+                  Lien PayPal non configuré
+                </span>
+              )}
+              <Link href="/crm/activities" className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:border-primary-500/40 hover:text-white">
+                Vérifier paiement PayPal
+              </Link>
+            </div>
           </div>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between rounded-lg bg-slate-800/40 px-3 py-2">

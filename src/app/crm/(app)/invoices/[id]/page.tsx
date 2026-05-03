@@ -12,6 +12,12 @@ interface PageProps {
 export default async function CrmInvoiceDetailRoute({ params, searchParams }: PageProps) {
   await requireCrmSession();
 
+  const paypalConfigured = Boolean(
+    process.env.PAYPAL_CLIENT_ID?.trim() &&
+    process.env.PAYPAL_CLIENT_SECRET?.trim() &&
+    process.env.PAYPAL_BUSINESS_EMAIL?.trim(),
+  );
+
   const invoice = await prisma.invoice.findUnique({
     where: { id: params.id },
     include: {
@@ -35,10 +41,17 @@ export default async function CrmInvoiceDetailRoute({ params, searchParams }: Pa
         issueDate: invoice.issueDate.toISOString(),
         dueDate: invoice.dueDate.toISOString(),
         amount: invoice.amount.toString(),
+        paypalSentAt: invoice.paypalSentAt?.toISOString() || null,
+        paypalPaidAt: invoice.paypalPaidAt?.toISOString() || null,
+        paypalLastWebhookAt: invoice.paypalLastWebhookAt?.toISOString() || null,
+        paymentAmount: invoice.paymentAmount?.toString() || null,
       }}
       businessProfile={getInvoiceBusinessProfile()}
       allowEmailSend
       initialComposeOpen={searchParams?.compose === '1'}
+      allowPayPalActions
+      paypalConfigured={paypalConfigured}
+      missingPayPalConfigMessage="PayPal n’est pas encore configuré. Ajoute les variables PayPal dans Vercel ou Render."
     />
   );
 }

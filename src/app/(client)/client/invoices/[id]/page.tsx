@@ -33,6 +33,10 @@ export default async function ClientPortalInvoiceDetailPage({ params }: PageProp
         issueDate: invoice.issueDate.toISOString(),
         dueDate: invoice.dueDate.toISOString(),
         amount: invoice.amount.toString(),
+        paypalSentAt: invoice.paypalSentAt?.toISOString() || null,
+        paypalPaidAt: invoice.paypalPaidAt?.toISOString() || null,
+        paypalLastWebhookAt: invoice.paypalLastWebhookAt?.toISOString() || null,
+        paymentAmount: invoice.paymentAmount?.toString() || null,
       }}
       businessProfile={getInvoiceBusinessProfile()}
       backHref="/client/dashboard"

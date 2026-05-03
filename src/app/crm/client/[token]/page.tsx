@@ -104,6 +104,12 @@ export default async function ClientPortalPage({ params }: PageProps) {
           status: true,
           description: true,
           fileUrl: true,
+          paypalInvoiceUrl: true,
+          paypalStatus: true,
+          paymentStatus: true,
+          paymentCurrency: true,
+          paymentAmount: true,
+          paypalPaidAt: true,
         },
       },
       songRequests: {
@@ -280,11 +286,13 @@ export default async function ClientPortalPage({ params }: PageProps) {
                     <div className="text-sm text-slate-200">
                       <p>{formatCurrency(Number(invoice.amount))}</p>
                       <p className="text-xs text-slate-500">{INVOICE_STATUS_LABELS[invoice.status] ?? invoice.status}</p>
+                      <p className="mt-1 text-xs text-slate-500">PayPal: {invoice.paymentStatus || invoice.paypalStatus || 'non disponible'}</p>
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-500">
                     <span>Émise le {formatDate(invoice.issueDate)}</span>
                     <span>Échéance {formatDate(invoice.dueDate)}</span>
+                    <span>Paiement: {invoice.paymentStatus || 'unpaid'}</span>
                     {invoice.fileUrl ? (
                       <a href={invoice.fileUrl} target="_blank" rel="noreferrer" className="text-emerald-300 hover:text-emerald-200">
                         Ouvrir le fichier
@@ -294,7 +302,13 @@ export default async function ClientPortalPage({ params }: PageProps) {
                         Ouvrir la version imprimable
                       </a>
                     )}
+                    {invoice.paypalInvoiceUrl ? (
+                      <a href={invoice.paypalInvoiceUrl} target="_blank" rel="noreferrer" className="text-sky-300 hover:text-sky-200">
+                        Ouvrir le paiement PayPal
+                      </a>
+                    ) : null}
                   </div>
+                  {invoice.paypalPaidAt ? <p className="mt-2 text-xs text-emerald-300">Paiement PayPal enregistré le {formatDateTime(invoice.paypalPaidAt)}</p> : null}
                   {invoiceDocuments.filter((document) => document.linkedId === invoice.id).length > 0 ? (
                     <div className="mt-3 space-y-2">
                       {invoiceDocuments.filter((document) => document.linkedId === invoice.id).map((document) => (

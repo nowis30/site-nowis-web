@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Mail, Printer } from 'lucide-react';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
 import { InvoiceBusinessProfile } from '@/lib/invoice-profile';
+import { PayPalInvoicePanel } from '@/features/crm/components/invoices/PayPalInvoicePanel';
 
 interface InvoiceDetailPageProps {
   invoice: {
@@ -15,6 +16,16 @@ interface InvoiceDetailPageProps {
     amount: string | number;
     status: string;
     description: string | null;
+    paypalInvoiceId: string | null;
+    paypalInvoiceUrl: string | null;
+    paypalStatus: string | null;
+    paypalSentAt: string | null;
+    paypalPaidAt: string | null;
+    paypalLastWebhookAt: string | null;
+    paymentProvider: string | null;
+    paymentStatus: string | null;
+    paymentAmount: string | number | null;
+    paymentCurrency: string | null;
     contact: {
       fullName: string;
       email: string | null;
@@ -28,6 +39,9 @@ interface InvoiceDetailPageProps {
   subtitle?: string;
   allowEmailSend?: boolean;
   initialComposeOpen?: boolean;
+  allowPayPalActions?: boolean;
+  paypalConfigured?: boolean;
+  missingPayPalConfigMessage?: string;
 }
 
 function formatDate(value: string) {
@@ -137,6 +151,9 @@ export function InvoiceDetailPage({
   subtitle = 'Version professionnelle imprimable',
   allowEmailSend = false,
   initialComposeOpen = false,
+  allowPayPalActions = false,
+  paypalConfigured = false,
+  missingPayPalConfigMessage,
 }: InvoiceDetailPageProps) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState<string | null>(null);
@@ -223,6 +240,27 @@ export function InvoiceDetailPage({
           {emailFeedback}
         </div>
       ) : null}
+
+      <PayPalInvoicePanel
+        invoiceId={invoice.id}
+        amount={invoice.amount}
+        contactEmail={invoice.contact.email}
+        allowActions={allowPayPalActions}
+        paypalConfigured={paypalConfigured}
+        missingConfigMessage={missingPayPalConfigMessage}
+        initialMeta={{
+          crmStatus: invoice.status,
+          paypalInvoiceId: invoice.paypalInvoiceId,
+          paypalInvoiceUrl: invoice.paypalInvoiceUrl,
+          paypalStatus: invoice.paypalStatus,
+          paypalSentAt: invoice.paypalSentAt,
+          paypalPaidAt: invoice.paypalPaidAt,
+          paymentProvider: invoice.paymentProvider,
+          paymentStatus: invoice.paymentStatus,
+          paymentAmount: invoice.paymentAmount,
+          paymentCurrency: invoice.paymentCurrency,
+        }}
+      />
 
       {allowEmailSend && isComposerOpen ? (
         <div className="print:hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
