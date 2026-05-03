@@ -42,7 +42,7 @@ export default async function ClientWorkshopsPage() {
       where: {
         OR: [
           { contactId: session.contactId },
-          { organizationContact: { contactId: session.contactId } },
+          { clientId: session.contactId },
         ],
       },
       include: {

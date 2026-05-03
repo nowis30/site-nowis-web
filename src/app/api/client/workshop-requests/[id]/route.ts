@@ -36,7 +36,6 @@ async function loadOwnedWorkshop(sessionContactId: string, id: string) {
       OR: [
         { contactId: sessionContactId },
         { clientId: sessionContactId },
-        { organizationContact: { contactId: sessionContactId } },
       ],
     },
     include: {

@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
       OR: [
         { contactId: session.contactId },
         { clientId: session.contactId },
-        { organizationContact: { contactId: session.contactId } },
       ],
       status: { not: 'DELETED' },
     },

@@ -16,7 +16,6 @@ export default async function ClientWorkshopDetailPage({ params }: { params: { i
       OR: [
         { contactId: session.contactId },
         { clientId: session.contactId },
-        { organizationContact: { contactId: session.contactId } },
       ],
     },
     select: {
