@@ -75,7 +75,11 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
       if (!response.ok) {
         throw new Error(data?.error || 'Action impossible');
       }
-      setFeedback(action === 'accept' ? 'Soumission acceptee. Merci.' : 'Soumission refusee.');
+      setFeedback(
+        action === 'accept'
+          ? 'Soumission acceptee. Merci ! Vous recevrez votre facture par email sous peu.'
+          : 'Soumission refusee. Contactez-nous si vous avez des questions.',
+      );
       setItem((current) => (current ? { ...current, status: data?.status || current.status } : current));
     } catch (actionError) {
       setError(actionError instanceof Error ? actionError.message : 'Action impossible');
