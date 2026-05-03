@@ -55,9 +55,33 @@ export function SubmissionFormClient() {
     setError(null);
     setSuccess(null);
 
-    // Pour une demande de chanson : email OU téléphone obligatoire
+    // Validation JS — le navigateur ne valide rien (noValidate sur le form)
+    if (!form.fullName.trim()) {
+      setError('Veuillez entrer votre nom.');
+      return;
+    }
     if (type === 'song' && !form.email.trim() && !form.phone.trim()) {
-      setError('Veuillez fournir au moins un courriel ou un numéro de téléphone pour que nous puissions vous contacter.');
+      setError('Veuillez fournir au moins un courriel ou un numéro de téléphone.');
+      return;
+    }
+    if (type !== 'song' && !form.email.trim()) {
+      setError('Veuillez entrer votre courriel.');
+      return;
+    }
+    if (type === 'workshop' && !form.organizationName.trim()) {
+      setError('Veuillez entrer le nom de l\'organisation.');
+      return;
+    }
+    if (type === 'workshop' && !form.details.trim()) {
+      setError('Veuillez décrire votre demande dans le champ Message / détails.');
+      return;
+    }
+    if (type === 'general' && !form.subject.trim()) {
+      setError('Veuillez entrer un sujet.');
+      return;
+    }
+    if (type === 'general' && !form.details.trim()) {
+      setError('Veuillez écrire votre message.');
       return;
     }
 
@@ -142,17 +166,21 @@ export function SubmissionFormClient() {
         {error ? <p className="mb-3 rounded-lg border border-red-700/50 bg-red-950/20 px-3 py-2 text-sm text-red-200">{error}</p> : null}
         {success ? <p className="mb-3 rounded-lg border border-emerald-700/50 bg-emerald-950/20 px-3 py-2 text-sm text-emerald-200">{success}</p> : null}
 
-        <form onSubmit={(e) => void submit(e)} className="grid gap-3 sm:grid-cols-2">
-          <input required placeholder="Nom *" value={form.fullName} onChange={f('fullName')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+        <form onSubmit={(e) => void submit(e)} noValidate className="grid gap-3 sm:grid-cols-2">
+          <input autoComplete="name" placeholder="Nom *" value={form.fullName} onChange={f('fullName')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
           <input
-            type={type === 'song' ? 'text' : 'email'}
-            required={type !== 'song'}
+            type="email"
+            autoComplete="email"
+            inputMode="email"
             placeholder={type === 'song' ? 'Courriel (optionnel si téléphone fourni)' : 'Courriel *'}
             value={form.email}
             onChange={f('email')}
             className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
           />
           <input
+            type="tel"
+            autoComplete="tel"
+            inputMode="tel"
             placeholder={type === 'song' ? 'Téléphone (optionnel si courriel fourni)' : 'Téléphone'}
             value={form.phone}
             onChange={f('phone')}
@@ -192,21 +220,21 @@ export function SubmissionFormClient() {
 
           {type === 'workshop' ? (
             <>
-              <input required placeholder="Organisation *" value={form.organizationName} onChange={f('organizationName')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+              <input placeholder="Organisation *" value={form.organizationName} onChange={f('organizationName')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
               <input placeholder="Type de groupe" value={form.groupType} onChange={f('groupType')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
               <input type="number" min="1" placeholder="Nombre de participants" value={form.participants} onChange={f('participants')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
               <input placeholder="Âge approximatif" value={form.ageRange} onChange={f('ageRange')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
               <input placeholder="Lieu" value={form.location} onChange={f('location')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
               <input type="date" value={form.desiredDate} onChange={f('desiredDate')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-400" />
               <input placeholder="Durée souhaitée" value={form.desiredDuration} onChange={f('desiredDuration')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-              <textarea required rows={5} placeholder="Message / détails *" value={form.details} onChange={f('details')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+              <textarea rows={5} placeholder="Message / détails *" value={form.details} onChange={f('details')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
             </>
           ) : null}
 
           {type === 'general' ? (
             <>
-              <input required placeholder="Sujet *" value={form.subject} onChange={f('subject')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
-              <textarea required rows={5} placeholder="Message / détails *" value={form.details} onChange={f('details')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+              <input placeholder="Sujet *" value={form.subject} onChange={f('subject')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
+              <textarea rows={5} placeholder="Message / détails *" value={form.details} onChange={f('details')} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm sm:col-span-2" />
             </>
           ) : null}
 
