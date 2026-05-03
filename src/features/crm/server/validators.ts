@@ -67,8 +67,15 @@ export const appointmentInputSchema = z.object({
 export const invoiceInputSchema = z.object({
   number: z.string().min(2).max(60),
   contactId: z.string().uuid('ID de contact invalide'),
-  issueDate: z.string().datetime().optional(),
-  dueDate: z.string().datetime(),
+  issueDate: z
+    .string()
+    .trim()
+    .refine((value) => !Number.isNaN(new Date(value).getTime()), 'Date d emission invalide')
+    .optional(),
+  dueDate: z
+    .string()
+    .trim()
+    .refine((value) => !Number.isNaN(new Date(value).getTime()), 'Date d echeance invalide'),
   amount: z.coerce.number().min(0),
   status: z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']).default('DRAFT'),
   description: z.string().max(2000).optional(),

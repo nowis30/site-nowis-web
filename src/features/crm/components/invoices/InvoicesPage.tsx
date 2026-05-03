@@ -232,6 +232,7 @@ function NewInvoiceForm({
   defaultDueDate.setDate(defaultDueDate.getDate() + 30);
   const [open, setOpen] = useState(Boolean(initialForm?.contactId || initialForm?.description || initialForm?.amount));
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     number: '',
     contactId: initialForm?.contactId || '',
@@ -259,21 +260,32 @@ function NewInvoiceForm({
     e.preventDefault();
     if (!form.contactId) return;
     setLoading(true);
-    await fetch('/api/crm/invoices', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        issueDate: form.issueDate ? new Date(form.issueDate).toISOString() : undefined,
-        dueDate: new Date(form.dueDate).toISOString(),
-        amount: parseFloat(form.amount),
-        sourceWorkshopRequestId: form.sourceWorkshopRequestId || undefined,
-      }),
-    });
-    setLoading(false);
-    setOpen(false);
-    setForm({ number: '', contactId: '', issueDate: '', dueDate: defaultDueDate.toISOString().slice(0, 10), amount: '', description: '', status: 'DRAFT', sourceWorkshopRequestId: '' });
-    onCreated();
+    setError(null);
+    try {
+      const response = await fetch('/api/crm/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          issueDate: form.issueDate ? new Date(form.issueDate).toISOString() : undefined,
+          dueDate: new Date(form.dueDate).toISOString(),
+          amount: parseFloat(form.amount),
+          sourceWorkshopRequestId: form.sourceWorkshopRequestId || undefined,
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) {
+        throw new Error(data?.error || 'Creation facture impossible');
+      }
+
+      setOpen(false);
+      setForm({ number: '', contactId: '', issueDate: '', dueDate: defaultDueDate.toISOString().slice(0, 10), amount: '', description: '', status: 'DRAFT', sourceWorkshopRequestId: '' });
+      onCreated();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Creation facture impossible');
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (!open) return (
@@ -285,6 +297,7 @@ function NewInvoiceForm({
   return (
     <form onSubmit={submit} className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-3 mb-4">
       <h3 className="font-semibold text-white">Nouvelle facture</h3>
+      {error ? <p className="rounded-lg border border-red-700/50 bg-red-950/20 px-3 py-2 text-xs text-red-200">{error}</p> : null}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input required placeholder="N° facture (ex: FAC-2026-001)" value={form.number} onChange={e => setForm(f => ({ ...f, number: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400" />
         <select required value={form.contactId} onChange={e => setForm(f => ({ ...f, contactId: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">

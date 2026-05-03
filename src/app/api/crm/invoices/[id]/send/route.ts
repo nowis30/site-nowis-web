@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
 import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
-import { signClientPortalToken } from '@/lib/client-portal';
+import { buildPublicInvoiceUrl, signPublicInvoiceToken } from '@/lib/public-links';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
 
 const sendInvoiceSchema = z.object({
@@ -85,13 +85,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     process.env.NEXT_PUBLIC_DOMAIN ||
     request.nextUrl.origin;
 
-  const portalToken = signClientPortalToken({
+  const invoiceToken = signPublicInvoiceToken({
+    invoiceId: invoice.id,
     contactId: invoice.contact.id,
-    email: invoice.contact.email,
-    fullName: invoice.contact.fullName,
   });
 
-  const invoiceUrl = `${appUrl}/crm/client/${portalToken}/invoices/${invoice.id}`;
+  const invoiceUrl = buildPublicInvoiceUrl(invoiceToken, appUrl);
   const trackingToken = randomUUID();
   const trackingUrl = `${appUrl}/api/email/track/open?token=${encodeURIComponent(trackingToken)}`;
 
@@ -166,8 +165,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   if (!sendResult.success) {
     return NextResponse.json(
-      { error: sendResult.error || 'Envoi email impossible. Vérifiez RESEND_API_KEY et le domaine expéditeur.' },
-      { status: 502 },
+      {
+        ok: true,
+        emailSent: false,
+        invoiceUrl,
+        message: 'Email non configuré. Le lien a été généré, mais aucun courriel n a été envoyé.',
+      },
+      { status: 200 },
     );
   }
 
@@ -209,5 +213,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
   });
 
-  return NextResponse.json({ ok: true, status: invoice.status === 'DRAFT' ? 'SENT' : invoice.status });
+  return NextResponse.json({
+    ok: true,
+    emailSent: true,
+    invoiceUrl,
+    status: invoice.status === 'DRAFT' ? 'SENT' : invoice.status,
+  });
 }

@@ -108,8 +108,10 @@ export function CommercialQuoteEditorPage({
     setError(null);
     setMessage(null);
     try {
+      const validUntilIso = form.validUntil ? new Date(form.validUntil).toISOString() : '';
       const body = {
         ...form,
+        validUntil: validUntilIso,
         lines: payloadLines,
       };
       const endpoint = mode === 'create' ? '/api/crm/commercial-quotes' : `/api/crm/commercial-quotes/${quoteId}`;
@@ -137,17 +139,21 @@ export function CommercialQuoteEditorPage({
     }
   }
 
-  async function runAction(action: 'send' | 'accept' | 'decline' | 'convert-to-invoice') {
+  async function runAction(action: 'send' | 'send-email' | 'accept' | 'decline' | 'convert-to-invoice') {
     if (!quoteId) return;
     setLoading(true);
     setError(null);
     setMessage(null);
     try {
       const response = await fetch(`/api/crm/commercial-quotes/${quoteId}/${action}`, { method: 'POST' });
-      const data = (await response.json().catch(() => null)) as { error?: string; invoiceId?: string } | null;
+      const data = (await response.json().catch(() => null)) as { error?: string; invoiceId?: string; emailSent?: boolean; message?: string; quoteUrl?: string } | null;
       if (!response.ok) throw new Error(data?.error || 'Action impossible');
       if (action === 'convert-to-invoice' && data?.invoiceId) {
         router.push(`/crm/invoices/${data.invoiceId}`);
+        return;
+      }
+      if (action === 'send-email') {
+        setMessage(data?.emailSent ? 'Soumission envoyee par courriel.' : (data?.message || 'Lien genere sans envoi email.'));
         return;
       }
       setMessage('Action appliquée.');
@@ -279,6 +285,7 @@ export function CommercialQuoteEditorPage({
               {mode === 'detail' ? (
                 <>
                   <button type="button" onClick={() => void runAction('send')} disabled={loading || form.status === 'CONVERTED'} className="rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 disabled:opacity-50">Envoyer</button>
+                  <button type="button" onClick={() => void runAction('send-email')} disabled={loading || form.status === 'CONVERTED'} className="rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 disabled:opacity-50">Envoyer par email</button>
                   <button type="button" onClick={() => void runAction('accept')} disabled={loading || form.status === 'CONVERTED'} className="rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 disabled:opacity-50">Accepter</button>
                   <button type="button" onClick={() => void runAction('decline')} disabled={loading || form.status === 'CONVERTED'} className="rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 disabled:opacity-50">Refuser</button>
                   <button type="button" onClick={() => void runAction('convert-to-invoice')} disabled={loading || form.status === 'CONVERTED'} className="rounded-lg border border-emerald-700/50 px-3 py-2 text-left text-sm text-emerald-200 disabled:opacity-50">Convertir en facture</button>
