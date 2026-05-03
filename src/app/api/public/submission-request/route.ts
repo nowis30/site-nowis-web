@@ -10,14 +10,27 @@ const baseSchema = z.object({
   phone: z.string().trim().max(50).optional().or(z.literal('')),
 });
 
-const songSchema = baseSchema.extend({
+const songSchema = z.object({
   type: z.literal('song'),
-  subject: z.string().trim().min(2).max(240),
-  recipientName: z.string().trim().min(2).max(180),
+  fullName: z.string().trim().min(2).max(180),
+  email: z.string().trim().max(180).optional().or(z.literal('')),
+  phone: z.string().trim().max(50).optional().or(z.literal('')),
+  subject: z.string().trim().max(240).optional().or(z.literal('')),
+  recipientName: z.string().trim().max(180).optional().or(z.literal('')),
   style: z.string().trim().max(180).optional().or(z.literal('')),
-  details: z.string().trim().min(3).max(6000),
+  details: z.string().trim().max(6000).optional().or(z.literal('')),
   budget: z.coerce.number().min(0).optional(),
   desiredDate: z.string().trim().optional().or(z.literal('')),
+  preferCallback: z.boolean().optional(),
+}).superRefine((data, ctx) => {
+  const emailStr = data.email?.trim() || '';
+  const phoneStr = data.phone?.trim() || '';
+  if (!emailStr && !phoneStr) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['email'], message: 'Veuillez fournir un courriel ou un numero de telephone.' });
+  }
+  if (emailStr && !z.string().email().safeParse(emailStr).success) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['email'], message: "Format d'email invalide." });
+  }
 });
 
 const workshopSchema = baseSchema.extend({
@@ -53,12 +66,20 @@ function compact(value: string | undefined | null) {
 export async function POST(request: NextRequest) {
   try {
     const payload = submissionRequestSchema.parse(await request.json());
-    const normalizedEmail = payload.email.trim().toLowerCase();
+    const normalizedEmail = payload.type === 'song'
+      ? (payload.email?.trim().toLowerCase() || null)
+      : payload.email.trim().toLowerCase();
 
     const contact =
-      (await prisma.contact.findFirst({
-        where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
-      })) ||
+      (normalizedEmail
+        ? await prisma.contact.findFirst({
+            where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+          })
+        : compact(payload.phone)
+          ? await prisma.contact.findFirst({
+              where: { phone: compact(payload.phone) },
+            })
+          : null) ||
       (await prisma.contact.create({
         data: {
           type: 'CLIENT',
@@ -82,20 +103,24 @@ export async function POST(request: NextRequest) {
     }
 
     let subject = 'Demande generale';
-    let message = payload.type === 'general' ? payload.details : payload.details;
+    let message: string = payload.type === 'general' ? payload.details : (payload.details ?? '');
 
     if (payload.type === 'song') {
-      subject = `Demande chanson: ${payload.subject}`;
+      const preferCallbackNote = payload.preferCallback
+        ? '⚠️ CLIENT SOUHAITE ETRE CONTACTE POUR DEFINIR LA CHANSON.'
+        : null;
+      subject = `Demande chanson: ${compact(payload.subject) || 'à définir'}`;
       message = [
+        preferCallbackNote,
         `Type: chanson`,
-        `Sujet: ${payload.subject}`,
-        `Destinataire: ${payload.recipientName}`,
-        `Style: ${payload.style || 'non precise'}`,
-        `Budget: ${payload.budget ?? 'non precise'}`,
-        `Date souhaitee: ${payload.desiredDate || 'non precisee'}`,
+        `Sujet: ${compact(payload.subject) || 'à définir'}`,
+        `Destinataire: ${compact(payload.recipientName) || 'non précisé'}`,
+        `Style: ${compact(payload.style) || 'non précisé'}`,
+        `Budget: ${payload.budget ?? 'non précisé'}`,
+        `Date souhaitée: ${compact(payload.desiredDate) || 'non précisée'}`,
         '',
-        payload.details,
-      ].join('\n');
+        compact(payload.details) || 'Aucun détail fourni.',
+      ].filter((l) => l !== null).join('\n');
     }
 
     if (payload.type === 'workshop') {
@@ -110,7 +135,7 @@ export async function POST(request: NextRequest) {
         `Date souhaitee: ${payload.desiredDate || 'non precisee'}`,
         `Duree souhaitee: ${payload.desiredDuration || 'non precisee'}`,
         '',
-        payload.details,
+        payload.details ?? '',
       ].join('\n');
     }
 
@@ -141,17 +166,20 @@ export async function POST(request: NextRequest) {
       await prisma.songRequest.create({
         data: {
           contactId: contact.id,
-          title: payload.subject,
+          title: compact(payload.subject) || 'Demande de chanson',
           fullName: payload.fullName,
-          email: normalizedEmail,
+          email: normalizedEmail ?? '',
           phone: compact(payload.phone) || 'N/A',
-          songType: payload.style || 'PERSONNALISEE',
+          songType: compact(payload.style) || 'PERSONNALISEE',
           occasion: 'DEMANDE_WEB',
-          recipientName: payload.recipientName,
-          style: payload.style || 'Libre',
+          recipientName: compact(payload.recipientName) || payload.fullName,
+          style: compact(payload.style) || 'Libre',
           mood: 'A_DETERMINER',
-          details: payload.details,
-          description: payload.details,
+          details: [
+            payload.preferCallback ? '⚠️ CLIENT SOUHAITE ETRE CONTACTE POUR DEFINIR LA CHANSON.' : null,
+            compact(payload.details),
+          ].filter(Boolean).join('\n\n') || 'À définir',
+          description: compact(payload.details) || 'À définir',
           budget: payload.budget ?? null,
           desiredDeadline: asIsoDate(payload.desiredDate),
           source: 'public-submission-form',
@@ -168,7 +196,7 @@ export async function POST(request: NextRequest) {
           organizationName: payload.organizationName,
           contactPerson: payload.fullName,
           contactPhone: compact(payload.phone),
-          contactEmail: normalizedEmail,
+          contactEmail: normalizedEmail ?? '',
           addressOrLocation: compact(payload.location),
           estimatedParticipants: payload.participants ?? null,
           ageRange: compact(payload.ageRange),
@@ -187,7 +215,7 @@ export async function POST(request: NextRequest) {
       headline: `Nouvelle demande ${payload.type}`,
       lines: [
         `Nom: ${payload.fullName}`,
-        `Email: ${normalizedEmail}`,
+        `Email: ${normalizedEmail ?? 'non fourni'}`,
         `Telephone: ${compact(payload.phone) || 'non fourni'}`,
         `Sujet: ${subject}`,
         `CRM: /crm/submissions?focus=${inquiry.id}`,
