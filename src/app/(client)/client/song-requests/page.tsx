@@ -51,11 +51,7 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
       occasion: true,
       recipientName: true,
       status: true,
-      budget: true,
-      desiredDeadline: true,
-      meetingDate: true,
       createdAt: true,
-      updatedAt: true,
     },
   });
 
@@ -70,11 +66,11 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
     <section className="space-y-6">
       <PageHeader
         title="Demandes chanson"
-        subtitle="Suivez vos demandes musicales, consultez leur statut et ouvrez le détail de chaque dossier."
+        subtitle="Vos demandes en un coup d'oeil."
         actions={<Link href="/client/song-requests/nouveau" className="rounded-xl border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-100 transition hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Nouvelle demande</Link>}
       />
 
-      <SectionCard title="Historique" subtitle="Demandes filtrées sur votre dossier client uniquement.">
+      <SectionCard title="Liste" subtitle="Touchez un titre pour ouvrir.">
         <ListToolbar
           filters={[
             { label: 'Toutes', href: '/client/song-requests?tab=all', active: tab === 'all' },

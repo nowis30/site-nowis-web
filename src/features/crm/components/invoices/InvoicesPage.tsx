@@ -226,6 +226,7 @@ function NewInvoiceForm({
     description?: string;
     amount?: string;
     sourceWorkshopRequestId?: string;
+    sourceSongRequestId?: string;
   } | null;
 }) {
   const defaultDueDate = new Date();
@@ -242,6 +243,7 @@ function NewInvoiceForm({
     description: initialForm?.description || '',
     status: 'DRAFT',
     sourceWorkshopRequestId: initialForm?.sourceWorkshopRequestId || '',
+    sourceSongRequestId: initialForm?.sourceSongRequestId || '',
   });
 
   useEffect(() => {
@@ -253,6 +255,7 @@ function NewInvoiceForm({
       amount: initialForm.amount || current.amount,
       description: initialForm.description || current.description,
       sourceWorkshopRequestId: initialForm.sourceWorkshopRequestId || current.sourceWorkshopRequestId,
+      sourceSongRequestId: initialForm.sourceSongRequestId || current.sourceSongRequestId,
     }));
   }, [initialForm]);
 
@@ -271,6 +274,7 @@ function NewInvoiceForm({
           dueDate: new Date(form.dueDate).toISOString(),
           amount: parseFloat(form.amount),
           sourceWorkshopRequestId: form.sourceWorkshopRequestId || undefined,
+          sourceSongRequestId: form.sourceSongRequestId || undefined,
         }),
       });
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -279,7 +283,7 @@ function NewInvoiceForm({
       }
 
       setOpen(false);
-      setForm({ number: '', contactId: '', issueDate: '', dueDate: defaultDueDate.toISOString().slice(0, 10), amount: '', description: '', status: 'DRAFT', sourceWorkshopRequestId: '' });
+      setForm({ number: '', contactId: '', issueDate: '', dueDate: defaultDueDate.toISOString().slice(0, 10), amount: '', description: '', status: 'DRAFT', sourceWorkshopRequestId: '', sourceSongRequestId: '' });
       onCreated();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Creation facture impossible');
@@ -335,6 +339,7 @@ interface InvoicesPageProps {
     description?: string;
     amount?: string;
     sourceWorkshopRequestId?: string;
+    sourceSongRequestId?: string;
   } | null;
 }
 

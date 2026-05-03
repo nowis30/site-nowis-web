@@ -12,7 +12,7 @@ const clientSongPatchSchema = z.object({
   language: z.string().trim().max(80).optional().or(z.literal('')),
   description: z.string().trim().max(4000).optional().or(z.literal('')),
   details: z.string().trim().min(1).max(4000).optional(),
-  desiredDeadline: z.string().datetime().optional().or(z.literal(''))
+  desiredDeadline: z.string().datetime().optional().or(z.literal('')),
   meetingDate: z.string().datetime().optional().or(z.literal('')),
   startAt: z.string().datetime().optional().or(z.literal('')),
   endAt: z.string().datetime().optional().or(z.literal('')),
@@ -32,12 +32,16 @@ function unauthorized() {
   return NextResponse.json({ error: 'Connexion requise' }, { status: 401 });
 }
 
+function forbidden() {
+  return NextResponse.json({ error: 'Acces refuse a cette demande' }, { status: 403 });
+}
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
-  const item = await prisma.songRequest.findFirst({
-    where: { id: params.id, contactId: session.contactId },
+  const item = await prisma.songRequest.findUnique({
+    where: { id: params.id },
     include: {
       appointments: {
         select: { id: true, title: true, startAt: true, endAt: true, status: true, type: true, location: true },
@@ -47,6 +51,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   });
 
   if (!item) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
+  if (item.contactId !== session.contactId) return forbidden();
   return NextResponse.json({ item, canEdit: !CLIENT_BLOCKED_STATUSES.has(item.status) });
 }
 
@@ -54,11 +59,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
-  const current = await prisma.songRequest.findFirst({
-    where: { id: params.id, contactId: session.contactId },
+  const current = await prisma.songRequest.findUnique({
+    where: { id: params.id },
   });
 
   if (!current) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
+  if (current.contactId !== session.contactId) return forbidden();
 
   if (CLIENT_BLOCKED_STATUSES.has(current.status)) {
     return NextResponse.json({

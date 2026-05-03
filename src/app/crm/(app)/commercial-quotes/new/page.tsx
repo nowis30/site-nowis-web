@@ -83,7 +83,7 @@ export default async function CrmCommercialQuoteNewPage({
       }}
       initialLines={[
         {
-          title: workshop ? workshop.title : song?.title || 'Service',
+          title: workshop ? workshop.title : song ? 'Chanson personnalisee' : 'Service',
           description: initialDescription,
           quantity: '1',
           unitPrice: initialAmount ? String(initialAmount) : '0',

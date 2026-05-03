@@ -33,17 +33,29 @@ export async function POST(request: NextRequest) {
   try {
     const rawPayload = await request.json();
     const sourceWorkshopRequestId = typeof rawPayload?.sourceWorkshopRequestId === 'string' ? rawPayload.sourceWorkshopRequestId : null;
+    const sourceSongRequestId = typeof rawPayload?.sourceSongRequestId === 'string' ? rawPayload.sourceSongRequestId : null;
     const payload = invoiceInputSchema.parse(rawPayload);
-    const item = await prisma.invoice.create({
-      data: {
-        number: payload.number.trim(),
-        contactId: payload.contactId,
-        issueDate: payload.issueDate ? new Date(payload.issueDate) : new Date(),
-        dueDate: new Date(payload.dueDate),
-        amount: payload.amount,
-        status: payload.status,
-        description: normalizeOptionalString(payload.description),
-      },
+    const item = await prisma.$transaction(async (tx) => {
+      const created = await tx.invoice.create({
+        data: {
+          number: payload.number.trim(),
+          contactId: payload.contactId,
+          issueDate: payload.issueDate ? new Date(payload.issueDate) : new Date(),
+          dueDate: new Date(payload.dueDate),
+          amount: payload.amount,
+          status: payload.status,
+          description: normalizeOptionalString(payload.description),
+        },
+      });
+
+      if (sourceSongRequestId) {
+        await tx.songRequest.updateMany({
+          where: { id: sourceSongRequestId, contactId: payload.contactId },
+          data: { convertedInvoiceId: created.id },
+        });
+      }
+
+      return created;
     });
 
     if (sourceWorkshopRequestId) {
@@ -57,6 +69,23 @@ export async function POST(request: NextRequest) {
           relatedType: 'WORKSHOP_REQUEST',
           relatedId: sourceWorkshopRequestId,
           relatedUrl: `/crm/workshop-requests/${sourceWorkshopRequestId}`,
+          userId: guard.session.sub,
+        },
+      }).catch(() => undefined);
+    }
+
+    if (sourceSongRequestId) {
+      await prisma.activity.create({
+        data: {
+          type: 'INVOICE',
+          title: 'Facture créée depuis la demande chanson',
+          description: `Facture ${item.number} créée depuis une demande de chanson.`,
+          contactId: item.contactId,
+          songRequestId: sourceSongRequestId,
+          invoiceId: item.id,
+          relatedType: 'SONG_REQUEST',
+          relatedId: sourceSongRequestId,
+          relatedUrl: `/crm/song-requests/${sourceSongRequestId}`,
           userId: guard.session.sub,
         },
       }).catch(() => undefined);

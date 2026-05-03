@@ -206,10 +206,8 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
 
   return (
     <div className="rounded-3xl bg-white p-8 shadow-lg md:p-10">
-      <h3 className="text-2xl font-bold text-slate-900">Demande de chanson professionnelle</h3>
-      <p className="mt-2 text-sm text-slate-600">
-        Ce formulaire alimente directement le CRM Nowis pour un suivi rapide et structuré.
-      </p>
+      <h3 className="text-2xl font-bold text-slate-900">Nouvelle demande</h3>
+      <p className="mt-2 text-sm text-slate-600">Décris ton projet, on s'occupe du reste.</p>
 
       {successState ? (
         <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
@@ -229,7 +227,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       ) : null}
 
       <form onSubmit={onSubmit} className="mt-6 space-y-5">
-        <SectionCard title="Section 1 — Info de base">
+        <SectionCard title="Infos de base">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="title">Titre de la chanson</label>
@@ -272,7 +270,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
           </div>
         </SectionCard>
 
-        <SectionCard title="Section 2 — Ambiance">
+        <SectionCard title="Ambiance">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="mood">Émotion principale</label>
@@ -293,7 +291,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
           </div>
         </SectionCard>
 
-        <SectionCard title="Section 3 — Contenu">
+        <SectionCard title="Contenu">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="description">Description détaillée</label>
             <textarea id="description" rows={6} {...register('description')} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900" placeholder="Décris l’histoire, le message, le contexte..." />

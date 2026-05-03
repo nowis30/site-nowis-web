@@ -1,27 +1,16 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
+import { can } from '@/features/crm/auth/permissions';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { SongRequestDetailPage } from '@/features/crm/components/song-requests/SongRequestDetailPage';
 import { buildClientPortalUrl, signClientPortalToken } from '@/lib/client-portal';
-import { Prisma } from '@prisma/client';
-
-type SongRequestDetailRecord = Prisma.SongRequestGetPayload<{
-  include: {
-    organization: { select: { id: true; name: true } };
-    contact: { select: { id: true; fullName: true; email: true; phone: true } };
-    appointments: true;
-    fileDocuments: true;
-    activities: { include: { user: { select: { id: true; fullName: true } } } };
-    tasks: true;
-  };
-}>;
 
 interface PageProps {
   params: { id: string };
 }
 
 export default async function CrmSongRequestDetailPage({ params }: PageProps) {
-  await requireCrmSession();
+  const session = await requireCrmSession();
 
   const item = await prisma.songRequest.findUnique({
     where: { id: params.id },
@@ -44,11 +33,48 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
       tasks: {
         orderBy: [{ status: 'asc' }, { dueDate: 'asc' }, { createdAt: 'desc' }],
       },
+      commercialQuotes: {
+        select: {
+          id: true,
+          quoteNumber: true,
+          title: true,
+          status: true,
+          totalAmount: true,
+          convertedToInvoiceId: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      },
     },
   });
 
   if (!item) notFound();
-  const song: SongRequestDetailRecord = item;
+  const song = item;
+
+  const invoiceIds = Array.from(
+    new Set(
+      [
+        song.convertedInvoiceId,
+        ...song.commercialQuotes.map((quote) => quote.convertedToInvoiceId),
+      ].filter((value): value is string => Boolean(value)),
+    ),
+  );
+
+  const relatedInvoices = invoiceIds.length > 0
+    ? await prisma.invoice.findMany({
+        where: { id: { in: invoiceIds } },
+        select: {
+          id: true,
+          number: true,
+          status: true,
+          amount: true,
+          issueDate: true,
+          dueDate: true,
+        },
+        orderBy: { issueDate: 'desc' },
+      })
+    : [];
 
   const clientPortalToken = signClientPortalToken({
     contactId: String(song.contact.id),
@@ -131,6 +157,23 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
           priority: task.priority as 'LOW' | 'MEDIUM' | 'HIGH',
           dueDate: task.dueDate?.toISOString() ?? null,
         })),
+        relatedCommercialQuotes: song.commercialQuotes.map((quote) => ({
+          id: quote.id,
+          quoteNumber: quote.quoteNumber,
+          title: quote.title,
+          status: quote.status,
+          totalAmount: quote.totalAmount.toString(),
+          convertedToInvoiceId: quote.convertedToInvoiceId,
+          createdAt: quote.createdAt.toISOString(),
+        })),
+        relatedInvoices: relatedInvoices.map((invoice) => ({
+          id: invoice.id,
+          number: invoice.number,
+          status: invoice.status,
+          amount: invoice.amount.toString(),
+          issueDate: invoice.issueDate.toISOString(),
+          dueDate: invoice.dueDate.toISOString(),
+        })),
         files: song.fileDocuments.map((file) => ({
           id: String(file.id),
           filename: file.filename || '',
@@ -144,6 +187,8 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
         })),
       }}
       clientPortalUrl={buildClientPortalUrl(clientPortalToken)}
+      canCreateCommercialQuote={can(session.role, 'commercialQuotes', 'create')}
+      canCreateInvoice={can(session.role, 'invoices', 'create')}
     />
   );
 }

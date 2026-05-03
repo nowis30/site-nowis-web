@@ -18,7 +18,7 @@ export default async function NouvelleDemandePortalPage() {
     <section className="space-y-6">
       <PageHeader
         title="Nouvelle demande de chanson"
-        subtitle="Remplis le formulaire ci-dessous. Ta demande sera automatiquement liée à ton dossier client."
+        subtitle="Remplis le formulaire, puis envoie."
         actions={
           <Link
             href="/client/song-requests"

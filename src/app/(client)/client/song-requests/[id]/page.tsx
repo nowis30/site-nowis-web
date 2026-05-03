@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SongRequestStatus } from '@prisma/client';
+import { Music2 } from 'lucide-react';
 
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
@@ -94,7 +95,7 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
     <section className="space-y-6">
       <PageHeader
         title={request.title || request.occasion}
-        subtitle="Détail complet de votre demande de chanson."
+        subtitle="Consultez et modifiez votre demande."
         actions={<Link href="/client/song-requests" className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Retour</Link>}
       />
 
@@ -124,7 +125,7 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
         />
       </SectionCard>
 
-      <SectionCard title="Rencontre chanson" subtitle="Proposez une date et des détails de rencontre tant que la demande est modifiable.">
+      <SectionCard title="Rencontre" subtitle="Choisissez une date si besoin.">
         <div className="mb-3 rounded-xl border border-slate-800 bg-slate-950/45 p-3 text-sm text-slate-300">
           Date de rencontre: {request.meetingDate ? formatDateTime(request.meetingDate) : 'Aucune date enregistree'}
         </div>
@@ -147,7 +148,7 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
         />
       </SectionCard>
 
-      <SectionCard title="Fichiers du projet" subtitle="Deposez vos paroles, poemes, notes, demos et documents lies a cette demande.">
+      <SectionCard title="Fichiers" subtitle="Ajoutez vos documents.">
         <SongRequestFilesPanel
           mode="client"
           songRequestId={request.id}

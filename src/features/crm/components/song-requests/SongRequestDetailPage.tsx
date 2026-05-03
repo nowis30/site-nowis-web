@@ -76,6 +76,23 @@ type SongRequestDetail = {
   }>;
   activities: ActivityItem[];
   tasks: TaskItem[];
+  relatedCommercialQuotes: Array<{
+    id: string;
+    quoteNumber: string;
+    title: string;
+    status: string;
+    totalAmount: string | number;
+    convertedToInvoiceId: string | null;
+    createdAt: string;
+  }>;
+  relatedInvoices: Array<{
+    id: string;
+    number: string;
+    status: string;
+    amount: string | number;
+    issueDate: string;
+    dueDate: string;
+  }>;
   files: Array<{
     id: string;
     filename: string;
@@ -103,9 +120,11 @@ const STATUS_LABELS: Record<SongRequestDetail['status'], string> = {
 interface SongRequestDetailPageProps {
   item: SongRequestDetail;
   clientPortalUrl: string;
+  canCreateCommercialQuote: boolean;
+  canCreateInvoice: boolean;
 }
 
-export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDetailPageProps) {
+export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommercialQuote, canCreateInvoice }: SongRequestDetailPageProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -374,6 +393,24 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
                 Ouvrir le contact
               </Link>
 
+              {canCreateCommercialQuote ? (
+                <Link
+                  href={`/crm/commercial-quotes/new?songRequestId=${item.id}`}
+                  className="block rounded-lg border border-indigo-700/50 px-3 py-2 text-sm text-indigo-200 hover:border-indigo-500/60 hover:text-indigo-100"
+                >
+                  Créer une soumission
+                </Link>
+              ) : null}
+
+              {canCreateInvoice ? (
+                <Link
+                  href={`/crm/invoices?songRequestId=${item.id}`}
+                  className="block rounded-lg border border-emerald-700/50 px-3 py-2 text-sm text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100"
+                >
+                  Créer une facture
+                </Link>
+              ) : null}
+
               <a href={clientPortalUrl} target="_blank" rel="noreferrer" className="block rounded-lg border border-emerald-700/50 px-3 py-2 text-sm text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100">
                 Ouvrir le portail client
               </a>
@@ -407,13 +444,6 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
                   >
                     {loadingAction === 'convert_appointment' ? 'Conversion...' : 'Convertir en rendez-vous'}
                   </button>
-
-                  <Link
-                    href={`/crm/commercial-quotes/new?songRequestId=${item.id}`}
-                    className="block w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-purple-500/40 hover:text-purple-300"
-                  >
-                    Créer une soumission commerciale
-                  </Link>
 
                   <button
                     type="button"
@@ -567,6 +597,59 @@ export function SongRequestDetailPage({ item, clientPortalUrl }: SongRequestDeta
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Soumissions liées</h3>
+            <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.relatedCommercialQuotes.length}</span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {item.relatedCommercialQuotes.length === 0 ? (
+              <p className="text-sm text-slate-500">Aucune soumission liée.</p>
+            ) : (
+              item.relatedCommercialQuotes.map((quote) => (
+                <article key={quote.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 text-sm text-slate-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-white">{quote.quoteNumber}</p>
+                    <span className="text-xs text-slate-400">{quote.status}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">{quote.title}</p>
+                  <p className="mt-1 text-xs text-slate-500">{new Date(quote.createdAt).toLocaleDateString('fr-CA')} · {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(quote.totalAmount))}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Link href={`/crm/commercial-quotes/${quote.id}`} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white">Ouvrir</Link>
+                    {quote.convertedToInvoiceId ? <Link href={`/crm/invoices/${quote.convertedToInvoiceId}`} className="rounded-md border border-emerald-700/60 px-2 py-1 text-xs text-emerald-300 hover:text-emerald-200">Facture liée</Link> : null}
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Factures liées</h3>
+            <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{item.relatedInvoices.length}</span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {item.relatedInvoices.length === 0 ? (
+              <p className="text-sm text-slate-500">Aucune facture liée.</p>
+            ) : (
+              item.relatedInvoices.map((invoice) => (
+                <article key={invoice.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 text-sm text-slate-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-white">{invoice.number}</p>
+                    <span className="text-xs text-slate-400">{invoice.status}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Émise le {new Date(invoice.issueDate).toLocaleDateString('fr-CA')} · Échéance {new Date(invoice.dueDate).toLocaleDateString('fr-CA')}</p>
+                  <p className="mt-1 text-xs text-slate-400">{new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(invoice.amount))}</p>
+                  <div className="mt-2">
+                    <Link href={`/crm/invoices/${invoice.id}`} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white">Ouvrir</Link>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </div>
+
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Activités liées</h3>
           <div className="mt-4 space-y-3">

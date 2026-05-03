@@ -9,6 +9,22 @@ export default async function CrmInvoicesPage({
 }) {
   await requireCrmSession();
 
+  const songRequestId = typeof searchParams?.songRequestId === 'string' ? searchParams.songRequestId : undefined;
+
+  const songRequest = songRequestId
+    ? await prisma.songRequest.findUnique({
+        where: { id: songRequestId },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          details: true,
+          budget: true,
+          contactId: true,
+        },
+      })
+    : null;
+
   const [invoices, contacts, stats] = await Promise.all([
     prisma.invoice.findMany({
       include: { contact: { select: { fullName: true, email: true } } },
@@ -46,10 +62,16 @@ export default async function CrmInvoicesPage({
         _sum: { amount: row._sum.amount?.toString() ?? null },
       }))}
       initialForm={{
-        contactId: typeof searchParams?.contactId === 'string' ? searchParams.contactId : undefined,
-        description: typeof searchParams?.description === 'string' ? searchParams.description : undefined,
-        amount: typeof searchParams?.amount === 'string' ? searchParams.amount : undefined,
+        contactId: typeof searchParams?.contactId === 'string' ? searchParams.contactId : songRequest?.contactId,
+        description:
+          typeof searchParams?.description === 'string'
+            ? searchParams.description
+            : songRequest
+              ? `Chanson personnalisée · ${songRequest.title || 'Demande client'}${songRequest.description || songRequest.details ? ` · ${(songRequest.description || songRequest.details || '').slice(0, 220)}` : ''}`
+              : undefined,
+        amount: typeof searchParams?.amount === 'string' ? searchParams.amount : songRequest?.budget?.toString(),
         sourceWorkshopRequestId: typeof searchParams?.workshopId === 'string' ? searchParams.workshopId : undefined,
+        sourceSongRequestId: songRequest?.id,
       }}
     />
   );
