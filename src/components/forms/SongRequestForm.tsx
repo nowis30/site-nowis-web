@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { songRequestPortalInputSchema } from '@/lib/validators/song-request';
-import { toPublicApiUrl } from '@/lib/public-api-url';
 
 const songRequestFormSchema = songRequestPortalInputSchema;
 
@@ -135,7 +134,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
         details: values.description,
       };
 
-      const response = await fetch(toPublicApiUrl('/api/site/song-requests'), {
+      const response = await fetch('/api/site/song-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -183,7 +182,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await fetch(toPublicApiUrl('/api/site/song-requests/upload'), {
+      const response = await fetch('/api/site/song-requests/upload', {
         method: 'POST',
         credentials: 'include',
         body: formData,
