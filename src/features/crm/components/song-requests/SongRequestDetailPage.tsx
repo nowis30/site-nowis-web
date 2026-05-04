@@ -411,10 +411,6 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
                 </Link>
               ) : null}
 
-              <a href={clientPortalUrl} target="_blank" rel="noreferrer" className="block rounded-lg border border-emerald-700/50 px-3 py-2 text-sm text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100">
-                Ouvrir le portail client
-              </a>
-
               {!isEditing ? (
                 <button
                   type="button"
