@@ -27,16 +27,16 @@ const labelClass = 'mb-1.5 block text-sm font-medium text-slate-200';
 
 export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) {
   const [fields, setFields] = useState<BillingFields>({
-    billingLegalName: initial.billingLegalName,
+    billingLegalName: initial.billingLegalName || initial.fullName,
     billingCompanyName: initial.billingCompanyName,
-    billingEmail: initial.billingEmail,
+    billingEmail: initial.billingEmail || initial.email,
     billingPhone: initial.billingPhone,
     billingAddressLine1: initial.billingAddressLine1,
     billingAddressLine2: initial.billingAddressLine2,
     billingCity: initial.billingCity,
     billingState: initial.billingState,
     billingPostalCode: initial.billingPostalCode,
-    billingCountry: initial.billingCountry,
+    billingCountry: initial.billingCountry || 'Canada',
     billingTaxId: initial.billingTaxId,
   });
   const [saving, setSaving] = useState(false);
@@ -53,8 +53,11 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
     setSuccess(false);
 
     const required = [
+      { key: 'billingLegalName', label: 'Nom de facturation' },
+      { key: 'billingEmail', label: 'Courriel de facturation' },
       { key: 'billingAddressLine1', label: 'Adresse' },
       { key: 'billingCity', label: 'Ville' },
+      { key: 'billingState', label: 'Province / Etat' },
       { key: 'billingPostalCode', label: 'Code postal' },
       { key: 'billingCountry', label: 'Pays' },
     ] as const;
@@ -76,9 +79,7 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok) throw new Error(data?.error || 'Enregistrement impossible');
       setSuccess(true);
-      if (nextUrl) {
-        window.location.href = nextUrl;
-      }
+      window.location.href = nextUrl || '/client';
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Enregistrement impossible');
     } finally {
@@ -102,12 +103,13 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={labelClass}>Nom légal (prénom nom)</label>
+            <label className={labelClass}>Nom de facturation <span className="text-amber-400">*</span></label>
             <input
               value={fields.billingLegalName ?? ''}
               onChange={(e) => set('billingLegalName', e.target.value)}
               placeholder={initial.fullName}
               className={inputClass}
+              required
             />
           </div>
           <div>
@@ -123,13 +125,14 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={labelClass}>Courriel de facturation</label>
+            <label className={labelClass}>Courriel de facturation <span className="text-amber-400">*</span></label>
             <input
               type="email"
               value={fields.billingEmail ?? ''}
               onChange={(e) => set('billingEmail', e.target.value)}
               placeholder={initial.email}
               className={inputClass}
+              required
             />
           </div>
           <div>
@@ -179,12 +182,13 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
             />
           </div>
           <div>
-            <label className={labelClass}>Province / État</label>
+            <label className={labelClass}>Province / État <span className="text-amber-400">*</span></label>
             <input
               value={fields.billingState ?? ''}
               onChange={(e) => set('billingState', e.target.value)}
               placeholder="Québec"
               className={inputClass}
+              required
             />
           </div>
           <div>

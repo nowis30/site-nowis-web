@@ -157,6 +157,12 @@ export function InvoiceDetailPage({
 }: InvoiceDetailPageProps) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState<string | null>(null);
+  const [billingIssues, setBillingIssues] = useState<{
+    missingIssuer: string[];
+    missingCustomer: string[];
+    billingUpdateUrl: string | null;
+    editCustomerUrl: string | null;
+  } | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(initialComposeOpen);
   const [emailSubject, setEmailSubject] = useState(buildDefaultSubject(invoice.number, businessProfile.displayName));
   const [emailCc, setEmailCc] = useState('');
@@ -177,6 +183,7 @@ export function InvoiceDetailPage({
   async function sendInvoiceEmail() {
     setSendingEmail(true);
     setEmailFeedback(null);
+    setBillingIssues(null);
     try {
       const response = await fetch(`/api/crm/invoices/${invoice.id}/send`, {
         method: 'POST',
@@ -188,8 +195,22 @@ export function InvoiceDetailPage({
           bcc: emailBcc,
         }),
       });
-      const data = await response.json().catch(() => null);
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+        missingIssuer?: string[];
+        missingCustomer?: string[];
+        billingUpdateUrl?: string | null;
+        editCustomerUrl?: string | null;
+      } | null;
       if (!response.ok) {
+        if (response.status === 409 && (data?.missingIssuer || data?.missingCustomer)) {
+          setBillingIssues({
+            missingIssuer: data?.missingIssuer || [],
+            missingCustomer: data?.missingCustomer || [],
+            billingUpdateUrl: data?.billingUpdateUrl || null,
+            editCustomerUrl: data?.editCustomerUrl || null,
+          });
+        }
         throw new Error(data?.error || 'Envoi impossible');
       }
       setEmailFeedback('Facture envoyée par email avec succès.');
@@ -238,6 +259,23 @@ export function InvoiceDetailPage({
       {emailFeedback ? (
         <div className={`print:hidden rounded-xl border px-4 py-3 text-sm ${emailFeedback.includes('succès') ? 'border-emerald-700/40 bg-emerald-950/20 text-emerald-300' : 'border-red-700/40 bg-red-950/20 text-red-300'}`}>
           {emailFeedback}
+        </div>
+      ) : null}
+
+      {billingIssues ? (
+        <div className="print:hidden rounded-xl border border-amber-700/40 bg-amber-950/20 px-4 py-3 text-sm text-amber-100">
+          <p className="font-medium">Facturation incomplete</p>
+          <p className="mt-1 text-amber-200/90">Emetteur: {billingIssues.missingIssuer.length > 0 ? billingIssues.missingIssuer.join(', ') : 'ok'}</p>
+          <p className="text-amber-200/90">Client: {billingIssues.missingCustomer.length > 0 ? billingIssues.missingCustomer.join(', ') : 'ok'}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <Link href="/crm/settings" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">Completer le profil emetteur</Link>
+            {billingIssues.editCustomerUrl ? (
+              <Link href={billingIssues.editCustomerUrl} className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">Modifier le client dans le CRM</Link>
+            ) : null}
+            {billingIssues.billingUpdateUrl ? (
+              <a href={billingIssues.billingUpdateUrl} target="_blank" rel="noreferrer" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">Envoyer le lien public de facturation</a>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

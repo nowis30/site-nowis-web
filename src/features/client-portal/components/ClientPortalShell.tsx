@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ShieldCheck, LogOut } from 'lucide-react';
 import { ClientMobileBottomNav } from '@/features/client-portal/components/ClientMobileBottomNav';
 import { clientPortalNavigation } from '@/features/client-portal/config/navigation';
@@ -22,6 +23,44 @@ interface ClientPortalShellProps {
 export function ClientPortalShell({ session, children }: ClientPortalShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!session) return;
+
+    const excludedPaths = [
+      '/client/facturation',
+      '/client/login',
+      '/client/logout',
+      '/login',
+      '/logout',
+    ];
+
+    if (excludedPaths.some((path) => pathname.startsWith(path))) return;
+
+    let cancelled = false;
+    async function enforceBilling() {
+      try {
+        const response = await fetch('/api/client/facturation/status', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = (await response.json().catch(() => null)) as { complete?: boolean } | null;
+        if (cancelled) return;
+        if (data?.complete) return;
+
+        const query = searchParams?.toString();
+        const current = query ? `${pathname}?${query}` : pathname;
+        const next = encodeURIComponent(current || '/client');
+        router.replace(`/client/facturation?next=${next}`);
+      } catch {
+        // Silencieux: en cas d'erreur reseau, on ne bloque pas l'UI.
+      }
+    }
+
+    void enforceBilling();
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, router, searchParams, session]);
 
   async function logout() {
     await fetch('/api/client-auth/logout', { method: 'POST' });

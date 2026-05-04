@@ -86,13 +86,20 @@ export default function PublicBillingPage({ params }: { params: { token: string 
     setItem((current) => (current ? { ...current, [key]: value || null } : current));
   }
 
+  const legalName = item?.billingLegalName ?? item?.fullName ?? '';
+  const billingEmail = item?.billingEmail ?? '';
+  const country = item?.billingCountry ?? 'Canada';
+
   async function save(event: React.FormEvent) {
     event.preventDefault();
     if (!item) return;
 
     const required = [
+      { key: 'billingLegalName' as const, label: 'Nom de facturation' },
+      { key: 'billingEmail' as const, label: 'Courriel de facturation' },
       { key: 'billingAddressLine1' as const, label: 'Adresse' },
       { key: 'billingCity' as const, label: 'Ville' },
+      { key: 'billingState' as const, label: 'Province / Etat' },
       { key: 'billingPostalCode' as const, label: 'Code postal' },
       { key: 'billingCountry' as const, label: 'Pays' },
     ];
@@ -171,12 +178,13 @@ export default function PublicBillingPage({ params }: { params: { token: string 
 
         <Section title="Coordonnées de facturation">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Nom légal (prénom nom)">
+            <Field label="Nom de facturation" required>
               <input
-                value={item?.billingLegalName ?? ''}
+                value={legalName}
                 onChange={(e) => update('billingLegalName', e.target.value)}
                 placeholder={item?.fullName ?? ''}
                 className={inputClass}
+                required
               />
             </Field>
             <Field label="Société / organisme">
@@ -189,13 +197,14 @@ export default function PublicBillingPage({ params }: { params: { token: string 
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Courriel de facturation">
+            <Field label="Courriel de facturation" required>
               <input
                 type="email"
-                value={item?.billingEmail ?? ''}
+                value={billingEmail}
                 onChange={(e) => update('billingEmail', e.target.value)}
                 placeholder="votre@courriel.com"
                 className={inputClass}
+                required
               />
             </Field>
             <Field label="Téléphone">
@@ -237,12 +246,13 @@ export default function PublicBillingPage({ params }: { params: { token: string 
                 required
               />
             </Field>
-            <Field label="Province / État">
+            <Field label="Province / État" required>
               <input
                 value={item?.billingState ?? ''}
                 onChange={(e) => update('billingState', e.target.value)}
                 placeholder="Québec"
                 className={inputClass}
+                required
               />
             </Field>
             <Field label="Code postal" required>
@@ -257,7 +267,7 @@ export default function PublicBillingPage({ params }: { params: { token: string 
           </div>
           <Field label="Pays" required>
             <input
-              value={item?.billingCountry ?? ''}
+              value={country}
               onChange={(e) => update('billingCountry', e.target.value)}
               placeholder="Canada"
               className={inputClass}

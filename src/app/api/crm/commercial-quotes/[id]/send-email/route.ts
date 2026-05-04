@@ -7,13 +7,12 @@ import { sendEmail as sendEmailService } from '@/lib/email-service';
 import { buildPublicBillingUrl, buildPublicQuoteUrl, signPublicBillingToken, signPublicQuoteToken } from '@/lib/public-links';
 import {
   buildCustomerSnapshotFromContact,
-  buildCustomerSnapshotFromOrganization,
   getBillingIssuerSnapshot,
   toCustomerSnapshot,
   toIssuerSnapshot,
-  validateCustomerSnapshot,
   validateIssuerSnapshot,
 } from '@/lib/billing-profile';
+import { getClientBillingMissingLabels } from '@/lib/client-billing';
 
 const payloadSchema = z.object({
   subject: z.string().trim().min(3).max(180).optional(),
@@ -64,27 +63,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           billingNotes: true,
         },
       },
-      organization: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-          city: true,
-          address: true,
-          billingCompanyName: true,
-          billingLegalName: true,
-          billingEmail: true,
-          billingPhone: true,
-          billingAddressLine1: true,
-          billingAddressLine2: true,
-          billingCity: true,
-          billingState: true,
-          billingPostalCode: true,
-          billingCountry: true,
-          billingTaxId: true,
-          billingNotes: true,
-        },
-      },
       lines: { orderBy: { sortOrder: 'asc' } },
     },
   });
@@ -100,19 +78,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const issuer = toIssuerSnapshot(quote.issuerSnapshot) || await getBillingIssuerSnapshot();
   const fromSnapshot = toCustomerSnapshot(quote.customerSnapshot);
   const fromContact = buildCustomerSnapshotFromContact(quote.contact);
-  const fromOrganization = quote.organization ? buildCustomerSnapshotFromOrganization(quote.organization) : null;
-
-  let customer = fromSnapshot || fromContact;
+  const customer = fromSnapshot || fromContact;
   const missingIssuer = validateIssuerSnapshot(issuer);
-  let missingCustomer = validateCustomerSnapshot(customer);
-
-  if (missingCustomer.length > 0 && fromOrganization) {
-    const orgMissing = validateCustomerSnapshot(fromOrganization);
-    if (orgMissing.length < missingCustomer.length) {
-      customer = fromOrganization;
-      missingCustomer = orgMissing;
-    }
-  }
+  const missingCustomer = getClientBillingMissingLabels(quote.contact);
 
   if (missingIssuer.length > 0 || missingCustomer.length > 0) {
     const appUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_DOMAIN || request.nextUrl.origin;
@@ -128,6 +96,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         missingIssuer,
         missingCustomer,
         billingUpdateUrl,
+        editCustomerUrl: quote.contactId ? `/crm/contacts/${quote.contactId}` : null,
       },
       { status: 409 },
     );

@@ -4,6 +4,7 @@ import { requireClientPortalSession } from '@/features/client-portal/auth/sessio
 import { PageHeader } from '@/features/client-portal/components/ui';
 import { WorkshopRequestForm } from '@/features/workshops/components/WorkshopRequestForm';
 import { prisma } from '@/lib/prisma';
+import { isClientBillingComplete } from '@/lib/client-billing';
 
 const GROUP_TYPES = new Set(['AINES_RESIDENCE', 'ECOLE', 'ENTREPRISE', 'COMMUNAUTAIRE', 'PRIVE', 'AUTRE']);
 
@@ -20,18 +21,27 @@ export default async function NouvelleDemandeAtelierPage({
     where: { id: session.contactId },
     select: {
       phone: true,
+      billingLegalName: true,
+      billingEmail: true,
       billingAddressLine1: true,
       billingCity: true,
+      billingState: true,
       billingPostalCode: true,
       billingCountry: true,
     },
   });
 
-  const billingComplete =
-    !!contact?.billingAddressLine1 &&
-    !!contact?.billingCity &&
-    !!contact?.billingPostalCode &&
-    !!contact?.billingCountry;
+  const billingComplete = isClientBillingComplete({
+    fullName: session.fullName,
+    email: session.email,
+    billingLegalName: contact?.billingLegalName,
+    billingEmail: contact?.billingEmail,
+    billingAddressLine1: contact?.billingAddressLine1,
+    billingCity: contact?.billingCity,
+    billingState: contact?.billingState,
+    billingPostalCode: contact?.billingPostalCode,
+    billingCountry: contact?.billingCountry,
+  });
 
   if (!billingComplete) {
     return (
@@ -55,7 +65,7 @@ export default async function NouvelleDemandeAtelierPage({
             <h2 className="text-base font-semibold">Informations de facturation requises</h2>
           </div>
           <p className="text-sm text-amber-100 leading-relaxed">
-            Avant de soumettre une demande d&apos;atelier, veuillez d&apos;abord compléter votre profil de facturation.
+            Votre profil de facturation doit etre complete avant de creer une demande.
             Ces informations sont nécessaires pour établir votre contrat et votre facture.
           </p>
           <Link
@@ -63,7 +73,7 @@ export default async function NouvelleDemandeAtelierPage({
             className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500"
           >
             <FileText className="h-4 w-4" />
-            Compléter mon profil de facturation
+            Completer mes informations
           </Link>
         </div>
       </section>

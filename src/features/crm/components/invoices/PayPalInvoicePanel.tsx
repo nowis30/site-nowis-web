@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
 type PayPalInvoicePanelProps = {
@@ -38,6 +39,10 @@ type PayPalRoutePayload = {
     paymentCurrency: string | null;
   };
   error?: string;
+  missingIssuer?: string[];
+  missingCustomer?: string[];
+  billingUpdateUrl?: string | null;
+  editCustomerUrl?: string | null;
 };
 
 function formatDateTime(value: string | null) {
@@ -81,6 +86,12 @@ export function PayPalInvoicePanel({
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [billingIssues, setBillingIssues] = useState<{
+    missingIssuer: string[];
+    missingCustomer: string[];
+    billingUpdateUrl: string | null;
+    editCustomerUrl: string | null;
+  } | null>(null);
 
   const paymentCurrency = meta.paymentCurrency || 'CAD';
   const effectiveAmount = useMemo(() => meta.paymentAmount || amount, [amount, meta.paymentAmount]);
@@ -92,6 +103,7 @@ export function PayPalInvoicePanel({
     setLoadingAction(action);
     setError(null);
     setFeedback(null);
+    setBillingIssues(null);
 
     try {
       const response = await fetch(
@@ -108,6 +120,14 @@ export function PayPalInvoicePanel({
 
       const data = (await response.json().catch(() => null)) as PayPalRoutePayload | null;
       if (!response.ok || !data?.item) {
+        if (response.status === 409 && (data?.missingIssuer || data?.missingCustomer)) {
+          setBillingIssues({
+            missingIssuer: data?.missingIssuer || [],
+            missingCustomer: data?.missingCustomer || [],
+            billingUpdateUrl: data?.billingUpdateUrl || null,
+            editCustomerUrl: data?.editCustomerUrl || null,
+          });
+        }
         throw new Error(data?.error || 'Action PayPal impossible');
       }
 
@@ -199,6 +219,23 @@ export function PayPalInvoicePanel({
 
       {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
       {feedback ? <p className="mt-4 text-sm text-emerald-300">{feedback}</p> : null}
+
+      {billingIssues ? (
+        <div className="mt-4 rounded-xl border border-amber-700/40 bg-amber-950/20 px-3 py-3 text-sm text-amber-100">
+          <p className="font-medium">Facturation incomplete</p>
+          <p className="mt-1 text-amber-200/90">Emetteur: {billingIssues.missingIssuer.length > 0 ? billingIssues.missingIssuer.join(', ') : 'ok'}</p>
+          <p className="text-amber-200/90">Client: {billingIssues.missingCustomer.length > 0 ? billingIssues.missingCustomer.join(', ') : 'ok'}</p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            <Link href="/crm/settings" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">Completer le profil emetteur</Link>
+            {billingIssues.editCustomerUrl ? (
+              <Link href={billingIssues.editCustomerUrl} className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">Modifier le client dans le CRM</Link>
+            ) : null}
+            {billingIssues.billingUpdateUrl ? (
+              <a href={billingIssues.billingUpdateUrl} target="_blank" rel="noreferrer" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">Envoyer le lien public de facturation</a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div className={`rounded-xl border px-3 py-3 ${statusTone(meta.paymentStatus)}`}>

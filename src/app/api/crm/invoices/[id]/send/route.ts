@@ -6,7 +6,8 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
 import { buildPublicBillingUrl, buildPublicInvoiceUrl, signPublicBillingToken, signPublicInvoiceToken } from '@/lib/public-links';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
-import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
+import { getClientBillingMissingLabels } from '@/lib/client-billing';
 
 const sendInvoiceSchema = z.object({
   subject: z.string().trim().min(3).max(180).optional(),
@@ -65,7 +66,25 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     where: { id: params.id },
     include: {
       contact: {
-        select: { id: true, fullName: true, email: true },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          companyName: true,
+          billingCompanyName: true,
+          billingLegalName: true,
+          billingEmail: true,
+          billingPhone: true,
+          billingAddressLine1: true,
+          billingAddressLine2: true,
+          billingCity: true,
+          billingState: true,
+          billingPostalCode: true,
+          billingCountry: true,
+          billingTaxId: true,
+          billingNotes: true,
+        },
       },
     },
   });
@@ -81,7 +100,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
   const customerProfile = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
   const missingIssuer = validateIssuerSnapshot(businessProfile);
-  const missingCustomer = validateCustomerSnapshot(customerProfile);
+  const missingCustomer = getClientBillingMissingLabels(invoice.contact);
   if (missingIssuer.length > 0 || missingCustomer.length > 0) {
     const appUrl =
       process.env.NEXT_PUBLIC_SITE_URL ||
@@ -97,6 +116,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         missingIssuer,
         missingCustomer,
         billingUpdateUrl,
+        editCustomerUrl: `/crm/contacts/${invoice.contact.id}`,
       },
       { status: 409 },
     );

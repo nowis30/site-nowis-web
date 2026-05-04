@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { verifyPublicBillingToken } from '@/lib/public-links';
+import { getClientBillingDefaults, getClientBillingMissingLabels } from '@/lib/client-billing';
 
 const nullableString = (max: number) =>
   z.string().trim().max(max).optional().or(z.literal('')).or(z.null());
@@ -72,19 +73,68 @@ export async function PATCH(request: NextRequest, { params }: { params: { token:
   try {
     const payload = updateSchema.parse(await request.json());
 
+    const current = await prisma.contact.findUnique({
+      where: { id: decoded.contactId },
+      select: {
+        fullName: true,
+        email: true,
+        billingLegalName: true,
+        billingEmail: true,
+        billingAddressLine1: true,
+        billingCity: true,
+        billingState: true,
+        billingPostalCode: true,
+        billingCountry: true,
+      },
+    });
+
+    if (!current) {
+      return NextResponse.json({ error: 'Contact introuvable.' }, { status: 404 });
+    }
+
+    const candidate = {
+      ...current,
+      billingLegalName: payload.billingLegalName !== undefined ? normalizeOptional(payload.billingLegalName) : current.billingLegalName,
+      billingEmail: payload.billingEmail !== undefined ? normalizeOptional(payload.billingEmail) : current.billingEmail,
+      billingAddressLine1: payload.billingAddressLine1 !== undefined ? normalizeOptional(payload.billingAddressLine1) : current.billingAddressLine1,
+      billingCity: payload.billingCity !== undefined ? normalizeOptional(payload.billingCity) : current.billingCity,
+      billingState: payload.billingState !== undefined ? normalizeOptional(payload.billingState) : current.billingState,
+      billingPostalCode: payload.billingPostalCode !== undefined ? normalizeOptional(payload.billingPostalCode) : current.billingPostalCode,
+      billingCountry: payload.billingCountry !== undefined ? normalizeOptional(payload.billingCountry) : current.billingCountry,
+    };
+
+    const defaults = getClientBillingDefaults(candidate);
+    const merged = {
+      ...candidate,
+      billingLegalName: candidate.billingLegalName || defaults.billingLegalName,
+      billingEmail: candidate.billingEmail || defaults.billingEmail,
+      billingCountry: candidate.billingCountry || defaults.billingCountry,
+    };
+
+    const missingFields = getClientBillingMissingLabels(merged);
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Profil de facturation incomplet',
+          missingFields,
+        },
+        { status: 400 },
+      );
+    }
+
     const updated = await prisma.contact.update({
       where: { id: decoded.contactId },
       data: {
         billingCompanyName: normalizeOptional(payload.billingCompanyName),
-        billingLegalName: normalizeOptional(payload.billingLegalName),
-        billingEmail: normalizeOptional(payload.billingEmail),
+        billingLegalName: merged.billingLegalName,
+        billingEmail: merged.billingEmail,
         billingPhone: normalizeOptional(payload.billingPhone),
-        billingAddressLine1: normalizeOptional(payload.billingAddressLine1),
+        billingAddressLine1: merged.billingAddressLine1,
         billingAddressLine2: normalizeOptional(payload.billingAddressLine2),
-        billingCity: normalizeOptional(payload.billingCity),
-        billingState: normalizeOptional(payload.billingState),
-        billingPostalCode: normalizeOptional(payload.billingPostalCode),
-        billingCountry: normalizeOptional(payload.billingCountry),
+        billingCity: merged.billingCity,
+        billingState: merged.billingState,
+        billingPostalCode: merged.billingPostalCode,
+        billingCountry: merged.billingCountry,
         billingTaxId: normalizeOptional(payload.billingTaxId),
         billingNotes: normalizeOptional(payload.billingNotes),
       },

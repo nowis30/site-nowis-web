@@ -88,7 +88,12 @@ export function CommercialQuoteEditorPage({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [billingIssues, setBillingIssues] = useState<{ missingIssuer: string[]; missingCustomer: string[]; billingUpdateUrl: string | null } | null>(null);
+  const [billingIssues, setBillingIssues] = useState<{
+    missingIssuer: string[];
+    missingCustomer: string[];
+    billingUpdateUrl: string | null;
+    editCustomerUrl: string | null;
+  } | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const totals = useMemo(() => {
@@ -187,6 +192,7 @@ export function CommercialQuoteEditorPage({
         missingIssuer?: string[];
         missingCustomer?: string[];
         billingUpdateUrl?: string | null;
+        editCustomerUrl?: string | null;
       } | null;
       if (!response.ok) {
         if (response.status === 409 && (data?.missingIssuer || data?.missingCustomer)) {
@@ -194,6 +200,7 @@ export function CommercialQuoteEditorPage({
             missingIssuer: data?.missingIssuer || [],
             missingCustomer: data?.missingCustomer || [],
             billingUpdateUrl: data?.billingUpdateUrl || null,
+            editCustomerUrl: data?.editCustomerUrl || null,
           });
         }
         throw new Error(data?.error || 'Action impossible');
@@ -316,6 +323,11 @@ export function CommercialQuoteEditorPage({
             <Link href="/crm/settings" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">
               Completer le profil emetteur
             </Link>
+            {billingIssues.editCustomerUrl ? (
+              <Link href={billingIssues.editCustomerUrl} className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">
+                Modifier le client dans le CRM
+              </Link>
+            ) : null}
             {billingIssues.billingUpdateUrl ? (
               <a href={billingIssues.billingUpdateUrl} target="_blank" rel="noreferrer" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">
                 Completer le profil client

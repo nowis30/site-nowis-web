@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { getClientBillingDefaults, getClientBillingMissingLabels, isClientBillingComplete } from '@/lib/client-billing';
 
 function unauthorized() {
   return NextResponse.json({ error: 'Connexion requise' }, { status: 401 });
@@ -57,7 +58,20 @@ export async function GET(request: NextRequest) {
   });
 
   if (!contact) return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
-  return NextResponse.json({ item: contact });
+
+  const defaults = getClientBillingDefaults(contact);
+  const item = {
+    ...contact,
+    billingLegalName: contact.billingLegalName || defaults.billingLegalName,
+    billingEmail: contact.billingEmail || defaults.billingEmail,
+    billingCountry: contact.billingCountry || defaults.billingCountry,
+  };
+
+  return NextResponse.json({
+    item,
+    complete: isClientBillingComplete(item),
+    missingFields: getClientBillingMissingLabels(item),
+  });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -70,19 +84,68 @@ export async function PATCH(request: NextRequest) {
   }
   const payload = parseResult.data;
 
+  const current = await prisma.contact.findUnique({
+    where: { id: session.contactId },
+    select: {
+      fullName: true,
+      email: true,
+      billingLegalName: true,
+      billingEmail: true,
+      billingAddressLine1: true,
+      billingCity: true,
+      billingState: true,
+      billingPostalCode: true,
+      billingCountry: true,
+    },
+  });
+
+  if (!current) {
+    return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
+  }
+
+  const candidate = {
+    ...current,
+    billingLegalName: payload.billingLegalName !== undefined ? normalize(payload.billingLegalName) : current.billingLegalName,
+    billingEmail: payload.billingEmail !== undefined ? normalize(payload.billingEmail) : current.billingEmail,
+    billingAddressLine1: payload.billingAddressLine1 !== undefined ? normalize(payload.billingAddressLine1) : current.billingAddressLine1,
+    billingCity: payload.billingCity !== undefined ? normalize(payload.billingCity) : current.billingCity,
+    billingState: payload.billingState !== undefined ? normalize(payload.billingState) : current.billingState,
+    billingPostalCode: payload.billingPostalCode !== undefined ? normalize(payload.billingPostalCode) : current.billingPostalCode,
+    billingCountry: payload.billingCountry !== undefined ? normalize(payload.billingCountry) : current.billingCountry,
+  };
+
+  const defaults = getClientBillingDefaults(candidate);
+  const mergedCandidate = {
+    ...candidate,
+    billingLegalName: candidate.billingLegalName || defaults.billingLegalName,
+    billingEmail: candidate.billingEmail || defaults.billingEmail,
+    billingCountry: candidate.billingCountry || defaults.billingCountry,
+  };
+
+  const missingFields = getClientBillingMissingLabels(mergedCandidate);
+  if (missingFields.length > 0) {
+    return NextResponse.json(
+      {
+        error: 'Profil de facturation incomplet',
+        missingFields,
+      },
+      { status: 400 },
+    );
+  }
+
   const contact = await prisma.contact.update({
     where: { id: session.contactId },
     data: {
-      billingLegalName: payload.billingLegalName !== undefined ? normalize(payload.billingLegalName) : undefined,
+      billingLegalName: mergedCandidate.billingLegalName,
       billingCompanyName: payload.billingCompanyName !== undefined ? normalize(payload.billingCompanyName) : undefined,
-      billingEmail: payload.billingEmail !== undefined ? normalize(payload.billingEmail) : undefined,
+      billingEmail: mergedCandidate.billingEmail,
       billingPhone: payload.billingPhone !== undefined ? normalize(payload.billingPhone) : undefined,
-      billingAddressLine1: payload.billingAddressLine1 !== undefined ? normalize(payload.billingAddressLine1) : undefined,
+      billingAddressLine1: mergedCandidate.billingAddressLine1,
       billingAddressLine2: payload.billingAddressLine2 !== undefined ? normalize(payload.billingAddressLine2) : undefined,
-      billingCity: payload.billingCity !== undefined ? normalize(payload.billingCity) : undefined,
-      billingState: payload.billingState !== undefined ? normalize(payload.billingState) : undefined,
-      billingPostalCode: payload.billingPostalCode !== undefined ? normalize(payload.billingPostalCode) : undefined,
-      billingCountry: payload.billingCountry !== undefined ? normalize(payload.billingCountry) : undefined,
+      billingCity: mergedCandidate.billingCity,
+      billingState: mergedCandidate.billingState,
+      billingPostalCode: mergedCandidate.billingPostalCode,
+      billingCountry: mergedCandidate.billingCountry,
       billingTaxId: payload.billingTaxId !== undefined ? normalize(payload.billingTaxId) : undefined,
       billingNotes: payload.billingNotes !== undefined ? normalize(payload.billingNotes) : undefined,
     },
@@ -103,5 +166,5 @@ export async function PATCH(request: NextRequest) {
     },
   });
 
-  return NextResponse.json({ item: contact });
+  return NextResponse.json({ item: contact, complete: true, missingFields: [] });
 }
