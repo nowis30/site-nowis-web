@@ -49,7 +49,7 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
       id: true,
       title: true,
       occasion: true,
-      recipientName: true,
+      description: true,
       status: true,
       createdAt: true,
     },
@@ -95,9 +95,7 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
                   <p className="text-sm font-semibold text-white">{request.title || request.occasion}</p>
                   <StatusBadge label={statusLabels[request.status]} tone={statusTone(request.status)} />
                 </div>
-                {request.recipientName ? (
-                  <p className="mt-1 text-sm text-slate-400">Pour : <span className="text-slate-300">{request.recipientName}</span></p>
-                ) : null}
+                {request.description ? <p className="mt-1 line-clamp-2 text-sm text-slate-400">{request.description}</p> : null}
                 <p className="mt-2 text-xs text-slate-500">{formatDate(request.createdAt)}</p>
               </Link>
             ))}

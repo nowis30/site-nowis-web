@@ -5,22 +5,13 @@ import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal
 
 const clientSongPatchSchema = z.object({
   title: z.string().trim().max(160).optional().or(z.literal('')),
-  recipientName: z.string().trim().min(1).max(160).optional(),
-  occasion: z.string().trim().min(1).max(160).optional(),
-  style: z.string().trim().min(1).max(160).optional(),
-  mood: z.string().trim().min(1).max(160).optional(),
-  language: z.string().trim().max(80).optional().or(z.literal('')),
   description: z.string().trim().max(4000).optional().or(z.literal('')),
-  details: z.string().trim().min(1).max(4000).optional(),
+  musicStyle: z.string().trim().max(160).optional().or(z.literal('')),
+  mood: z.string().trim().max(160).optional().or(z.literal('')),
+  lyrics: z.string().trim().max(8000).optional().or(z.literal('')),
+  clientNotes: z.string().trim().max(4000).optional().or(z.literal('')),
   desiredDeadline: z.string().datetime().optional().or(z.literal('')),
-  meetingDate: z.string().datetime().optional().or(z.literal('')),
-  startAt: z.string().datetime().optional().or(z.literal('')),
-  endAt: z.string().datetime().optional().or(z.literal('')),
-  durationMinutes: z.coerce.number().int().min(1).max(1440).optional(),
-  meetingType: z.string().trim().max(80).optional().or(z.literal('')),
-  location: z.string().trim().max(240).optional().or(z.literal('')),
-  meetingNotes: z.string().trim().max(4000).optional().or(z.literal('')),
-});
+}).strict();
 
 const CLIENT_BLOCKED_STATUSES = new Set(['QUOTED', 'DELIVERED', 'COMPLETED', 'DELETED']);
 
@@ -36,23 +27,62 @@ function forbidden() {
   return NextResponse.json({ error: 'Acces refuse a cette demande' }, { status: 403 });
 }
 
+function toClientSongRequest(item: {
+  id: string;
+  title: string | null;
+  status: string;
+  description: string | null;
+  style: string;
+  mood: string;
+  lyrics: string | null;
+  details: string;
+  specialMessage: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  desiredDeadline: Date | null;
+}) {
+  return {
+    id: item.id,
+    title: item.title,
+    status: item.status,
+    description: item.description,
+    musicStyle: item.style,
+    mood: item.mood,
+    lyrics: item.lyrics,
+    clientNotes: item.details,
+    clientMessage: item.specialMessage,
+    desiredDeadline: item.desiredDeadline?.toISOString() ?? null,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+  };
+}
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const item = await prisma.songRequest.findUnique({
     where: { id: params.id },
-    include: {
-      appointments: {
-        select: { id: true, title: true, startAt: true, endAt: true, status: true, type: true, location: true },
-        orderBy: { startAt: 'asc' },
-      },
+    select: {
+      id: true,
+      contactId: true,
+      title: true,
+      status: true,
+      description: true,
+      style: true,
+      mood: true,
+      lyrics: true,
+      details: true,
+      specialMessage: true,
+      createdAt: true,
+      updatedAt: true,
+      desiredDeadline: true,
     },
   });
 
   if (!item) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
   if (item.contactId !== session.contactId) return forbidden();
-  return NextResponse.json({ item, canEdit: !CLIENT_BLOCKED_STATUSES.has(item.status) });
+  return NextResponse.json({ item: toClientSongRequest(item), canEdit: !CLIENT_BLOCKED_STATUSES.has(item.status as string) });
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -75,27 +105,36 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }, { status: 409 });
   }
 
-  const payload = clientSongPatchSchema.parse(await request.json());
+  const payloadResult = clientSongPatchSchema.safeParse(await request.json());
+  if (!payloadResult.success) {
+    return NextResponse.json({ error: 'Champs invalides pour la modification client' }, { status: 400 });
+  }
+  const payload = payloadResult.data;
 
   const item = await prisma.songRequest.update({
     where: { id: current.id },
     data: {
       title: payload.title !== undefined ? normalizeOptionalString(payload.title) : undefined,
-      recipientName: payload.recipientName ?? undefined,
-      occasion: payload.occasion ?? undefined,
-      style: payload.style ?? undefined,
-      mood: payload.mood ?? undefined,
-      language: payload.language !== undefined ? normalizeOptionalString(payload.language) : undefined,
       description: payload.description !== undefined ? normalizeOptionalString(payload.description) : undefined,
-      details: payload.details !== undefined ? payload.details.trim() : undefined,
+      style: payload.musicStyle !== undefined ? (normalizeOptionalString(payload.musicStyle) ?? current.style) : undefined,
+      mood: payload.mood !== undefined ? (normalizeOptionalString(payload.mood) ?? current.mood) : undefined,
+      lyrics: payload.lyrics !== undefined ? normalizeOptionalString(payload.lyrics) : undefined,
+      details: payload.clientNotes !== undefined ? (normalizeOptionalString(payload.clientNotes) ?? current.details) : undefined,
       desiredDeadline: payload.desiredDeadline ? new Date(payload.desiredDeadline) : payload.desiredDeadline === '' ? null : undefined,
-      meetingDate: payload.meetingDate ? new Date(payload.meetingDate) : payload.meetingDate === '' ? null : undefined,
-      startAt: payload.startAt ? new Date(payload.startAt) : payload.startAt === '' ? null : undefined,
-      endAt: payload.endAt ? new Date(payload.endAt) : payload.endAt === '' ? null : undefined,
-      durationMinutes: payload.durationMinutes ?? undefined,
-      meetingType: payload.meetingType !== undefined ? normalizeOptionalString(payload.meetingType) : undefined,
-      location: payload.location !== undefined ? normalizeOptionalString(payload.location) : undefined,
-      meetingNotes: payload.meetingNotes !== undefined ? normalizeOptionalString(payload.meetingNotes) : undefined,
+    },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      description: true,
+      style: true,
+      mood: true,
+      lyrics: true,
+      details: true,
+      specialMessage: true,
+      createdAt: true,
+      updatedAt: true,
+      desiredDeadline: true,
     },
   });
 
@@ -103,7 +142,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     data: {
       type: 'FORM',
       title: 'Demande de chanson modifiée par le client',
-      description: `Mise à jour client sur ${item.title || item.occasion}`,
+      description: `Mise à jour client sur ${item.title || 'demande chanson'}`,
       contactId: session.contactId,
       songRequestId: item.id,
       relatedType: 'SONG_REQUEST',
@@ -112,5 +151,5 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     },
   }).catch(() => undefined);
 
-  return NextResponse.json({ item });
+  return NextResponse.json({ item: toClientSongRequest(item) });
 }

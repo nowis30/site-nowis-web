@@ -15,7 +15,6 @@ type SongRequestFormValues = z.input<typeof songRequestFormSchema>;
 
 type SongRequestSuccess = {
   message: string;
-  clientPortalUrl?: string;
 };
 
 const songTypeOptions = [
@@ -155,7 +154,6 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
 
       setSuccessState({
         message: 'Merci! Votre demande a été envoyée. Nous allons vous recontacter rapidement.',
-        clientPortalUrl: typeof data?.clientPortalUrl === 'string' ? data.clientPortalUrl : undefined,
       });
       setUploadedFileName(null);
       reset({ ...defaultValues, consentToBeContacted: false });
@@ -212,11 +210,6 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       {successState ? (
         <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           <p>{successState.message}</p>
-          {successState.clientPortalUrl ? (
-            <p className="mt-2 break-all text-emerald-800">
-              Accès à votre dossier client: <a href={successState.clientPortalUrl} className="font-semibold underline underline-offset-2">{successState.clientPortalUrl}</a>
-            </p>
-          ) : null}
         </div>
       ) : null}
 

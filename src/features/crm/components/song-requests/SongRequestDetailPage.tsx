@@ -477,21 +477,26 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 text-sm text-slate-300">
-            <p><span className="text-slate-500">Contact:</span> {item.contact.fullName}</p>
-            <p><span className="text-slate-500">Email:</span> {item.contact.email ?? '—'}</p>
-            <p><span className="text-slate-500">Téléphone:</span> {item.contact.phone ?? '—'}</p>
-            <p><span className="text-slate-500">Source:</span> {item.source}</p>
-            {item.fileUrl ? (
-              <p className="mt-3 break-all">
-                <span className="text-slate-500">Fichier:</span>{' '}
-                <a href={item.fileUrl} target="_blank" rel="noreferrer" className="text-primary-300 hover:text-primary-200">
-                  Ouvrir le fichier joint
-                </a>
-              </p>
-            ) : null}
-            <p className="mt-3 break-all"><span className="text-slate-500">Lien client:</span> {clientPortalUrl}</p>
-            <p className="mt-2"><span className="text-slate-500">Organisation:</span> {item.organization?.name || '—'}</p>
-            <p><span className="text-slate-500">Date rencontre:</span> {item.meetingDate ? new Date(item.meetingDate).toLocaleString('fr-CA') : '—'}</p>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Informations internes</h3>
+            <div className="mt-3 space-y-1">
+              <p><span className="text-slate-500">Contact:</span> {item.contact.fullName}</p>
+              <p><span className="text-slate-500">Email:</span> {item.contact.email ?? '—'}</p>
+              <p><span className="text-slate-500">Téléphone:</span> {item.contact.phone ?? '—'}</p>
+              <p><span className="text-slate-500">Source:</span> {item.source}</p>
+              <p><span className="text-slate-500">Organisation:</span> {item.organization?.name || '—'}</p>
+              <p><span className="text-slate-500">Date rencontre:</span> {item.meetingDate ? new Date(item.meetingDate).toLocaleString('fr-CA') : '—'}</p>
+              <p><span className="text-slate-500">Soumission/facture liee:</span> {item.convertedInvoiceId || '—'}</p>
+              {item.meetingNotes ? <p><span className="text-slate-500">Notes internes:</span> {item.meetingNotes}</p> : null}
+              {item.fileUrl ? (
+                <p className="break-all">
+                  <span className="text-slate-500">Lien dossier:</span>{' '}
+                  <a href={item.fileUrl} target="_blank" rel="noreferrer" className="text-primary-300 hover:text-primary-200">
+                    Ouvrir le fichier joint
+                  </a>
+                </p>
+              ) : null}
+              <p className="break-all"><span className="text-slate-500">Lien portail client:</span> {clientPortalUrl}</p>
+            </div>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
