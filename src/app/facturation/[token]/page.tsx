@@ -19,6 +19,41 @@ type BillingPayload = {
   billingNotes: string | null;
 };
 
+const inputClass =
+  'w-full rounded-xl border border-slate-600 bg-slate-900 px-4 py-3 text-base text-white placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
+const labelClass = 'mb-2 block text-sm font-semibold text-slate-200';
+const disabledInputClass =
+  'w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-slate-400 cursor-not-allowed';
+
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className={labelClass}>
+        {label}
+        {required ? <span className="ml-1 text-amber-400">*</span> : null}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-slate-700 bg-slate-900/60 p-6 space-y-5">
+      <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
 export default function PublicBillingPage({ params }: { params: { token: string } }) {
   const [item, setItem] = useState<BillingPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +70,7 @@ export default function PublicBillingPage({ params }: { params: { token: string 
       const data = (await response.json().catch(() => null)) as { item?: BillingPayload; error?: string } | null;
       if (cancelled) return;
       if (!response.ok || !data?.item) {
-        setError(data?.error || 'Lien invalide ou expire.');
+        setError(data?.error || 'Lien invalide ou expiré.');
       } else {
         setItem(data.item);
       }
@@ -47,9 +82,27 @@ export default function PublicBillingPage({ params }: { params: { token: string 
     };
   }, [params.token]);
 
+  function update(key: keyof BillingPayload, value: string) {
+    setItem((current) => (current ? { ...current, [key]: value || null } : current));
+  }
+
   async function save(event: React.FormEvent) {
     event.preventDefault();
     if (!item) return;
+
+    const required = [
+      { key: 'billingAddressLine1' as const, label: 'Adresse' },
+      { key: 'billingCity' as const, label: 'Ville' },
+      { key: 'billingPostalCode' as const, label: 'Code postal' },
+      { key: 'billingCountry' as const, label: 'Pays' },
+    ];
+    for (const field of required) {
+      if (!item[field.key]?.trim()) {
+        setError(`Le champ "${field.label}" est requis.`);
+        return;
+      }
+    }
+
     setSaving(true);
     setError(null);
     setSuccess(null);
@@ -61,7 +114,7 @@ export default function PublicBillingPage({ params }: { params: { token: string 
       });
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok) throw new Error(data?.error || 'Enregistrement impossible');
-      setSuccess('Informations enregistrees. Merci.');
+      setSuccess('Informations enregistrées. Merci, nous pouvons maintenant préparer votre facture !');
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Enregistrement impossible');
     } finally {
@@ -70,38 +123,179 @@ export default function PublicBillingPage({ params }: { params: { token: string 
   }
 
   if (loading) {
-    return <main className="mx-auto max-w-3xl px-4 py-10 text-slate-100">Chargement...</main>;
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-16 text-center text-slate-300">
+        Chargement en cours…
+      </main>
+    );
   }
 
   if (error && !item) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-10 text-slate-100">
-        <div className="rounded-2xl border border-red-700/40 bg-red-950/20 p-5 text-sm text-red-200">{error}</div>
+      <main className="mx-auto max-w-2xl px-4 py-16">
+        <div className="rounded-2xl border border-red-700/50 bg-red-950/30 p-6 text-red-200">
+          <p className="text-base font-semibold">Lien invalide ou expiré</p>
+          <p className="mt-2 text-sm">{error}</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 text-slate-100">
-      <h1 className="text-3xl font-semibold text-white">Completer vos informations de facturation</h1>
-      <p className="mt-2 text-sm text-slate-400">Merci de verifier vos informations pour finaliser votre facture.</p>
+    <main className="mx-auto max-w-2xl px-4 py-12 text-slate-100">
+      <div className="mb-8">
+        <p className="text-sm font-semibold uppercase tracking-widest text-primary-400">Nowis — Facturation</p>
+        <h1 className="mt-2 text-3xl font-bold text-white leading-tight">
+          Complétez vos informations de facturation
+        </h1>
+        <p className="mt-3 text-base text-slate-300 leading-relaxed">
+          Bonjour <strong className="text-white">{item?.fullName}</strong>, merci de remplir les champs ci-dessous.
+          Ces informations apparaîtront sur votre facture. Les champs marqués <span className="text-amber-400 font-bold">*</span> sont obligatoires.
+        </p>
+      </div>
 
-      <form onSubmit={save} className="mt-6 space-y-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-        <label className="block"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Nom</span><input value={item?.fullName || ''} disabled className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300" /></label>
-        <label className="block"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Societe</span><input value={item?.billingCompanyName || ''} onChange={(event) => setItem((current) => current ? ({ ...current, billingCompanyName: event.target.value }) : current)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
-        <label className="block"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Courriel facturation</span><input value={item?.billingEmail || ''} onChange={(event) => setItem((current) => current ? ({ ...current, billingEmail: event.target.value }) : current)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
-        <label className="block"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Adresse ligne 1</span><input value={item?.billingAddressLine1 || ''} onChange={(event) => setItem((current) => current ? ({ ...current, billingAddressLine1: event.target.value }) : current)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
-        <label className="block"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Ville</span><input value={item?.billingCity || ''} onChange={(event) => setItem((current) => current ? ({ ...current, billingCity: event.target.value }) : current)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
-        <div className="grid gap-3 md:grid-cols-2">
-          <label className="block"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Code postal</span><input value={item?.billingPostalCode || ''} onChange={(event) => setItem((current) => current ? ({ ...current, billingPostalCode: event.target.value }) : current)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
-          <label className="block"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Pays</span><input value={item?.billingCountry || ''} onChange={(event) => setItem((current) => current ? ({ ...current, billingCountry: event.target.value }) : current)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+      {success ? (
+        <div className="mb-6 rounded-2xl border border-emerald-600/40 bg-emerald-950/30 px-5 py-4 text-emerald-200">
+          <p className="text-base font-semibold">✓ Enregistré</p>
+          <p className="mt-1 text-sm">{success}</p>
         </div>
+      ) : null}
 
-        {error ? <p className="text-sm text-red-300">{error}</p> : null}
-        {success ? <p className="text-sm text-emerald-300">{success}</p> : null}
+      <form onSubmit={save} className="space-y-6">
+        <Section title="Votre compte">
+          <Field label="Nom complet">
+            <input value={item?.fullName || ''} disabled className={disabledInputClass} />
+            <p className="mt-1.5 text-xs text-slate-500">Ce champ correspond à votre nom de compte et ne peut pas être modifié ici.</p>
+          </Field>
+        </Section>
 
-        <button type="submit" disabled={saving} className="rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-60">
-          {saving ? 'Enregistrement...' : 'Sauvegarder'}
+        <Section title="Coordonnées de facturation">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Nom légal (prénom nom)">
+              <input
+                value={item?.billingLegalName ?? ''}
+                onChange={(e) => update('billingLegalName', e.target.value)}
+                placeholder={item?.fullName ?? ''}
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Société / organisme">
+              <input
+                value={item?.billingCompanyName ?? ''}
+                onChange={(e) => update('billingCompanyName', e.target.value)}
+                placeholder="Facultatif"
+                className={inputClass}
+              />
+            </Field>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Courriel de facturation">
+              <input
+                type="email"
+                value={item?.billingEmail ?? ''}
+                onChange={(e) => update('billingEmail', e.target.value)}
+                placeholder="votre@courriel.com"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Téléphone">
+              <input
+                value={item?.billingPhone ?? ''}
+                onChange={(e) => update('billingPhone', e.target.value)}
+                placeholder="819 000-0000"
+                className={inputClass}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section title="Adresse de facturation">
+          <Field label="Adresse" required>
+            <input
+              value={item?.billingAddressLine1 ?? ''}
+              onChange={(e) => update('billingAddressLine1', e.target.value)}
+              placeholder="123 Rue Principale"
+              className={inputClass}
+              required
+            />
+          </Field>
+          <Field label="Appartement, bureau, suite…">
+            <input
+              value={item?.billingAddressLine2 ?? ''}
+              onChange={(e) => update('billingAddressLine2', e.target.value)}
+              placeholder="App. 4 (facultatif)"
+              className={inputClass}
+            />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Ville" required>
+              <input
+                value={item?.billingCity ?? ''}
+                onChange={(e) => update('billingCity', e.target.value)}
+                placeholder="Drummondville"
+                className={inputClass}
+                required
+              />
+            </Field>
+            <Field label="Province / État">
+              <input
+                value={item?.billingState ?? ''}
+                onChange={(e) => update('billingState', e.target.value)}
+                placeholder="Québec"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Code postal" required>
+              <input
+                value={item?.billingPostalCode ?? ''}
+                onChange={(e) => update('billingPostalCode', e.target.value)}
+                placeholder="J2A 2G2"
+                className={inputClass}
+                required
+              />
+            </Field>
+          </div>
+          <Field label="Pays" required>
+            <input
+              value={item?.billingCountry ?? ''}
+              onChange={(e) => update('billingCountry', e.target.value)}
+              placeholder="Canada"
+              className={inputClass}
+              required
+            />
+          </Field>
+        </Section>
+
+        <Section title="Autre">
+          <Field label="Numéro de TPS / TVQ (si applicable)">
+            <input
+              value={item?.billingTaxId ?? ''}
+              onChange={(e) => update('billingTaxId', e.target.value)}
+              placeholder="Facultatif"
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Note ou commentaire">
+            <textarea
+              value={item?.billingNotes ?? ''}
+              onChange={(e) => update('billingNotes', e.target.value)}
+              rows={3}
+              placeholder="Informations supplémentaires pour la facturation…"
+              className={`${inputClass} resize-none`}
+            />
+          </Field>
+        </Section>
+
+        {error ? (
+          <div className="rounded-xl border border-red-700/50 bg-red-950/30 px-4 py-3 text-sm text-red-200">{error}</div>
+        ) : null}
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="w-full rounded-xl bg-primary-600 px-6 py-4 text-base font-semibold text-white hover:bg-primary-500 disabled:opacity-60 sm:w-auto"
+        >
+          {saving ? 'Enregistrement…' : 'Sauvegarder mes informations'}
         </button>
       </form>
     </main>
