@@ -15,6 +15,7 @@ export default async function CrmCommercialQuoteNewPage({
   const workshopRequestId = typeof searchParams?.workshopRequestId === 'string' ? searchParams.workshopRequestId : '';
   const songRequestId = typeof searchParams?.songRequestId === 'string' ? searchParams.songRequestId : '';
   const appointmentId = typeof searchParams?.appointmentId === 'string' ? searchParams.appointmentId : '';
+  const contextParam = typeof searchParams?.context === 'string' ? searchParams.context.trim() : '';
 
   const [options, workshop, song] = await Promise.all([
     getCommercialQuoteEditorOptions(),
@@ -27,6 +28,11 @@ export default async function CrmCommercialQuoteNewPage({
             finalPrice: true,
             objectives: true,
             requestedDate: true,
+            workshopTheme: true,
+            groupType: true,
+            residenceName: true,
+            coordinatorName: true,
+            estimatedParticipants: true,
             contactId: true,
             organizationId: true,
           },
@@ -57,7 +63,16 @@ export default async function CrmCommercialQuoteNewPage({
       : 'Nouveau devis';
 
   const initialDescription = workshop
-    ? `Atelier prévu${workshop.requestedDate ? ` le ${new Intl.DateTimeFormat('fr-CA').format(workshop.requestedDate)}` : ''}. ${workshop.objectives || ''}`.trim()
+    ? [
+        `Atelier prévu${workshop.requestedDate ? ` le ${new Intl.DateTimeFormat('fr-CA').format(workshop.requestedDate)}` : ''}`,
+        workshop.groupType ? `Catégorie: ${workshop.groupType}` : '',
+        workshop.workshopTheme ? `Thème: ${workshop.workshopTheme}` : '',
+        workshop.residenceName ? `Résidence: ${workshop.residenceName}` : '',
+        workshop.coordinatorName ? `Coordination: ${workshop.coordinatorName}` : '',
+        workshop.estimatedParticipants ? `Participants: ${workshop.estimatedParticipants}` : '',
+        contextParam,
+        workshop.objectives || '',
+      ].filter(Boolean).join('. ')
     : song
       ? `Projet chanson${song.desiredDeadline ? ` · échéance ${new Intl.DateTimeFormat('fr-CA').format(song.desiredDeadline)}` : ''}. ${song.description || ''}`.trim()
       : '';

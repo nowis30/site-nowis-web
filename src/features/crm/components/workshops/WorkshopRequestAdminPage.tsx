@@ -13,6 +13,7 @@ type WorkshopPageProps = {
     title: string;
     status: string;
     workshopType: string;
+    groupType: string | null;
     workshopTheme: string;
     organizationId: string | null;
     organizationName: string | null;
@@ -22,6 +23,13 @@ type WorkshopPageProps = {
     contactPerson: string | null;
     contactEmail: string | null;
     contactPhone: string | null;
+    residenceName: string | null;
+    residenceUnit: string | null;
+    seniorsProfile: string | null;
+    coordinatorName: string | null;
+    coordinatorRole: string | null;
+    coordinatorEmail: string | null;
+    coordinatorPhone: string | null;
     addressOrLocation: string | null;
     location: string | null;
     estimatedParticipants: number | null;
@@ -62,6 +70,18 @@ function buildTelHref(phone: string) {
   return `tel:${phone.replace(/\s+/g, '')}`;
 }
 
+function buildWorkshopContextSnippet(item: WorkshopPageProps['item']) {
+  const chunks = [
+    item.groupType ? `Categorie: ${item.groupType}` : '',
+    item.workshopTheme ? `Theme: ${item.workshopTheme}` : '',
+    item.residenceName ? `Residence: ${item.residenceName}` : '',
+    item.coordinatorName ? `Coordination: ${item.coordinatorName}` : '',
+    item.requestedDate ? `Date souhaitee: ${new Intl.DateTimeFormat('fr-CA').format(new Date(item.requestedDate))}` : '',
+    item.estimatedParticipants || item.participantEstimate ? `Participants: ${item.estimatedParticipants || item.participantEstimate}` : '',
+  ].filter(Boolean);
+  return chunks.join(' | ');
+}
+
 const DELETABLE_STATUSES = ['ANNULE', 'DELETED', 'CANCELLED', 'TERMINE', 'COMPLETED'];
 
 export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = false }: WorkshopPageProps) {
@@ -77,6 +97,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
   const [form, setForm] = useState({
     title: item.title,
     workshopType: item.workshopType,
+    groupType: item.groupType || 'COMMUNAUTAIRE',
     organizationId: item.organizationId || '',
     contactId: item.contactId || '',
     clientId: item.clientId || '',
@@ -85,6 +106,13 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
     contactPerson: item.contactPerson || item.organizationContact?.fullName || item.contact?.fullName || item.client?.fullName || '',
     contactEmail: item.contactEmail || '',
     contactPhone: item.contactPhone || '',
+    residenceName: item.residenceName || '',
+    residenceUnit: item.residenceUnit || '',
+    seniorsProfile: item.seniorsProfile || '',
+    coordinatorName: item.coordinatorName || '',
+    coordinatorRole: item.coordinatorRole || '',
+    coordinatorEmail: item.coordinatorEmail || '',
+    coordinatorPhone: item.coordinatorPhone || '',
     addressOrLocation: item.addressOrLocation || item.location || '',
     deliveryFormat: 'SUR_PLACE',
     participantEstimate: String(item.participantEstimate || item.estimatedParticipants || 0),
@@ -360,6 +388,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
     setForm({
       title: item.title,
       workshopType: item.workshopType,
+      groupType: item.groupType || 'COMMUNAUTAIRE',
       organizationId: item.organizationId || '',
       contactId: item.contactId || '',
       clientId: item.clientId || '',
@@ -368,6 +397,13 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
       contactPerson: item.contactPerson || item.organizationContact?.fullName || item.contact?.fullName || item.client?.fullName || '',
       contactEmail: item.contactEmail || '',
       contactPhone: item.contactPhone || '',
+      residenceName: item.residenceName || '',
+      residenceUnit: item.residenceUnit || '',
+      seniorsProfile: item.seniorsProfile || '',
+      coordinatorName: item.coordinatorName || '',
+      coordinatorRole: item.coordinatorRole || '',
+      coordinatorEmail: item.coordinatorEmail || '',
+      coordinatorPhone: item.coordinatorPhone || '',
       addressOrLocation: item.addressOrLocation || item.location || '',
       deliveryFormat: 'SUR_PLACE',
       participantEstimate: String(item.participantEstimate || item.estimatedParticipants || 0),
@@ -405,9 +441,12 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
     setMessage(null);
   }
 
+  const workshopContextSnippet = buildWorkshopContextSnippet(item);
   const invoiceHref = (item.contactId || item.clientId)
-    ? `/crm/invoices?contactId=${item.contactId || item.clientId}&workshopId=${item.id}&description=${encodeURIComponent(`Atelier - ${form.title}`)}&amount=${encodeURIComponent(item.finalPrice || '')}`
+    ? `/crm/invoices?contactId=${item.contactId || item.clientId}&workshopId=${item.id}&description=${encodeURIComponent(`Atelier - ${form.title}${workshopContextSnippet ? ` | ${workshopContextSnippet}` : ''}`)}&amount=${encodeURIComponent(item.finalPrice || '')}`
     : '/crm/invoices';
+
+  const quoteHref = `/crm/commercial-quotes/new?workshopRequestId=${item.id}${workshopContextSnippet ? `&context=${encodeURIComponent(workshopContextSnippet)}` : ''}`;
 
   return (
     <section className="space-y-6">
@@ -426,6 +465,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
             <div className="mt-3 flex flex-wrap gap-2">
               <StatusBadge value={item.status} />
               <StatusBadge value={item.workshopType} />
+              {item.groupType ? <StatusBadge value={item.groupType} /> : null}
             </div>
             <p className="mt-4 max-w-3xl text-sm text-slate-300">Fiche d’action atelier pour modifier rapidement les informations, planifier un horaire, préparer la facture et communiquer avec le responsable.</p>
           </div>
@@ -446,7 +486,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
               {saving ? 'Enregistrement...' : isEditing ? 'Enregistrer les modifications' : 'Modifier l’atelier'}
             </button>
             <Link href={invoiceHref} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une facture</Link>
-            <Link href={`/crm/commercial-quotes/new?workshopRequestId=${item.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
+            <Link href={quoteHref} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
             <button
               type="button"
               onClick={() => {
@@ -483,6 +523,7 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
             <fieldset disabled={!isEditing} className="mt-4 grid gap-4 md:grid-cols-2 disabled:opacity-90">
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Titre</span><input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Statut</span><select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))} className={workshopSelectClassName}><option value="EN_ATTENTE_RDV">En attente RDV</option><option value="RDV_PLANIFIE">RDV planifié</option><option value="CONFIRME">Confirmé</option><option value="TERMINE">Terminé</option><option value="ANNULE">Annulé</option><option value="BROUILLON">Brouillon</option></select></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Categorie de groupe</span><select value={form.groupType} onChange={(event) => setForm((current) => ({ ...current, groupType: event.target.value }))} className={workshopSelectClassName}><option value="AINES_RESIDENCE">Aines / residence</option><option value="ECOLE">Ecole</option><option value="ENTREPRISE">Entreprise</option><option value="COMMUNAUTAIRE">Communautaire</option><option value="PRIVE">Prive</option></select></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Organisation</span><input value={form.organizationName} onChange={(event) => setForm((current) => ({ ...current, organizationName: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Responsable</span><input value={form.contactPerson} onChange={(event) => setForm((current) => ({ ...current, contactPerson: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Courriel</span><input value={form.contactEmail} onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
@@ -493,7 +534,14 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Participants</span><input type="number" value={form.estimatedParticipants} onChange={(event) => setForm((current) => ({ ...current, estimatedParticipants: event.target.value, participantEstimate: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Prix</span><input type="number" step="0.01" value={form.basePrice} onChange={(event) => setForm((current) => ({ ...current, basePrice: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Thème</span><input value={form.workshopTheme} onChange={(event) => setForm((current) => ({ ...current, workshopTheme: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Residence</span><input value={form.residenceName} onChange={(event) => setForm((current) => ({ ...current, residenceName: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Unite / secteur</span><input value={form.residenceUnit} onChange={(event) => setForm((current) => ({ ...current, residenceUnit: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Coordonnatrice / coordonnateur</span><input value={form.coordinatorName} onChange={(event) => setForm((current) => ({ ...current, coordinatorName: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Role coordination</span><input value={form.coordinatorRole} onChange={(event) => setForm((current) => ({ ...current, coordinatorRole: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Email coordination</span><input value={form.coordinatorEmail} onChange={(event) => setForm((current) => ({ ...current, coordinatorEmail: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Telephone coordination</span><input value={form.coordinatorPhone} onChange={(event) => setForm((current) => ({ ...current, coordinatorPhone: event.target.value }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label className="md:col-span-2"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Objectifs</span><textarea value={form.objectives} onChange={(event) => setForm((current) => ({ ...current, objectives: event.target.value }))} className="min-h-[100px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
+              <label className="md:col-span-2"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Profil aines / contexte</span><textarea value={form.seniorsProfile} onChange={(event) => setForm((current) => ({ ...current, seniorsProfile: event.target.value }))} className="min-h-[90px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
               <label className="md:col-span-2"><span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Notes internes</span><textarea value={form.internalNotes} onChange={(event) => setForm((current) => ({ ...current, internalNotes: event.target.value }))} className="min-h-[100px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100" /></label>
             </fieldset>
           </section>

@@ -372,6 +372,7 @@ export const workshopRequestsConfig: ModulePageConfig = {
   endpoint: '/api/crm/workshop-requests',
   defaultValues: {
     workshopType: 'ORGANIZATION',
+    groupType: 'COMMUNAUTAIRE',
     organizationId: '',
     clientId: '',
     contactId: '',
@@ -381,6 +382,13 @@ export const workshopRequestsConfig: ModulePageConfig = {
     contactPerson: '',
     contactPhone: '',
     contactEmail: '',
+    residenceName: '',
+    residenceUnit: '',
+    seniorsProfile: '',
+    coordinatorName: '',
+    coordinatorRole: '',
+    coordinatorEmail: '',
+    coordinatorPhone: '',
     addressOrLocation: '',
     deliveryFormat: 'SUR_PLACE',
     participantEstimate: 25,
@@ -416,6 +424,19 @@ export const workshopRequestsConfig: ModulePageConfig = {
       ],
     },
     {
+      name: 'groupType',
+      label: 'Categorie groupe',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'AINES_RESIDENCE', label: 'Aines / residence' },
+        { value: 'ECOLE', label: 'Ecole' },
+        { value: 'ENTREPRISE', label: 'Entreprise' },
+        { value: 'COMMUNAUTAIRE', label: 'Communautaire' },
+        { value: 'PRIVE', label: 'Prive' },
+      ],
+    },
+    {
       name: 'organizationId',
       label: 'Organisation',
       type: 'select',
@@ -439,6 +460,13 @@ export const workshopRequestsConfig: ModulePageConfig = {
     { name: 'contactPerson', label: 'Personne contact', type: 'text' },
     { name: 'contactPhone', label: 'Téléphone', type: 'text' },
     { name: 'contactEmail', label: 'Courriel', type: 'text' },
+    { name: 'residenceName', label: 'Residence', type: 'text' },
+    { name: 'residenceUnit', label: 'Unite / secteur', type: 'text' },
+    { name: 'coordinatorName', label: 'Coordonnateur', type: 'text' },
+    { name: 'coordinatorRole', label: 'Role coordination', type: 'text' },
+    { name: 'coordinatorEmail', label: 'Courriel coordination', type: 'text' },
+    { name: 'coordinatorPhone', label: 'Telephone coordination', type: 'text' },
+    { name: 'seniorsProfile', label: 'Profil aines', type: 'textarea' },
     { name: 'addressOrLocation', label: 'Adresse / lieu', type: 'text' },
     {
       name: 'contactId',
@@ -577,6 +605,7 @@ export const workshopRequestsConfig: ModulePageConfig = {
           <div className="mt-1 flex flex-wrap gap-2">
             <StatusBadge value={row.workshopType} />
             <StatusBadge value={row.status} />
+            <StatusBadge value={row.groupType || 'COMMUNAUTAIRE'} />
           </div>
         </div>
       ),

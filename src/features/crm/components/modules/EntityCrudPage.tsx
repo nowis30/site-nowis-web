@@ -122,9 +122,11 @@ export function EntityCrudPage({
   const [search, setSearch] = useState('');
   const [view, setView] = useState<'active' | 'archived' | 'deleted'>('active');
   const [workshopStatus, setWorkshopStatus] = useState('ACTIFS');
+  const [workshopCategory, setWorkshopCategory] = useState('ALL');
   const { items, loading, error, reload } = useCrudResourceWithParams<GenericRecord>(endpoint, search, {
     ...(hasLifecycleView ? { view } : {}),
     ...(hasWorkshopStatusFilter ? { status: workshopStatus } : {}),
+    ...(hasWorkshopStatusFilter && workshopCategory !== 'ALL' ? { category: workshopCategory } : {}),
   });
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -180,7 +182,7 @@ export function EntityCrudPage({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, view, workshopStatus]);
+  }, [search, view, workshopStatus, workshopCategory]);
 
   useEffect(() => {
     setCurrentPage((previous) => Math.min(previous, totalPages));
@@ -356,18 +358,32 @@ export function EntityCrudPage({
             </select>
           ) : null}
           {hasWorkshopStatusFilter ? (
-            <select
-              value={workshopStatus}
-              onChange={(event) => setWorkshopStatus(event.target.value)}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
-            >
-              <option value="ACTIFS">Actives</option>
-              <option value="EN_ATTENTE_RDV">Nouvelles</option>
-              <option value="RDV_PLANIFIE">Planifiées</option>
-              <option value="CONFIRME">En cours</option>
-              <option value="TERMINE">Terminées</option>
-              <option value="DELETED">Supprimées</option>
-            </select>
+            <>
+              <select
+                value={workshopStatus}
+                onChange={(event) => setWorkshopStatus(event.target.value)}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+              >
+                <option value="ACTIFS">Actives</option>
+                <option value="EN_ATTENTE_RDV">Nouvelles</option>
+                <option value="RDV_PLANIFIE">Planifiées</option>
+                <option value="CONFIRME">En cours</option>
+                <option value="TERMINE">Terminées</option>
+                <option value="DELETED">Supprimées</option>
+              </select>
+              <select
+                value={workshopCategory}
+                onChange={(event) => setWorkshopCategory(event.target.value)}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+              >
+                <option value="ALL">Toutes categories</option>
+                <option value="AINES_RESIDENCE">Aines / residence</option>
+                <option value="ECOLE">Ecole</option>
+                <option value="ENTREPRISE">Entreprise</option>
+                <option value="COMMUNAUTAIRE">Communautaire</option>
+                <option value="PRIVE">Prive</option>
+              </select>
+            </>
           ) : null}
           <SearchBar value={search} onChange={setSearch} />
         </div>

@@ -10,6 +10,7 @@ export default async function CrmInvoicesPage({
   await requireCrmSession();
 
   const songRequestId = typeof searchParams?.songRequestId === 'string' ? searchParams.songRequestId : undefined;
+  const workshopRequestId = typeof searchParams?.workshopId === 'string' ? searchParams.workshopId : undefined;
 
   const songRequest = songRequestId
     ? await prisma.songRequest.findUnique({
@@ -20,6 +21,24 @@ export default async function CrmInvoicesPage({
           description: true,
           details: true,
           budget: true,
+          contactId: true,
+        },
+      })
+    : null;
+
+  const workshopRequest = workshopRequestId
+    ? await prisma.workshopRequest.findUnique({
+        where: { id: workshopRequestId },
+        select: {
+          id: true,
+          title: true,
+          workshopTheme: true,
+          groupType: true,
+          residenceName: true,
+          coordinatorName: true,
+          estimatedParticipants: true,
+          requestedDate: true,
+          finalPrice: true,
           contactId: true,
         },
       })
@@ -66,11 +85,21 @@ export default async function CrmInvoicesPage({
         description:
           typeof searchParams?.description === 'string'
             ? searchParams.description
+            : workshopRequest
+              ? [
+                  `Atelier · ${workshopRequest.title || 'Demande atelier'}`,
+                  workshopRequest.groupType ? `Catégorie ${workshopRequest.groupType}` : '',
+                  workshopRequest.workshopTheme ? `Thème ${workshopRequest.workshopTheme}` : '',
+                  workshopRequest.residenceName ? `Résidence ${workshopRequest.residenceName}` : '',
+                  workshopRequest.coordinatorName ? `Coordination ${workshopRequest.coordinatorName}` : '',
+                  workshopRequest.requestedDate ? `Date ${new Intl.DateTimeFormat('fr-CA').format(workshopRequest.requestedDate)}` : '',
+                  workshopRequest.estimatedParticipants ? `${workshopRequest.estimatedParticipants} participants` : '',
+                ].filter(Boolean).join(' · ')
             : songRequest
               ? `Chanson personnalisée · ${songRequest.title || 'Demande client'}${songRequest.description || songRequest.details ? ` · ${(songRequest.description || songRequest.details || '').slice(0, 220)}` : ''}`
               : undefined,
-        amount: typeof searchParams?.amount === 'string' ? searchParams.amount : songRequest?.budget?.toString(),
-        sourceWorkshopRequestId: typeof searchParams?.workshopId === 'string' ? searchParams.workshopId : undefined,
+        amount: typeof searchParams?.amount === 'string' ? searchParams.amount : workshopRequest?.finalPrice?.toString() || songRequest?.budget?.toString(),
+        sourceWorkshopRequestId: workshopRequest?.id,
         sourceSongRequestId: songRequest?.id,
       }}
     />

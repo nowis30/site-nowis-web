@@ -1,20 +1,21 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/Button';
 import { workshopSelectClassName } from '@/components/forms/select-styles';
 import { trackWorkshopRequestSubmitted } from '@/lib/tracking/google';
-import { workshopRequestFormSchema, type WorkshopRequestFormInput } from '@/features/workshops/schemas';
+import { mapWorkshopGroupTypeToOrganizationType, workshopRequestFormSchema, type WorkshopRequestFormInput } from '@/features/workshops/schemas';
 
 interface WorkshopRequestFormProps {
   accountEmail: string;
   accountFullName: string;
   accountPhone?: string;
+  initialGroupType?: WorkshopRequestFormInput['groupType'];
 }
 
-export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhone = '' }: WorkshopRequestFormProps) {
+export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhone = '', initialGroupType = 'ECOLE' }: WorkshopRequestFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const lastTrackedRequestIdRef = useRef<string | null>(null);
@@ -22,27 +23,51 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<WorkshopRequestFormInput>({
     resolver: zodResolver(workshopRequestFormSchema),
     defaultValues: {
+      groupType: initialGroupType,
       contactName: accountFullName,
       email: accountEmail,
       phone: accountPhone,
-      organizationType: 'SCHOOL',
+      organizationType: mapWorkshopGroupTypeToOrganizationType(initialGroupType),
       audienceType: 'ELEMENTARY',
       format: 'IN_PERSON',
       preferredDays: ['TUESDAY'],
     },
   });
 
+  const groupType = watch('groupType');
+
+  useEffect(() => {
+    setValue('organizationType', mapWorkshopGroupTypeToOrganizationType(groupType), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [groupType, setValue]);
+
+  const organizationLabel = useMemo(() => {
+    if (groupType === 'AINES_RESIDENCE') return 'Nom de la residence';
+    if (groupType === 'PRIVE') return 'Nom du groupe / famille';
+    if (groupType === 'ENTREPRISE') return 'Nom de l entreprise';
+    return 'Nom de l ecole ou organisme';
+  }, [groupType]);
+
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
+    const normalizedGroupType = values.groupType || initialGroupType;
     const response = await fetch('/api/workshop-requests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
+      body: JSON.stringify({
+        ...values,
+        groupType: normalizedGroupType,
+        organizationType: mapWorkshopGroupTypeToOrganizationType(normalizedGroupType),
+      }),
     });
 
     const data = await response.json().catch(() => null);
@@ -61,7 +86,16 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
       lastTrackedRequestIdRef.current = requestId;
     }
 
-    reset();
+    reset({
+      groupType: normalizedGroupType,
+      contactName: accountFullName,
+      email: accountEmail,
+      phone: accountPhone,
+      organizationType: mapWorkshopGroupTypeToOrganizationType(normalizedGroupType),
+      audienceType: normalizedGroupType === 'AINES_RESIDENCE' ? 'MIXED' : 'ELEMENTARY',
+      format: 'IN_PERSON',
+      preferredDays: ['TUESDAY'],
+    });
     setSubmitted(true);
   });
 
@@ -76,9 +110,23 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
 
   return (
     <form onSubmit={onSubmit} className="space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-sm">
+      <input type="hidden" {...register('organizationType')} />
+
       <div className="grid gap-5 md:grid-cols-2">
+        <label className="md:col-span-2">
+          <span className="mb-2 block text-sm font-medium text-white">Type de groupe</span>
+          <select {...register('groupType')} className={workshopSelectClassName}>
+            <option value="AINES_RESIDENCE">Aines / residence</option>
+            <option value="ECOLE">Ecole</option>
+            <option value="ENTREPRISE">Entreprise</option>
+            <option value="COMMUNAUTAIRE">Communautaire</option>
+            <option value="PRIVE">Prive</option>
+          </select>
+          {errors.groupType ? <p className="mt-2 text-xs text-red-300">{errors.groupType.message}</p> : null}
+        </label>
+
         <label>
-          <span className="mb-2 block text-sm font-medium text-white">Nom de l’école ou organisme</span>
+          <span className="mb-2 block text-sm font-medium text-white">{organizationLabel}</span>
           <input {...register('organizationName')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
           {errors.organizationName ? <p className="mt-2 text-xs text-red-300">{errors.organizationName.message}</p> : null}
         </label>
@@ -90,16 +138,6 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
         <label>
           <span className="mb-2 block text-sm font-medium text-white">Poste ou fonction</span>
           <input {...register('role')} placeholder="Enseignant, direction, coordination..." className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Type d’organisation</span>
-          <select {...register('organizationType')} className={workshopSelectClassName}>
-            <option value="SCHOOL">École</option>
-            <option value="COMMUNITY_ORG">Organisme</option>
-            <option value="DAYCARE">Garderie</option>
-            <option value="CAMP">Camp</option>
-            <option value="OTHER">Autre</option>
-          </select>
         </label>
         <label>
           <span className="mb-2 block text-sm font-medium text-white">Email</span>
@@ -150,6 +188,42 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
           <span className="mb-2 block text-sm font-medium text-white">Plage préférée</span>
           <input {...register('preferredTime')} placeholder="Mardi 9h à 11h" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
         </label>
+
+        {groupType === 'AINES_RESIDENCE' ? (
+          <>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-white">Nom de la residence</span>
+              <input {...register('residenceName')} placeholder="Residence des Moulins" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+              {errors.residenceName ? <p className="mt-2 text-xs text-red-300">{errors.residenceName.message}</p> : null}
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-white">Unite / secteur (optionnel)</span>
+              <input {...register('residenceUnit')} placeholder="3e etage, aile A" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-white">Coordonnatrice ou coordonnateur</span>
+              <input {...register('coordinatorName')} placeholder="Nom complet" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+              {errors.coordinatorName ? <p className="mt-2 text-xs text-red-300">{errors.coordinatorName.message}</p> : null}
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-white">Role de coordination</span>
+              <input {...register('coordinatorRole')} placeholder="Coordonnatrice des loisirs" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-white">Email coordination</span>
+              <input type="email" {...register('coordinatorEmail')} placeholder="coordination@residence.ca" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+              {errors.coordinatorEmail ? <p className="mt-2 text-xs text-red-300">{errors.coordinatorEmail.message}</p> : null}
+            </label>
+            <label>
+              <span className="mb-2 block text-sm font-medium text-white">Telephone coordination</span>
+              <input {...register('coordinatorPhone')} placeholder="819 000-0000" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+            </label>
+            <label className="md:col-span-2">
+              <span className="mb-2 block text-sm font-medium text-white">Profil des participants (optionnel)</span>
+              <textarea {...register('seniorsProfile')} rows={3} placeholder="Autonomie, capacites, contexte du groupe..." className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
+            </label>
+          </>
+        ) : null}
       </div>
 
       <fieldset>

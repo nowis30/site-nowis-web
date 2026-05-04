@@ -7,13 +7,31 @@ export const workshopFormatSchema = z.enum(['IN_PERSON', 'VIRTUAL', 'HYBRID']);
 export const workshopRequestTypeSchema = z.enum(['ORGANIZATION', 'CLIENT']);
 export const workshopDeliveryFormatSchema = z.enum(['SUR_PLACE', 'EN_LIGNE', 'A_DETERMINER']);
 export const workshopTargetAudienceSchema = z.enum(['PERSONNES_AGEES', 'JEUNES', 'ADULTES', 'FAMILLE', 'ORGANISME', 'AUTRE']);
+export const workshopGroupTypeSchema = z.enum(['AINES_RESIDENCE', 'ECOLE', 'ENTREPRISE', 'COMMUNAUTAIRE', 'PRIVE']);
 export const workshopDurationPresetSchema = z.enum(['M60', 'M90', 'M120', 'PERSONNALISE']);
 export const workshopPricingModeSchema = z.enum(['HORAIRE', 'PAR_PERSONNE', 'PERSONNALISE']);
 export const workshopRequestStatusSchema = z.enum(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED', 'DELETED']);
 export const workshopAtelierStatusSchema = z.enum(['BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE']);
 export const workshopAppointmentStatusSchema = z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE']);
 
+export function mapWorkshopGroupTypeToOrganizationType(groupType?: z.infer<typeof workshopGroupTypeSchema>) {
+  switch (groupType) {
+    case 'ECOLE':
+      return 'SCHOOL' as const;
+    case 'COMMUNAUTAIRE':
+    case 'AINES_RESIDENCE':
+      return 'COMMUNITY_ORG' as const;
+    case 'PRIVE':
+      return 'OTHER' as const;
+    case 'ENTREPRISE':
+      return 'OTHER' as const;
+    default:
+      return 'OTHER' as const;
+  }
+}
+
 export const workshopRequestFormSchema = z.object({
+  groupType: workshopGroupTypeSchema,
   organizationName: z.string().trim().min(2, 'Le nom de l’organisation est requis').max(160),
   contactName: z.string().trim().min(2, 'Le nom de la personne contact est requis').max(160),
   role: z.string().trim().max(120).optional().or(z.literal('')),
@@ -26,12 +44,51 @@ export const workshopRequestFormSchema = z.object({
   estimatedParticipants: z.coerce.number().int().min(1, 'Le nombre de participants doit être supérieur à 0').max(5000),
   workshopTheme: z.string().trim().min(3, 'Le thème est requis').max(180),
   objectives: z.string().trim().min(10, 'Précisez les objectifs de l’atelier').max(4000),
+  residenceName: z.string().trim().max(180).optional().or(z.literal('')),
+  residenceUnit: z.string().trim().max(180).optional().or(z.literal('')),
+  seniorsProfile: z.string().trim().max(600).optional().or(z.literal('')),
+  coordinatorName: z.string().trim().max(160).optional().or(z.literal('')),
+  coordinatorRole: z.string().trim().max(120).optional().or(z.literal('')),
+  coordinatorEmail: z.string().trim().toLowerCase().email('Adresse email invalide').optional().or(z.literal('')),
+  coordinatorPhone: z.string().trim().max(40).optional().or(z.literal('')),
   format: workshopFormatSchema,
   requestedDate: z.string().trim().optional().or(z.literal('')),
   preferredTime: z.string().trim().max(120).optional().or(z.literal('')),
   preferredDays: z.array(z.enum(['TUESDAY', 'THURSDAY'])).min(1, 'Choisissez au moins un jour préféré'),
   location: z.string().trim().max(240).optional().or(z.literal('')),
   notes: z.string().trim().max(4000).optional().or(z.literal('')),
+}).superRefine((value, ctx) => {
+  if (value.groupType === 'AINES_RESIDENCE') {
+    const coordinatorEmail = value.coordinatorEmail?.trim() || '';
+    const coordinatorPhone = value.coordinatorPhone?.trim() || '';
+
+    if (!value.residenceName || value.residenceName.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['residenceName'],
+        message: 'Le nom de la résidence est requis pour ce type de groupe.',
+      });
+    }
+    if (!value.coordinatorName || value.coordinatorName.trim().length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['coordinatorName'],
+        message: 'Le nom de la personne coordonnatrice est requis.',
+      });
+    }
+    if (!coordinatorEmail && !coordinatorPhone) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['coordinatorEmail'],
+        message: 'Ajoutez un courriel ou un téléphone pour la coordination.',
+      });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['coordinatorPhone'],
+        message: 'Ajoutez un courriel ou un téléphone pour la coordination.',
+      });
+    }
+  }
 });
 
 export const organizationInputSchema = z.object({
@@ -51,11 +108,19 @@ export const workshopRequestInputSchema = z.object({
   clientId: z.string().uuid().optional().or(z.literal('')),
   organizationContactId: z.string().uuid().optional().or(z.literal('')),
   workshopType: workshopRequestTypeSchema.default('ORGANIZATION'),
+  groupType: workshopGroupTypeSchema.optional(),
   title: z.string().trim().min(3).max(180),
   organizationName: z.string().trim().max(160).optional().or(z.literal('')),
   contactPerson: z.string().trim().max(160).optional().or(z.literal('')),
   contactPhone: z.string().trim().max(40).optional().or(z.literal('')),
   contactEmail: z.string().trim().toLowerCase().email().optional().or(z.literal('')),
+  residenceName: z.string().trim().max(180).optional().or(z.literal('')),
+  residenceUnit: z.string().trim().max(180).optional().or(z.literal('')),
+  seniorsProfile: z.string().trim().max(600).optional().or(z.literal('')),
+  coordinatorName: z.string().trim().max(160).optional().or(z.literal('')),
+  coordinatorRole: z.string().trim().max(120).optional().or(z.literal('')),
+  coordinatorEmail: z.string().trim().toLowerCase().email().optional().or(z.literal('')),
+  coordinatorPhone: z.string().trim().max(40).optional().or(z.literal('')),
   addressOrLocation: z.string().trim().max(240).optional().or(z.literal('')),
   deliveryFormat: workshopDeliveryFormatSchema.default('A_DETERMINER'),
   participantEstimate: z.coerce.number().int().min(1).max(5000).optional(),

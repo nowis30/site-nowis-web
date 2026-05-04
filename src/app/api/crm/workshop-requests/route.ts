@@ -52,15 +52,32 @@ function computeFinalPrice(payload: {
   return Number(total.toFixed(2));
 }
 
+function normalizeWorkshopGroupType(item: {
+  groupType: string | null;
+  targetAudience: string;
+  workshopType: string;
+  organizationName: string | null;
+}) {
+  if (item.groupType) return item.groupType;
+  if (item.targetAudience === 'PERSONNES_AGEES') return 'AINES_RESIDENCE';
+  if (item.workshopType === 'CLIENT') return 'PRIVE';
+  const name = (item.organizationName || '').toLowerCase();
+  if (name.includes('ecole') || name.includes('école')) return 'ECOLE';
+  if (name.includes('residence') || name.includes('résidence')) return 'AINES_RESIDENCE';
+  return 'COMMUNAUTAIRE';
+}
+
 export async function GET(request: NextRequest) {
   const guard = requireApiPermission(request, 'workshopRequests', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
   const status = request.nextUrl.searchParams.get('status')?.trim();
+  const category = request.nextUrl.searchParams.get('category')?.trim();
+  const allowedCategories = new Set(['AINES_RESIDENCE', 'ECOLE', 'ENTREPRISE', 'COMMUNAUTAIRE', 'PRIVE']);
   const workshopStatuses = new Set(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED', 'BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE', 'DELETED']);
   try {
-    const items = await prisma.workshopRequest.findMany({
+    const rawItems = await prisma.workshopRequest.findMany({
       where: {
         ...(status
           ? status === 'ACTIFS'
@@ -94,7 +111,21 @@ export async function GET(request: NextRequest) {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json({ items });
+
+    const items = rawItems.map((item) => ({
+      ...item,
+      groupType: normalizeWorkshopGroupType({
+        groupType: item.groupType,
+        targetAudience: item.targetAudience,
+        workshopType: item.workshopType,
+        organizationName: item.organizationName,
+      }),
+    }));
+
+    const filteredItems = category && allowedCategories.has(category)
+      ? items.filter((item) => item.groupType === category)
+      : items;
+    return NextResponse.json({ items: filteredItems });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
       return NextResponse.json({ items: [], unavailable: true });
@@ -129,10 +160,18 @@ export async function POST(request: NextRequest) {
         organizationContactId: payload.organizationContactId || null,
         title: payload.title,
         workshopType: payload.workshopType,
+        groupType: payload.groupType || null,
         organizationName: normalizeOptionalString(payload.organizationName),
         contactPerson: normalizeOptionalString(payload.contactPerson),
         contactPhone: normalizeOptionalString(payload.contactPhone),
         contactEmail: normalizeOptionalString(payload.contactEmail),
+        residenceName: normalizeOptionalString(payload.residenceName),
+        residenceUnit: normalizeOptionalString(payload.residenceUnit),
+        seniorsProfile: normalizeOptionalString(payload.seniorsProfile),
+        coordinatorName: normalizeOptionalString(payload.coordinatorName),
+        coordinatorRole: normalizeOptionalString(payload.coordinatorRole),
+        coordinatorEmail: normalizeOptionalString(payload.coordinatorEmail),
+        coordinatorPhone: normalizeOptionalString(payload.coordinatorPhone),
         addressOrLocation: normalizeOptionalString(payload.addressOrLocation),
         deliveryFormat: payload.deliveryFormat,
         participantEstimate: payload.participantEstimate ?? null,

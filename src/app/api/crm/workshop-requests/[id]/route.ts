@@ -103,10 +103,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         organizationContactId: payload.organizationContactId || null,
         title: payload.title,
         workshopType: payload.workshopType,
+        groupType: payload.groupType || null,
         organizationName: normalizeOptionalString(payload.organizationName),
         contactPerson: normalizeOptionalString(payload.contactPerson),
         contactPhone: normalizeOptionalString(payload.contactPhone),
         contactEmail: normalizeOptionalString(payload.contactEmail),
+        residenceName: normalizeOptionalString(payload.residenceName),
+        residenceUnit: normalizeOptionalString(payload.residenceUnit),
+        seniorsProfile: normalizeOptionalString(payload.seniorsProfile),
+        coordinatorName: normalizeOptionalString(payload.coordinatorName),
+        coordinatorRole: normalizeOptionalString(payload.coordinatorRole),
+        coordinatorEmail: normalizeOptionalString(payload.coordinatorEmail),
+        coordinatorPhone: normalizeOptionalString(payload.coordinatorPhone),
         addressOrLocation: normalizeOptionalString(payload.addressOrLocation),
         deliveryFormat: payload.deliveryFormat,
         participantEstimate: payload.participantEstimate ?? null,
@@ -223,6 +231,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     clientNotes?: string | null;
     finalPrice?: number | null;
     linkedAppointmentId?: string | null;
+    groupType?: string | null;
+    residenceName?: string | null;
+    residenceUnit?: string | null;
+    seniorsProfile?: string | null;
+    coordinatorName?: string | null;
+    coordinatorRole?: string | null;
+    coordinatorEmail?: string | null;
+    coordinatorPhone?: string | null;
   };
   const action = body.action;
   const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 500) : null;
@@ -241,9 +257,17 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           contactId: body.contactId || null,
           organizationContactId: body.organizationContactId || null,
           clientId: body.clientId || null,
+          groupType: normalizeOptionalString(body.groupType || undefined),
           contactPerson: normalizeOptionalString(body.contactPerson || undefined),
           contactEmail: normalizeOptionalString(body.contactEmail || undefined),
           contactPhone: normalizeOptionalString(body.contactPhone || undefined),
+          residenceName: normalizeOptionalString(body.residenceName || undefined),
+          residenceUnit: normalizeOptionalString(body.residenceUnit || undefined),
+          seniorsProfile: normalizeOptionalString(body.seniorsProfile || undefined),
+          coordinatorName: normalizeOptionalString(body.coordinatorName || undefined),
+          coordinatorRole: normalizeOptionalString(body.coordinatorRole || undefined),
+          coordinatorEmail: normalizeOptionalString(body.coordinatorEmail || undefined),
+          coordinatorPhone: normalizeOptionalString(body.coordinatorPhone || undefined),
           location: normalizeOptionalString(body.location || undefined),
           requestedDate: body.requestedDate ? new Date(body.requestedDate) : null,
           requestedTime: normalizeOptionalString(body.requestedTime || undefined),

@@ -11,6 +11,8 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test:contract": "tsx scripts/admin-runtime-contract.test.ts",
+    "test:song-request-api-security": "tsx scripts/song-request-api-security-check.ts",
+    "test:workshop-request-validation": "tsx scripts/workshop-request-validation-check.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate:init": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/20260323_init/migration.sql",
     "prisma:migrate:deploy": "prisma migrate deploy",

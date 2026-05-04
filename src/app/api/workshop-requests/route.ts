@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
-import { workshopRequestFormSchema } from '@/features/workshops/schemas';
+import { mapWorkshopGroupTypeToOrganizationType, workshopRequestFormSchema } from '@/features/workshops/schemas';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { buildAuthRedirect } from '@/lib/safe-next';
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         ? await tx.organization.update({
             where: { id: existingOrg.id },
             data: {
-              type: payload.organizationType,
+              type: mapWorkshopGroupTypeToOrganizationType(payload.groupType),
               email: sessionEmail,
               phone: payload.phone,
               city: payload.city,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         : await tx.organization.create({
             data: {
               name: payload.organizationName,
-              type: payload.organizationType,
+                type: mapWorkshopGroupTypeToOrganizationType(payload.groupType),
               email: sessionEmail,
               phone: payload.phone,
               city: payload.city,
@@ -184,6 +184,14 @@ export async function POST(request: NextRequest) {
           format: payload.format,
           location: normalizeOptionalString(payload.location),
           workshopTheme: payload.workshopTheme,
+          groupType: payload.groupType,
+          residenceName: normalizeOptionalString(payload.residenceName),
+          residenceUnit: normalizeOptionalString(payload.residenceUnit),
+          seniorsProfile: normalizeOptionalString(payload.seniorsProfile),
+          coordinatorName: normalizeOptionalString(payload.coordinatorName),
+          coordinatorRole: normalizeOptionalString(payload.coordinatorRole),
+          coordinatorEmail: normalizeOptionalString(payload.coordinatorEmail),
+          coordinatorPhone: normalizeOptionalString(payload.coordinatorPhone),
           objectives: payload.objectives,
           notes: normalizeOptionalString(payload.notes),
           status: 'NEW',

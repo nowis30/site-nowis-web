@@ -467,6 +467,14 @@ model WorkshopRequest {
   durationMinutes       Int?
   meetingType           String?
   clientAccessToken     String?                @unique
+  groupType             String?
+  residenceName         String?
+  residenceUnit         String?
+  seniorsProfile        String?
+  coordinatorName       String?
+  coordinatorRole       String?
+  coordinatorEmail      String?
+  coordinatorPhone      String?
   audienceType          WorkshopAudienceType   @default(MIXED)
   ageRange              String?
   estimatedParticipants Int?
