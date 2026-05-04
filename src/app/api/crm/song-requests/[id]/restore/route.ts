@@ -1,0 +1,44 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { requireApiPermission } from '@/features/crm/auth/api-guard';
+import { logCleanupActivity } from '@/lib/cleanup-actions';
+
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  const guard = requireApiPermission(request, 'songRequests', 'update');
+  if (guard.error) return guard.error;
+
+  const item = await prisma.songRequest.findUnique({
+    where: { id: params.id },
+    select: { id: true, fullName: true, deletedAt: true, archivedAt: true, isTest: true, contactId: true },
+  });
+  if (!item) return NextResponse.json({ error: 'Demande introuvable.' }, { status: 404 });
+  if (!item.archivedAt && !item.isTest && !item.deletedAt) {
+    return NextResponse.json({ error: 'Demande déjà active.' }, { status: 409 });
+  }
+
+  const updated = await prisma.songRequest.update({
+    where: { id: params.id },
+    data: {
+      isTest: false,
+      testReason: null,
+      archivedAt: null,
+      archivedById: null,
+      deletedAt: null,
+      deletedBy: null,
+      deleteReason: null,
+      restoredAt: new Date(),
+      restoredById: guard.session.sub,
+    },
+  });
+
+  await logCleanupActivity({
+    action: 'RESTORE',
+    module: 'SONG_REQUEST',
+    itemId: item.id,
+    itemLabel: item.fullName,
+    userId: guard.session.sub,
+    contactId: item.contactId,
+  });
+
+  return NextResponse.json({ item: updated });
+}

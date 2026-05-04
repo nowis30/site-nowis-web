@@ -511,6 +511,12 @@ model WorkshopRequest {
   objectives            String
   notes                 String?
   status                WorkshopRequestStatus  @default(NEW)
+  isTest                Boolean                @default(false)
+  testReason            String?
+  archivedAt            DateTime?
+  archivedById          String?                @db.Uuid
+  restoredAt            DateTime?
+  restoredById          String?                @db.Uuid
   deletedAt             DateTime?
   deletedBy             String?                 @db.Uuid
   deleteReason          String?
@@ -530,6 +536,8 @@ model WorkshopRequest {
   @@index([contactId])
   @@index([clientId])
   @@index([status])
+  @@index([isTest])
+  @@index([archivedAt])
   @@index([deletedAt])
   @@index([clientAccessToken])
   @@map("workshop_requests")
@@ -598,6 +606,12 @@ model Inquiry {
   source         String?
   status         InquiryStatus @default(NEW)
   submissionStatus SubmissionStatus @default(NOUVEAU)
+  isTest         Boolean      @default(false)
+  testReason     String?
+  archivedAt     DateTime?
+  archivedById   String?      @db.Uuid
+  restoredAt     DateTime?    
+  restoredById   String?      @db.Uuid
   deletedAt      DateTime?
   deletedBy      String?      @db.Uuid
   deleteReason   String?
@@ -613,6 +627,8 @@ model Inquiry {
   @@index([contactId])
   @@index([caseId])
   @@index([submissionStatus])
+  @@index([isTest])
+  @@index([archivedAt])
   @@index([deletedAt])
   @@map("inquiries")
 }
@@ -889,6 +905,12 @@ model Invoice {
   paymentStatus String?
   paymentAmount Decimal?    @db.Decimal(10, 2)
   paymentCurrency String?   @default("CAD")
+  isTest      Boolean       @default(false)
+  testReason  String?
+  archivedAt  DateTime?
+  archivedById String?      @db.Uuid
+  restoredAt  DateTime?
+  restoredById String?      @db.Uuid
   deletedAt   DateTime?
   deletedBy   String?       @db.Uuid
   deleteReason String?
@@ -900,6 +922,8 @@ model Invoice {
 
   @@index([contactId])
   @@index([status])
+  @@index([isTest])
+  @@index([archivedAt])
   @@index([paypalInvoiceId])
   @@index([paymentStatus])
   @@index([deletedAt])
@@ -995,6 +1019,12 @@ model SongRequest {
   meetingNotes         String?
   source               String            @default("website")
   status               SongRequestStatus @default(NEW)
+  isTest               Boolean           @default(false)
+  testReason           String?
+  archivedAt           DateTime?
+  archivedById         String?           @db.Uuid
+  restoredAt           DateTime?
+  restoredById         String?           @db.Uuid
   deletedAt            DateTime?
   deletedBy            String?           @db.Uuid
   deleteReason         String?
@@ -1015,6 +1045,8 @@ model SongRequest {
   @@index([organizationId])
   @@index([email])
   @@index([status])
+  @@index([isTest])
+  @@index([archivedAt])
   @@index([deletedAt])
   @@index([createdAt])
   @@map("song_requests")
