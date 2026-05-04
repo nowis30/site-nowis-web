@@ -5,7 +5,15 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
 import { buildPublicBillingUrl, buildPublicQuoteUrl, signPublicBillingToken, signPublicQuoteToken } from '@/lib/public-links';
-import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
+import {
+  buildCustomerSnapshotFromContact,
+  buildCustomerSnapshotFromOrganization,
+  getBillingIssuerSnapshot,
+  toCustomerSnapshot,
+  toIssuerSnapshot,
+  validateCustomerSnapshot,
+  validateIssuerSnapshot,
+} from '@/lib/billing-profile';
 
 const payloadSchema = z.object({
   subject: z.string().trim().min(3).max(180).optional(),
@@ -35,7 +43,48 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const quote = await prisma.commercialQuote.findUnique({
     where: { id: params.id },
     include: {
-      contact: { select: { id: true, fullName: true, email: true } },
+      contact: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          companyName: true,
+          billingCompanyName: true,
+          billingLegalName: true,
+          billingEmail: true,
+          billingPhone: true,
+          billingAddressLine1: true,
+          billingAddressLine2: true,
+          billingCity: true,
+          billingState: true,
+          billingPostalCode: true,
+          billingCountry: true,
+          billingTaxId: true,
+          billingNotes: true,
+        },
+      },
+      organization: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+          city: true,
+          address: true,
+          billingCompanyName: true,
+          billingLegalName: true,
+          billingEmail: true,
+          billingPhone: true,
+          billingAddressLine1: true,
+          billingAddressLine2: true,
+          billingCity: true,
+          billingState: true,
+          billingPostalCode: true,
+          billingCountry: true,
+          billingTaxId: true,
+          billingNotes: true,
+        },
+      },
       lines: { orderBy: { sortOrder: 'asc' } },
     },
   });
@@ -49,9 +98,22 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 
   const issuer = toIssuerSnapshot(quote.issuerSnapshot) || await getBillingIssuerSnapshot();
-  const customer = toCustomerSnapshot(quote.customerSnapshot) || buildCustomerSnapshotFromContact(quote.contact);
+  const fromSnapshot = toCustomerSnapshot(quote.customerSnapshot);
+  const fromContact = buildCustomerSnapshotFromContact(quote.contact);
+  const fromOrganization = quote.organization ? buildCustomerSnapshotFromOrganization(quote.organization) : null;
+
+  let customer = fromSnapshot || fromContact;
   const missingIssuer = validateIssuerSnapshot(issuer);
-  const missingCustomer = validateCustomerSnapshot(customer);
+  let missingCustomer = validateCustomerSnapshot(customer);
+
+  if (missingCustomer.length > 0 && fromOrganization) {
+    const orgMissing = validateCustomerSnapshot(fromOrganization);
+    if (orgMissing.length < missingCustomer.length) {
+      customer = fromOrganization;
+      missingCustomer = orgMissing;
+    }
+  }
+
   if (missingIssuer.length > 0 || missingCustomer.length > 0) {
     const appUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_DOMAIN || request.nextUrl.origin;
     const billingUpdateUrl = quote.contactId

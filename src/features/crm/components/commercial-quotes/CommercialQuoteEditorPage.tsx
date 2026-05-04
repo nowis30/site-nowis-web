@@ -88,6 +88,7 @@ export function CommercialQuoteEditorPage({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [billingIssues, setBillingIssues] = useState<{ missingIssuer: string[]; missingCustomer: string[]; billingUpdateUrl: string | null } | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const totals = useMemo(() => {
@@ -174,10 +175,29 @@ export function CommercialQuoteEditorPage({
     setLoading(true);
     setError(null);
     setMessage(null);
+    setBillingIssues(null);
     try {
       const response = await fetch(`/api/crm/commercial-quotes/${quoteId}/${action}`, { method: 'POST' });
-      const data = (await response.json().catch(() => null)) as { error?: string; invoiceId?: string; emailSent?: boolean; message?: string; quoteUrl?: string } | null;
-      if (!response.ok) throw new Error(data?.error || 'Action impossible');
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+        invoiceId?: string;
+        emailSent?: boolean;
+        message?: string;
+        quoteUrl?: string;
+        missingIssuer?: string[];
+        missingCustomer?: string[];
+        billingUpdateUrl?: string | null;
+      } | null;
+      if (!response.ok) {
+        if (response.status === 409 && (data?.missingIssuer || data?.missingCustomer)) {
+          setBillingIssues({
+            missingIssuer: data?.missingIssuer || [],
+            missingCustomer: data?.missingCustomer || [],
+            billingUpdateUrl: data?.billingUpdateUrl || null,
+          });
+        }
+        throw new Error(data?.error || 'Action impossible');
+      }
       if (action === 'convert-to-invoice' && data?.invoiceId) {
         router.push(`/crm/invoices/${data.invoiceId}`);
         return;
@@ -287,6 +307,23 @@ export function CommercialQuoteEditorPage({
 
       {message ? <p className="rounded-xl border border-emerald-700/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">{message}</p> : null}
       {error ? <p className="rounded-xl border border-red-700/50 bg-red-950/20 px-4 py-3 text-sm text-red-200">{error}</p> : null}
+      {billingIssues ? (
+        <div className="rounded-xl border border-amber-600/40 bg-amber-950/20 px-4 py-3 text-sm text-amber-100">
+          <p className="font-medium">Champs de facturation manquants avant envoi</p>
+          <p className="mt-1 text-amber-200/90">Emetteur: {billingIssues.missingIssuer.length > 0 ? billingIssues.missingIssuer.join(', ') : 'ok'}</p>
+          <p className="text-amber-200/90">Client: {billingIssues.missingCustomer.length > 0 ? billingIssues.missingCustomer.join(', ') : 'ok'}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+            <Link href="/crm/settings" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">
+              Completer le profil emetteur
+            </Link>
+            {billingIssues.billingUpdateUrl ? (
+              <a href={billingIssues.billingUpdateUrl} target="_blank" rel="noreferrer" className="rounded-md border border-amber-400/40 px-2 py-1 text-amber-100 hover:text-white">
+                Completer le profil client
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
