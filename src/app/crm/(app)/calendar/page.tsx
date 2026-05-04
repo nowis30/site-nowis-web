@@ -119,6 +119,9 @@ export default async function CalendarPage() {
       start.setHours(startHour, startMinute, 0, 0);
       const end = new Date(start);
       end.setHours(endHour, endMinute, 0, 0);
+      if (end <= start) {
+        end.setDate(end.getDate() + 1);
+      }
       events.push({
         id: `availability-${item.id}-${weekOffset}`,
         title: 'Disponibilité atelier',

@@ -82,6 +82,17 @@ function buildWorkshopContextSnippet(item: WorkshopPageProps['item']) {
   return chunks.join(' | ');
 }
 
+function buildScheduleRange(date: string, startTime: string, endTime: string) {
+  const start = new Date(`${date}T${startTime}:00`);
+  const end = new Date(`${date}T${endTime}:00`);
+
+  if (end <= start) {
+    end.setDate(end.getDate() + 1);
+  }
+
+  return { start, end };
+}
+
 const DELETABLE_STATUSES = ['ANNULE', 'DELETED', 'CANCELLED', 'TERMINE', 'COMPLETED'];
 
 export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = false }: WorkshopPageProps) {
@@ -151,6 +162,10 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
     setSaving(true);
     setMessage(null);
     try {
+      const scheduleRange = schedule.date
+        ? buildScheduleRange(schedule.date, schedule.startTime, schedule.endTime)
+        : null;
+
       const response = await fetch(`/api/crm/workshop-requests/${item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -161,9 +176,9 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
           basePrice: Number(form.basePrice || 0),
           discountPercent: Number(form.discountPercent || 0),
           requestedDate: form.requestedDate || undefined,
-          scheduledAt: schedule.date ? new Date(`${schedule.date}T${schedule.startTime}:00`).toISOString() : undefined,
-          startAt: schedule.date ? new Date(`${schedule.date}T${schedule.startTime}:00`).toISOString() : undefined,
-          endAt: schedule.date ? new Date(`${schedule.date}T${schedule.endTime}:00`).toISOString() : undefined,
+          scheduledAt: scheduleRange ? scheduleRange.start.toISOString() : undefined,
+          startAt: scheduleRange ? scheduleRange.start.toISOString() : undefined,
+          endAt: scheduleRange ? scheduleRange.end.toISOString() : undefined,
           durationMinutes: Number(schedule.durationMinutes || 0) || undefined,
           meetingType: schedule.meetingType,
         }),
@@ -189,16 +204,15 @@ export function WorkshopRequestAdminPage({ item, calendarConnections, isAdmin = 
     setScheduling(true);
     setMessage(null);
     try {
-      const startAt = new Date(`${schedule.date}T${schedule.startTime}:00`);
-      const endAt = new Date(`${schedule.date}T${schedule.endTime}:00`);
+      const range = buildScheduleRange(schedule.date, schedule.startTime, schedule.endTime);
       const response = await fetch(`/api/crm/workshop-requests/${item.id}/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: `Atelier - ${form.title}`,
           description: form.workshopTheme,
-          startAt: startAt.toISOString(),
-          endAt: endAt.toISOString(),
+          startAt: range.start.toISOString(),
+          endAt: range.end.toISOString(),
           location: schedule.location,
           durationMinutes: Number(schedule.durationMinutes || 0) || undefined,
           meetingType: schedule.meetingType,

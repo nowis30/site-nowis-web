@@ -13,9 +13,19 @@ type AvailabilityItem = {
 
 const DAY_LABELS: Record<number, string> = { 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi', 7: 'Dimanche' };
 
+const DAY_OPTIONS = [
+  { value: 7, label: 'Dimanche' },
+  { value: 1, label: 'Lundi' },
+  { value: 2, label: 'Mardi' },
+  { value: 3, label: 'Mercredi' },
+  { value: 4, label: 'Jeudi' },
+  { value: 5, label: 'Vendredi' },
+  { value: 6, label: 'Samedi' },
+] as const;
+
 export function WorkshopAvailabilityManager({ initialItems }: { initialItems: AvailabilityItem[] }) {
   const [items, setItems] = useState(initialItems);
-  const [form, setForm] = useState({ weekday: 2, startTime: '09:00', endTime: '11:00', isActive: true, capacity: '' });
+  const [form, setForm] = useState({ weekday: 7, startTime: '08:00', endTime: '00:00', isActive: true, capacity: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +42,7 @@ export function WorkshopAvailabilityManager({ initialItems }: { initialItems: Av
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Création impossible');
       setItems((current) => [...current, data.item].sort((a, b) => a.weekday - b.weekday || a.startTime.localeCompare(b.startTime)));
-      setForm({ weekday: 2, startTime: '09:00', endTime: '11:00', isActive: true, capacity: '' });
+      setForm({ weekday: 7, startTime: '08:00', endTime: '00:00', isActive: true, capacity: '' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
@@ -61,15 +71,16 @@ export function WorkshopAvailabilityManager({ initialItems }: { initialItems: Av
     <section className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-white">Paramètres ateliers</h2>
-        <p className="mt-2 text-sm text-slate-400">Définissez les plages ouvertes pour les ateliers. Les créneaux du mardi et du jeudi sont proposés par défaut, mais vous pouvez les ajuster.</p>
+        <p className="mt-2 text-sm text-slate-400">Définissez les plages ouvertes pour les ateliers du dimanche au samedi (ex.: 08:00 à 00:00).</p>
       </div>
 
       <form onSubmit={submit} className="grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-5 md:grid-cols-5">
         <label>
           <span className="mb-2 block text-xs uppercase tracking-wide text-slate-400">Jour</span>
           <select value={form.weekday} onChange={(event) => setForm((current) => ({ ...current, weekday: Number(event.target.value) }))} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-            <option value={2}>Mardi</option>
-            <option value={4}>Jeudi</option>
+            {DAY_OPTIONS.map((day) => (
+              <option key={day.value} value={day.value}>{day.label}</option>
+            ))}
           </select>
         </label>
         <label>
