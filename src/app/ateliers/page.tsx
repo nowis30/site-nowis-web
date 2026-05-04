@@ -61,6 +61,14 @@ const etapes = [
   { num: '07', title: 'Résultat final et vidéo souvenir', desc: 'Une vidéo est créée autour de l\'œuvre — téléchargeable, partageable et durable.' },
 ];
 
+const groupCtas = [
+  { label: 'Aines / Residence', groupType: 'AINES_RESIDENCE' },
+  { label: 'Ecole', groupType: 'ECOLE' },
+  { label: 'Entreprise', groupType: 'ENTREPRISE' },
+  { label: 'Communautaire', groupType: 'COMMUNAUTAIRE' },
+  { label: 'Prive', groupType: 'PRIVE' },
+];
+
 export const metadata = buildMetadata({
   title: 'Ateliers de création musicale avec IA | Création Nowis à Drummondville',
   description:
@@ -129,6 +137,17 @@ export default function AteliersPage() {
             >
               Poser une question
             </Link>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {groupCtas.map((item) => (
+              <Link
+                key={item.groupType}
+                href={`/ateliers/demande?groupType=${item.groupType}`}
+                className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-primary-400/50 hover:bg-primary-500/10"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
       </section>

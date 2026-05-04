@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get('q')?.trim();
   const status = request.nextUrl.searchParams.get('status')?.trim();
   const category = request.nextUrl.searchParams.get('category')?.trim();
-  const allowedCategories = new Set(['AINES_RESIDENCE', 'ECOLE', 'ENTREPRISE', 'COMMUNAUTAIRE', 'PRIVE']);
+  const allowedCategories = new Set(['AINES_RESIDENCE', 'ECOLE', 'ENTREPRISE', 'COMMUNAUTAIRE', 'PRIVE', 'AUTRE']);
   const workshopStatuses = new Set(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED', 'BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE', 'DELETED']);
   try {
     const rawItems = await prisma.workshopRequest.findMany({

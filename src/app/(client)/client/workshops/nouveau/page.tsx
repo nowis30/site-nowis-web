@@ -5,8 +5,16 @@ import { PageHeader } from '@/features/client-portal/components/ui';
 import { WorkshopRequestForm } from '@/features/workshops/components/WorkshopRequestForm';
 import { prisma } from '@/lib/prisma';
 
-export default async function NouvelleDemandeAtelierPage() {
+const GROUP_TYPES = new Set(['AINES_RESIDENCE', 'ECOLE', 'ENTREPRISE', 'COMMUNAUTAIRE', 'PRIVE', 'AUTRE']);
+
+export default async function NouvelleDemandeAtelierPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const session = await requireClientPortalSession();
+  const groupTypeParam = typeof searchParams?.groupType === 'string' ? searchParams.groupType : '';
+  const initialGroupType = GROUP_TYPES.has(groupTypeParam) ? groupTypeParam : 'ECOLE';
 
   const contact = await prisma.contact.findUnique({
     where: { id: session.contactId },
@@ -33,6 +41,7 @@ export default async function NouvelleDemandeAtelierPage() {
         accountEmail={session.email}
         accountFullName={session.fullName}
         accountPhone={contact?.phone ?? ''}
+        initialGroupType={initialGroupType as 'AINES_RESIDENCE' | 'ECOLE' | 'ENTREPRISE' | 'COMMUNAUTAIRE' | 'PRIVE' | 'AUTRE'}
       />
     </section>
   );

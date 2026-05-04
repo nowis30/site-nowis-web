@@ -82,10 +82,26 @@ function main() {
     organizationType: mapWorkshopGroupTypeToOrganizationType('AINES_RESIDENCE'),
   });
 
-  const results = [c1, c2, c3];
+  const c4 = runCase('C4_AUTRE_OK', {
+    ...basePayload,
+    groupType: 'AUTRE',
+    organizationType: mapWorkshopGroupTypeToOrganizationType('AUTRE'),
+  });
+
+  const c5 = runCase('C5_AUTRE_SANS_RESIDENCE_OK', {
+    ...basePayload,
+    groupType: 'AUTRE',
+    organizationType: mapWorkshopGroupTypeToOrganizationType('AUTRE'),
+    residenceName: '',
+    coordinatorName: '',
+    coordinatorEmail: '',
+    coordinatorPhone: '',
+  });
+
+  const results = [c1, c2, c3, c4, c5];
   console.log(JSON.stringify(results, null, 2));
 
-  const isExpected = c1.success && c2.success && !c3.success;
+  const isExpected = c1.success && c2.success && !c3.success && c4.success && c5.success;
   if (!isExpected) {
     process.exitCode = 1;
   }

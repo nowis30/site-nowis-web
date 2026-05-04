@@ -121,6 +121,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
             <option value="ENTREPRISE">Entreprise</option>
             <option value="COMMUNAUTAIRE">Communautaire</option>
             <option value="PRIVE">Prive</option>
+            <option value="AUTRE">Autre</option>
           </select>
           {errors.groupType ? <p className="mt-2 text-xs text-red-300">{errors.groupType.message}</p> : null}
         </label>
