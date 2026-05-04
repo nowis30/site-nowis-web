@@ -3,22 +3,25 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { verifyPublicBillingToken } from '@/lib/public-links';
 
+const nullableString = (max: number) =>
+  z.string().trim().max(max).optional().or(z.literal('')).or(z.null());
+
 const updateSchema = z.object({
-  billingCompanyName: z.string().trim().max(160).optional().or(z.literal('')),
-  billingLegalName: z.string().trim().max(160).optional().or(z.literal('')),
-  billingEmail: z.string().trim().email().optional().or(z.literal('')),
-  billingPhone: z.string().trim().max(40).optional().or(z.literal('')),
-  billingAddressLine1: z.string().trim().max(240).optional().or(z.literal('')),
-  billingAddressLine2: z.string().trim().max(240).optional().or(z.literal('')),
-  billingCity: z.string().trim().max(120).optional().or(z.literal('')),
-  billingState: z.string().trim().max(120).optional().or(z.literal('')),
-  billingPostalCode: z.string().trim().max(40).optional().or(z.literal('')),
-  billingCountry: z.string().trim().max(120).optional().or(z.literal('')),
-  billingTaxId: z.string().trim().max(80).optional().or(z.literal('')),
-  billingNotes: z.string().trim().max(2000).optional().or(z.literal('')),
+  billingCompanyName: nullableString(160),
+  billingLegalName: nullableString(160),
+  billingEmail: z.string().trim().email().optional().or(z.literal('')).or(z.null()),
+  billingPhone: nullableString(40),
+  billingAddressLine1: nullableString(240),
+  billingAddressLine2: nullableString(240),
+  billingCity: nullableString(120),
+  billingState: nullableString(120),
+  billingPostalCode: nullableString(40),
+  billingCountry: nullableString(120),
+  billingTaxId: nullableString(80),
+  billingNotes: nullableString(2000),
 });
 
-function normalizeOptional(value?: string) {
+function normalizeOptional(value?: string | null) {
   if (!value) return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
