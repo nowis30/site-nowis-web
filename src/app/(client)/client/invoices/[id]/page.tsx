@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { prisma } from '@/lib/prisma';
 import { InvoiceDetailPage } from '@/features/crm/components/invoices/InvoiceDetailPage';
-import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
+import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
 interface PageProps {
   params: { id: string };
@@ -26,6 +26,8 @@ export default async function ClientPortalInvoiceDetailPage({ params }: PageProp
 
   if (!invoice) notFound();
 
+  const businessProfile = await getBillingIssuerSnapshot();
+
   return (
     <InvoiceDetailPage
       invoice={{
@@ -38,7 +40,7 @@ export default async function ClientPortalInvoiceDetailPage({ params }: PageProp
         paypalLastWebhookAt: invoice.paypalLastWebhookAt?.toISOString() || null,
         paymentAmount: invoice.paymentAmount?.toString() || null,
       }}
-      businessProfile={getInvoiceBusinessProfile()}
+      businessProfile={businessProfile}
       backHref="/client/dashboard"
       backLabel="Retour au portail client"
       subtitle="Version professionnelle consultable depuis votre portail sécurisé"

@@ -9,6 +9,7 @@ export interface InvoiceBusinessProfile {
   addressLine1?: string;
   addressLine2?: string;
   city?: string;
+  state?: string;
   postalCode?: string;
   country?: string;
   taxId?: string;
@@ -33,6 +34,7 @@ export function getInvoiceBusinessProfile(): InvoiceBusinessProfile {
     addressLine1: process.env.COMPANY_ADDRESS_LINE1 || '',
     addressLine2: process.env.COMPANY_ADDRESS_LINE2 || '',
     city: process.env.COMPANY_CITY || '',
+    state: process.env.COMPANY_STATE || '',
     postalCode: process.env.COMPANY_POSTAL_CODE || '',
     country: process.env.COMPANY_COUNTRY || 'Canada',
     taxId: process.env.COMPANY_TAX_ID || '',

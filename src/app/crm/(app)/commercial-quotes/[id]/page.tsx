@@ -7,7 +7,7 @@ import { getCommercialQuoteEditorOptions, getCommercialQuoteTaxRates } from '@/f
 export default async function CrmCommercialQuoteDetailPage({ params }: { params: { id: string } }) {
   await requireCrmSession();
 
-  const [quote, options] = await Promise.all([
+  const [quote, options, taxRates] = await Promise.all([
     prisma.commercialQuote.findUnique({
       where: { id: params.id },
       include: {
@@ -15,6 +15,7 @@ export default async function CrmCommercialQuoteDetailPage({ params }: { params:
       },
     }),
     getCommercialQuoteEditorOptions(),
+    getCommercialQuoteTaxRates(),
   ]);
 
   if (!quote) notFound();
@@ -53,7 +54,7 @@ export default async function CrmCommercialQuoteDetailPage({ params }: { params:
       workshopOptions={options.workshopOptions}
       songOptions={options.songOptions}
       appointmentOptions={options.appointmentOptions}
-      taxRates={getCommercialQuoteTaxRates()}
+      taxRates={taxRates}
     />
   );
 }

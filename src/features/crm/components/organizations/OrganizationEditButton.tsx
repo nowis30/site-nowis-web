@@ -25,6 +25,10 @@ interface OrganizationData {
   status: string;
   email: string | null;
   phone: string | null;
+  billingCompanyName: string | null;
+  billingEmail: string | null;
+  billingPostalCode: string | null;
+  billingCountry: string | null;
   address: string | null;
   city: string | null;
   notes: string | null;
@@ -36,6 +40,10 @@ interface FormState {
   status: string;
   email: string;
   phone: string;
+  billingCompanyName: string;
+  billingEmail: string;
+  billingPostalCode: string;
+  billingCountry: string;
   address: string;
   city: string;
   notes: string;
@@ -48,6 +56,10 @@ function buildInitialForm(org: OrganizationData): FormState {
     status: org.status,
     email: org.email ?? '',
     phone: org.phone ?? '',
+    billingCompanyName: org.billingCompanyName ?? '',
+    billingEmail: org.billingEmail ?? '',
+    billingPostalCode: org.billingPostalCode ?? '',
+    billingCountry: org.billingCountry ?? '',
     address: org.address ?? '',
     city: org.city ?? '',
     notes: org.notes ?? '',
@@ -86,6 +98,10 @@ function Modal({
           status: form.status,
           email: form.email || undefined,
           phone: form.phone || undefined,
+          billingCompanyName: form.billingCompanyName || undefined,
+          billingEmail: form.billingEmail || undefined,
+          billingPostalCode: form.billingPostalCode || undefined,
+          billingCountry: form.billingCountry || undefined,
           address: form.address || undefined,
           city: form.city || undefined,
           notes: form.notes || undefined,
@@ -193,6 +209,42 @@ function Modal({
             <input
               value={form.city}
               onChange={(event) => setField('city', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Société facturation</span>
+            <input
+              value={form.billingCompanyName}
+              onChange={(event) => setField('billingCompanyName', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Courriel facturation</span>
+            <input
+              value={form.billingEmail}
+              onChange={(event) => setField('billingEmail', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Code postal facturation</span>
+            <input
+              value={form.billingPostalCode}
+              onChange={(event) => setField('billingPostalCode', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Pays facturation</span>
+            <input
+              value={form.billingCountry}
+              onChange={(event) => setField('billingCountry', event.target.value)}
               className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
             />
           </label>

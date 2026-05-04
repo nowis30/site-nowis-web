@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { z } from 'zod';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
 const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']);
 
@@ -35,6 +37,29 @@ export async function POST(request: NextRequest) {
     const sourceWorkshopRequestId = typeof rawPayload?.sourceWorkshopRequestId === 'string' ? rawPayload.sourceWorkshopRequestId : null;
     const sourceSongRequestId = typeof rawPayload?.sourceSongRequestId === 'string' ? rawPayload.sourceSongRequestId : null;
     const payload = invoiceInputSchema.parse(rawPayload);
+    const issuerSnapshot = await getBillingIssuerSnapshot();
+    const contact = await prisma.contact.findUnique({
+      where: { id: payload.contactId },
+      select: {
+        fullName: true,
+        companyName: true,
+        email: true,
+        phone: true,
+        billingCompanyName: true,
+        billingLegalName: true,
+        billingEmail: true,
+        billingPhone: true,
+        billingAddressLine1: true,
+        billingAddressLine2: true,
+        billingCity: true,
+        billingState: true,
+        billingPostalCode: true,
+        billingCountry: true,
+        billingTaxId: true,
+        billingNotes: true,
+      },
+    });
+    const customerSnapshot = contact ? buildCustomerSnapshotFromContact(contact) : null;
     const item = await prisma.$transaction(async (tx) => {
       const created = await tx.invoice.create({
         data: {
@@ -43,6 +68,16 @@ export async function POST(request: NextRequest) {
           issueDate: payload.issueDate ? new Date(payload.issueDate) : new Date(),
           dueDate: new Date(payload.dueDate),
           amount: payload.amount,
+          subtotal: payload.amount,
+          taxAmount: 0,
+          totalAmount: payload.amount,
+          issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
+          customerSnapshot: customerSnapshot
+            ? (customerSnapshot as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+          taxesEnabled: issuerSnapshot.taxesEnabled,
+          taxRateGst: issuerSnapshot.taxRateGst,
+          taxRateQst: issuerSnapshot.taxRateQst,
           status: payload.status,
           description: normalizeOptionalString(payload.description),
         },

@@ -142,6 +142,21 @@ export default async function ContactDetailPage({ params }: PageProps) {
 
   if (!contact) notFound();
 
+  const contactBilling = contact as typeof contact & {
+    billingCompanyName?: string | null;
+    billingLegalName?: string | null;
+    billingEmail?: string | null;
+    billingPhone?: string | null;
+    billingAddressLine1?: string | null;
+    billingAddressLine2?: string | null;
+    billingCity?: string | null;
+    billingState?: string | null;
+    billingPostalCode?: string | null;
+    billingCountry?: string | null;
+    billingTaxId?: string | null;
+    billingNotes?: string | null;
+  };
+
   const timeline: TimelineItem[] = [
     ...contact.activities.map((item) => ({
       id: `activity-${item.id}`,
@@ -214,6 +229,18 @@ export default async function ContactDetailPage({ params }: PageProps) {
         source: contact.source,
         tags: contact.tags,
         notes: contact.notes,
+        billingCompanyName: contactBilling.billingCompanyName ?? null,
+        billingLegalName: contactBilling.billingLegalName ?? null,
+        billingEmail: contactBilling.billingEmail ?? null,
+        billingPhone: contactBilling.billingPhone ?? null,
+        billingAddressLine1: contactBilling.billingAddressLine1 ?? null,
+        billingAddressLine2: contactBilling.billingAddressLine2 ?? null,
+        billingCity: contactBilling.billingCity ?? null,
+        billingState: contactBilling.billingState ?? null,
+        billingPostalCode: contactBilling.billingPostalCode ?? null,
+        billingCountry: contactBilling.billingCountry ?? null,
+        billingTaxId: contactBilling.billingTaxId ?? null,
+        billingNotes: contactBilling.billingNotes ?? null,
         createdAt: contact.createdAt.toISOString(),
         organizations: contact.organizationLinks.map((item) => ({
           id: item.organization.id,

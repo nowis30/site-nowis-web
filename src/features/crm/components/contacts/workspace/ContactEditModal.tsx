@@ -19,6 +19,18 @@ interface FormState {
   email: string;
   phone: string;
   companyName: string;
+  billingCompanyName: string;
+  billingLegalName: string;
+  billingEmail: string;
+  billingPhone: string;
+  billingAddressLine1: string;
+  billingAddressLine2: string;
+  billingCity: string;
+  billingState: string;
+  billingPostalCode: string;
+  billingCountry: string;
+  billingTaxId: string;
+  billingNotes: string;
   source: string;
   tags: string; // virgule-séparés
   notes: string;
@@ -31,6 +43,18 @@ function buildInitialForm(contact: ContactWorkspaceContact): FormState {
     email: contact.email ?? '',
     phone: contact.phone ?? '',
     companyName: contact.companyName ?? '',
+    billingCompanyName: contact.billingCompanyName ?? '',
+    billingLegalName: contact.billingLegalName ?? '',
+    billingEmail: contact.billingEmail ?? '',
+    billingPhone: contact.billingPhone ?? '',
+    billingAddressLine1: contact.billingAddressLine1 ?? '',
+    billingAddressLine2: contact.billingAddressLine2 ?? '',
+    billingCity: contact.billingCity ?? '',
+    billingState: contact.billingState ?? '',
+    billingPostalCode: contact.billingPostalCode ?? '',
+    billingCountry: contact.billingCountry ?? '',
+    billingTaxId: contact.billingTaxId ?? '',
+    billingNotes: contact.billingNotes ?? '',
     source: contact.source ?? '',
     tags: contact.tags.join(', '),
     notes: contact.notes ?? '',
@@ -76,6 +100,18 @@ export function ContactEditModal({
           email: form.email || undefined,
           phone: form.phone || undefined,
           companyName: form.companyName || undefined,
+          billingCompanyName: form.billingCompanyName || undefined,
+          billingLegalName: form.billingLegalName || undefined,
+          billingEmail: form.billingEmail || undefined,
+          billingPhone: form.billingPhone || undefined,
+          billingAddressLine1: form.billingAddressLine1 || undefined,
+          billingAddressLine2: form.billingAddressLine2 || undefined,
+          billingCity: form.billingCity || undefined,
+          billingState: form.billingState || undefined,
+          billingPostalCode: form.billingPostalCode || undefined,
+          billingCountry: form.billingCountry || undefined,
+          billingTaxId: form.billingTaxId || undefined,
+          billingNotes: form.billingNotes || undefined,
           source: form.source || undefined,
           tags,
           notes: form.notes || undefined,
@@ -179,6 +215,129 @@ export function ContactEditModal({
               onChange={(event) => setField('companyName', event.target.value)}
               className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
               placeholder="Nom de l'entreprise"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Société facturation</span>
+            <input
+              value={form.billingCompanyName}
+              onChange={(event) => setField('billingCompanyName', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="Nom société sur la facture"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Nom légal facturation</span>
+            <input
+              value={form.billingLegalName}
+              onChange={(event) => setField('billingLegalName', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="Nom légal"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Courriel facturation</span>
+            <input
+              type="email"
+              value={form.billingEmail}
+              onChange={(event) => setField('billingEmail', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="facturation@..."
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Téléphone facturation</span>
+            <input
+              type="tel"
+              value={form.billingPhone}
+              onChange={(event) => setField('billingPhone', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="514 000-0000"
+            />
+          </label>
+
+          <label className="md:col-span-2">
+            <span className="mb-2 block text-sm text-slate-300">Adresse facturation ligne 1</span>
+            <input
+              value={form.billingAddressLine1}
+              onChange={(event) => setField('billingAddressLine1', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="Adresse"
+            />
+          </label>
+
+          <label className="md:col-span-2">
+            <span className="mb-2 block text-sm text-slate-300">Adresse facturation ligne 2</span>
+            <input
+              value={form.billingAddressLine2}
+              onChange={(event) => setField('billingAddressLine2', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="Appartement, bureau..."
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Ville facturation</span>
+            <input
+              value={form.billingCity}
+              onChange={(event) => setField('billingCity', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="Ville"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Province/Etat</span>
+            <input
+              value={form.billingState}
+              onChange={(event) => setField('billingState', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="QC"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Code postal facturation</span>
+            <input
+              value={form.billingPostalCode}
+              onChange={(event) => setField('billingPostalCode', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="H0H 0H0"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Pays facturation</span>
+            <input
+              value={form.billingCountry}
+              onChange={(event) => setField('billingCountry', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="Canada"
+            />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm text-slate-300">Numéro taxe</span>
+            <input
+              value={form.billingTaxId}
+              onChange={(event) => setField('billingTaxId', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="TPS/TVQ"
+            />
+          </label>
+
+          <label className="md:col-span-2">
+            <span className="mb-2 block text-sm text-slate-300">Notes facturation</span>
+            <textarea
+              rows={3}
+              value={form.billingNotes}
+              onChange={(event) => setField('billingNotes', event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-primary-500 focus:outline-none"
+              placeholder="Infos de facturation client"
             />
           </label>
 

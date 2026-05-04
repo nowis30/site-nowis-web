@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
+import { getBillingIssuerSnapshot, toCustomerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'commercialQuotes', 'update');
@@ -26,6 +28,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const admin = ensureAdmin(request);
   if (admin.error) return admin.error;
 
+  const issuerSnapshot = await getBillingIssuerSnapshot();
+
   const quote = await prisma.commercialQuote.findUnique({
     where: { id: params.id },
     include: { lines: { orderBy: { sortOrder: 'asc' } } },
@@ -43,6 +47,20 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Impossible de convertir sans contact associé.' }, { status: 409 });
   }
 
+  const customerSnapshot = toCustomerSnapshot(quote.customerSnapshot);
+  const missingIssuer = validateIssuerSnapshot(issuerSnapshot);
+  const missingCustomer = customerSnapshot ? validateCustomerSnapshot(customerSnapshot) : ['fullName', 'email', 'addressLine1', 'city', 'postalCode', 'country'];
+  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
+    return NextResponse.json(
+      {
+        error: 'Facturation incomplete. Complete le profil emetteur et les informations client avant conversion en facture.',
+        missingIssuer,
+        missingCustomer,
+      },
+      { status: 409 },
+    );
+  }
+
   const invoiceNumber = nextInvoiceNumber();
   const linesDescription = quote.lines
     .map((line) => `${line.title} x${line.quantity.toString()} @ ${line.unitPrice.toString()}`)
@@ -58,6 +76,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         issueDate: new Date(),
         dueDate,
         amount: quote.totalAmount,
+        subtotal: quote.subtotal,
+        taxAmount: quote.taxAmount,
+        totalAmount: quote.totalAmount,
+        issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
+        customerSnapshot: quote.customerSnapshot === null
+          ? Prisma.JsonNull
+          : (quote.customerSnapshot as Prisma.InputJsonValue),
+        taxesEnabled: quote.taxesEnabled,
+        taxRateGst: quote.taxRateGst,
+        taxRateQst: quote.taxRateQst,
         status: 'DRAFT',
         description: `${quote.quoteNumber} - ${quote.title}${linesDescription ? ` | ${linesDescription}` : ''}`,
       },

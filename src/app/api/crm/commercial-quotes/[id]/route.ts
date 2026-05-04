@@ -1,8 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { canDeleteCommercialQuote, computeQuoteTotals } from '@/features/crm/commercial-quotes/quote-utils';
 import { commercialQuotePatchSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { buildCustomerSnapshotFromContact, buildCustomerSnapshotFromOrganization } from '@/lib/billing-profile';
+
+async function resolveCustomerSnapshot(contactId?: string | null, organizationId?: string | null) {
+  if (contactId) {
+    const contact = await prisma.contact.findUnique({
+      where: { id: contactId },
+      select: {
+        fullName: true,
+        companyName: true,
+        email: true,
+        phone: true,
+        billingCompanyName: true,
+        billingLegalName: true,
+        billingEmail: true,
+        billingPhone: true,
+        billingAddressLine1: true,
+        billingAddressLine2: true,
+        billingCity: true,
+        billingState: true,
+        billingPostalCode: true,
+        billingCountry: true,
+        billingTaxId: true,
+        billingNotes: true,
+      },
+    });
+    if (contact) return buildCustomerSnapshotFromContact(contact);
+  }
+
+  if (organizationId) {
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        city: true,
+        billingCompanyName: true,
+        billingLegalName: true,
+        billingEmail: true,
+        billingPhone: true,
+        billingAddressLine1: true,
+        billingAddressLine2: true,
+        billingCity: true,
+        billingState: true,
+        billingPostalCode: true,
+        billingCountry: true,
+        billingTaxId: true,
+        billingNotes: true,
+      },
+    });
+    if (organization) return buildCustomerSnapshotFromOrganization(organization);
+  }
+
+  return null;
+}
 
 function ensureAdmin(request: NextRequest, action: 'read' | 'update' | 'delete') {
   const guard = requireApiPermission(request, 'commercialQuotes', action);
@@ -65,14 +122,22 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Soumission commerciale introuvable.' }, { status: 404 });
     }
 
-    const totals = payload.lines ? computeQuoteTotals(payload.lines) : null;
+    const nextContactId = payload.contactId !== undefined ? (payload.contactId || null) : current.contactId;
+    const nextOrganizationId = payload.organizationId !== undefined ? (payload.organizationId || null) : current.organizationId;
+    const customerSnapshot = await resolveCustomerSnapshot(nextContactId, nextOrganizationId);
+    const taxesEnabled = current.taxesEnabled;
+    const taxRateGst = current.taxRateGst ? Number(current.taxRateGst) : undefined;
+    const taxRateQst = current.taxRateQst ? Number(current.taxRateQst) : undefined;
+    const totals = payload.lines
+      ? computeQuoteTotals(payload.lines, { taxesEnabled, gst: taxRateGst, qst: taxRateQst })
+      : null;
 
     const item = await prisma.$transaction(async (tx) => {
       if (payload.lines) {
         await tx.commercialQuoteLine.deleteMany({ where: { quoteId: params.id } });
       }
 
-      const updated = await tx.commercialQuote.update({
+      await tx.commercialQuote.update({
         where: { id: params.id },
         data: {
           title: payload.title ? payload.title.trim() : undefined,
@@ -86,6 +151,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           subtotal: totals?.subtotal,
           taxAmount: totals?.taxAmount,
           totalAmount: totals?.totalAmount,
+          customerSnapshot: customerSnapshot
+            ? (customerSnapshot as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
           currency: payload.currency ? payload.currency.toUpperCase() : undefined,
           validUntil: payload.validUntil !== undefined ? (payload.validUntil ? new Date(payload.validUntil) : null) : undefined,
           notes: payload.notes !== undefined ? normalizeOptionalString(payload.notes) : undefined,
@@ -104,13 +172,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
               }
             : undefined,
         },
+      });
+
+      return tx.commercialQuote.findUniqueOrThrow({
+        where: { id: params.id },
         include: {
           lines: { orderBy: { sortOrder: 'asc' } },
           convertedToInvoice: { select: { id: true, number: true, status: true } },
         },
       });
-
-      return updated;
     });
 
     await prisma.activity.create({

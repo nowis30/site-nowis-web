@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'invoices', 'read');
@@ -21,6 +23,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
   try {
     const payload = invoiceInputSchema.parse(await request.json());
+    const issuerSnapshot = await getBillingIssuerSnapshot();
+    const contact = await prisma.contact.findUnique({
+      where: { id: payload.contactId },
+      select: {
+        fullName: true,
+        companyName: true,
+        email: true,
+        phone: true,
+        billingCompanyName: true,
+        billingLegalName: true,
+        billingEmail: true,
+        billingPhone: true,
+        billingAddressLine1: true,
+        billingAddressLine2: true,
+        billingCity: true,
+        billingState: true,
+        billingPostalCode: true,
+        billingCountry: true,
+        billingTaxId: true,
+        billingNotes: true,
+      },
+    });
+    const customerSnapshot = contact ? buildCustomerSnapshotFromContact(contact) : null;
     const item = await prisma.invoice.update({
       where: { id: params.id },
       data: {
@@ -29,6 +54,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         issueDate: payload.issueDate ? new Date(payload.issueDate) : undefined,
         dueDate: new Date(payload.dueDate),
         amount: payload.amount,
+        subtotal: payload.amount,
+        taxAmount: 0,
+        totalAmount: payload.amount,
+        issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
+        customerSnapshot: customerSnapshot
+          ? (customerSnapshot as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        taxesEnabled: issuerSnapshot.taxesEnabled,
+        taxRateGst: issuerSnapshot.taxRateGst,
+        taxRateQst: issuerSnapshot.taxRateQst,
         status: payload.status,
         description: normalizeOptionalString(payload.description),
       },

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
 export async function getCommercialQuoteEditorOptions() {
   const [contacts, organizations, workshops, songs, appointments] = await Promise.all([
@@ -46,10 +47,12 @@ export async function getCommercialQuoteEditorOptions() {
   };
 }
 
-export function getCommercialQuoteTaxRates() {
-  const gst = Number(process.env.CRM_TAX_GST_RATE ?? 0.05);
-  const qst = Number(process.env.CRM_TAX_QST_RATE ?? 0.09975);
+export async function getCommercialQuoteTaxRates() {
+  const issuer = await getBillingIssuerSnapshot();
+  const gst = Number(issuer.taxRateGst ?? 0.05);
+  const qst = Number(issuer.taxRateQst ?? 0.09975);
   return {
+    taxesEnabled: issuer.taxesEnabled,
     gst: Number.isFinite(gst) && gst >= 0 ? gst : 0.05,
     qst: Number.isFinite(qst) && qst >= 0 ? qst : 0.09975,
   };

@@ -4,9 +4,9 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
-import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
-import { buildPublicInvoiceUrl, signPublicInvoiceToken } from '@/lib/public-links';
+import { buildPublicBillingUrl, buildPublicInvoiceUrl, signPublicBillingToken, signPublicInvoiceToken } from '@/lib/public-links';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 
 const sendInvoiceSchema = z.object({
   subject: z.string().trim().min(3).max(180).optional(),
@@ -78,7 +78,29 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Le contact de cette facture n\'a pas d\'email.' }, { status: 400 });
   }
 
-  const businessProfile = getInvoiceBusinessProfile();
+  const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const customerProfile = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
+  const missingIssuer = validateIssuerSnapshot(businessProfile);
+  const missingCustomer = validateCustomerSnapshot(customerProfile);
+  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
+    const appUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_DOMAIN ||
+      request.nextUrl.origin;
+    const billingUpdateUrl = buildPublicBillingUrl(
+      signPublicBillingToken({ contactId: invoice.contact.id, invoiceId: invoice.id }),
+      appUrl,
+    );
+    return NextResponse.json(
+      {
+        error: 'Facturation incomplete. Complete le profil emetteur et les informations de facturation client avant envoi.',
+        missingIssuer,
+        missingCustomer,
+        billingUpdateUrl,
+      },
+      { status: 409 },
+    );
+  }
   const subject = payload.subject || `Facture ${invoice.number} - ${businessProfile.displayName}`;
   const appUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
@@ -127,8 +149,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       amount: invoice.amount.toString(),
       description: invoice.description,
       contact: {
-        fullName: invoice.contact.fullName,
-        email: invoice.contact.email,
+        fullName: customerProfile.fullName,
+        email: customerProfile.email,
+        companyName: customerProfile.companyName,
+        addressLine1: customerProfile.addressLine1,
+        addressLine2: customerProfile.addressLine2,
+        city: customerProfile.city,
+        state: customerProfile.state,
+        postalCode: customerProfile.postalCode,
+        country: customerProfile.country,
+        taxId: customerProfile.taxId,
       },
     },
     businessProfile,

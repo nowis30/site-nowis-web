@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
-import { buildPublicQuoteUrl, signPublicQuoteToken } from '@/lib/public-links';
+import { buildPublicBillingUrl, buildPublicQuoteUrl, signPublicBillingToken, signPublicQuoteToken } from '@/lib/public-links';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 
 const payloadSchema = z.object({
   subject: z.string().trim().min(3).max(180).optional(),
@@ -47,6 +48,29 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Le client associe n a pas de courriel.' }, { status: 400 });
   }
 
+  const issuer = toIssuerSnapshot(quote.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const customer = toCustomerSnapshot(quote.customerSnapshot) || buildCustomerSnapshotFromContact(quote.contact);
+  const missingIssuer = validateIssuerSnapshot(issuer);
+  const missingCustomer = validateCustomerSnapshot(customer);
+  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
+    const appUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_DOMAIN || request.nextUrl.origin;
+    const billingUpdateUrl = quote.contactId
+      ? buildPublicBillingUrl(
+          signPublicBillingToken({ contactId: quote.contactId, quoteId: quote.id }),
+          appUrl,
+        )
+      : null;
+    return NextResponse.json(
+      {
+        error: 'Facturation incomplete. Complete le profil emetteur et les informations de facturation client avant envoi.',
+        missingIssuer,
+        missingCustomer,
+        billingUpdateUrl,
+      },
+      { status: 409 },
+    );
+  }
+
   const body = payloadSchema.safeParse(await request.json().catch(() => ({})));
   const payload = body.success ? body.data : {};
 
@@ -59,7 +83,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const trackingToken = randomUUID();
   const trackingUrl = `${appUrl.replace(/\/$/, '')}/api/email/track/open?token=${encodeURIComponent(trackingToken)}`;
 
-  const subject = payload.subject || `Votre soumission ${quote.quoteNumber} - Creation Nowis`;
+  const subject = payload.subject || `Votre soumission ${quote.quoteNumber} - ${issuer.companyName}`;
   const preview = (quote.description || quote.title || '').slice(0, 240);
   const customMessage = payload.message?.trim();
 
@@ -77,6 +101,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         </a>
       </p>
       <p style="margin-top: 12px; color: #64748b; font-size: 12px;">Lien securise. Si le lien expire, demandez un nouvel envoi.</p>
+      <p style="margin-top: 6px; color: #64748b; font-size: 12px;">${issuer.companyName}${issuer.email ? ` · ${issuer.email}` : ''}</p>
       <img src="${trackingUrl}" alt="" width="1" height="1" style="display:block;border:0;" />
     </div>
   `;

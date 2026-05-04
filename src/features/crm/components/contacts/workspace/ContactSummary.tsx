@@ -92,6 +92,19 @@ export function ContactSummary({ contact }: { contact: ContactWorkspaceContact }
         </section>
 
         <section className="rounded-[1.5rem] border border-slate-800 bg-slate-950/40 p-5">
+          <h3 className="text-lg font-semibold text-white">Facturation</h3>
+          <div className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
+            <p><span className="text-slate-500">Société</span><br />{contact.billingCompanyName || contact.companyName || '—'}</p>
+            <p><span className="text-slate-500">Nom légal</span><br />{contact.billingLegalName || '—'}</p>
+            <p><span className="text-slate-500">Courriel facturation</span><br />{contact.billingEmail || contact.email || '—'}</p>
+            <p><span className="text-slate-500">Téléphone facturation</span><br />{contact.billingPhone || contact.phone || '—'}</p>
+            <p className="sm:col-span-2"><span className="text-slate-500">Adresse</span><br />{[contact.billingAddressLine1, contact.billingAddressLine2, contact.billingCity, contact.billingState, contact.billingPostalCode, contact.billingCountry].filter(Boolean).join(', ') || '—'}</p>
+            <p><span className="text-slate-500">Tax ID</span><br />{contact.billingTaxId || '—'}</p>
+            <p className="sm:col-span-2"><span className="text-slate-500">Notes facturation</span><br />{contact.billingNotes || '—'}</p>
+          </div>
+        </section>
+
+        <section className="rounded-[1.5rem] border border-slate-800 bg-slate-950/40 p-5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-lg font-semibold text-white">Demandes de chanson</h3>
             <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{contact.songRequests.length}</span>

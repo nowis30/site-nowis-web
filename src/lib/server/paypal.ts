@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer';
 import { InvoiceStatus, Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 
 type PayPalConfig = {
   env: 'sandbox' | 'live';
@@ -312,7 +313,27 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     include: {
-      contact: { select: { id: true, fullName: true, email: true } },
+      contact: {
+        select: {
+          id: true,
+          fullName: true,
+          companyName: true,
+          email: true,
+          phone: true,
+          billingCompanyName: true,
+          billingLegalName: true,
+          billingEmail: true,
+          billingPhone: true,
+          billingAddressLine1: true,
+          billingAddressLine2: true,
+          billingCity: true,
+          billingState: true,
+          billingPostalCode: true,
+          billingCountry: true,
+          billingTaxId: true,
+          billingNotes: true,
+        },
+      },
       convertedFromQuote: {
         include: {
           lines: {
@@ -335,6 +356,16 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
 
   if (!invoice.contact.email) {
     throw new Error('Le client de cette facture n a pas de courriel.');
+  }
+
+  const issuer = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const customer = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
+  const missingIssuer = validateIssuerSnapshot(issuer);
+  const missingCustomer = validateCustomerSnapshot(customer);
+  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
+    throw new Error(
+      `Facturation incomplete avant creation PayPal. Emetteur: ${missingIssuer.join(', ') || 'ok'}. Client: ${missingCustomer.join(', ') || 'ok'}.`,
+    );
   }
 
   const items = buildInvoiceLineItems(invoice, config.currency);
@@ -406,7 +437,27 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     include: {
-      contact: { select: { id: true, email: true } },
+      contact: {
+        select: {
+          id: true,
+          fullName: true,
+          companyName: true,
+          email: true,
+          phone: true,
+          billingCompanyName: true,
+          billingLegalName: true,
+          billingEmail: true,
+          billingPhone: true,
+          billingAddressLine1: true,
+          billingAddressLine2: true,
+          billingCity: true,
+          billingState: true,
+          billingPostalCode: true,
+          billingCountry: true,
+          billingTaxId: true,
+          billingNotes: true,
+        },
+      },
     },
   });
 
@@ -416,6 +467,16 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
 
   if (!invoice.paypalInvoiceId) {
     throw new Error('Aucune facture PayPal liee. Cree la facture PayPal avant envoi.');
+  }
+
+  const issuer = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const customer = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
+  const missingIssuer = validateIssuerSnapshot(issuer);
+  const missingCustomer = validateCustomerSnapshot(customer);
+  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
+    throw new Error(
+      `Facturation incomplete avant envoi PayPal. Emetteur: ${missingIssuer.join(', ') || 'ok'}. Client: ${missingCustomer.join(', ') || 'ok'}.`,
+    );
   }
 
   await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}/send`, {

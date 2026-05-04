@@ -17,7 +17,7 @@ export default async function CrmCommercialQuoteNewPage({
   const appointmentId = typeof searchParams?.appointmentId === 'string' ? searchParams.appointmentId : '';
   const contextParam = typeof searchParams?.context === 'string' ? searchParams.context.trim() : '';
 
-  const [options, workshop, song] = await Promise.all([
+  const [options, workshop, song, taxRates] = await Promise.all([
     getCommercialQuoteEditorOptions(),
     workshopRequestId
       ? prisma.workshopRequest.findUnique({
@@ -52,6 +52,7 @@ export default async function CrmCommercialQuoteNewPage({
           },
         })
       : Promise.resolve(null),
+    getCommercialQuoteTaxRates(),
   ]);
 
   const initialContactId = contactId || workshop?.contactId || song?.contactId || '';
@@ -111,7 +112,7 @@ export default async function CrmCommercialQuoteNewPage({
       workshopOptions={options.workshopOptions}
       songOptions={options.songOptions}
       appointmentOptions={options.appointmentOptions}
-      taxRates={getCommercialQuoteTaxRates()}
+      taxRates={taxRates}
     />
   );
 }

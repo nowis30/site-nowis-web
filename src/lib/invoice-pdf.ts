@@ -10,6 +10,14 @@ interface InvoicePdfInput {
   contact: {
     fullName: string;
     email: string | null;
+    companyName?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    taxId?: string | null;
   };
 }
 
@@ -78,9 +86,27 @@ export async function buildInvoicePdfBuffer(
   page.drawText('Facture a:', { x: left, y, size: 11, font: fontBold });
   y -= 16;
   page.drawText(invoice.contact.fullName, { x: left, y, size: 10, font });
+  if (invoice.contact.companyName) {
+    y -= 14;
+    page.drawText(invoice.contact.companyName, { x: left, y, size: 10, font, color: rgb(0.25, 0.29, 0.35) });
+  }
   if (invoice.contact.email) {
     y -= 14;
     page.drawText(invoice.contact.email, { x: left, y, size: 10, font, color: rgb(0.25, 0.29, 0.35) });
+  }
+  const customerAddress = [
+    invoice.contact.addressLine1,
+    invoice.contact.addressLine2,
+    [invoice.contact.city, invoice.contact.state, invoice.contact.postalCode].filter(Boolean).join(', '),
+    invoice.contact.country,
+  ].filter(Boolean) as string[];
+  for (const line of customerAddress) {
+    y -= 14;
+    page.drawText(line, { x: left, y, size: 10, font, color: rgb(0.25, 0.29, 0.35) });
+  }
+  if (invoice.contact.taxId) {
+    y -= 14;
+    page.drawText(`Tax ID: ${invoice.contact.taxId}`, { x: left, y, size: 10, font, color: rgb(0.25, 0.29, 0.35) });
   }
 
   y -= 26;

@@ -93,7 +93,7 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
           <div className="flex flex-wrap items-center gap-3">
             <StatusBadge value={item.type} />
             <StatusBadge value={item.status} />
-            <OrganizationEditButton organization={{ id: item.id, name: item.name, type: item.type, status: item.status, email: item.email, phone: item.phone, address: item.address, city: item.city, notes: item.notes }} />
+            <OrganizationEditButton organization={{ id: item.id, name: item.name, type: item.type, status: item.status, email: item.email, phone: item.phone, billingCompanyName: item.billingCompanyName, billingEmail: item.billingEmail, billingPostalCode: item.billingPostalCode, billingCountry: item.billingCountry, address: item.address, city: item.city, notes: item.notes }} />
           </div>
         }
         sections={[
@@ -104,6 +104,10 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
               { label: 'Téléphone principal', value: item.phone ? <a href={buildTelHref(item.phone)} className="text-primary-300 hover:text-primary-200">{item.phone}</a> : '—' },
               { label: 'Ville', value: item.city || '—' },
               { label: 'Adresse', value: item.address || '—' },
+              { label: 'Société facturation', value: item.billingCompanyName || item.name },
+              { label: 'Courriel facturation', value: item.billingEmail || item.email || '—' },
+              { label: 'Code postal facturation', value: item.billingPostalCode || '—' },
+              { label: 'Pays facturation', value: item.billingCountry || '—' },
               { label: 'Site web', value: 'Champ non disponible dans le modèle actuel' },
               { label: 'Responsable principal', value: primaryContact?.contact?.id ? <Link href={`/crm/contacts/${primaryContact.contact.id}`} className="text-primary-300 hover:text-primary-200">{primaryContact.fullName}</Link> : primaryContact?.fullName || '—' },
               { label: 'Notes internes', value: item.notes || '—' },

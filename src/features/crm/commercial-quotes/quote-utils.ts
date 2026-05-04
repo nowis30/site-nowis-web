@@ -16,17 +16,19 @@ function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function getTaxRates() {
-  const gst = Number(process.env.CRM_TAX_GST_RATE ?? DEFAULT_GST);
-  const qst = Number(process.env.CRM_TAX_QST_RATE ?? DEFAULT_QST);
+function getTaxRates(options?: { gst?: number; qst?: number; taxesEnabled?: boolean }) {
+  const gst = Number(options?.gst ?? process.env.CRM_TAX_GST_RATE ?? DEFAULT_GST);
+  const qst = Number(options?.qst ?? process.env.CRM_TAX_QST_RATE ?? DEFAULT_QST);
+  const taxesEnabled = options?.taxesEnabled ?? true;
 
   return {
     gst: Number.isFinite(gst) && gst >= 0 ? gst : DEFAULT_GST,
     qst: Number.isFinite(qst) && qst >= 0 ? qst : DEFAULT_QST,
+    taxesEnabled,
   };
 }
 
-export function computeQuoteTotals(lines: QuoteLineInput[]) {
+export function computeQuoteTotals(lines: QuoteLineInput[], options?: { gst?: number; qst?: number; taxesEnabled?: boolean }) {
   const normalizedLines = lines.map((line, index) => {
     const quantity = Number(line.quantity || 0);
     const unitPrice = Number(line.unitPrice || 0);
@@ -42,8 +44,8 @@ export function computeQuoteTotals(lines: QuoteLineInput[]) {
 
   const subtotal = roundMoney(normalizedLines.reduce((sum, line) => sum + line.subtotal, 0));
   const taxableBase = roundMoney(normalizedLines.filter((line) => line.taxable).reduce((sum, line) => sum + line.subtotal, 0));
-  const { gst, qst } = getTaxRates();
-  const taxAmount = roundMoney(taxableBase * (gst + qst));
+  const { gst, qst, taxesEnabled } = getTaxRates(options);
+  const taxAmount = taxesEnabled ? roundMoney(taxableBase * (gst + qst)) : 0;
   const totalAmount = roundMoney(subtotal + taxAmount);
 
   return {
@@ -51,7 +53,7 @@ export function computeQuoteTotals(lines: QuoteLineInput[]) {
     subtotal,
     taxAmount,
     totalAmount,
-    taxMeta: { gst, qst, taxableBase },
+    taxMeta: { gst, qst, taxableBase, taxesEnabled },
   };
 }
 

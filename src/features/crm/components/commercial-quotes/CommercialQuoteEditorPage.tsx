@@ -43,7 +43,7 @@ type Props = {
   workshopOptions: SelectOption[];
   songOptions: SelectOption[];
   appointmentOptions: SelectOption[];
-  taxRates: { gst: number; qst: number };
+  taxRates: { taxesEnabled?: boolean; gst: number; qst: number };
 };
 
 function toNumber(value: string) {
@@ -99,14 +99,14 @@ export function CommercialQuoteEditorPage({
     });
     const subtotal = normalized.reduce((sum, line) => sum + line.subtotal, 0);
     const taxableBase = normalized.filter((line) => line.taxable).reduce((sum, line) => sum + line.subtotal, 0);
-    const taxAmount = taxableBase * (taxRates.gst + taxRates.qst);
+    const taxAmount = (taxRates.taxesEnabled ?? true) ? taxableBase * (taxRates.gst + taxRates.qst) : 0;
     const totalAmount = subtotal + taxAmount;
     return {
       subtotal: Math.round((subtotal + Number.EPSILON) * 100) / 100,
       taxAmount: Math.round((taxAmount + Number.EPSILON) * 100) / 100,
       totalAmount: Math.round((totalAmount + Number.EPSILON) * 100) / 100,
     };
-  }, [lines, taxRates.gst, taxRates.qst]);
+  }, [lines, taxRates.gst, taxRates.qst, taxRates.taxesEnabled]);
 
   const payloadLines = lines.map((line, index) => ({
     id: line.id,

@@ -1,8 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { commercialQuoteCreateSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { computeQuoteTotals, nextCommercialQuoteNumber } from '@/features/crm/commercial-quotes/quote-utils';
+import { buildCustomerSnapshotFromContact, buildCustomerSnapshotFromOrganization, getBillingIssuerSnapshot } from '@/lib/billing-profile';
+
+async function resolveCustomerSnapshot(contactId?: string | null, organizationId?: string | null) {
+  if (contactId) {
+    const contact = await prisma.contact.findUnique({
+      where: { id: contactId },
+      select: {
+        fullName: true,
+        companyName: true,
+        email: true,
+        phone: true,
+        billingCompanyName: true,
+        billingLegalName: true,
+        billingEmail: true,
+        billingPhone: true,
+        billingAddressLine1: true,
+        billingAddressLine2: true,
+        billingCity: true,
+        billingState: true,
+        billingPostalCode: true,
+        billingCountry: true,
+        billingTaxId: true,
+        billingNotes: true,
+      },
+    });
+    if (contact) {
+      return buildCustomerSnapshotFromContact(contact);
+    }
+  }
+
+  if (organizationId) {
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        city: true,
+        billingCompanyName: true,
+        billingLegalName: true,
+        billingEmail: true,
+        billingPhone: true,
+        billingAddressLine1: true,
+        billingAddressLine2: true,
+        billingCity: true,
+        billingState: true,
+        billingPostalCode: true,
+        billingCountry: true,
+        billingTaxId: true,
+        billingNotes: true,
+      },
+    });
+    if (organization) {
+      return buildCustomerSnapshotFromOrganization(organization);
+    }
+  }
+
+  return null;
+}
 
 function ensureAdmin(request: NextRequest, action: 'read' | 'create') {
   const guard = requireApiPermission(request, 'commercialQuotes', action);
@@ -78,8 +139,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const payload = commercialQuoteCreateSchema.parse(await request.json());
+    const issuerSnapshot = await getBillingIssuerSnapshot();
     const quoteNumber = await nextCommercialQuoteNumber();
-    const totals = computeQuoteTotals(payload.lines);
+    const totals = computeQuoteTotals(payload.lines, {
+      taxesEnabled: issuerSnapshot.taxesEnabled,
+      gst: issuerSnapshot.taxRateGst,
+      qst: issuerSnapshot.taxRateQst,
+    });
+    const customerSnapshot = await resolveCustomerSnapshot(payload.contactId || null, payload.organizationId || null);
 
     const item = await prisma.commercialQuote.create({
       data: {
@@ -95,6 +162,13 @@ export async function POST(request: NextRequest) {
         subtotal: totals.subtotal,
         taxAmount: totals.taxAmount,
         totalAmount: totals.totalAmount,
+        issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
+        customerSnapshot: customerSnapshot
+          ? (customerSnapshot as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        taxesEnabled: issuerSnapshot.taxesEnabled,
+        taxRateGst: issuerSnapshot.taxRateGst,
+        taxRateQst: issuerSnapshot.taxRateQst,
         currency: payload.currency.toUpperCase(),
         validUntil: payload.validUntil ? new Date(payload.validUntil) : null,
         notes: normalizeOptionalString(payload.notes),

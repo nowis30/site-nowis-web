@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useId, useState } from 'react';
 
 const ORGANIZATION_TYPE_OPTIONS = [
   { value: 'SCHOOL', label: 'Ecole' },
@@ -22,12 +22,26 @@ export function NewOrganizationForm() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [billingOpen, setBillingOpen] = useState(false);
+  const billingId = useId();
   const [form, setForm] = useState({
     name: '',
     type: 'SCHOOL',
     status: 'LEAD',
     email: '',
     phone: '',
+    billingCompanyName: '',
+    billingLegalName: '',
+    billingEmail: '',
+    billingPhone: '',
+    billingAddressLine1: '',
+    billingAddressLine2: '',
+    billingCity: '',
+    billingState: '',
+    billingPostalCode: '',
+    billingCountry: '',
+    billingTaxId: '',
+    billingNotes: '',
     city: '',
     address: '',
     notes: '',
@@ -156,6 +170,135 @@ export function NewOrganizationForm() {
               className="min-h-[96px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
             />
           </label>
+        </div>
+
+        {/* Section facturation repliable */}
+        <div className="rounded-xl border border-slate-700/60">
+          <button
+            type="button"
+            aria-expanded={billingOpen}
+            aria-controls={billingId}
+            onClick={() => setBillingOpen((current) => !current)}
+            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-200 hover:bg-slate-800/40"
+          >
+            <span>Informations de facturation</span>
+            <span className="select-none text-xs text-slate-400">{billingOpen ? '▲' : '▼'}</span>
+          </button>
+
+          {billingOpen ? (
+            <div id={billingId} className="grid grid-cols-1 gap-4 border-t border-slate-700/60 p-4 md:grid-cols-2 xl:grid-cols-3">
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Société facturation</span>
+                <input
+                  value={form.billingCompanyName}
+                  onChange={(event) => setForm((current) => ({ ...current, billingCompanyName: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Raison sociale légale</span>
+                <input
+                  value={form.billingLegalName}
+                  onChange={(event) => setForm((current) => ({ ...current, billingLegalName: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Courriel facturation</span>
+                <input
+                  type="email"
+                  value={form.billingEmail}
+                  onChange={(event) => setForm((current) => ({ ...current, billingEmail: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Téléphone facturation</span>
+                <input
+                  type="tel"
+                  value={form.billingPhone}
+                  onChange={(event) => setForm((current) => ({ ...current, billingPhone: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Adresse ligne 1</span>
+                <input
+                  value={form.billingAddressLine1}
+                  onChange={(event) => setForm((current) => ({ ...current, billingAddressLine1: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Adresse ligne 2</span>
+                <input
+                  value={form.billingAddressLine2}
+                  onChange={(event) => setForm((current) => ({ ...current, billingAddressLine2: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Ville</span>
+                <input
+                  value={form.billingCity}
+                  onChange={(event) => setForm((current) => ({ ...current, billingCity: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Province / État</span>
+                <input
+                  value={form.billingState}
+                  onChange={(event) => setForm((current) => ({ ...current, billingState: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Code postal</span>
+                <input
+                  value={form.billingPostalCode}
+                  onChange={(event) => setForm((current) => ({ ...current, billingPostalCode: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Pays</span>
+                <input
+                  value={form.billingCountry}
+                  onChange={(event) => setForm((current) => ({ ...current, billingCountry: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">No. taxe (TPS/TVQ)</span>
+                <input
+                  value={form.billingTaxId}
+                  onChange={(event) => setForm((current) => ({ ...current, billingTaxId: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+
+              <label className="md:col-span-2 xl:col-span-3">
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Notes facturation</span>
+                <textarea
+                  value={form.billingNotes}
+                  onChange={(event) => setForm((current) => ({ ...current, billingNotes: event.target.value }))}
+                  rows={3}
+                  className="min-h-[72px] w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+                />
+              </label>
+            </div>
+          ) : null}
         </div>
 
         {error ? <p className="text-sm text-red-300">{error}</p> : null}

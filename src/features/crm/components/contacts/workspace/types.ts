@@ -10,6 +10,18 @@ export type ContactWorkspaceContact = {
   source: string | null;
   tags: string[];
   notes: string | null;
+  billingCompanyName: string | null;
+  billingLegalName: string | null;
+  billingEmail: string | null;
+  billingPhone: string | null;
+  billingAddressLine1: string | null;
+  billingAddressLine2: string | null;
+  billingCity: string | null;
+  billingState: string | null;
+  billingPostalCode: string | null;
+  billingCountry: string | null;
+  billingTaxId: string | null;
+  billingNotes: string | null;
   createdAt: string;
   organizations: Array<{ id: string; name: string; role: string | null; isPrimary: boolean; city: string | null; address: string | null }>;
   workshopRequests: Array<{ id: string; title: string; status: string; requestedDate: string | null; contactEmail: string | null; contactPhone: string | null }>;
