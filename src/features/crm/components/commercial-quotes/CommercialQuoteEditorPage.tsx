@@ -66,6 +66,15 @@ function getQuoteStatusLabel(status?: string) {
   return quoteStatusLabel[status] || status;
 }
 
+function formatDateTimeUtc(value: string | null | undefined) {
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('fr-CA', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(value));
+}
+
 export function CommercialQuoteEditorPage({
   mode,
   quoteId,
@@ -447,7 +456,7 @@ export function CommercialQuoteEditorPage({
                 <section className="rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-200">
                   <p><span className="text-slate-400">Client:</span> {selectedContactLabel}</p>
                   <p><span className="text-slate-400">Description:</span> {form.description || '—'}</p>
-                  <p><span className="text-slate-400">Valide jusqu au:</span> {form.validUntil ? new Date(form.validUntil).toLocaleString('fr-CA') : '—'}</p>
+                  <p><span className="text-slate-400">Valide jusqu au:</span> {formatDateTimeUtc(form.validUntil)}</p>
                 </section>
 
                 <section className="space-y-3">

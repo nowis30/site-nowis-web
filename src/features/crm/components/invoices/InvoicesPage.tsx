@@ -37,6 +37,15 @@ function formatMoney(v: string | number | null) {
   return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(v));
 }
 
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('fr-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'UTC',
+  }).format(new Date(value));
+}
+
 function getInvoiceEmptyText(status: string) {
   if (status === 'DELETED') return 'Aucune facture supprimée';
   if (status === 'ARCHIVED') return 'Aucune facture archivée';
@@ -111,8 +120,8 @@ function InvoiceRow({ inv, onStatusChange }: { inv: Invoice; onStatusChange: () 
     <tr className="border-t border-slate-700/50 hover:bg-slate-800/30 transition-colors">
       <td className="px-4 py-3 text-sm font-mono text-primary-300">{inv.number}</td>
       <td className="px-4 py-3 text-sm text-white">{inv.contact.fullName}</td>
-      <td className="px-4 py-3 text-sm text-slate-400">{new Date(inv.issueDate).toLocaleDateString('fr-CA')}</td>
-      <td className="px-4 py-3 text-sm text-slate-400">{new Date(inv.dueDate).toLocaleDateString('fr-CA')}</td>
+      <td className="px-4 py-3 text-sm text-slate-400">{formatDate(inv.issueDate)}</td>
+      <td className="px-4 py-3 text-sm text-slate-400">{formatDate(inv.dueDate)}</td>
       <td className="px-4 py-3 text-sm font-semibold text-white">{formatMoney(inv.amount)}</td>
       <td className="px-4 py-3">
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[inv.status] ?? 'bg-slate-700 text-slate-300'}`}>
@@ -197,8 +206,8 @@ function InvoiceCard({ inv, onStatusChange }: { inv: Invoice; onStatusChange: ()
       </div>
 
       <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-        <p className="text-slate-400">Émise: <span className="text-slate-200">{new Date(inv.issueDate).toLocaleDateString('fr-CA')}</span></p>
-        <p className="text-slate-400">Échéance: <span className="text-slate-200">{new Date(inv.dueDate).toLocaleDateString('fr-CA')}</span></p>
+        <p className="text-slate-400">Émise: <span className="text-slate-200">{formatDate(inv.issueDate)}</span></p>
+        <p className="text-slate-400">Échéance: <span className="text-slate-200">{formatDate(inv.dueDate)}</span></p>
         <p className="col-span-2 text-slate-400">Montant: <span className="font-semibold text-white">{formatMoney(inv.amount)}</span></p>
       </div>
 

@@ -57,7 +57,11 @@ type PayPalRoutePayload = {
 
 function formatDateTime(value: string | null) {
   if (!value) return '—';
-  return new Date(value).toLocaleString('fr-CA');
+  return new Intl.DateTimeFormat('fr-CA', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(value));
 }
 
 function formatMoney(value: string | number | null, currency = 'CAD') {

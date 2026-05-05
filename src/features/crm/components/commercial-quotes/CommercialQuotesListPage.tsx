@@ -19,6 +19,15 @@ type Item = {
 
 const STATUS_FILTERS = ['ALL', 'DRAFT', 'SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED', 'CONVERTED', 'ARCHIVED'] as const;
 
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('fr-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'UTC',
+  }).format(new Date(value));
+}
+
 export function CommercialQuotesListPage({ items }: { items: Item[] }) {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]>('ALL');
@@ -84,7 +93,7 @@ export function CommercialQuotesListPage({ items }: { items: Item[] }) {
                     Client: {item.contact?.fullName || '—'} · Organisation: {item.organization?.name || '—'}
                   </p>
                   <p className="mt-1 text-xs text-slate-400">
-                    Créée: {new Date(item.createdAt).toLocaleDateString('fr-CA')} · Expire: {item.validUntil ? new Date(item.validUntil).toLocaleDateString('fr-CA') : '—'}
+                    Créée: {formatDate(item.createdAt)} · Expire: {item.validUntil ? formatDate(item.validUntil) : '—'}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
