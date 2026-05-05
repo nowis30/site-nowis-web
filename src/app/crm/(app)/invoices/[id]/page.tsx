@@ -40,6 +40,7 @@ export default async function CrmInvoiceDetailRoute({ params, searchParams }: Pa
         issueDate: invoice.issueDate.toISOString(),
         dueDate: invoice.dueDate.toISOString(),
         amount: invoice.amount.toString(),
+        isTest: invoice.isTest,
         paypalSentAt: invoice.paypalSentAt?.toISOString() || null,
         paypalPaidAt: invoice.paypalPaidAt?.toISOString() || null,
         paypalLastWebhookAt: invoice.paypalLastWebhookAt?.toISOString() || null,

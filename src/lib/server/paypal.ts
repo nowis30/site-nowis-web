@@ -32,6 +32,42 @@ type PayPalDiagnostics = {
   apiBaseUrl: string;
   webhookUrlExpected: string;
   clientIdPreview: string | null;
+  businessEmailConfigured: string | null;
+};
+
+type PayPalInvoiceAdminDiagnostics = {
+  invoice: {
+    id: string;
+    number: string;
+    isTest: boolean;
+    paypalInvoiceIdPresent: boolean;
+    paypalInvoiceId: string | null;
+    paypalInvoiceUrl: string | null;
+    paypalInvoiceUrlHost: string | null;
+    paypalInvoiceUrlEnv: 'sandbox' | 'live' | null;
+    paypalStatus: string | null;
+    paymentProvider: string | null;
+    paymentStatus: string | null;
+  };
+  businessEmailConfigured: string | null;
+  merchantEmailUsed: string | null;
+  remoteLookup: {
+    checked: boolean;
+    ok: boolean;
+    paypalInvoiceId: string | null;
+    invoiceNumber: string | null;
+    invoicerEmail: string | null;
+    remoteInvoiceUrl: string | null;
+    remoteInvoiceUrlHost: string | null;
+    remoteInvoiceUrlEnv: 'sandbox' | 'live' | null;
+    belongsToCurrentMerchant: boolean | null;
+    paypalStatus?: number;
+    paypalName?: string | null;
+    paypalMessage?: string | null;
+    paypalDebugId?: string | null;
+    paypalDetails?: PayPalErrorDetail[];
+    error?: string;
+  } | null;
 };
 
 type PayPalErrorDetail = {
@@ -149,11 +185,33 @@ function getClientIdPreview(clientId: string | null) {
   return value.slice(0, 6);
 }
 
+function getUrlHost(value: string | null | undefined) {
+  const trimmed = trimToNull(value);
+  if (!trimmed) return null;
+
+  try {
+    return new URL(trimmed).host || null;
+  } catch {
+    return null;
+  }
+}
+
+function inferPayPalUrlEnv(value: string | null | undefined): 'sandbox' | 'live' | null {
+  const host = getUrlHost(value);
+  if (!host) return null;
+
+  const normalized = host.toLowerCase();
+  if (normalized.includes('sandbox.paypal.com')) return 'sandbox';
+  if (normalized === 'paypal.com' || normalized.endsWith('.paypal.com')) return 'live';
+  return null;
+}
+
 export function getPayPalDiagnostics(): PayPalDiagnostics {
   const env = getPayPalEnv();
   const clientId = trimToNull(process.env.PAYPAL_CLIENT_ID);
   const clientSecret = trimToNull(process.env.PAYPAL_CLIENT_SECRET);
   const webhookId = trimToNull(process.env.PAYPAL_WEBHOOK_ID);
+  const businessEmailConfigured = trimToNull(process.env.PAYPAL_BUSINESS_EMAIL);
 
   return {
     configured: Boolean(clientId && clientSecret && webhookId),
@@ -164,7 +222,16 @@ export function getPayPalDiagnostics(): PayPalDiagnostics {
     apiBaseUrl: getPayPalBaseUrlForEnv(env),
     webhookUrlExpected: getExpectedPayPalWebhookUrl(),
     clientIdPreview: getClientIdPreview(clientId),
+    businessEmailConfigured,
   };
+}
+
+export async function getPayPalMerchantEmailUsed() {
+  const configuredBusinessEmail = trimToNull(process.env.PAYPAL_BUSINESS_EMAIL);
+  if (configuredBusinessEmail) return configuredBusinessEmail;
+
+  const issuer = await getBillingIssuerSnapshot();
+  return trimToNull(issuer.email);
 }
 
 export class PayPalApiError extends Error {
@@ -1017,6 +1084,163 @@ export async function getPayPalInvoiceStatus(invoiceId: string, userId?: string 
   }
 
   return syncPayPalInvoiceStatusByPayPalInvoiceId(invoice.paypalInvoiceId, { userId });
+}
+
+export async function getPayPalInvoiceAdminDiagnostics(invoiceId: string): Promise<PayPalInvoiceAdminDiagnostics> {
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+    select: {
+      id: true,
+      number: true,
+      isTest: true,
+      paypalInvoiceId: true,
+      paypalInvoiceUrl: true,
+      paypalStatus: true,
+      paymentProvider: true,
+      paymentStatus: true,
+    },
+  });
+
+  if (!invoice) {
+    throw new Error('Facture introuvable.');
+  }
+
+  const businessEmailConfigured = trimToNull(process.env.PAYPAL_BUSINESS_EMAIL);
+  const merchantEmailUsed = await getPayPalMerchantEmailUsed();
+  let remoteLookup: PayPalInvoiceAdminDiagnostics['remoteLookup'] = null;
+
+  if (invoice.paypalInvoiceId && getPayPalDiagnostics().hasClientId && getPayPalDiagnostics().hasClientSecret) {
+    try {
+      const remote = await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}`, {
+        method: 'GET',
+      });
+      const payload = asRecord(await remote.json());
+      const invoicer = asRecord(payload.invoicer);
+      const invoicerEmail = readString(invoicer.email_address);
+      const remoteInvoiceUrl = extractPayPalInvoiceUrl(payload);
+
+      remoteLookup = {
+        checked: true,
+        ok: true,
+        paypalInvoiceId: extractPayPalInvoiceId(payload) || invoice.paypalInvoiceId,
+        invoiceNumber: extractPayPalInvoiceNumber(payload),
+        invoicerEmail,
+        remoteInvoiceUrl,
+        remoteInvoiceUrlHost: getUrlHost(remoteInvoiceUrl),
+        remoteInvoiceUrlEnv: inferPayPalUrlEnv(remoteInvoiceUrl),
+        belongsToCurrentMerchant:
+          merchantEmailUsed && invoicerEmail
+            ? merchantEmailUsed.toLowerCase() === invoicerEmail.toLowerCase()
+            : null,
+      };
+    } catch (error) {
+      if (isPayPalApiError(error)) {
+        remoteLookup = {
+          checked: true,
+          ok: false,
+          paypalInvoiceId: invoice.paypalInvoiceId,
+          invoiceNumber: null,
+          invoicerEmail: null,
+          remoteInvoiceUrl: null,
+          remoteInvoiceUrlHost: null,
+          remoteInvoiceUrlEnv: null,
+          belongsToCurrentMerchant: null,
+          paypalStatus: error.httpStatus,
+          paypalName: error.paypalName,
+          paypalMessage: error.message,
+          paypalDebugId: error.debugId,
+          paypalDetails: error.details,
+        };
+      } else {
+        remoteLookup = {
+          checked: true,
+          ok: false,
+          paypalInvoiceId: invoice.paypalInvoiceId,
+          invoiceNumber: null,
+          invoicerEmail: null,
+          remoteInvoiceUrl: null,
+          remoteInvoiceUrlHost: null,
+          remoteInvoiceUrlEnv: null,
+          belongsToCurrentMerchant: null,
+          error: error instanceof Error ? error.message : 'Diagnostic PayPal impossible.',
+        };
+      }
+    }
+  }
+
+  return {
+    invoice: {
+      id: invoice.id,
+      number: invoice.number,
+      isTest: invoice.isTest,
+      paypalInvoiceIdPresent: Boolean(invoice.paypalInvoiceId),
+      paypalInvoiceId: invoice.paypalInvoiceId,
+      paypalInvoiceUrl: invoice.paypalInvoiceUrl,
+      paypalInvoiceUrlHost: getUrlHost(invoice.paypalInvoiceUrl),
+      paypalInvoiceUrlEnv: inferPayPalUrlEnv(invoice.paypalInvoiceUrl),
+      paypalStatus: invoice.paypalStatus,
+      paymentProvider: invoice.paymentProvider,
+      paymentStatus: invoice.paymentStatus,
+    },
+    businessEmailConfigured,
+    merchantEmailUsed,
+    remoteLookup,
+  };
+}
+
+export async function resetPayPalInvoiceLinkForTest(invoiceId: string, userId?: string | null) {
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+    select: {
+      id: true,
+      number: true,
+      status: true,
+      isTest: true,
+      contactId: true,
+      paypalInvoiceId: true,
+      paypalInvoiceUrl: true,
+      paypalStatus: true,
+      paypalSentAt: true,
+      paypalPaidAt: true,
+      paypalLastWebhookAt: true,
+      paymentProvider: true,
+      paymentStatus: true,
+      paymentAmount: true,
+      paymentCurrency: true,
+    },
+  });
+
+  if (!invoice) {
+    throw new Error('Facture introuvable.');
+  }
+
+  if (!invoice.isTest) {
+    throw new Error('Le reset PayPal est reserve aux factures de test.');
+  }
+
+  const updated = await prisma.invoice.update({
+    where: { id: invoiceId },
+    data: {
+      paypalInvoiceId: null,
+      paypalInvoiceUrl: null,
+      paypalStatus: null,
+      paypalSentAt: null,
+      paypalPaidAt: null,
+      paypalLastWebhookAt: null,
+      paymentProvider: null,
+      paymentStatus: null,
+    },
+  });
+
+  await writePaypalActivity({
+    title: `Lien PayPal reinitialise : ${invoice.number}`,
+    description: 'Lien PayPal de test reinitialise pour retenter un cycle create/send/status complet.',
+    contactId: invoice.contactId,
+    invoiceId: invoice.id,
+    userId,
+  });
+
+  return toSyncSummary(updated);
 }
 
 export async function verifyPayPalWebhookSignature(request: NextRequest, rawBody?: string): Promise<WebhookVerificationResult> {

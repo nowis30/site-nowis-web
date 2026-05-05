@@ -14,6 +14,7 @@ interface InvoiceDetailPageProps {
     issueDate: string;
     dueDate: string;
     amount: string | number;
+    isTest: boolean;
     status: string;
     description: string | null;
     paypalInvoiceId: string | null;
@@ -288,11 +289,13 @@ export function InvoiceDetailPage({
         missingConfigMessage={missingPayPalConfigMessage}
         initialMeta={{
           crmStatus: invoice.status,
+          isTest: invoice.isTest,
           paypalInvoiceId: invoice.paypalInvoiceId,
           paypalInvoiceUrl: invoice.paypalInvoiceUrl,
           paypalStatus: invoice.paypalStatus,
           paypalSentAt: invoice.paypalSentAt,
           paypalPaidAt: invoice.paypalPaidAt,
+          paypalLastWebhookAt: invoice.paypalLastWebhookAt,
           paymentProvider: invoice.paymentProvider,
           paymentStatus: invoice.paymentStatus,
           paymentAmount: invoice.paymentAmount,

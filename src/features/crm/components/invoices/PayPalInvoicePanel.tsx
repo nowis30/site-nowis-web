@@ -7,11 +7,13 @@ type PayPalInvoicePanelProps = {
   invoiceId: string;
   initialMeta: {
     crmStatus: string;
+    isTest: boolean;
     paypalInvoiceId: string | null;
     paypalInvoiceUrl: string | null;
     paypalStatus: string | null;
     paypalSentAt: string | null;
     paypalPaidAt: string | null;
+    paypalLastWebhookAt: string | null;
     paymentProvider: string | null;
     paymentStatus: string | null;
     paymentAmount: string | number | null;
@@ -33,6 +35,7 @@ type PayPalRoutePayload = {
     paypalStatus: string | null;
     paypalSentAt: string | null;
     paypalPaidAt: string | null;
+    paypalLastWebhookAt: string | null;
     paymentProvider: string | null;
     paymentStatus: string | null;
     paymentAmount: string | null;
@@ -53,6 +56,59 @@ type PayPalRoutePayload = {
   missingCustomer?: string[];
   billingUpdateUrl?: string | null;
   editCustomerUrl?: string | null;
+};
+
+type PayPalDiagnosticsPayload = {
+  configured: boolean;
+  env: 'sandbox' | 'live';
+  hasClientId: boolean;
+  hasClientSecret: boolean;
+  hasWebhookId: boolean;
+  apiBaseUrl: string;
+  webhookUrlExpected: string;
+  clientIdPreview: string | null;
+  businessEmailConfigured: string | null;
+  merchantEmailUsed: string | null;
+  invoice?: {
+    invoice: {
+      id: string;
+      number: string;
+      isTest: boolean;
+      paypalInvoiceIdPresent: boolean;
+      paypalInvoiceId: string | null;
+      paypalInvoiceUrl: string | null;
+      paypalInvoiceUrlHost: string | null;
+      paypalInvoiceUrlEnv: 'sandbox' | 'live' | null;
+      paypalStatus: string | null;
+      paymentProvider: string | null;
+      paymentStatus: string | null;
+    };
+    businessEmailConfigured: string | null;
+    merchantEmailUsed: string | null;
+    remoteLookup: {
+      checked: boolean;
+      ok: boolean;
+      paypalInvoiceId: string | null;
+      invoiceNumber: string | null;
+      invoicerEmail: string | null;
+      remoteInvoiceUrl: string | null;
+      remoteInvoiceUrlHost: string | null;
+      remoteInvoiceUrlEnv: 'sandbox' | 'live' | null;
+      belongsToCurrentMerchant: boolean | null;
+      paypalStatus?: number;
+      paypalName?: string | null;
+      paypalMessage?: string | null;
+      paypalDebugId?: string | null;
+      paypalDetails?: Array<{
+        field?: string;
+        issue?: string;
+        description?: string;
+        value?: string;
+      }>;
+      error?: string;
+    } | null;
+  } | null;
+  error?: string;
 };
 
 function formatDateTime(value: string | null) {
@@ -100,6 +156,7 @@ export function PayPalInvoicePanel({
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [diagnostics, setDiagnostics] = useState<PayPalDiagnosticsPayload | null>(null);
   const [billingIssues, setBillingIssues] = useState<{
     missingIssuer: string[];
     missingCustomer: string[];
@@ -112,6 +169,66 @@ export function PayPalInvoicePanel({
   const canOpenPayPal = Boolean(meta.paypalInvoiceUrl);
   const canSend = Boolean(meta.paypalInvoiceId) && paypalConfigured;
   const canCreate = paypalConfigured;
+
+  async function loadDiagnostics() {
+    setLoadingAction('diagnostics');
+    setError(null);
+    setFeedback(null);
+
+    try {
+      const response = await fetch(`/api/crm/diagnostics/paypal?invoiceId=${encodeURIComponent(invoiceId)}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = (await response.json().catch(() => null)) as PayPalDiagnosticsPayload | null;
+
+      if (!response.ok || !data) {
+        throw new Error(data?.error || 'Diagnostic PayPal impossible');
+      }
+
+      setDiagnostics(data);
+      setFeedback('Diagnostic PayPal chargé.');
+    } catch (diagnosticError) {
+      setError(diagnosticError instanceof Error ? diagnosticError.message : 'Diagnostic PayPal impossible');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
+  async function resetTestLink() {
+    if (!meta.isTest) return;
+    if (!window.confirm('Réinitialiser le lien PayPal de cette facture de test ?')) {
+      return;
+    }
+
+    setLoadingAction('reset');
+    setError(null);
+    setFeedback(null);
+    setBillingIssues(null);
+
+    try {
+      const response = await fetch(`/api/crm/invoices/${invoiceId}/paypal/reset-test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = (await response.json().catch(() => null)) as PayPalRoutePayload | null;
+
+      if (!response.ok || !data?.item) {
+        throw new Error(data?.error || 'Reset PayPal impossible');
+      }
+
+      setMeta((current) => ({
+        ...current,
+        ...data.item,
+      }));
+      setDiagnostics(null);
+      setFeedback('Lien PayPal de test réinitialisé.');
+    } catch (resetError) {
+      setError(resetError instanceof Error ? resetError.message : 'Reset PayPal impossible');
+    } finally {
+      setLoadingAction(null);
+    }
+  }
 
   async function runAction(action: 'create' | 'send' | 'status') {
     setLoadingAction(action);
@@ -206,6 +323,24 @@ export function PayPalInvoicePanel({
             >
               {loadingAction === 'send' ? 'Envoi...' : 'Envoyer facture PayPal'}
             </button>
+            <button
+              type="button"
+              onClick={() => void loadDiagnostics()}
+              disabled={loadingAction !== null}
+              className="rounded-xl border border-violet-600/50 bg-violet-950/30 px-3 py-2 text-xs font-medium text-violet-200 hover:bg-violet-900/40 disabled:opacity-50"
+            >
+              {loadingAction === 'diagnostics' ? 'Diagnostic...' : 'Diagnostic PayPal'}
+            </button>
+            {meta.isTest ? (
+              <button
+                type="button"
+                onClick={() => void resetTestLink()}
+                disabled={loadingAction !== null}
+                className="rounded-xl border border-amber-600/50 bg-amber-950/30 px-3 py-2 text-xs font-medium text-amber-200 hover:bg-amber-900/40 disabled:opacity-50"
+              >
+                {loadingAction === 'reset' ? 'Reset...' : 'Réinitialiser lien PayPal test'}
+              </button>
+            ) : null}
             {canOpenPayPal ? (
               <a
                 href={meta.paypalInvoiceUrl!}
@@ -245,6 +380,38 @@ export function PayPalInvoicePanel({
 
       {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
       {feedback ? <p className="mt-4 text-sm text-emerald-300">{feedback}</p> : null}
+
+      {diagnostics ? (
+        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-200">
+          <p><span className="text-slate-400">Env:</span> {diagnostics.env}</p>
+          <p><span className="text-slate-400">Business email configuré:</span> {diagnostics.businessEmailConfigured || '—'}</p>
+          <p><span className="text-slate-400">Merchant email utilisé dans le payload:</span> {diagnostics.merchantEmailUsed || '—'}</p>
+          <p><span className="text-slate-400">InvoiceId PayPal présent:</span> {diagnostics.invoice?.invoice.paypalInvoiceIdPresent ? 'oui' : 'non'}</p>
+          <p><span className="text-slate-400">URL PayPal host:</span> {diagnostics.invoice?.invoice.paypalInvoiceUrlHost || '—'}</p>
+          <p><span className="text-slate-400">URL PayPal env:</span> {diagnostics.invoice?.invoice.paypalInvoiceUrlEnv || '—'}</p>
+          {diagnostics.invoice?.remoteLookup ? (
+            <>
+              <p className="mt-3"><span className="text-slate-400">Accès facture distante:</span> {diagnostics.invoice.remoteLookup.ok ? 'autorisé' : 'refusé / impossible'}</p>
+              <p><span className="text-slate-400">InvoiceId distant:</span> {diagnostics.invoice.remoteLookup.paypalInvoiceId || '—'}</p>
+              <p><span className="text-slate-400">Numéro distant:</span> {diagnostics.invoice.remoteLookup.invoiceNumber || '—'}</p>
+              <p><span className="text-slate-400">Email invoicer distant:</span> {diagnostics.invoice.remoteLookup.invoicerEmail || '—'}</p>
+              <p><span className="text-slate-400">Appartient au marchand courant:</span> {diagnostics.invoice.remoteLookup.belongsToCurrentMerchant === null ? 'indéterminé' : diagnostics.invoice.remoteLookup.belongsToCurrentMerchant ? 'oui' : 'non'}</p>
+              {diagnostics.invoice.remoteLookup.paypalName ? (
+                <p><span className="text-slate-400">Code PayPal:</span> {diagnostics.invoice.remoteLookup.paypalName}</p>
+              ) : null}
+              {diagnostics.invoice.remoteLookup.paypalDebugId ? (
+                <p><span className="text-slate-400">Debug ID:</span> {diagnostics.invoice.remoteLookup.paypalDebugId}</p>
+              ) : null}
+              {diagnostics.invoice.remoteLookup.paypalMessage ? (
+                <p><span className="text-slate-400">Message:</span> {diagnostics.invoice.remoteLookup.paypalMessage}</p>
+              ) : null}
+              {diagnostics.invoice.remoteLookup.paypalDetails && diagnostics.invoice.remoteLookup.paypalDetails.length > 0 ? (
+                <p><span className="text-slate-400">Détails:</span> {diagnostics.invoice.remoteLookup.paypalDetails.map((detail) => detail.description || detail.issue || detail.field).filter(Boolean).join(' | ')}</p>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       {billingIssues ? (
         <div className="mt-4 rounded-xl border border-amber-700/40 bg-amber-950/20 px-3 py-3 text-sm text-amber-100">

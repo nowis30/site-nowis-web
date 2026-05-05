@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { getPayPalDiagnostics } from '@/lib/server/paypal';
+import { getPayPalDiagnostics, getPayPalInvoiceAdminDiagnostics, getPayPalMerchantEmailUsed } from '@/lib/server/paypal';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'invoices', 'read');
@@ -19,6 +19,20 @@ export async function GET(request: NextRequest) {
   if (admin.error) return admin.error;
 
   const diagnostics = getPayPalDiagnostics();
+  const invoiceId = request.nextUrl.searchParams.get('invoiceId');
+  const merchantEmailUsed = await getPayPalMerchantEmailUsed();
+
+  let invoice = null;
+  if (invoiceId) {
+    try {
+      invoice = await getPayPalInvoiceAdminDiagnostics(invoiceId);
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Diagnostic PayPal impossible.' },
+        { status: 404 },
+      );
+    }
+  }
 
   return NextResponse.json({
     configured: diagnostics.configured,
@@ -28,5 +42,9 @@ export async function GET(request: NextRequest) {
     hasWebhookId: diagnostics.hasWebhookId,
     apiBaseUrl: diagnostics.apiBaseUrl,
     webhookUrlExpected: diagnostics.webhookUrlExpected,
+    clientIdPreview: diagnostics.clientIdPreview,
+    businessEmailConfigured: diagnostics.businessEmailConfigured,
+    merchantEmailUsed,
+    invoice,
   });
 }
