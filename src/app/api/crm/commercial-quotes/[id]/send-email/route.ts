@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
-import { buildPublicBillingUrl, buildPublicQuoteUrl, signPublicBillingToken, signPublicQuoteToken } from '@/lib/public-links';
+import { buildPublicQuoteUrl, signPublicQuoteToken } from '@/lib/public-links';
 import {
   buildCustomerSnapshotFromContact,
   getBillingIssuerSnapshot,
@@ -12,7 +12,7 @@ import {
   toIssuerSnapshot,
   validateIssuerSnapshot,
 } from '@/lib/billing-profile';
-import { getClientBillingMissingLabels } from '@/lib/client-billing';
+
 
 const payloadSchema = z.object({
   subject: z.string().trim().min(3).max(180).optional(),
@@ -80,23 +80,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const fromContact = buildCustomerSnapshotFromContact(quote.contact);
   const customer = fromSnapshot || fromContact;
   const missingIssuer = validateIssuerSnapshot(issuer);
-  const missingCustomer = getClientBillingMissingLabels(quote.contact);
 
-  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
-    const appUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_DOMAIN || request.nextUrl.origin;
-    const billingUpdateUrl = quote.contactId
-      ? buildPublicBillingUrl(
-          signPublicBillingToken({ contactId: quote.contactId, quoteId: quote.id }),
-          appUrl,
-        )
-      : null;
+  if (missingIssuer.length > 0) {
     return NextResponse.json(
       {
-        error: 'Facturation incomplete. Complete le profil emetteur et les informations de facturation client avant envoi.',
+        error: 'Profil emetteur incomplet. Completer les informations de facturation emetteur avant envoi.',
         missingIssuer,
-        missingCustomer,
-        billingUpdateUrl,
-        editCustomerUrl: quote.contactId ? `/crm/contacts/${quote.contactId}` : null,
+        missingCustomer: [],
+        billingUpdateUrl: null,
+        editCustomerUrl: null,
       },
       { status: 409 },
     );
