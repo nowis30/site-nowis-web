@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { getBillingIssuerSnapshot, toCustomerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
+import { getBillingIssuerSnapshot, buildCustomerSnapshotFromContact, toCustomerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'commercialQuotes', 'update');
@@ -53,7 +53,30 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   const customerSnapshot = toCustomerSnapshot(quote.customerSnapshot);
   const missingIssuer = validateIssuerSnapshot(issuerSnapshot);
-  const missingCustomer = customerSnapshot ? validateCustomerSnapshot(customerSnapshot) : ['fullName', 'email', 'addressLine1', 'city', 'postalCode', 'country'];
+
+  // Si le snapshot du devis est incomplet, tenter de le rafraîchir depuis le contact actuel
+  let effectiveCustomerSnapshot = customerSnapshot;
+  const missingInSnapshot = customerSnapshot ? validateCustomerSnapshot(customerSnapshot) : ['fullName'];
+  if (missingInSnapshot.length > 0) {
+    const contact = await prisma.contact.findUnique({
+      where: { id: quote.contactId },
+      select: {
+        fullName: true, companyName: true, email: true, phone: true,
+        billingCompanyName: true, billingLegalName: true, billingEmail: true, billingPhone: true,
+        billingAddressLine1: true, billingAddressLine2: true, billingCity: true,
+        billingState: true, billingPostalCode: true, billingCountry: true,
+        billingTaxId: true, billingNotes: true,
+      },
+    });
+    if (contact) {
+      effectiveCustomerSnapshot = buildCustomerSnapshotFromContact(contact);
+    }
+  }
+
+  const missingCustomer = effectiveCustomerSnapshot
+    ? validateCustomerSnapshot(effectiveCustomerSnapshot)
+    : ['fullName', 'email', 'addressLine1', 'city', 'postalCode', 'country'];
+
   if (missingIssuer.length > 0 || missingCustomer.length > 0) {
     return NextResponse.json(
       {
@@ -84,9 +107,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         taxAmount: quote.taxAmount,
         totalAmount: quote.totalAmount,
         issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
-        customerSnapshot: quote.customerSnapshot === null
-          ? Prisma.JsonNull
-          : (quote.customerSnapshot as Prisma.InputJsonValue),
+        customerSnapshot: effectiveCustomerSnapshot !== null
+          ? (effectiveCustomerSnapshot as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         taxesEnabled: quote.taxesEnabled,
         taxRateGst: quote.taxRateGst,
         taxRateQst: quote.taxRateQst,
