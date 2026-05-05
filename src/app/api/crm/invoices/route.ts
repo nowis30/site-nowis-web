@@ -3,16 +3,9 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
 import { z } from 'zod';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
-
-function nextInvoiceNumber(prefixDate = new Date()) {
-  const yyyy = prefixDate.getFullYear();
-  const mm = String(prefixDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(prefixDate.getDate()).padStart(2, '0');
-  const rand = String(Math.floor(Math.random() * 9000) + 1000);
-  return `FAC-${yyyy}${mm}${dd}-${rand}`;
-}
 
 const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']);
 
@@ -68,10 +61,10 @@ export async function POST(request: NextRequest) {
       },
     });
     const customerSnapshot = contact ? buildCustomerSnapshotFromContact(contact) : null;
-    const item = await prisma.$transaction(async (tx) => {
+    const createInvoiceWithNumber = (invoiceNumber: string) => prisma.$transaction(async (tx) => {
       const created = await tx.invoice.create({
         data: {
-          number: payload.number ? payload.number.trim() : nextInvoiceNumber(),
+          number: invoiceNumber,
           contactId: payload.contactId,
           issueDate: payload.issueDate ? new Date(payload.issueDate) : new Date(),
           dueDate: new Date(payload.dueDate),
@@ -100,6 +93,14 @@ export async function POST(request: NextRequest) {
 
       return created;
     });
+
+    const manualNumber = payload.number?.trim();
+    const item = manualNumber
+      ? await createInvoiceWithNumber(manualNumber)
+      : await createWithSequentialDocumentNumber({
+        type: 'invoice',
+        create: (invoiceNumber) => createInvoiceWithNumber(invoiceNumber),
+      });
 
     if (sourceWorkshopRequestId) {
       await prisma.activity.create({

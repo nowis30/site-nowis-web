@@ -3,8 +3,9 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { commercialQuoteCreateSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
 import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
-import { computeQuoteTotals, nextCommercialQuoteNumber } from '@/features/crm/commercial-quotes/quote-utils';
+import { computeQuoteTotals } from '@/features/crm/commercial-quotes/quote-utils';
 import { buildCustomerSnapshotFromContact, buildCustomerSnapshotFromOrganization, getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
 async function resolveCustomerSnapshot(contactId?: string | null, organizationId?: string | null) {
@@ -159,7 +160,6 @@ export async function POST(request: NextRequest) {
     }
 
     const issuerSnapshot = await getBillingIssuerSnapshot();
-    const quoteNumber = await nextCommercialQuoteNumber();
     const totals = computeQuoteTotals(payload.lines, {
       taxesEnabled: issuerSnapshot.taxesEnabled,
       gst: issuerSnapshot.taxRateGst,
@@ -167,48 +167,51 @@ export async function POST(request: NextRequest) {
     });
     const customerSnapshot = await resolveCustomerSnapshot(payload.contactId || null, payload.organizationId || null);
 
-    const item = await prisma.commercialQuote.create({
-      data: {
-        quoteNumber,
-        title: payload.title.trim(),
-        description: normalizeOptionalString(payload.description),
-        contactId: payload.contactId || null,
-        organizationId: payload.organizationId || null,
-        workshopRequestId: payload.workshopRequestId || null,
-        songRequestId: payload.songRequestId || null,
-        appointmentId: payload.appointmentId || null,
-        status: payload.status ?? 'DRAFT',
-        subtotal: totals.subtotal,
-        taxAmount: totals.taxAmount,
-        totalAmount: totals.totalAmount,
-        issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
-        customerSnapshot: customerSnapshot
-          ? (customerSnapshot as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-        taxesEnabled: issuerSnapshot.taxesEnabled,
-        taxRateGst: issuerSnapshot.taxRateGst,
-        taxRateQst: issuerSnapshot.taxRateQst,
-        currency: payload.currency.toUpperCase(),
-        validUntil: payload.validUntil ? new Date(payload.validUntil) : null,
-        notes: normalizeOptionalString(payload.notes),
-        internalNotes: normalizeOptionalString(payload.internalNotes),
-        lines: {
-          create: totals.lines.map((line) => ({
-            title: line.title.trim(),
-            description: normalizeOptionalString(line.description ?? undefined),
-            quantity: line.quantity,
-            unitPrice: line.unitPrice,
-            subtotal: line.subtotal,
-            taxable: line.taxable,
-            sortOrder: line.sortOrder,
-          })),
+    const item = await createWithSequentialDocumentNumber({
+      type: 'quote',
+      create: (quoteNumber) => prisma.commercialQuote.create({
+        data: {
+          quoteNumber,
+          title: payload.title.trim(),
+          description: normalizeOptionalString(payload.description),
+          contactId: payload.contactId || null,
+          organizationId: payload.organizationId || null,
+          workshopRequestId: payload.workshopRequestId || null,
+          songRequestId: payload.songRequestId || null,
+          appointmentId: payload.appointmentId || null,
+          status: payload.status ?? 'DRAFT',
+          subtotal: totals.subtotal,
+          taxAmount: totals.taxAmount,
+          totalAmount: totals.totalAmount,
+          issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
+          customerSnapshot: customerSnapshot
+            ? (customerSnapshot as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+          taxesEnabled: issuerSnapshot.taxesEnabled,
+          taxRateGst: issuerSnapshot.taxRateGst,
+          taxRateQst: issuerSnapshot.taxRateQst,
+          currency: payload.currency.toUpperCase(),
+          validUntil: payload.validUntil ? new Date(payload.validUntil) : null,
+          notes: normalizeOptionalString(payload.notes),
+          internalNotes: normalizeOptionalString(payload.internalNotes),
+          lines: {
+            create: totals.lines.map((line) => ({
+              title: line.title.trim(),
+              description: normalizeOptionalString(line.description ?? undefined),
+              quantity: line.quantity,
+              unitPrice: line.unitPrice,
+              subtotal: line.subtotal,
+              taxable: line.taxable,
+              sortOrder: line.sortOrder,
+            })),
+          },
         },
-      },
-      include: {
-        contact: { select: { id: true, fullName: true } },
-        organization: { select: { id: true, name: true } },
-        lines: { orderBy: { sortOrder: 'asc' } },
-      },
+        include: {
+          contact: { select: { id: true, fullName: true } },
+          organization: { select: { id: true, name: true } },
+          lines: { orderBy: { sortOrder: 'asc' } },
+        },
+      }),
     });
 
     await prisma.activity.create({

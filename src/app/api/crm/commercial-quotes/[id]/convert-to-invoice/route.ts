@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { getBillingIssuerSnapshot, buildCustomerSnapshotFromContact, toCustomerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
+import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
 import { ensureInvoiceFileDocument } from '@/features/crm/server/file-document-links';
 
 function ensureAdmin(request: NextRequest) {
@@ -15,14 +16,6 @@ function ensureAdmin(request: NextRequest) {
     };
   }
   return { error: null, session: guard.session };
-}
-
-function nextInvoiceNumber(prefixDate = new Date()) {
-  const yyyy = prefixDate.getFullYear();
-  const mm = String(prefixDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(prefixDate.getDate()).padStart(2, '0');
-  const rand = String(Math.floor(Math.random() * 9000) + 1000);
-  return `FAC-${yyyy}${mm}${dd}-${rand}`;
 }
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -89,45 +82,47 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     );
   }
 
-  const invoiceNumber = nextInvoiceNumber();
   const linesDescription = quote.lines
     .map((line) => `${line.title} x${line.quantity.toString()} @ ${line.unitPrice.toString()}`)
     .join(' | ');
 
   const dueDate = quote.validUntil ?? new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
 
-  const result = await prisma.$transaction(async (tx) => {
-    const invoice = await tx.invoice.create({
-      data: {
-        number: invoiceNumber,
-        contactId: quote.contactId!,
-        issueDate: new Date(),
-        dueDate,
-        amount: quote.totalAmount,
-        subtotal: quote.subtotal,
-        taxAmount: quote.taxAmount,
-        totalAmount: quote.totalAmount,
-        issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
-        customerSnapshot: effectiveCustomerSnapshot !== null
-          ? (effectiveCustomerSnapshot as unknown as Prisma.InputJsonValue)
-          : Prisma.JsonNull,
-        taxesEnabled: quote.taxesEnabled,
-        taxRateGst: quote.taxRateGst,
-        taxRateQst: quote.taxRateQst,
-        status: 'DRAFT',
-        description: `${quote.quoteNumber} - ${quote.title}${linesDescription ? ` | ${linesDescription}` : ''}`,
-      },
-    });
+  const result = await createWithSequentialDocumentNumber({
+    type: 'invoice',
+    create: (invoiceNumber) => prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.create({
+        data: {
+          number: invoiceNumber,
+          contactId: quote.contactId!,
+          issueDate: new Date(),
+          dueDate,
+          amount: quote.totalAmount,
+          subtotal: quote.subtotal,
+          taxAmount: quote.taxAmount,
+          totalAmount: quote.totalAmount,
+          issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
+          customerSnapshot: effectiveCustomerSnapshot !== null
+            ? (effectiveCustomerSnapshot as unknown as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+          taxesEnabled: quote.taxesEnabled,
+          taxRateGst: quote.taxRateGst,
+          taxRateQst: quote.taxRateQst,
+          status: 'DRAFT',
+          description: `${quote.quoteNumber} - ${quote.title}${linesDescription ? ` | ${linesDescription}` : ''}`,
+        },
+      });
 
-    const updatedQuote = await tx.commercialQuote.update({
-      where: { id: quote.id },
-      data: {
-        status: 'CONVERTED',
-        convertedToInvoiceId: invoice.id,
-      },
-    });
+      const updatedQuote = await tx.commercialQuote.update({
+        where: { id: quote.id },
+        data: {
+          status: 'CONVERTED',
+          convertedToInvoiceId: invoice.id,
+        },
+      });
 
-    return { invoice, updatedQuote };
+      return { invoice, updatedQuote };
+    }),
   });
 
   await prisma.activity.create({

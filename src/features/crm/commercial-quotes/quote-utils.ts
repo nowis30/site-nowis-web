@@ -1,5 +1,3 @@
-import { prisma } from '@/lib/prisma';
-
 type QuoteLineInput = {
   title: string;
   description?: string | null;
@@ -55,24 +53,6 @@ export function computeQuoteTotals(lines: QuoteLineInput[], options?: { gst?: nu
     totalAmount,
     taxMeta: { gst, qst, taxableBase, taxesEnabled },
   };
-}
-
-export async function nextCommercialQuoteNumber(prefixDate = new Date()) {
-  const yyyy = prefixDate.getFullYear();
-  const mm = String(prefixDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(prefixDate.getDate()).padStart(2, '0');
-  const prefix = `DEV-${yyyy}${mm}${dd}`;
-
-  const count = await prisma.commercialQuote.count({
-    where: {
-      quoteNumber: {
-        startsWith: prefix,
-      },
-    },
-  });
-
-  const seq = String(count + 1).padStart(3, '0');
-  return `${prefix}-${seq}`;
 }
 
 export function canDeleteCommercialQuote(status: string) {
