@@ -6,10 +6,10 @@ import { prisma } from '@/lib/prisma';
 import { UploadFileForm } from '@/components/files/UploadFileForm';
 import { ClientDocumentsList } from '@/features/client-portal/components/ClientDocumentsList';
 
-type DocumentsTab = 'all' | 'contact' | 'song_requests';
+type DocumentsTab = 'all' | 'contact' | 'song_requests' | 'quotes' | 'invoices';
 
 function parseTab(input?: string): DocumentsTab {
-  return input === 'contact' || input === 'song_requests' ? input : 'all';
+  return input === 'contact' || input === 'song_requests' || input === 'quotes' || input === 'invoices' ? input : 'all';
 }
 
 export default async function ClientDocumentsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
@@ -43,8 +43,10 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
   }
 
   const filteredDocuments = documents.filter((document) => {
-    if (tab === 'contact') return !document.songRequestId;
+    if (tab === 'contact') return !document.songRequestId && !document.invoiceId && !document.commercialQuoteId;
     if (tab === 'song_requests') return !!document.songRequestId;
+    if (tab === 'quotes') return !!document.commercialQuoteId;
+    if (tab === 'invoices') return !!document.invoiceId;
     return true;
   });
 
@@ -70,6 +72,8 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
             { label: 'Tous', href: '/client/documents?tab=all', active: tab === 'all' },
             { label: 'Contact', href: '/client/documents?tab=contact', active: tab === 'contact' },
             { label: 'Demandes chanson', href: '/client/documents?tab=song_requests', active: tab === 'song_requests' },
+            { label: 'Devis', href: '/client/documents?tab=quotes', active: tab === 'quotes' },
+            { label: 'Factures', href: '/client/documents?tab=invoices', active: tab === 'invoices' },
           ]}
           actions={[{ label: 'Tout voir', href: '/client/documents?tab=all' }]}
         />

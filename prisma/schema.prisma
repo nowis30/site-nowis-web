@@ -724,6 +724,8 @@ model FileDocument {
   id               String         @id @default(uuid()) @db.Uuid
   contactId        String?        @db.Uuid
   songRequestId    String?        @db.Uuid
+  invoiceId        String?        @db.Uuid
+  commercialQuoteId String?        @db.Uuid
   uploadedByUserId String?        @db.Uuid
   filename         String
   originalName     String
@@ -736,12 +738,16 @@ model FileDocument {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  contact          Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  songRequest      SongRequest?   @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
-  uploadedByUser   User?          @relation("FileDocumentUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  contact           Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  songRequest       SongRequest?       @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+  invoice           Invoice?           @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  commercialQuote   CommercialQuote?   @relation(fields: [commercialQuoteId], references: [id], onDelete: SetNull)
+  uploadedByUser    User?              @relation("FileDocumentUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
 
   @@index([contactId])
   @@index([songRequestId])
+  @@index([invoiceId])
+  @@index([commercialQuoteId])
   @@index([visibility])
   @@index([createdAt])
   @@map("file_documents")
@@ -917,8 +923,9 @@ model Invoice {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  contact           Contact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
   convertedFromQuote CommercialQuote?
+  fileDocuments     FileDocument[]
 
   @@index([contactId])
   @@index([status])
@@ -1088,6 +1095,7 @@ model CommercialQuote {
   appointment           Appointment?         @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   convertedToInvoice    Invoice?             @relation(fields: [convertedToInvoiceId], references: [id], onDelete: SetNull)
   lines                 CommercialQuoteLine[]
+  fileDocuments         FileDocument[]
 
   @@index([contactId])
   @@index([organizationId])

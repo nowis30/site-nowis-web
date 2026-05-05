@@ -224,6 +224,29 @@ export async function POST(request: NextRequest) {
       },
     }).catch(() => undefined);
 
+    // Créer automatiquement un FileDocument pour le devis dans les documents client
+    if (item.contactId) {
+      try {
+        await prisma.fileDocument.create({
+          data: {
+            contactId: item.contactId,
+            commercialQuoteId: item.id,
+            filename: `${item.quoteNumber}.pdf`,
+            originalName: `Devis ${item.quoteNumber}`,
+            mimeType: 'application/pdf',
+            size: 0,
+            storageKey: `quotes/${item.id}`,
+            url: `/api/crm/commercial-quotes/${item.id}/pdf`,
+            category: 'quote',
+            visibility: 'CLIENT_VISIBLE',
+          },
+        });
+      } catch (error) {
+        // Ne pas bloquer si le FileDocument échoue
+        console.error('Erreur création FileDocument pour devis:', error);
+      }
+    }
+
     return NextResponse.json(
       {
         item: {

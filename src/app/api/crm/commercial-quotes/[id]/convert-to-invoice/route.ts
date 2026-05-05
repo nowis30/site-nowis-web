@@ -143,5 +143,26 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     },
   }).catch(() => undefined);
 
+  // Créer automatiquement un FileDocument pour la facture dans les documents client
+  try {
+    await prisma.fileDocument.create({
+      data: {
+        contactId: quote.contactId,
+        invoiceId: result.invoice.id,
+        filename: `${result.invoice.number}.pdf`,
+        originalName: `Facture ${result.invoice.number}`,
+        mimeType: 'application/pdf',
+        size: 0,
+        storageKey: `invoices/${result.invoice.id}`,
+        url: `/api/client-portal/invoices/${result.invoice.id}/pdf`,
+        category: 'invoice',
+        visibility: 'CLIENT_VISIBLE',
+      },
+    });
+  } catch (error) {
+    // Ne pas bloquer si le FileDocument échoue
+    console.error('Erreur création FileDocument pour facture:', error);
+  }
+
   return NextResponse.json({ ok: true, invoiceId: result.invoice.id, quoteId: result.updatedQuote.id });
 }
