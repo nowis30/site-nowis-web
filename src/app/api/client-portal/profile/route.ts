@@ -63,10 +63,17 @@ export async function PATCH(request: NextRequest) {
 
     const nextTags = Array.from(new Set([...(contact.tags || []), 'profile-contact-complete']));
 
+    // Construire l'adresse de facturation pour les champs directs du Contact
+    const billingAddressLine1 = `${payload.billingAddress.streetNumber} ${payload.billingAddress.street}`.trim();
+
     await prisma.contact.update({
       where: { id: contact.id },
       data: {
         phone: payload.phone,
+        billingAddressLine1,
+        billingCity: payload.billingAddress.city,
+        billingPostalCode: payload.billingAddress.postalCode,
+        billingCountry: 'Canada',
         profileMeta: nextProfileMeta as unknown as Prisma.InputJsonValue,
         notes: nextNotes,
         tags: nextTags,
