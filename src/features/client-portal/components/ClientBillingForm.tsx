@@ -71,7 +71,7 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
 
     setSaving(true);
     try {
-      const response = await fetch('/api/client/facturation', {
+      const response = await fetch('/api/client/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fields),
