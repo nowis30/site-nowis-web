@@ -24,6 +24,7 @@
     "db:archive:housing": "tsx scripts/archive-housing-domain.ts",
     "db:deprecate:housing:safe": "npm run db:archive:housing && npm run prisma:migrate:deploy && npm run prisma:generate",
     "tasks:backfill-types": "tsx scripts/backfill-task-types.ts",
+    "documents:backfill-client": "tsx scripts/backfill-client-documents.ts",
     "contacts:backfill-profile-meta": "tsx scripts/backfill-contact-profile-meta.ts",
     "quality:quick": "npm run type-check && npm run build",
     "crm:release:tasks": "npm run prisma:migrate:deploy && npm run prisma:generate && npm run tasks:backfill-types && npm run quality:quick",

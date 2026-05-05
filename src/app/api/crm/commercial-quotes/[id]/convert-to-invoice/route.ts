@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { getBillingIssuerSnapshot, buildCustomerSnapshotFromContact, toCustomerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
+import { ensureInvoiceFileDocument } from '@/features/crm/server/file-document-links';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'commercialQuotes', 'update');
@@ -143,21 +144,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     },
   }).catch(() => undefined);
 
-  // Créer automatiquement un FileDocument pour la facture dans les documents client
+  // Créer automatiquement un FileDocument pour la facture dans les documents client.
+  // Idempotent pour éviter les doublons en cas de retry.
   try {
-    await prisma.fileDocument.create({
-      data: {
-        contactId: quote.contactId,
-        invoiceId: result.invoice.id,
-        filename: `${result.invoice.number}.pdf`,
-        originalName: `Facture ${result.invoice.number}`,
-        mimeType: 'application/pdf',
-        size: 0,
-        storageKey: `invoices/${result.invoice.id}`,
-        url: `/api/client-portal/invoices/${result.invoice.id}/pdf`,
-        category: 'invoice',
-        visibility: 'CLIENT_VISIBLE',
-      },
+    await ensureInvoiceFileDocument({
+      contactId: quote.contactId,
+      invoiceId: result.invoice.id,
+      invoiceNumber: result.invoice.number,
     });
   } catch (error) {
     // Ne pas bloquer si le FileDocument échoue

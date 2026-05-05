@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { commercialQuoteCreateSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
 import { computeQuoteTotals, nextCommercialQuoteNumber } from '@/features/crm/commercial-quotes/quote-utils';
 import { buildCustomerSnapshotFromContact, buildCustomerSnapshotFromOrganization, getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
@@ -128,7 +129,6 @@ export async function GET(request: NextRequest) {
       subtotal: item.subtotal.toString(),
       taxAmount: item.taxAmount.toString(),
       totalAmount: item.totalAmount.toString(),
-      hasLines: item.lines.length > 0,
     })),
   });
 }
@@ -224,22 +224,14 @@ export async function POST(request: NextRequest) {
       },
     }).catch(() => undefined);
 
-    // Créer automatiquement un FileDocument pour le devis dans les documents client
+    // Créer automatiquement un FileDocument pour le devis dans les documents client.
+    // Idempotent pour éviter les doublons en cas de retry.
     if (item.contactId) {
       try {
-        await prisma.fileDocument.create({
-          data: {
-            contactId: item.contactId,
-            commercialQuoteId: item.id,
-            filename: `${item.quoteNumber}.pdf`,
-            originalName: `Devis ${item.quoteNumber}`,
-            mimeType: 'application/pdf',
-            size: 0,
-            storageKey: `quotes/${item.id}`,
-            url: `/api/crm/commercial-quotes/${item.id}/pdf`,
-            category: 'quote',
-            visibility: 'CLIENT_VISIBLE',
-          },
+        await ensureQuoteFileDocument({
+          quoteId: item.id,
+          quoteNumber: item.quoteNumber,
+          contactId: item.contactId,
         });
       } catch (error) {
         // Ne pas bloquer si le FileDocument échoue
