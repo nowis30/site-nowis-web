@@ -311,6 +311,75 @@ async function readPayPalError(response: Response) {
   });
 }
 
+export function isDuplicatePayPalInvoiceNumberError(error: unknown) {
+  if (!isPayPalApiError(error)) return false;
+  if (error.httpStatus !== 422) return false;
+
+  const haystack = [
+    error.paypalName,
+    error.message,
+    ...error.details.flatMap((detail) => [detail.field, detail.issue, detail.description, detail.value]),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(' ')
+    .toLowerCase();
+
+  return haystack.includes('invoice number is duplicate') || (haystack.includes('invoice') && haystack.includes('duplicate'));
+}
+
+function extractPayPalInvoiceId(payload: JsonRecord) {
+  const invoice = asRecord(payload.invoice);
+  return readString(payload.id) || readString(invoice.id);
+}
+
+function extractPayPalInvoiceNumber(payload: JsonRecord) {
+  const detail = asRecord(payload.detail);
+  const invoice = asRecord(payload.invoice);
+  const invoiceDetail = asRecord(invoice.detail);
+  return (
+    readString(detail.invoice_number) ||
+    readString(payload.invoice_number) ||
+    readString(invoiceDetail.invoice_number)
+  );
+}
+
+async function findPayPalInvoiceByInvoiceNumber(invoiceNumber: string) {
+  const normalizedInvoiceNumber = trimToNull(invoiceNumber);
+  if (!normalizedInvoiceNumber) return null;
+
+  let page = 1;
+  const pageSize = 100;
+  const maxPages = 10;
+
+  while (page <= maxPages) {
+    const response = await paypalFetch(`/v2/invoicing/invoices?page=${page}&page_size=${pageSize}&total_required=true`, {
+      method: 'GET',
+    });
+    const payload = asRecord(await response.json());
+    const items = Array.isArray(payload.items) ? payload.items : [];
+
+    for (const itemValue of items) {
+      const item = asRecord(itemValue);
+      if (extractPayPalInvoiceNumber(item) === normalizedInvoiceNumber) {
+        const paypalInvoiceId = extractPayPalInvoiceId(item);
+        if (!paypalInvoiceId) return null;
+        return { paypalInvoiceId, payload: item };
+      }
+    }
+
+    const totalPages = Number(payload.total_pages);
+    if (Number.isFinite(totalPages) && totalPages > 0) {
+      if (page >= totalPages) break;
+    } else if (items.length < pageSize) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
+}
+
 function buildPayPalInvoicer(issuer: BillingIssuerSnapshot, fallbackBusinessEmail: string | null) {
   const displayName = trimToNull(issuer.displayName) || trimToNull(issuer.companyName) || 'Nowis';
   const address = buildPayPalAddressFromBilling({
@@ -733,48 +802,77 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
     businessEmail: config.businessEmail,
   });
 
-  const response = await paypalFetch('/v2/invoicing/invoices', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-  const created = asRecord(await response.json());
-  const createdInvoice = asRecord(created.invoice);
-  const paypalInvoiceId = readString(created.id) || readString(createdInvoice.id);
+  try {
+    const response = await paypalFetch('/v2/invoicing/invoices', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const created = asRecord(await response.json());
+    const createdInvoice = asRecord(created.invoice);
+    const paypalInvoiceId = readString(created.id) || readString(createdInvoice.id);
 
-  if (!paypalInvoiceId) {
-    throw new Error('PayPal n a pas retourne d identifiant de facture.');
+    if (!paypalInvoiceId) {
+      throw new Error('PayPal n a pas retourne d identifiant de facture.');
+    }
+
+    let paypalInvoiceUrl = extractPayPalInvoiceUrl(created);
+    if (!paypalInvoiceUrl) {
+      const detailResponse = await paypalFetch(`/v2/invoicing/invoices/${paypalInvoiceId}`, { method: 'GET' });
+      const detailPayload = asRecord(await detailResponse.json());
+      paypalInvoiceUrl = extractPayPalInvoiceUrl(detailPayload);
+    }
+
+    const mapped = mapPayPalStatus(extractPayPalStatus(created) || 'DRAFT');
+    const updated = await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        paypalInvoiceId,
+        paypalInvoiceUrl,
+        paypalStatus: mapped.paypalStatus,
+        paymentProvider: 'PAYPAL',
+        paymentStatus: mapped.paymentStatus,
+        paymentAmount: invoice.amount,
+        paymentCurrency: invoice.paymentCurrency || config.currency,
+      },
+    });
+
+    await writePaypalActivity({
+      title: `Facture PayPal creee : ${invoice.number}`,
+      description: `Facture PayPal ${paypalInvoiceId} creee pour ${invoice.contact.email}.`,
+      contactId: invoice.contact.id,
+      invoiceId: invoice.id,
+      userId,
+    });
+
+    return toSyncSummary(updated);
+  } catch (error) {
+    if (!isDuplicatePayPalInvoiceNumberError(error)) {
+      throw error;
+    }
+
+    const remoteDuplicate = await findPayPalInvoiceByInvoiceNumber(invoice.number);
+    if (!remoteDuplicate?.paypalInvoiceId) {
+      throw error;
+    }
+
+    await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        paypalInvoiceId: remoteDuplicate.paypalInvoiceId,
+        paymentProvider: 'PAYPAL',
+      },
+    });
+
+    await writePaypalActivity({
+      title: `Facture PayPal rattachee : ${invoice.number}`,
+      description: `Facture PayPal existante ${remoteDuplicate.paypalInvoiceId} rattachee apres detection d un doublon PayPal sur le numero ${invoice.number}.`,
+      contactId: invoice.contact.id,
+      invoiceId: invoice.id,
+      userId,
+    });
+
+    return syncPayPalInvoiceStatusByPayPalInvoiceId(remoteDuplicate.paypalInvoiceId, { userId });
   }
-
-  let paypalInvoiceUrl = extractPayPalInvoiceUrl(created);
-  if (!paypalInvoiceUrl) {
-    const detailResponse = await paypalFetch(`/v2/invoicing/invoices/${paypalInvoiceId}`, { method: 'GET' });
-    const detailPayload = asRecord(await detailResponse.json());
-    paypalInvoiceUrl = extractPayPalInvoiceUrl(detailPayload);
-  }
-
-  const mapped = mapPayPalStatus(extractPayPalStatus(created) || 'DRAFT');
-  const updated = await prisma.invoice.update({
-    where: { id: invoice.id },
-    data: {
-      paypalInvoiceId,
-      paypalInvoiceUrl,
-      paypalStatus: mapped.paypalStatus,
-      paymentProvider: 'PAYPAL',
-      paymentStatus: mapped.paymentStatus,
-      paymentAmount: invoice.amount,
-      paymentCurrency: invoice.paymentCurrency || config.currency,
-    },
-  });
-
-  await writePaypalActivity({
-    title: `Facture PayPal creee : ${invoice.number}`,
-    description: `Facture PayPal ${paypalInvoiceId} creee pour ${invoice.contact.email}.`,
-    contactId: invoice.contact.id,
-    invoiceId: invoice.id,
-    userId,
-  });
-
-  return toSyncSummary(updated);
 }
 
 export async function sendPayPalInvoice(invoiceId: string, userId?: string | null) {

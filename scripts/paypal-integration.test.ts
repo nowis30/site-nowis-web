@@ -5,6 +5,8 @@ import { NextRequest } from 'next/server';
 import {
   buildPayPalInvoiceCreatePayload,
   derivePayPalInvoiceSyncUpdate,
+  isDuplicatePayPalInvoiceNumberError,
+  PayPalApiError,
   reuseExistingPayPalInvoiceIfPresent,
 } from '@/lib/server/paypal';
 import { handlePayPalWebhookRequest } from '@/lib/server/paypal-webhook';
@@ -136,6 +138,18 @@ test('create ne recree pas si paypalInvoiceId existe', async () => {
 
   assert.equal(syncCalls, 1);
   assert.deepEqual(result, { invoiceId: 'inv-1', reused: true });
+});
+
+test('duplicate invoice number PayPal est detecte pour rattachement distant', () => {
+  const error = new PayPalApiError({
+    httpStatus: 422,
+    name: 'UNPROCESSABLE_ENTITY',
+    message: 'The requested action could not be performed, semantically incorrect, or failed business validation.',
+    details: [{ description: 'Invoice number is duplicate.' }],
+    debugId: 'debug-123',
+  });
+
+  assert.equal(isDuplicatePayPalInvoiceNumberError(error), true);
 });
 
 test('webhook PAID met Invoice.status a PAID', () => {
