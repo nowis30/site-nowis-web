@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
+import { assertCanSendQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'commercialQuotes', 'update');
@@ -23,6 +24,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   if (quote.status === 'CONVERTED') {
     return NextResponse.json({ error: 'Cette soumission est déjà convertie en facture.' }, { status: 409 });
+  }
+
+  if (quote.songRequestId) {
+    try {
+      await assertCanSendQuoteForSongRequest(quote.songRequestId, quote.id);
+    } catch (error) {
+      if (error instanceof SongRequestQuoteGuardError) {
+        return NextResponse.json({ error: error.message }, { status: error.status });
+      }
+      throw error;
+    }
   }
 
   const item = await prisma.commercialQuote.update({

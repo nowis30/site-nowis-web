@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
 import { buildPublicQuoteUrl, signPublicQuoteToken } from '@/lib/public-links';
+import { assertCanSendQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 import {
   getBillingIssuerSnapshot,
   toIssuerSnapshot,
@@ -71,6 +72,17 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   if (!quote.contact?.email) {
     return NextResponse.json({ error: 'Le client associe n a pas de courriel.' }, { status: 400 });
+  }
+
+  if (quote.songRequestId) {
+    try {
+      await assertCanSendQuoteForSongRequest(quote.songRequestId, quote.id);
+    } catch (error) {
+      if (error instanceof SongRequestQuoteGuardError) {
+        return NextResponse.json({ error: error.message }, { status: error.status });
+      }
+      throw error;
+    }
   }
 
   const activeIssuer = await getBillingIssuerSnapshot();

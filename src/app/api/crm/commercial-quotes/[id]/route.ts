@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { canDeleteCommercialQuote, computeQuoteTotals } from '@/features/crm/commercial-quotes/quote-utils';
 import { commercialQuotePatchSchema, normalizeOptionalString } from '@/features/crm/server/validators';
+import { assertCanCreateQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 import { buildCustomerSnapshotFromContact, buildCustomerSnapshotFromOrganization } from '@/lib/billing-profile';
 import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
 
@@ -123,6 +124,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Soumission commerciale introuvable.' }, { status: 404 });
     }
 
+    const nextSongRequestId = payload.songRequestId !== undefined ? (payload.songRequestId || null) : current.songRequestId;
+    if (nextSongRequestId) {
+      await assertCanCreateQuoteForSongRequest(nextSongRequestId, current.id);
+    }
+
     const nextContactId = payload.contactId !== undefined ? (payload.contactId || null) : current.contactId;
     const nextOrganizationId = payload.organizationId !== undefined ? (payload.organizationId || null) : current.organizationId;
     const customerSnapshot = await resolveCustomerSnapshot(nextContactId, nextOrganizationId);
@@ -225,6 +231,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       },
     });
   } catch (error) {
+    if (error instanceof SongRequestQuoteGuardError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     const message = error instanceof Error ? error.message : 'Données invalides';
     return NextResponse.json({ error: message }, { status: 400 });
   }

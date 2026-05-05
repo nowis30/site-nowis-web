@@ -182,6 +182,8 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
           size: file.size ?? 0,
           url: file.url || '',
           category: file.category || '',
+          commercialQuoteId: file.commercialQuoteId ?? null,
+          invoiceId: file.invoiceId ?? null,
           visibility: file.visibility as 'ADMIN_ONLY' | 'CLIENT_VISIBLE',
           createdAt: file.createdAt.toISOString(),
         })),

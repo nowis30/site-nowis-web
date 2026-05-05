@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
+import { findExistingInvoiceForSongRequest } from '@/features/crm/server/song-request-quote-guards';
 import { z } from 'zod';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
@@ -38,6 +39,20 @@ export async function POST(request: NextRequest) {
     const sourceWorkshopRequestId = typeof rawPayload?.sourceWorkshopRequestId === 'string' ? rawPayload.sourceWorkshopRequestId : null;
     const sourceSongRequestId = typeof rawPayload?.sourceSongRequestId === 'string' ? rawPayload.sourceSongRequestId : null;
     const payload = invoiceInputSchema.parse(rawPayload);
+
+    if (sourceSongRequestId) {
+      const existingInvoice = await findExistingInvoiceForSongRequest(sourceSongRequestId);
+      if (existingInvoice) {
+        return NextResponse.json(
+          {
+            item: existingInvoice,
+            message: 'Une facture existe déjà pour cette chanson.',
+          },
+          { status: 200 },
+        );
+      }
+    }
+
     const issuerSnapshot = await getBillingIssuerSnapshot();
     const contact = await prisma.contact.findUnique({
       where: { id: payload.contactId },

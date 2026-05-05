@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { getBillingIssuerSnapshot, buildCustomerSnapshotFromContact, toCustomerSnapshot, validateCustomerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
+import { resolveExistingInvoiceForQuoteConversion } from '@/features/crm/server/song-request-quote-guards';
 import { ensureInvoiceFileDocument } from '@/features/crm/server/file-document-links';
 
 function ensureAdmin(request: NextRequest) {
@@ -33,8 +34,31 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Soumission commerciale introuvable.' }, { status: 404 });
   }
 
-  if (quote.convertedToInvoiceId) {
-    return NextResponse.json({ error: 'Cette soumission est déjà convertie en facture.' }, { status: 409 });
+  const existingInvoiceResolution = await resolveExistingInvoiceForQuoteConversion({
+    quoteConvertedToInvoiceId: quote.convertedToInvoiceId,
+    songRequestId: quote.songRequestId,
+  });
+
+  if (existingInvoiceResolution) {
+    if (!quote.convertedToInvoiceId && existingInvoiceResolution.reason === 'song_request_already_has_invoice') {
+      await prisma.commercialQuote.update({
+        where: { id: quote.id },
+        data: {
+          status: 'CONVERTED',
+          convertedToInvoiceId: existingInvoiceResolution.invoice.id,
+        },
+      });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      invoiceId: existingInvoiceResolution.invoice.id,
+      quoteId: quote.id,
+      existingInvoice: existingInvoiceResolution.invoice,
+      message: existingInvoiceResolution.reason === 'quote_already_converted'
+        ? 'Cette soumission est déjà convertie en facture.'
+        : 'Une facture existe déjà pour cette chanson.',
+    });
   }
 
   if (quote.status !== 'ACCEPTED') {

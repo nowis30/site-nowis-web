@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPublicQuoteToken } from '@/lib/public-links';
+import { assertCanSendQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
 
 const ALLOWED = new Set(['accept', 'decline']);
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
       id: true,
       quoteNumber: true,
       contactId: true,
+      songRequestId: true,
       status: true,
       convertedToInvoiceId: true,
     },
@@ -38,6 +40,17 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
 
   if (quote.status === 'CONVERTED' || quote.convertedToInvoiceId) {
     return NextResponse.json({ error: 'Cette soumission est deja convertie en facture.' }, { status: 409 });
+  }
+
+  if (action === 'accept' && quote.songRequestId) {
+    try {
+      await assertCanSendQuoteForSongRequest(quote.songRequestId, quote.id);
+    } catch (error) {
+      if (error instanceof SongRequestQuoteGuardError) {
+        return NextResponse.json({ error: error.message }, { status: error.status });
+      }
+      throw error;
+    }
   }
 
   const nextStatus = action === 'accept' ? 'ACCEPTED' : 'DECLINED';

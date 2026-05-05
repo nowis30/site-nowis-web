@@ -101,6 +101,8 @@ type SongRequestDetail = {
     size: number;
     url: string;
     category: string;
+    commercialQuoteId: string | null;
+    invoiceId: string | null;
     visibility: 'ADMIN_ONLY' | 'CLIENT_VISIBLE';
     createdAt: string;
   }>;
@@ -166,11 +168,11 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
 
   const budgetLabel = item.budget === null ? '—' : new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(item.budget));
 
-  const acceptedQuote = item.relatedCommercialQuotes.find(
+  const blockingQuote = item.relatedCommercialQuotes.find(
     (q) => q.status === 'ACCEPTED' || q.status === 'CONVERTED',
   );
-  const hasAcceptedQuote = !!acceptedQuote;
-  const acceptedQuoteInvoiceId = acceptedQuote?.convertedToInvoiceId ?? null;
+  const hasBlockingQuote = !!blockingQuote;
+  const acceptedQuoteInvoiceId = blockingQuote?.convertedToInvoiceId ?? null;
   const hasLinkedInvoice =
     !!item.convertedInvoiceId || !!acceptedQuoteInvoiceId || item.relatedInvoices.length > 0;
   const firstInvoiceId =
@@ -178,6 +180,10 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
     acceptedQuoteInvoiceId ??
     item.relatedInvoices[0]?.id ??
     null;
+  const canCreateInvoiceNow = hasBlockingQuote && !hasLinkedInvoice;
+  const clientPortalDocuments = item.files
+    .filter((file) => file.visibility === 'CLIENT_VISIBLE' && (file.commercialQuoteId || file.invoiceId || file.category === 'quote' || file.category === 'invoice'))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   async function planSongMeeting() {
     setLoadingAction('plan_meeting');
@@ -333,10 +339,10 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
 
       {error ? <div className="rounded-xl border border-red-700/30 bg-red-950/30 px-4 py-3 text-sm text-red-300">{error}</div> : null}
 
-      {hasAcceptedQuote ? (
+      {hasBlockingQuote ? (
         <div className="rounded-xl border border-emerald-700/30 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300 flex items-start justify-between gap-4 flex-wrap">
           <span>
-            ✓ Soumission acceptée ({acceptedQuote!.quoteNumber}).{' '}
+            ✓ Une soumission acceptée existe déjà pour cette chanson. Vous pouvez maintenant créer ou envoyer une facture.{' '}
             {hasLinkedInvoice
               ? 'Une facture est déjà liée à ce dossier.'
               : 'Tu peux maintenant créer et envoyer la facture.'}
@@ -346,7 +352,7 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
               href={`/crm/invoices?songRequestId=${item.id}`}
               className="rounded-lg border border-emerald-600/50 px-3 py-1 text-xs font-medium text-emerald-200 hover:bg-emerald-900/30 hover:text-white"
             >
-              Créer la facture →
+              Créer une facture →
             </a>
           )}
           {hasLinkedInvoice && firstInvoiceId && (
@@ -434,7 +440,7 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
               </Link>
 
               {canCreateCommercialQuote ? (
-                hasAcceptedQuote ? (
+                hasBlockingQuote ? (
                   <div className="rounded-lg border border-slate-700/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed" title="Soumission déjà acceptée pour cette demande.">
                     Créer une soumission (bloqué)
                   </div>
@@ -448,22 +454,22 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
                 )
               ) : null}
 
-              {canCreateInvoice ? (
-                hasLinkedInvoice && firstInvoiceId ? (
-                  <Link
-                    href={`/crm/invoices/${firstInvoiceId}`}
-                    className="block rounded-lg border border-emerald-600/50 bg-emerald-950/20 px-3 py-2 text-sm text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100"
-                  >
-                    Voir la facture liée
-                  </Link>
-                ) : (
-                  <Link
-                    href={`/crm/invoices?songRequestId=${item.id}`}
-                    className={`block rounded-lg border px-3 py-2 text-sm ${hasAcceptedQuote ? 'border-emerald-600/70 bg-emerald-900/20 text-emerald-200 hover:border-emerald-500/80 hover:text-emerald-100 font-medium' : 'border-emerald-700/50 text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100'}`}
-                  >
-                    {hasAcceptedQuote ? '✓ Créer la facture' : 'Créer une facture'}
-                  </Link>
-                )
+              {canCreateInvoice && hasLinkedInvoice && firstInvoiceId ? (
+                <Link
+                  href={`/crm/invoices/${firstInvoiceId}`}
+                  className="block rounded-lg border border-emerald-600/50 bg-emerald-950/20 px-3 py-2 text-sm text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100"
+                >
+                  Voir la facture
+                </Link>
+              ) : null}
+
+              {canCreateInvoice && canCreateInvoiceNow ? (
+                <Link
+                  href={`/crm/invoices?songRequestId=${item.id}`}
+                  className="block rounded-lg border border-emerald-600/70 bg-emerald-900/20 px-3 py-2 text-sm font-medium text-emerald-200 hover:border-emerald-500/80 hover:text-emerald-100"
+                >
+                  Créer une facture
+                </Link>
               ) : null}
 
               {!isEditing ? (
@@ -666,7 +672,9 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
                 <article key={quote.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 text-sm text-slate-200">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium text-white">{quote.quoteNumber}</p>
-                    <span className="text-xs text-slate-400">{quote.status}</span>
+                    <span className={`text-xs ${quote.status === 'CONVERTED' ? 'text-emerald-300' : quote.status === 'ACCEPTED' ? 'text-amber-300' : 'text-slate-400'}`}>
+                      {quote.status}
+                    </span>
                   </div>
                   <p className="mt-1 text-xs text-slate-400">{quote.title}</p>
                   <p className="mt-1 text-xs text-slate-500">{new Date(quote.createdAt).toLocaleDateString('fr-CA')} · {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(quote.totalAmount))}</p>
@@ -699,6 +707,35 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
                   <p className="mt-1 text-xs text-slate-400">{new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(invoice.amount))}</p>
                   <div className="mt-2">
                     <Link href={`/crm/invoices/${invoice.id}`} className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white">Ouvrir</Link>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Documents client</h3>
+            <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">{clientPortalDocuments.length}</span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {clientPortalDocuments.length === 0 ? (
+              <p className="text-sm text-slate-500">Aucun devis/facture visible dans le portail client pour le moment.</p>
+            ) : (
+              clientPortalDocuments.map((file) => (
+                <article key={file.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 text-sm text-slate-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-white">{file.originalName || file.filename}</p>
+                    <span className={`text-xs ${file.invoiceId ? 'text-emerald-300' : 'text-sky-300'}`}>
+                      {file.invoiceId ? 'Facture' : 'Devis'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Ajouté le {new Date(file.createdAt).toLocaleDateString('fr-CA')}</p>
+                  <div className="mt-2">
+                    <a href={file.url} target="_blank" rel="noreferrer" className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white">
+                      Ouvrir le document
+                    </a>
                   </div>
                 </article>
               ))

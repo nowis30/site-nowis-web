@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { commercialQuoteCreateSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
+import { assertCanCreateQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
 import { computeQuoteTotals } from '@/features/crm/commercial-quotes/quote-utils';
 import { buildCustomerSnapshotFromContact, buildCustomerSnapshotFromOrganization, getBillingIssuerSnapshot } from '@/lib/billing-profile';
@@ -141,22 +142,8 @@ export async function POST(request: NextRequest) {
   try {
     const payload = commercialQuoteCreateSchema.parse(await request.json());
 
-    // Blocage : impossible de créer une nouvelle soumission si une soumission acceptée
-    // existe déjà pour la même demande de chanson.
     if (payload.songRequestId) {
-      const alreadyAccepted = await prisma.commercialQuote.findFirst({
-        where: {
-          songRequestId: payload.songRequestId,
-          status: { in: ['ACCEPTED', 'CONVERTED'] },
-        },
-        select: { id: true, quoteNumber: true },
-      });
-      if (alreadyAccepted) {
-        return NextResponse.json(
-          { error: `Une soumission acceptée (${alreadyAccepted.quoteNumber}) existe déjà pour cette demande de chanson.` },
-          { status: 409 },
-        );
-      }
+      await assertCanCreateQuoteForSongRequest(payload.songRequestId);
     }
 
     const issuerSnapshot = await getBillingIssuerSnapshot();
@@ -254,6 +241,9 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof SongRequestQuoteGuardError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     const message = error instanceof Error ? error.message : 'Données invalides';
     return NextResponse.json({ error: message }, { status: 400 });
   }
