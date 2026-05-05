@@ -1,3 +1,10 @@
+/**
+ * LEGACY / ARCHIVE — Page soumissions entrantes (Inquiry).
+ * Accessible aux admins uniquement mais non affiché dans la navigation CRM.
+ * Conservé pour consulter les données historiques uniquement.
+ * Ne pas utiliser pour les nouvelles soumissions. Voir /crm/commercial-quotes.
+ * TODO: Archiver complètement ce module une fois que les Inquiry historiques ont été traitées.
+ */
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { SubmissionsPage } from '@/features/crm/components/submissions/SubmissionsPage';
