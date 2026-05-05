@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { buildDefaultInvoiceNumber } from './formatters';
 import type { ContactWorkspaceContact } from './types';
 import type { ContactActionType } from './ContactHeader';
 
@@ -62,9 +61,6 @@ export function ContactActionModal({
     songBudget: '',
     dueDate: '',
     priority: 'MEDIUM',
-    number: buildDefaultInvoiceNumber(contact.id),
-    amount: '',
-    dueDateInvoice: '',
     appointmentStart: '',
     appointmentEnd: '',
     appointmentType: 'MEETING',
@@ -100,9 +96,6 @@ export function ContactActionModal({
           songBudget: form.songBudget,
           dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : undefined,
           priority: form.priority,
-          number: form.number,
-          amount: form.amount,
-          dueDateInvoice: form.dueDateInvoice ? new Date(form.dueDateInvoice).toISOString() : undefined,
           appointmentStart: form.appointmentStart ? new Date(form.appointmentStart).toISOString() : undefined,
           appointmentEnd: form.appointmentEnd ? new Date(form.appointmentEnd).toISOString() : undefined,
           appointmentType: form.appointmentType,
@@ -133,13 +126,14 @@ export function ContactActionModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Action rapide</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">{action === 'note' ? 'Ajouter une note' : action === 'task' ? 'Ajouter une tâche' : action === 'invoice' ? 'Ajouter une facture' : action === 'appointment' ? 'Ajouter un rendez-vous' : action === 'organization' ? 'Créer une organisation' : 'Créer une demande chanson'}</h3>
+            <h3 className="mt-2 text-2xl font-semibold text-white">{action === 'note' ? 'Ajouter une note' : action === 'task' ? 'Ajouter une tâche' : action === 'appointment' ? 'Ajouter un rendez-vous' : action === 'organization' ? 'Créer une organisation' : 'Créer une demande chanson'}</h3>
+                      <h3 className="mt-2 text-2xl font-semibold text-white">{action === 'note' ? 'Ajouter une note' : action === 'task' ? 'Ajouter une tâche' : action === 'appointment' ? 'Ajouter un rendez-vous' : action === 'organization' ? 'Créer une organisation' : 'Créer une demande chanson'}</h3>
           </div>
           <button type="button" onClick={onClose} className="text-sm text-slate-400 hover:text-white">Fermer</button>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {action !== 'invoice' && action !== 'song-request' ? (
+           {action !== 'song-request' ? (
             <label className={action === 'note' ? 'md:col-span-2' : ''}>
               <span className="mb-2 block text-sm text-slate-300">Titre</span>
               <input value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
@@ -198,23 +192,6 @@ export function ContactActionModal({
                 <select value={form.priority} onChange={(event) => setForm((current) => ({ ...current, priority: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white">
                   {PRIORITY_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
-              </label>
-            </>
-          ) : null}
-
-          {action === 'invoice' ? (
-            <>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Numéro</span>
-                <input value={form.number} onChange={(event) => setForm((current) => ({ ...current, number: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
-              </label>
-              <label>
-                <span className="mb-2 block text-sm text-slate-300">Montant</span>
-                <input type="number" min="0" step="0.01" value={form.amount} onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
-              </label>
-              <label className="md:col-span-2">
-                <span className="mb-2 block text-sm text-slate-300">Échéance</span>
-                <input type="datetime-local" value={form.dueDateInvoice} onChange={(event) => setForm((current) => ({ ...current, dueDateInvoice: event.target.value }))} className="w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-white" />
               </label>
             </>
           ) : null}

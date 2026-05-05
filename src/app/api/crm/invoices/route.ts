@@ -6,6 +6,14 @@ import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/serv
 import { z } from 'zod';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
+function nextInvoiceNumber(prefixDate = new Date()) {
+  const yyyy = prefixDate.getFullYear();
+  const mm = String(prefixDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(prefixDate.getDate()).padStart(2, '0');
+  const rand = String(Math.floor(Math.random() * 9000) + 1000);
+  return `FAC-${yyyy}${mm}${dd}-${rand}`;
+}
+
 const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']);
 
 export async function GET(request: NextRequest) {
@@ -63,7 +71,7 @@ export async function POST(request: NextRequest) {
     const item = await prisma.$transaction(async (tx) => {
       const created = await tx.invoice.create({
         data: {
-          number: payload.number.trim(),
+          number: payload.number ? payload.number.trim() : nextInvoiceNumber(),
           contactId: payload.contactId,
           issueDate: payload.issueDate ? new Date(payload.issueDate) : new Date(),
           dueDate: new Date(payload.dueDate),

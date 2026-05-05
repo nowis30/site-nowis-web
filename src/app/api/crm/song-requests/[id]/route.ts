@@ -2,15 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { crmSongRequestPatchSchema } from '@/lib/validators/song-request';
-
-function nextInvoiceNumber(prefixDate = new Date()) {
-  const yyyy = prefixDate.getFullYear();
-  const mm = String(prefixDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(prefixDate.getDate()).padStart(2, '0');
-  const rand = String(Math.floor(Math.random() * 9000) + 1000);
-  return `SQ-${yyyy}${mm}${dd}-${rand}`;
-}
-
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'songRequests', 'read');
   if (guard.error) return guard.error;
@@ -221,42 +212,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 
   if (payload.action === 'mark_quoted') {
-    const draftNumber = nextInvoiceNumber();
-
-    const invoice = await prisma.invoice.create({
-      data: {
-        number: draftNumber,
-        contactId: songRequest.contactId,
-        dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-        amount: songRequest.budget ?? 0,
-        status: 'DRAFT',
-        description: `Soumission issue de la demande de chanson (${songRequest.songType}).`,
-      },
-    });
-
-    const updated = await prisma.songRequest.update({
-      where: { id: songRequest.id },
-      data: {
-        status: 'QUOTED',
-        convertedInvoiceId: invoice.id,
-      },
-    });
-
-    await prisma.activity.create({
-      data: {
-        type: 'INVOICE',
-        title: 'Demande convertie en soumission',
-        description: `Brouillon de facture créé (${invoice.number}).`,
-        contactId: songRequest.contactId,
-        songRequestId: songRequest.id,
-        relatedType: 'INVOICE',
-        relatedId: invoice.id,
-        relatedUrl: `/crm/invoices/${invoice.id}`,
-        userId: guard.session.sub,
-      },
-    });
-
-    return NextResponse.json({ item: updated, invoiceId: invoice.id });
+    return NextResponse.json({ error: 'Cette action est désactivée. Créez une soumission commerciale puis convertissez-la en facture.' }, { status: 410 });
   }
 
   const nextStatus =

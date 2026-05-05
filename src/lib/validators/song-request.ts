@@ -98,7 +98,7 @@ export const crmSongRequestListQuerySchema = z.object({
 
 export const crmSongRequestPatchSchema = z.object({
   status: songRequestStatusSchema.optional(),
-  action: z.enum(['mark_contacted', 'convert_appointment', 'mark_quoted', 'mark_in_production', 'mark_delivered', 'soft_delete', 'restore', 'plan_meeting', 'link_appointment', 'unlink_appointment']).optional(),
+  action: z.enum(['mark_contacted', 'convert_appointment', 'mark_in_production', 'mark_delivered', 'soft_delete', 'restore', 'plan_meeting', 'link_appointment', 'unlink_appointment', 'mark_quoted']).optional(),
   title: optionalText(160),
   meetingDate: z.string().datetime().optional().or(z.literal('')),
   scheduledAt: z.string().datetime().optional().or(z.literal('')),

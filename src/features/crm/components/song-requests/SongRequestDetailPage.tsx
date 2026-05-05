@@ -140,7 +140,7 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
     appointmentId: '',
   });
 
-  async function runAction(action: 'mark_contacted' | 'convert_appointment' | 'mark_quoted' | 'mark_in_production' | 'mark_delivered') {
+  async function runAction(action: 'mark_contacted' | 'convert_appointment' | 'mark_in_production' | 'mark_delivered') {
     setLoadingAction(action);
     setError(null);
 

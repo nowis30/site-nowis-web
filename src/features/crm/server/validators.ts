@@ -77,7 +77,7 @@ export const appointmentInputSchema = z.object({
 });
 
 export const invoiceInputSchema = z.object({
-  number: z.string().min(2).max(60),
+  number: z.string().min(2).max(60).optional(),
   contactId: z.string().uuid('ID de contact invalide'),
   issueDate: z
     .string()

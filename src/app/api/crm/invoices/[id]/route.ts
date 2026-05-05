@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const item = await prisma.invoice.update({
       where: { id: params.id },
       data: {
-        number: payload.number.trim(),
+        ...(payload.number ? { number: payload.number.trim() } : {}),
         contactId: payload.contactId,
         issueDate: payload.issueDate ? new Date(payload.issueDate) : undefined,
         dueDate: new Date(payload.dueDate),

@@ -43,6 +43,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Cette soumission est déjà convertie en facture.' }, { status: 409 });
   }
 
+  if (quote.status !== 'ACCEPTED') {
+    return NextResponse.json({ error: 'Seule une soumission acceptée peut être convertie en facture.' }, { status: 422 });
+  }
+
   if (!quote.contactId) {
     return NextResponse.json({ error: 'Impossible de convertir sans contact associé.' }, { status: 409 });
   }

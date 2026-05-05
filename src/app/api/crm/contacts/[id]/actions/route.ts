@@ -99,34 +99,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     if (payload.action === 'invoice') {
-      if (!payload.number || payload.amount === undefined || !payload.dueDateInvoice) {
-        return NextResponse.json({ error: 'Numéro, montant et échéance requis' }, { status: 400 });
-      }
-      const invoice = await prisma.invoice.create({
-        data: {
-          number: payload.number.trim(),
-          contactId: contact.id,
-          amount: payload.amount,
-          dueDate: new Date(payload.dueDateInvoice),
-          issueDate: new Date(),
-          status: 'SENT',
-          description: payload.description?.trim() || null,
-        },
-      });
-      await prisma.activity.create({
-        data: {
-          type: 'INVOICE',
-          title: `Facture créée: ${invoice.number}`,
-          description: payload.description?.trim() || null,
-          contactId: contact.id,
-          invoiceId: invoice.id,
-          relatedType: 'INVOICE',
-          relatedId: invoice.id,
-          relatedUrl: `/crm/invoices/${invoice.id}`,
-          userId: guard.session.sub,
-        },
-      });
-      return NextResponse.json({ item: invoice }, { status: 201 });
+      return NextResponse.json({ error: 'Cette action est désactivée. Créez une soumission commerciale puis convertissez-la en facture.' }, { status: 410 });
     }
 
     if (payload.action === 'appointment') {
