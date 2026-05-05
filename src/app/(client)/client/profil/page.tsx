@@ -13,9 +13,21 @@ export default async function ClientProfilePage() {
     select: {
       id: true,
       fullName: true,
+      email: true,
       phone: true,
       notes: true,
       profileMeta: true,
+      billingLegalName: true,
+      billingCompanyName: true,
+      billingEmail: true,
+      billingPhone: true,
+      billingAddressLine1: true,
+      billingAddressLine2: true,
+      billingCity: true,
+      billingState: true,
+      billingPostalCode: true,
+      billingCountry: true,
+      billingTaxId: true,
     },
   });
 
@@ -60,7 +72,7 @@ export default async function ClientProfilePage() {
             initial={{
               id: contact.id,
               fullName: contact.fullName,
-              email: contact.email,
+              email: contact.email ?? session.email,
               billingLegalName: contact.billingLegalName,
               billingCompanyName: contact.billingCompanyName,
               billingEmail: contact.billingEmail,

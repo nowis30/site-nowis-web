@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, FileText, Home, Music4, Sparkles, type LucideIcon } from 'lucide-react';
+import { CalendarDays, CircleUser, FileText, Home, Music4, Sparkles, type LucideIcon } from 'lucide-react';
 import { clientPortalMobileBottomNavigation } from '@/features/client-portal/config/navigation';
 
 const navIcons: Record<string, LucideIcon> = {
@@ -11,10 +11,13 @@ const navIcons: Record<string, LucideIcon> = {
   '/client/workshops': Sparkles,
   '/client/documents': FileText,
   '/client/appointments': CalendarDays,
+  '/client/profil': CircleUser,
 } as const;
 
 export function ClientMobileBottomNav() {
   const pathname = usePathname();
+  // Keep the mobile bar focused on the 5 primary tabs.
+  const primaryMobileItems = clientPortalMobileBottomNavigation.filter((item) => item.href !== '/client/profil');
 
   return (
     <nav
@@ -22,7 +25,7 @@ export function ClientMobileBottomNav() {
       className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-700/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_24px_rgba(2,6,23,0.18)] backdrop-blur md:hidden"
     >
       <div className="mx-auto grid w-full max-w-[88rem] grid-cols-5 gap-1 px-2 py-1">
-        {clientPortalMobileBottomNavigation.map(({ href, shortLabel, matches }) => {
+        {primaryMobileItems.map(({ href, shortLabel, matches }) => {
           const isActive = matches(pathname);
           const Icon = navIcons[href];
 

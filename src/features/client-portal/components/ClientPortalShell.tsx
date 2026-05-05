@@ -106,6 +106,12 @@ export function ClientPortalShell({ session, children }: ClientPortalShellProps)
                   {session.fullName}
                 </Link>
                 <p className="truncate text-xs text-slate-400">{session.email}</p>
+                <Link
+                  href="/client/profil"
+                  className="mt-1 inline-flex items-center rounded-lg border border-primary-500/40 px-2 py-1 text-[11px] font-semibold text-primary-200 hover:border-primary-400/60 hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60"
+                >
+                  Profil
+                </Link>
               </div>
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-medium text-white">{session.fullName}</p>

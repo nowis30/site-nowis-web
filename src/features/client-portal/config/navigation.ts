@@ -36,6 +36,12 @@ export const clientPortalNavigation: ClientPortalNavItem[] = [
     shortLabel: 'RDV',
     matches: (pathname: string) => pathname === '/client/appointments',
   },
+  {
+    href: '/client/profil',
+    label: 'Profil',
+    shortLabel: 'Profil',
+    matches: (pathname: string) => pathname === '/client/profil' || pathname.startsWith('/client/profil/'),
+  },
 ];
 
 export const clientPortalMobileBottomNavigation: ClientPortalNavItem[] = [
@@ -68,5 +74,11 @@ export const clientPortalMobileBottomNavigation: ClientPortalNavItem[] = [
     label: 'Rendez-vous',
     shortLabel: 'RDV',
     matches: (pathname: string) => pathname === '/client/appointments',
+  },
+  {
+    href: '/client/profil',
+    label: 'Profil',
+    shortLabel: 'Profil',
+    matches: (pathname: string) => pathname === '/client/profil' || pathname.startsWith('/client/profil/'),
   },
 ];
