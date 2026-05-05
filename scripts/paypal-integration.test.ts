@@ -15,8 +15,8 @@ import {
 } from '@/lib/server/paypal-address';
 
 const issuer = {
-  displayName: 'Nowis',
-  companyName: 'Nowis Inc.',
+  displayName: 'Simon Morin',
+  companyName: 'Création Nowis',
   legalLabel: undefined,
   tradeName: undefined,
   email: 'billing@nowis.store',
@@ -89,6 +89,38 @@ test('payload PayPal ne contient jamais country_code Canada', () => {
   const serialized = JSON.stringify(payload);
   assert.equal(serialized.includes('"country_code":"Canada"'), false);
   assert.equal(serialized.includes('"country_code":"CA"'), true);
+});
+
+test('payload PayPal utilise business_name string et name.full_name objet', () => {
+  const payload = buildPayPalInvoiceCreatePayload({
+    invoice: {
+      number: 'FAC-20260505-002',
+      description: 'Facture de schema',
+      issueDate: new Date('2026-05-05T10:00:00.000Z'),
+      dueDate: new Date('2026-05-15T10:00:00.000Z'),
+      paymentCurrency: 'CAD',
+    },
+    items: [{
+      name: 'Chanson personnalisée',
+      quantity: '1',
+      unit_amount: { currency_code: 'CAD', value: '125.00' },
+    }],
+    issuer,
+    customer,
+    currency: 'CAD',
+    businessEmail: 'billing@nowis.store',
+  });
+
+  assert.equal(payload.invoicer.business_name, 'Création Nowis');
+  assert.deepEqual(payload.invoicer.name, { full_name: 'Simon Morin' });
+  assert.equal(typeof payload.invoicer.name, 'object');
+  assert.equal('full_name' in (payload.invoicer.name || {}), true);
+  assert.deepEqual(payload.primary_recipients[0]?.billing_info.name, { full_name: 'Client Test' });
+  assert.equal(typeof payload.primary_recipients[0]?.billing_info.name, 'object');
+
+  const serialized = JSON.stringify(payload);
+  assert.equal(serialized.includes('"name":"Création Nowis"'), false);
+  assert.equal(serialized.includes('"name":"Client Test"'), false);
 });
 
 test('create ne recree pas si paypalInvoiceId existe', async () => {

@@ -68,15 +68,16 @@ type PayPalInvoiceCreatePayload = {
     note?: string;
   };
   invoicer: {
-    business_name: { name: string };
-    name?: { given_name: string; surname: string };
+    business_name?: string;
+    name?: { full_name: string };
     email_address?: string;
     address: PayPalPayloadAddress;
   };
   primary_recipients: Array<{
     billing_info: {
+      business_name?: string;
       email_address: string;
-      name: { given_name: string; surname: string };
+      name?: { full_name: string };
       address: PayPalPayloadAddress;
     };
   }>;
@@ -233,15 +234,21 @@ function toMoneyString(value: Prisma.Decimal | string | number | null | undefine
   return Number(value).toFixed(2);
 }
 
-function splitFullName(fullName: string) {
-  const trimmed = fullName.trim();
-  if (!trimmed) return { givenName: 'Client', surname: 'Nowis' };
-  const parts = trimmed.split(/\s+/).filter(Boolean);
-  if (parts.length === 1) return { givenName: parts[0], surname: parts[0] };
-  return {
-    givenName: parts[0],
-    surname: parts.slice(1).join(' '),
-  };
+function buildPayPalName(value: string | null | undefined) {
+  const fullName = trimToNull(value);
+  if (!fullName) return undefined;
+  return { full_name: fullName };
+}
+
+function buildPayPalContactName(params: {
+  fullName?: string | null;
+  businessName?: string | null;
+  fallbackName?: string | null;
+}) {
+  return compactValue({
+    business_name: trimToNull(params.businessName),
+    name: buildPayPalName(trimToNull(params.fullName) || trimToNull(params.fallbackName)),
+  });
 }
 
 function compactValue<T>(value: T): T | undefined {
@@ -304,13 +311,8 @@ async function readPayPalError(response: Response) {
   });
 }
 
-function buildPayPalRecipientName(customer: BillingCustomerSnapshot) {
-  return splitFullName(customer.fullName);
-}
-
 function buildPayPalInvoicer(issuer: BillingIssuerSnapshot, fallbackBusinessEmail: string | null) {
   const displayName = trimToNull(issuer.displayName) || trimToNull(issuer.companyName) || 'Nowis';
-  const splitName = splitFullName(displayName);
   const address = buildPayPalAddressFromBilling({
     addressLine1: issuer.addressLine1,
     addressLine2: issuer.addressLine2,
@@ -319,20 +321,21 @@ function buildPayPalInvoicer(issuer: BillingIssuerSnapshot, fallbackBusinessEmai
     postalCode: issuer.postalCode,
     country: issuer.country,
   });
+  const contactName = buildPayPalContactName({
+    businessName: issuer.companyName || issuer.tradeName || 'Création Nowis',
+    fullName: issuer.displayName,
+    fallbackName: issuer.legalLabel || displayName,
+  });
 
   return compactValue({
-    business_name: { name: trimToNull(issuer.companyName) || displayName },
-    name: {
-      given_name: splitName.givenName,
-      surname: splitName.surname,
-    },
+    business_name: contactName?.business_name,
+    name: contactName?.name,
     email_address: fallbackBusinessEmail || trimToNull(issuer.email) || undefined,
     address,
   }) as PayPalInvoiceCreatePayload['invoicer'];
 }
 
 function buildPayPalRecipient(customer: BillingCustomerSnapshot) {
-  const name = buildPayPalRecipientName(customer);
   const address = buildPayPalAddressFromBilling({
     addressLine1: customer.addressLine1,
     addressLine2: customer.addressLine2,
@@ -341,14 +344,16 @@ function buildPayPalRecipient(customer: BillingCustomerSnapshot) {
     postalCode: customer.postalCode,
     country: customer.country,
   });
+  const contactName = buildPayPalContactName({
+    businessName: customer.companyName || customer.legalName,
+    fullName: customer.fullName,
+  });
 
   return {
     billing_info: compactValue({
+      business_name: contactName?.business_name,
       email_address: customer.email,
-      name: {
-        given_name: name.givenName,
-        surname: name.surname,
-      },
+      name: contactName?.name,
       address,
     }),
   } as PayPalInvoiceCreatePayload['primary_recipients'][0];
