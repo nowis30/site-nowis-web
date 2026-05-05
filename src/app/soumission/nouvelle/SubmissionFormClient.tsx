@@ -168,8 +168,8 @@ export function SubmissionFormClient() {
       </div>
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6">
-          <div className="mb-5 grid gap-2 sm:grid-cols-3">
+        <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-4 sm:p-6">
+          <div className="mb-5 grid grid-cols-3 gap-2">
             <button type="button" onClick={() => setType('song')} className={tabClass(type === 'song')}>Chanson</button>
             <button type="button" onClick={() => setType('workshop')} className={tabClass(type === 'workshop')}>Atelier</button>
             <button type="button" onClick={() => setType('general')} className={tabClass(type === 'general')}>Général</button>
@@ -215,7 +215,7 @@ export function SubmissionFormClient() {
                     className="h-4 w-4 rounded accent-primary-500"
                   />
                   <span className="text-slate-200">
-                    Je préfère être appelé(e) pour expliquer ma chanson - vous pouvez laisser les détails vides
+                    Je préfère être appelé(e) pour expliquer ma chanson, vous pouvez laisser les détails vides.
                   </span>
                 </label>
 
@@ -230,7 +230,7 @@ export function SubmissionFormClient() {
                     <input placeholder="Style musical souhaité (optionnel)" value={form.style} onChange={f('style')} className={inputClass} />
                     <input type="number" min="0" step="0.01" placeholder="Budget (optionnel)" value={form.budget} onChange={f('budget')} className={inputClass} />
                     <input type="date" value={form.desiredDate} onChange={f('desiredDate')} className={`${inputClass} text-slate-400`} />
-                    <textarea rows={4} placeholder="Détails, émotions, thème... (optionnel)" value={form.details} onChange={f('details')} className={`${inputClass} sm:col-span-2`} />
+                    <textarea rows={4} placeholder="Détails, émotions, thème… (optionnel)" value={form.details} onChange={f('details')} className={`${inputClass} sm:col-span-2`} />
                   </>
                 )}
               </>
@@ -256,8 +256,8 @@ export function SubmissionFormClient() {
               </>
             ) : null}
 
-            <button type="submit" disabled={loading} className="rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-500 disabled:opacity-60 sm:col-span-2">
-              {loading ? 'Envoi...' : 'Envoyer la demande'}
+            <button type="submit" disabled={loading} className="w-full rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-500 disabled:opacity-60 sm:col-span-2">
+              {loading ? 'Envoi en cours…' : 'Envoyer la demande'}
             </button>
           </form>
         </div>

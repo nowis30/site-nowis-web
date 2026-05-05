@@ -52,6 +52,21 @@ function statusTone(status: string) {
   }
 }
 
+function statusLabel(status: string) {
+  switch (status) {
+    case 'DRAFT':
+      return 'Brouillon';
+    case 'SENT':
+      return 'Envoyée';
+    case 'ACCEPTED':
+      return 'Acceptée';
+    case 'DECLINED':
+      return 'Refusée';
+    default:
+      return status;
+  }
+}
+
 export default function PublicQuotePage({ params }: { params: { token: string } }) {
   const [item, setItem] = useState<QuotePayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +83,7 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
       const data = (await response.json().catch(() => null)) as { error?: string; item?: QuotePayload } | null;
       if (cancelled) return;
       if (!response.ok || !data?.item) {
-        setError(data?.error || 'Lien invalide ou expire.');
+        setError(data?.error || 'Lien invalide ou expiré.');
       } else {
         setItem(data.item);
       }
@@ -98,8 +113,8 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
       }
       setFeedback(
         action === 'accept'
-          ? 'Soumission acceptee. Merci ! Vous recevrez votre facture par email sous peu.'
-          : 'Soumission refusee. Contactez-nous si vous avez des questions.',
+          ? 'Soumission acceptée. Merci. Vous recevrez votre facture par e-mail sous peu.'
+          : 'Soumission refusée. Contactez-nous si vous avez des questions.',
       );
       setItem((current) => (current ? { ...current, status: data?.status || current.status } : current));
     } catch (actionError) {
@@ -125,8 +140,8 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
     return (
       <main className="min-h-screen bg-slate-950 text-slate-100">
         <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-          <div className="rounded-3xl border border-red-700/40 bg-red-950/20 p-6 text-sm text-red-200 sm:p-8">
-            {error || 'Lien invalide ou expire.'}
+          <div className="rounded-3xl border border-red-600/40 bg-red-950/20 p-6 text-sm text-red-200 sm:p-8">
+            {error || 'Lien invalide ou expiré.'}
           </div>
         </div>
       </main>
@@ -144,7 +159,7 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
           <p className="mt-2 max-w-3xl text-base text-slate-300">{item.title}</p>
           <div className="mt-5 flex flex-wrap items-center gap-3 text-xs">
             <span className={`inline-flex rounded-full border px-3 py-1 font-medium ${statusTone(item.status)}`}>
-              Statut: {item.status}
+              Statut: {statusLabel(item.status)}
             </span>
             {formatDate(item.validUntil) ? (
               <span className="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-slate-300">
@@ -170,7 +185,7 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
           <div className="rounded-2xl border border-slate-800 bg-slate-950/30">
             <div className="hidden grid-cols-[1fr_auto_auto_auto] gap-3 border-b border-slate-800 px-4 py-3 text-xs uppercase tracking-[0.16em] text-slate-500 sm:grid">
               <span>Article</span>
-              <span className="text-right">Quantite</span>
+              <span className="text-right">Quantité</span>
               <span className="text-right">Prix</span>
               <span className="text-right">Sous-total</span>
             </div>
@@ -192,7 +207,7 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
 
         <aside className="space-y-4">
           <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Resume</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Résumé</p>
             <div className="mt-4 space-y-2 text-sm text-slate-300">
               <div className="flex items-center justify-between gap-3">
                 <span>Sous-total</span>
@@ -211,8 +226,8 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
             </div>
           </div>
 
-          {feedback ? <p className="rounded-2xl border border-emerald-700/40 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">{feedback}</p> : null}
-          {error ? <p className="rounded-2xl border border-red-700/40 bg-red-950/20 px-4 py-3 text-sm text-red-200">{error}</p> : null}
+          {feedback ? <p className="rounded-2xl border border-emerald-600/40 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">{feedback}</p> : null}
+          {error ? <p className="rounded-2xl border border-red-600/40 bg-red-950/20 px-4 py-3 text-sm text-red-200">{error}</p> : null}
 
           {canRespond ? (
             <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
@@ -222,15 +237,15 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
                   type="button"
                   onClick={() => void respond('accept')}
                   disabled={busy}
-                  className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-60"
+                  className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-60"
                 >
-                  {busy ? 'Traitement...' : 'Accepter'}
+                  {busy ? 'Traitement en cours...' : 'Accepter'}
                 </button>
                 <button
                   type="button"
                   onClick={() => void respond('decline')}
                   disabled={busy}
-                  className="rounded-xl border border-red-600/50 bg-red-950/20 px-4 py-2.5 text-sm font-medium text-red-200 transition hover:bg-red-900/30 disabled:opacity-60"
+                  className="w-full rounded-xl border border-red-600/50 bg-red-950/20 px-4 py-2.5 text-sm font-medium text-red-200 transition hover:bg-red-900/30 disabled:opacity-60"
                 >
                   Refuser
                 </button>

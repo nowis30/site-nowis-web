@@ -99,7 +99,7 @@ export default function PublicBillingPage({ params }: { params: { token: string 
       { key: 'billingEmail' as const, label: 'Courriel de facturation' },
       { key: 'billingAddressLine1' as const, label: 'Adresse' },
       { key: 'billingCity' as const, label: 'Ville' },
-      { key: 'billingState' as const, label: 'Province / Etat' },
+      { key: 'billingState' as const, label: 'Province / État' },
       { key: 'billingPostalCode' as const, label: 'Code postal' },
       { key: 'billingCountry' as const, label: 'Pays' },
     ];
@@ -134,7 +134,7 @@ export default function PublicBillingPage({ params }: { params: { token: string 
       <main className="min-h-screen bg-slate-950 text-slate-100">
         <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
           <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
-            <p className="text-sm text-slate-300">Chargement en cours...</p>
+            <p className="text-sm text-slate-300">Chargement de la fiche de facturation...</p>
           </div>
         </div>
       </main>
@@ -145,9 +145,9 @@ export default function PublicBillingPage({ params }: { params: { token: string 
     return (
       <main className="min-h-screen bg-slate-950 text-slate-100">
         <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-          <div className="rounded-3xl border border-red-700/50 bg-red-950/30 p-6 text-red-200 sm:p-8">
-          <p className="text-base font-semibold">Lien invalide ou expiré</p>
-          <p className="mt-2 text-sm">{error}</p>
+          <div className="rounded-3xl border border-red-600/40 bg-red-950/20 p-6 text-red-200 sm:p-8">
+            <p className="text-base font-semibold">Lien invalide ou expiré</p>
+            <p className="mt-2 text-sm">{error}</p>
           </div>
         </div>
       </main>
@@ -173,8 +173,8 @@ export default function PublicBillingPage({ params }: { params: { token: string 
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         {success ? (
-          <div className="mb-6 rounded-2xl border border-emerald-600/40 bg-emerald-950/30 px-5 py-4 text-emerald-200">
-            <p className="text-base font-semibold">Enregistré</p>
+          <div className="mb-6 rounded-2xl border border-emerald-600/40 bg-emerald-950/20 px-5 py-4 text-emerald-200">
+            <p className="text-base font-semibold">Informations enregistrées</p>
             <p className="mt-1 text-sm">{success}</p>
           </div>
         ) : null}
@@ -308,14 +308,14 @@ export default function PublicBillingPage({ params }: { params: { token: string 
           </Section>
 
           {error ? (
-            <div className="rounded-xl border border-red-700/50 bg-red-950/30 px-4 py-3 text-sm text-red-200">{error}</div>
+            <div className="rounded-xl border border-red-600/40 bg-red-950/20 px-4 py-3 text-sm text-red-200">{error}</div>
           ) : null}
 
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-primary-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-500 disabled:opacity-60"
+              className="w-full rounded-xl bg-primary-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-500 disabled:opacity-60 sm:w-auto"
             >
               {saving ? 'Enregistrement...' : 'Sauvegarder mes informations'}
             </button>
