@@ -6,9 +6,7 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
 import { buildPublicQuoteUrl, signPublicQuoteToken } from '@/lib/public-links';
 import {
-  buildCustomerSnapshotFromContact,
   getBillingIssuerSnapshot,
-  toCustomerSnapshot,
   toIssuerSnapshot,
   validateIssuerSnapshot,
 } from '@/lib/billing-profile';
@@ -75,10 +73,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Le client associe n a pas de courriel.' }, { status: 400 });
   }
 
-  const issuer = toIssuerSnapshot(quote.issuerSnapshot) || await getBillingIssuerSnapshot();
-  const fromSnapshot = toCustomerSnapshot(quote.customerSnapshot);
-  const fromContact = buildCustomerSnapshotFromContact(quote.contact);
-  const customer = fromSnapshot || fromContact;
+  const activeIssuer = await getBillingIssuerSnapshot();
+  const quoteIssuer = toIssuerSnapshot(quote.issuerSnapshot);
+  const quoteIssuerMissing = quoteIssuer ? validateIssuerSnapshot(quoteIssuer) : ['displayName'];
+  const issuer = quoteIssuer && quoteIssuerMissing.length === 0 ? quoteIssuer : activeIssuer;
   const missingIssuer = validateIssuerSnapshot(issuer);
 
   if (missingIssuer.length > 0) {
