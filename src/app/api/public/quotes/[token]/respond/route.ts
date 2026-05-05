@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPublicQuoteToken } from '@/lib/public-links';
+import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
 
 const ALLOWED = new Set(['accept', 'decline']);
 
@@ -62,6 +63,19 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
       },
     })
     .catch(() => undefined);
+
+  // Créer un FileDocument si acceptée et un contact est associé.
+  if (action === 'accept' && item.contactId) {
+    try {
+      await ensureQuoteFileDocument({
+        quoteId: item.id,
+        quoteNumber: item.quoteNumber,
+        contactId: item.contactId,
+      });
+    } catch (error) {
+      console.error('Erreur création FileDocument pour devis (public accept):', error);
+    }
+  }
 
   return NextResponse.json({ ok: true, status: item.status });
 }

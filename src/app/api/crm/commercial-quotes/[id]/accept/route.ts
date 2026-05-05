@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
+import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'commercialQuotes', 'update');
@@ -46,6 +47,19 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       userId: admin.session.sub,
     },
   }).catch(() => undefined);
+
+  // Créer un FileDocument si un contact est associé et n'en existe pas déjà.
+  if (item.contactId) {
+    try {
+      await ensureQuoteFileDocument({
+        quoteId: item.id,
+        quoteNumber: item.quoteNumber,
+        contactId: item.contactId,
+      });
+    } catch (error) {
+      console.error('Erreur création FileDocument pour devis (accept):', error);
+    }
+  }
 
   return NextResponse.json({ ok: true, item });
 }

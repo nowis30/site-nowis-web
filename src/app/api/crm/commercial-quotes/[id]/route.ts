@@ -5,6 +5,7 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { canDeleteCommercialQuote, computeQuoteTotals } from '@/features/crm/commercial-quotes/quote-utils';
 import { commercialQuotePatchSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { buildCustomerSnapshotFromContact, buildCustomerSnapshotFromOrganization } from '@/lib/billing-profile';
+import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
 
 async function resolveCustomerSnapshot(contactId?: string | null, organizationId?: string | null) {
   if (contactId) {
@@ -195,6 +196,19 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         userId: admin.session.sub,
       },
     }).catch(() => undefined);
+
+    // Créer un FileDocument si un contact est associé et n'en existe pas déjà.
+    if (item.contactId) {
+      try {
+        await ensureQuoteFileDocument({
+          quoteId: item.id,
+          quoteNumber: item.quoteNumber,
+          contactId: item.contactId,
+        });
+      } catch (error) {
+        console.error('Erreur création FileDocument pour devis (PATCH):', error);
+      }
+    }
 
     return NextResponse.json({
       item: {
