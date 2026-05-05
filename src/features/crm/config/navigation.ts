@@ -14,7 +14,6 @@ export const crmNavigation: CrmNavItem[] = [
   { label: 'Contacts',      href: '/crm/contacts',      module: 'contacts',      icon: 'Users',           section: 'Relations' },
   { label: 'Organisations', href: '/crm/organizations', module: 'organizations', icon: 'Building2',       section: 'Relations' },
   { label: 'Activités',     href: '/crm/activities',    module: 'activities',    icon: 'Activity',        section: 'Suivi' },
-  { label: 'Soumissions entrantes', href: '/crm/submissions', module: 'activities', icon: 'Bell',         section: 'Suivi' },
   { label: 'Calendrier',    href: '/crm/calendar',      module: 'appointments',  icon: 'Calendar',        section: 'Suivi' },
   { label: 'Tâches',        href: '/crm/tasks',         module: 'tasks',         icon: 'CheckSquare',     section: 'Suivi' },
   { label: 'Demandes chanson', href: '/crm/song-requests', module: 'songRequests', icon: 'FileText',      section: 'Production' },

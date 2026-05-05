@@ -149,6 +149,19 @@ export default async function ClientPortalPage({ params }: PageProps) {
               dueDate: true,
             },
           },
+          fileDocuments: {
+            where: { visibility: 'CLIENT_VISIBLE' },
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              filename: true,
+              originalName: true,
+              mimeType: true,
+              url: true,
+              category: true,
+              createdAt: true,
+            },
+          },
         },
       },
     },
@@ -436,6 +449,25 @@ export default async function ClientPortalPage({ params }: PageProps) {
                     </a>
                   </div>
                   <ClientFileUploadForm token={params.token} songRequestId={request.id} />
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">Dossier de chanson</p>
+                    <div className="mt-4 space-y-3">
+                      {request.fileDocuments.length === 0 ? (
+                        <p className="text-sm text-slate-400">Ton dossier de chanson n&rsquo;est pas encore livré.</p>
+                      ) : (
+                        request.fileDocuments.map((file) => (
+                          <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
+                            <a href={file.url} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
+                              <p className="text-sm font-medium text-white">{file.originalName}</p>
+                              <p className="mt-1 text-xs text-slate-500">
+                                {file.category ? `${file.category} · ` : ''}{formatDateTime(file.createdAt)}
+                              </p>
+                            </a>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
                   <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
                     <p className="text-sm text-slate-300">Pour poser une question sur cette demande, utilisez le courriel.</p>
                     <div className="mt-3 flex flex-wrap gap-2">

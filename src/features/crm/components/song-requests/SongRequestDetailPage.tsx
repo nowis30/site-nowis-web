@@ -166,6 +166,19 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
 
   const budgetLabel = item.budget === null ? '—' : new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(Number(item.budget));
 
+  const acceptedQuote = item.relatedCommercialQuotes.find(
+    (q) => q.status === 'ACCEPTED' || q.status === 'CONVERTED',
+  );
+  const hasAcceptedQuote = !!acceptedQuote;
+  const acceptedQuoteInvoiceId = acceptedQuote?.convertedToInvoiceId ?? null;
+  const hasLinkedInvoice =
+    !!item.convertedInvoiceId || !!acceptedQuoteInvoiceId || item.relatedInvoices.length > 0;
+  const firstInvoiceId =
+    item.convertedInvoiceId ??
+    acceptedQuoteInvoiceId ??
+    item.relatedInvoices[0]?.id ??
+    null;
+
   async function planSongMeeting() {
     setLoadingAction('plan_meeting');
     setError(null);
@@ -320,6 +333,33 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
 
       {error ? <div className="rounded-xl border border-red-700/30 bg-red-950/30 px-4 py-3 text-sm text-red-300">{error}</div> : null}
 
+      {hasAcceptedQuote ? (
+        <div className="rounded-xl border border-emerald-700/30 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300 flex items-start justify-between gap-4 flex-wrap">
+          <span>
+            ✓ Soumission acceptée ({acceptedQuote!.quoteNumber}).{' '}
+            {hasLinkedInvoice
+              ? 'Une facture est déjà liée à ce dossier.'
+              : 'Tu peux maintenant créer et envoyer la facture.'}
+          </span>
+          {!hasLinkedInvoice && (
+            <a
+              href={`/crm/invoices?songRequestId=${item.id}`}
+              className="rounded-lg border border-emerald-600/50 px-3 py-1 text-xs font-medium text-emerald-200 hover:bg-emerald-900/30 hover:text-white"
+            >
+              Créer la facture →
+            </a>
+          )}
+          {hasLinkedInvoice && firstInvoiceId && (
+            <a
+              href={`/crm/invoices/${firstInvoiceId}`}
+              className="rounded-lg border border-emerald-600/50 px-3 py-1 text-xs font-medium text-emerald-200 hover:bg-emerald-900/30 hover:text-white"
+            >
+              Voir la facture →
+            </a>
+          )}
+        </div>
+      ) : null}
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 lg:col-span-2">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Informations de la demande</h3>
@@ -394,21 +434,36 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
               </Link>
 
               {canCreateCommercialQuote ? (
-                <Link
-                  href={`/crm/commercial-quotes/new?songRequestId=${item.id}`}
-                  className="block rounded-lg border border-indigo-700/50 px-3 py-2 text-sm text-indigo-200 hover:border-indigo-500/60 hover:text-indigo-100"
-                >
-                  Créer une soumission
-                </Link>
+                hasAcceptedQuote ? (
+                  <div className="rounded-lg border border-slate-700/50 px-3 py-2 text-sm text-slate-500 cursor-not-allowed" title="Soumission déjà acceptée pour cette demande.">
+                    Créer une soumission (bloqué)
+                  </div>
+                ) : (
+                  <Link
+                    href={`/crm/commercial-quotes/new?songRequestId=${item.id}`}
+                    className="block rounded-lg border border-indigo-700/50 px-3 py-2 text-sm text-indigo-200 hover:border-indigo-500/60 hover:text-indigo-100"
+                  >
+                    Créer une soumission
+                  </Link>
+                )
               ) : null}
 
               {canCreateInvoice ? (
-                <Link
-                  href={`/crm/invoices?songRequestId=${item.id}`}
-                  className="block rounded-lg border border-emerald-700/50 px-3 py-2 text-sm text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100"
-                >
-                  Créer une facture
-                </Link>
+                hasLinkedInvoice && firstInvoiceId ? (
+                  <Link
+                    href={`/crm/invoices/${firstInvoiceId}`}
+                    className="block rounded-lg border border-emerald-600/50 bg-emerald-950/20 px-3 py-2 text-sm text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100"
+                  >
+                    Voir la facture liée
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/crm/invoices?songRequestId=${item.id}`}
+                    className={`block rounded-lg border px-3 py-2 text-sm ${hasAcceptedQuote ? 'border-emerald-600/70 bg-emerald-900/20 text-emerald-200 hover:border-emerald-500/80 hover:text-emerald-100 font-medium' : 'border-emerald-700/50 text-emerald-200 hover:border-emerald-500/60 hover:text-emerald-100'}`}
+                  >
+                    {hasAcceptedQuote ? '✓ Créer la facture' : 'Créer une facture'}
+                  </Link>
+                )
               ) : null}
 
               {!isEditing ? (
@@ -692,7 +747,8 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
       </div>
 
       <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Fichiers de la demande</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Dossier de chanson</h3>
+        <p className="mt-1 text-xs text-slate-500">Fichiers liés à cette demande (audio final, paroles, vidéo, image, autres documents).</p>
         <div className="mt-4">
           <SongRequestFilesPanel
             mode="admin"

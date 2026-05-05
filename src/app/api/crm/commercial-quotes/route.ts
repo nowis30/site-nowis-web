@@ -139,6 +139,25 @@ export async function POST(request: NextRequest) {
 
   try {
     const payload = commercialQuoteCreateSchema.parse(await request.json());
+
+    // Blocage : impossible de créer une nouvelle soumission si une soumission acceptée
+    // existe déjà pour la même demande de chanson.
+    if (payload.songRequestId) {
+      const alreadyAccepted = await prisma.commercialQuote.findFirst({
+        where: {
+          songRequestId: payload.songRequestId,
+          status: { in: ['ACCEPTED', 'CONVERTED'] },
+        },
+        select: { id: true, quoteNumber: true },
+      });
+      if (alreadyAccepted) {
+        return NextResponse.json(
+          { error: `Une soumission acceptée (${alreadyAccepted.quoteNumber}) existe déjà pour cette demande de chanson.` },
+          { status: 409 },
+        );
+      }
+    }
+
     const issuerSnapshot = await getBillingIssuerSnapshot();
     const quoteNumber = await nextCommercialQuoteNumber();
     const totals = computeQuoteTotals(payload.lines, {
