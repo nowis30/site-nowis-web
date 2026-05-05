@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { getPayPalInvoiceStatus } from '@/lib/server/paypal';
+import { getPayPalInvoiceStatus, serializePayPalApiError } from '@/lib/server/paypal';
 
 export const runtime = 'nodejs';
 
@@ -24,10 +24,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const item = await getPayPalInvoiceStatus(params.id, admin.session.sub);
     return NextResponse.json({ item });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Verification PayPal impossible' },
-      { status: 400 },
-    );
+    const serialized = serializePayPalApiError(error, 'Verification PayPal impossible');
+    return NextResponse.json(serialized.body, { status: serialized.status });
   }
 }
 

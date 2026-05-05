@@ -3,6 +3,7 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { InvoiceDetailPage } from '@/features/crm/components/invoices/InvoiceDetailPage';
 import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
+import { getPayPalDiagnostics } from '@/lib/server/paypal';
 
 interface PageProps {
   params: { id: string };
@@ -12,11 +13,7 @@ interface PageProps {
 export default async function CrmInvoiceDetailRoute({ params, searchParams }: PageProps) {
   await requireCrmSession();
 
-  const paypalConfigured = Boolean(
-    process.env.PAYPAL_CLIENT_ID?.trim() &&
-    process.env.PAYPAL_CLIENT_SECRET?.trim() &&
-    process.env.PAYPAL_BUSINESS_EMAIL?.trim(),
-  );
+  const paypalConfigured = getPayPalDiagnostics().configured;
 
   const invoice = await prisma.invoice.findUnique({
     where: { id: params.id },

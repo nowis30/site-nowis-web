@@ -39,6 +39,16 @@ type PayPalRoutePayload = {
     paymentCurrency: string | null;
   };
   error?: string;
+  paypalStatus?: number;
+  paypalName?: string | null;
+  paypalMessage?: string | null;
+  paypalDetails?: Array<{
+    field?: string;
+    issue?: string;
+    description?: string;
+    value?: string;
+  }>;
+  paypalDebugId?: string | null;
   missingIssuer?: string[];
   missingCustomer?: string[];
   billingUpdateUrl?: string | null;
@@ -128,7 +138,19 @@ export function PayPalInvoicePanel({
             editCustomerUrl: data?.editCustomerUrl || null,
           });
         }
-        throw new Error(data?.error || 'Action PayPal impossible');
+        const details = (data?.paypalDetails || [])
+          .map((detail) => detail.description || detail.issue || detail.field)
+          .filter(Boolean)
+          .join(' | ');
+        const debugId = data?.paypalDebugId ? `Debug ID: ${data.paypalDebugId}` : null;
+        const message = [
+          data?.error || data?.paypalMessage || 'Action PayPal impossible',
+          data?.paypalName ? `Code: ${data.paypalName}` : null,
+          details || null,
+          debugId,
+        ].filter(Boolean).join(' · ');
+
+        throw new Error(message);
       }
 
       setMeta((current) => ({

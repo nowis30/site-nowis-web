@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { sendPayPalInvoice } from '@/lib/server/paypal';
+import { sendPayPalInvoice, serializePayPalApiError } from '@/lib/server/paypal';
 import { prisma } from '@/lib/prisma';
 import { getBillingIssuerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 import { getClientBillingMissingLabels } from '@/lib/client-billing';
@@ -74,9 +74,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const item = await sendPayPalInvoice(params.id, admin.session.sub);
     return NextResponse.json({ item });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Envoi PayPal impossible' },
-      { status: 400 },
-    );
+    const serialized = serializePayPalApiError(error, 'Envoi PayPal impossible');
+    return NextResponse.json(serialized.body, { status: serialized.status });
   }
 }
