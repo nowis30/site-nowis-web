@@ -62,7 +62,7 @@ export function ContactHeader({
               <Pencil size={13} /> Modifier la fiche
             </button>
           </div>
-          <p className="mt-3 text-sm leading-6 text-slate-300">Dossier complet centralisÈ avec activitÈ, t‚ches, rendez-vous, factures, documents, courriels et ateliers liÈs pour agir rapidement.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">Dossier complet centralis√© avec activit√©, t√¢ches, rendez-vous, factures, documents, courriels et ateliers li√©s pour agir rapidement.</p>
           <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-400">
             {contact.email ? <a href={buildOutlookHref(contact.email)} target="_blank" rel="noreferrer" className="hover:text-white">{contact.email}</a> : null}
             {contact.phone ? <a href={buildTelHref(contact.phone)} className="hover:text-white">{contact.phone}</a> : null}
@@ -81,14 +81,14 @@ export function ContactHeader({
             </button>
           ) : null}
           <button onClick={() => onAction('note')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter note</button>
-          <button onClick={() => onAction('task')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter t‚che</button>
+          <button onClick={() => onAction('task')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter t√¢che</button>
           {contact.email ? <a href={buildOutlookHref(contact.email)} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Envoyer courriel</a> : <button onClick={onOpenEmails} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Envoyer courriel</button>}
           {contact.phone ? <a href={buildTelHref(contact.phone)} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Appeler</a> : null}
-          <Link href={`/crm/invoices?contactId=${contact.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> CrÈer une facture</Link>
-          <Link href={`/crm/commercial-quotes/new?contactId=${contact.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> CrÈer une soumission</Link>
+          <Link href={`/crm/invoices?contactId=${contact.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Cr√©er une facture</Link>
+          <Link href={`/crm/commercial-quotes/new?contactId=${contact.id}`} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Cr√©er une soumission</Link>
           <button onClick={() => onAction('appointment')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Ajouter rendez-vous</button>
-          <button onClick={() => onAction('song-request')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> CrÈer demande chanson</button>
-          <button onClick={() => onAction('organization')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> CrÈer organisation</button>
+          <button onClick={() => onAction('song-request')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Cr√©er demande chanson</button>
+          <button onClick={() => onAction('organization')} className="rounded-2xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-left text-sm text-slate-200 hover:border-primary-500/40 hover:text-white"><Plus size={15} className="mb-2" /> Cr√©er organisation</button>
         </div>
       </div>
 
