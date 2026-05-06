@@ -90,5 +90,40 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
     }
   }
 
-  return NextResponse.json({ ok: true, status: item.status });
+    // Créer une tâche si la soumission est acceptée et liée à une demande de chanson
+    if (action === 'accept' && quote.songRequestId) {
+      try {
+        const songRequest = await prisma.songRequest.findUnique({
+          where: { id: quote.songRequestId },
+          select: {
+            id: true,
+            title: true,
+            fullName: true,
+          },
+        });
+
+        if (songRequest) {
+          const taskTitle = songRequest.title
+            ? `Créer la chanson: "${songRequest.title}" pour ${songRequest.fullName}`
+            : `Créer la chanson pour ${songRequest.fullName}`;
+
+          await prisma.activity.create({
+            data: {
+              type: 'TASK',
+              title: taskTitle,
+              description: `Soumission acceptée - Devis ${quote.quoteNumber}. La chanson doit être créée selon les paramètres définis dans la demande.`,
+              songRequestId: quote.songRequestId,
+              contactId: quote.contactId,
+              relatedType: 'SONG_REQUEST',
+              relatedId: quote.songRequestId,
+              relatedUrl: `/crm/song-requests/${quote.songRequestId}`,
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Erreur création tâche pour demande de chanson:', error);
+      }
+    }
+
+    return NextResponse.json({ ok: true, status: item.status });
 }
