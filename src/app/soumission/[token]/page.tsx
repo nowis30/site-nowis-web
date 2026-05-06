@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 type QuoteLine = {
   id: string;
   title: string;
@@ -27,63 +29,114 @@ type QuotePayload = {
   lines: QuoteLine[];
 };
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 function formatMoney(value: string | number, currency = 'CAD') {
   return new Intl.NumberFormat('fr-CA', { style: 'currency', currency }).format(Number(value));
 }
 
-function formatDate(value: string | null) {
+function formatDateUtc(value: string | null) {
   if (!value) return null;
-  return new Date(value).toLocaleString('fr-CA', {
-    dateStyle: 'long',
-    timeStyle: 'short',
-  });
+  return new Intl.DateTimeFormat('fr-CA', {
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(value));
 }
 
-function statusTone(status: string) {
+type StatusMeta = {
+  label: string;
+  bg: string;
+  text: string;
+  border: string;
+  dot: string;
+};
+
+function statusMeta(status: string): StatusMeta {
   switch (status) {
     case 'ACCEPTED':
-      return 'border-emerald-600/40 bg-emerald-950/30 text-emerald-200';
+      return { label: 'Acceptée ✓', bg: '#f0fdf4', text: '#14532d', border: '#86efac', dot: '#16a34a' };
     case 'DECLINED':
-      return 'border-red-600/40 bg-red-950/30 text-red-200';
+      return { label: 'Refusée', bg: '#fef2f2', text: '#7f1d1d', border: '#fca5a5', dot: '#dc2626' };
     case 'SENT':
-      return 'border-sky-600/40 bg-sky-950/30 text-sky-200';
+      return { label: 'En attente de réponse', bg: '#fffbeb', text: '#78350f', border: '#fcd34d', dot: '#d97706' };
+    case 'EXPIRED':
+      return { label: 'Expirée', bg: '#f8fafc', text: '#475569', border: '#cbd5e1', dot: '#64748b' };
+    case 'CONVERTED':
+      return { label: 'Convertie en facture', bg: '#eff6ff', text: '#1e3a8a', border: '#93c5fd', dot: '#2563eb' };
     default:
-      return 'border-amber-600/40 bg-amber-950/30 text-amber-200';
+      return { label: status, bg: '#f8fafc', text: '#475569', border: '#e2e8f0', dot: '#94a3b8' };
   }
 }
 
-function statusLabel(status: string) {
-  switch (status) {
-    case 'DRAFT':
-      return 'Brouillon';
-    case 'SENT':
-      return 'Envoyée';
-    case 'ACCEPTED':
-      return 'Acceptée';
-    case 'DECLINED':
-      return 'Refusée';
-    default:
-      return status;
-  }
+// ─── Sous-composants ──────────────────────────────────────────────────────────
+
+function NowisLogo() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #c97445 0%, #a05530 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <span style={{ color: '#fff', fontWeight: 900, fontSize: 16, lineHeight: 1, letterSpacing: '-0.03em' }}>N</span>
+      </div>
+      <span style={{ fontWeight: 700, fontSize: 17, color: '#2e241d', letterSpacing: '-0.01em' }}>Création Nowis</span>
+    </div>
+  );
 }
+
+function StatusBadge({ status }: { status: string }) {
+  const meta = statusMeta(status);
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        background: meta.bg,
+        color: meta.text,
+        border: `1.5px solid ${meta.border}`,
+        borderRadius: 999,
+        padding: '4px 12px',
+        fontSize: 13,
+        fontWeight: 600,
+      }}
+    >
+      <span style={{ width: 7, height: 7, borderRadius: '50%', background: meta.dot, flexShrink: 0 }} />
+      {meta.label}
+    </span>
+  );
+}
+
+// ─── Page principale ──────────────────────────────────────────────────────────
 
 export default function PublicQuotePage({ params }: { params: { token: string } }) {
   const [item, setItem] = useState<QuotePayload | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: 'accept' | 'decline' } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
-      setError(null);
+      setFetchError(null);
       const response = await fetch(`/api/public/quotes/${params.token}`, { cache: 'no-store' });
       const data = (await response.json().catch(() => null)) as { error?: string; item?: QuotePayload } | null;
       if (cancelled) return;
       if (!response.ok || !data?.item) {
-        setError(data?.error || 'Lien invalide ou expiré.');
+        setFetchError(data?.error ?? 'Lien invalide ou expiré.');
       } else {
         setItem(data.item);
       }
@@ -95,12 +148,14 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
     };
   }, [params.token]);
 
-  const canRespond = useMemo(() => item && ['DRAFT', 'SENT'].includes(item.status), [item]);
+  const canRespond = useMemo(
+    () => item && ['DRAFT', 'SENT'].includes(item.status) && !feedback,
+    [item, feedback],
+  );
 
   async function respond(action: 'accept' | 'decline') {
     setBusy(true);
-    setFeedback(null);
-    setError(null);
+    setActionError(null);
     try {
       const response = await fetch(`/api/public/quotes/${params.token}/respond`, {
         method: 'POST',
@@ -109,157 +164,520 @@ export default function PublicQuotePage({ params }: { params: { token: string } 
       });
       const data = (await response.json().catch(() => null)) as { error?: string; status?: string } | null;
       if (!response.ok) {
-        throw new Error(data?.error || 'Action impossible');
+        throw new Error(data?.error ?? 'Action impossible');
       }
-      setFeedback(
-        action === 'accept'
-          ? 'Soumission acceptée. Merci. Vous recevrez votre facture par e-mail sous peu.'
-          : 'Soumission refusée. Contactez-nous si vous avez des questions.',
-      );
-      setItem((current) => (current ? { ...current, status: data?.status || current.status } : current));
-    } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : 'Action impossible');
+      setFeedback({ type: action });
+      setItem((current) => (current ? { ...current, status: data?.status ?? current.status } : current));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Action impossible');
     } finally {
       setBusy(false);
     }
   }
 
+  // ── États chargement / erreur ─────────────────────────────────────────────
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
-            <p className="text-sm text-slate-300">Chargement de la soumission...</p>
-          </div>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: 'linear-gradient(180deg, #f6f1ea 0%, #f3ece3 52%, #efe7dc 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem 1rem',
+        }}
+      >
+        <NowisLogo />
+        <div
+          style={{
+            marginTop: '2rem',
+            background: 'rgba(255,255,255,0.85)',
+            border: '1px solid rgba(46,36,29,0.1)',
+            borderRadius: 24,
+            padding: '2rem',
+            maxWidth: 480,
+            width: '100%',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: '3px solid #e8d8c8',
+              borderTopColor: '#b86f3d',
+              animation: 'spin 0.9s linear infinite',
+              margin: '0 auto 1.25rem',
+            }}
+          />
+          <p style={{ color: '#6a5a4c', fontSize: 15 }}>Chargement de la soumission…</p>
         </div>
-      </main>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
     );
   }
 
-  if (error || !item) {
+  if (fetchError || !item) {
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100">
-        <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-          <div className="rounded-3xl border border-red-600/40 bg-red-950/20 p-6 text-sm text-red-200 sm:p-8">
-            {error || 'Lien invalide ou expiré.'}
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="relative overflow-hidden border-b border-slate-800/80 bg-slate-900/60">
-        <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-primary-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-20 top-16 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-        <div className="relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-300">Soumission commerciale</p>
-          <h1 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">{item.quoteNumber}</h1>
-          <p className="mt-2 max-w-3xl text-base text-slate-300">{item.title}</p>
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs">
-            <span className={`inline-flex rounded-full border px-3 py-1 font-medium ${statusTone(item.status)}`}>
-              Statut: {statusLabel(item.status)}
-            </span>
-            {formatDate(item.validUntil) ? (
-              <span className="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-slate-300">
-                Valide jusqu'au {formatDate(item.validUntil)}
-              </span>
-            ) : null}
-            <span className="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-slate-300">
-              Devise: {item.currency}
-            </span>
-          </div>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: 'linear-gradient(180deg, #f6f1ea 0%, #f3ece3 52%, #efe7dc 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem 1rem',
+        }}
+      >
+        <NowisLogo />
+        <div
+          style={{
+            marginTop: '2rem',
+            background: '#fff8f5',
+            border: '1.5px solid #fca5a5',
+            borderRadius: 24,
+            padding: '2rem 2.5rem',
+            maxWidth: 500,
+            width: '100%',
+            textAlign: 'center',
+          }}
+        >
+          <p style={{ fontSize: 40, marginBottom: 12 }}>🔗</p>
+          <p style={{ color: '#7f1d1d', fontWeight: 700, fontSize: 17, marginBottom: 8 }}>Lien invalide ou expiré</p>
+          <p style={{ color: '#6a5a4c', fontSize: 14, lineHeight: 1.6 }}>
+            {fetchError ?? 'Cette soumission est introuvable ou ce lien n\'est plus valide.'}
+          </p>
+          <p style={{ color: '#8d7665', fontSize: 13, marginTop: 16 }}>
+            Contactez{' '}
+            <a href="mailto:simonmorin@nowis.store" style={{ color: '#b86f3d', fontWeight: 600 }}>
+              simonmorin@nowis.store
+            </a>{' '}
+            pour obtenir un nouveau lien.
+          </p>
         </div>
       </div>
+    );
+  }
 
-      <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.35fr_0.65fr]">
-        <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl shadow-slate-950/30 sm:p-6">
-          {item.description ? (
-            <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-950/40 px-4 py-3 text-sm leading-relaxed text-slate-300">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Description</p>
-              <p className="whitespace-pre-wrap">{item.description}</p>
-            </div>
+  // ── Page principale ───────────────────────────────────────────────────────
+
+  const status = statusMeta(item.status);
+  const hasTax = Number(item.taxAmount) > 0;
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(180deg, #f6f1ea 0%, #f3ece3 52%, #efe7dc 100%)',
+        color: '#2e241d',
+        fontFamily: 'inherit',
+      }}
+    >
+      {/* En-tête */}
+      <header
+        style={{
+          background: 'rgba(255,255,255,0.82)',
+          borderBottom: '1px solid rgba(46,36,29,0.1)',
+          padding: '1rem 1.5rem',
+        }}
+      >
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <NowisLogo />
+        </div>
+      </header>
+
+      <main style={{ maxWidth: 800, margin: '0 auto', padding: '2rem 1rem 4rem' }}>
+
+        {/* Bloc d'accueil */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(184,111,61,0.08) 0%, rgba(203,165,120,0.12) 100%)',
+            border: '1.5px solid rgba(184,111,61,0.18)',
+            borderRadius: 20,
+            padding: '1.5rem 1.75rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <p style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#b86f3d', marginBottom: 6 }}>
+            Votre soumission
+          </p>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#2e241d', marginBottom: 6, lineHeight: 1.25 }}>
+            {item.title}
+          </h1>
+          {item.contact?.fullName ? (
+            <p style={{ color: '#6a5a4c', fontSize: 14 }}>
+              Préparée pour <strong style={{ color: '#2e241d' }}>{item.contact.fullName}</strong>
+            </p>
           ) : null}
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/30">
-            <div className="hidden grid-cols-[1fr_auto_auto_auto] gap-3 border-b border-slate-800 px-4 py-3 text-xs uppercase tracking-[0.16em] text-slate-500 sm:grid">
-              <span>Article</span>
-              <span className="text-right">Quantité</span>
-              <span className="text-right">Prix</span>
-              <span className="text-right">Sous-total</span>
-            </div>
-            <div className="divide-y divide-slate-800">
-              {item.lines.map((line) => (
-                <div key={line.id} className="grid gap-3 px-4 py-4 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
-                  <div>
-                    <p className="font-medium text-white">{line.title}</p>
-                    {line.description ? <p className="mt-1 text-xs text-slate-400">{line.description}</p> : null}
-                  </div>
-                  <p className="text-sm text-slate-300 sm:text-right">{line.quantity}</p>
-                  <p className="text-sm text-slate-300 sm:text-right">{formatMoney(line.unitPrice, item.currency)}</p>
-                  <p className="text-sm font-medium text-white sm:text-right">{formatMoney(line.subtotal, item.currency)}</p>
-                </div>
-              ))}
-            </div>
+          <div style={{ marginTop: 12 }}>
+            <StatusBadge status={item.status} />
           </div>
-        </section>
+          {item.validUntil ? (
+            <p style={{ color: '#8d7665', fontSize: 13, marginTop: 8 }}>
+              Valide jusqu'au {formatDateUtc(item.validUntil)}
+            </p>
+          ) : null}
+        </div>
 
-        <aside className="space-y-4">
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Résumé</p>
-            <div className="mt-4 space-y-2 text-sm text-slate-300">
-              <div className="flex items-center justify-between gap-3">
+        {/* Message humain selon statut */}
+        {item.status === 'SENT' && !feedback ? (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.75)',
+              border: '1px solid rgba(46,36,29,0.1)',
+              borderRadius: 16,
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+              color: '#4a3828',
+              fontSize: 14,
+              lineHeight: 1.65,
+            }}
+          >
+            Voici la soumission préparée pour votre projet. Vous pouvez la consulter, l'accepter ou me contacter si vous avez des questions.
+          </div>
+        ) : null}
+
+        {/* Message de confirmation après action */}
+        {feedback?.type === 'accept' ? (
+          <div
+            style={{
+              background: '#f0fdf4',
+              border: '1.5px solid #86efac',
+              borderRadius: 16,
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ fontWeight: 700, color: '#14532d', fontSize: 16, marginBottom: 4 }}>✓ Soumission acceptée !</p>
+            <p style={{ color: '#166534', fontSize: 14, lineHeight: 1.6 }}>
+              Merci pour votre confiance. La prochaine étape sera préparée et vous recevrez votre facture par courriel sous peu.
+            </p>
+          </div>
+        ) : null}
+
+        {feedback?.type === 'decline' ? (
+          <div
+            style={{
+              background: '#fef2f2',
+              border: '1.5px solid #fca5a5',
+              borderRadius: 16,
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ fontWeight: 700, color: '#7f1d1d', fontSize: 16, marginBottom: 4 }}>Soumission refusée</p>
+            <p style={{ color: '#991b1b', fontSize: 14, lineHeight: 1.6 }}>
+              Pas de problème. Vous pouvez communiquer avec Création Nowis pour ajuster le projet selon vos besoins.{' '}
+              <a href="mailto:simonmorin@nowis.store" style={{ color: '#b86f3d', fontWeight: 600 }}>
+                simonmorin@nowis.store
+              </a>
+            </p>
+          </div>
+        ) : null}
+
+        {item.status === 'ACCEPTED' && !feedback ? (
+          <div
+            style={{
+              background: '#f0fdf4',
+              border: '1.5px solid #86efac',
+              borderRadius: 16,
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ fontWeight: 700, color: '#14532d', fontSize: 15, marginBottom: 4 }}>✓ Soumission déjà acceptée</p>
+            <p style={{ color: '#166534', fontSize: 14 }}>Cette soumission a été acceptée. Merci pour votre confiance.</p>
+          </div>
+        ) : null}
+
+        {item.status === 'DECLINED' && !feedback ? (
+          <div
+            style={{
+              background: '#fef2f2',
+              border: '1.5px solid #fca5a5',
+              borderRadius: 16,
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ fontWeight: 700, color: '#7f1d1d', fontSize: 15, marginBottom: 4 }}>Soumission refusée</p>
+            <p style={{ color: '#991b1b', fontSize: 14 }}>
+              Cette soumission a été refusée.{' '}
+              <a href="mailto:simonmorin@nowis.store" style={{ color: '#b86f3d', fontWeight: 600 }}>
+                Contactez-nous
+              </a>{' '}
+              pour en discuter.
+            </p>
+          </div>
+        ) : null}
+
+        {item.status === 'EXPIRED' ? (
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1.5px solid #cbd5e1',
+              borderRadius: 16,
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ fontWeight: 700, color: '#475569', fontSize: 15, marginBottom: 4 }}>Soumission expirée</p>
+            <p style={{ color: '#64748b', fontSize: 14 }}>
+              Cette soumission n'est plus valide.{' '}
+              <a href="mailto:simonmorin@nowis.store" style={{ color: '#b86f3d', fontWeight: 600 }}>
+                Demandez une mise à jour
+              </a>
+              .
+            </p>
+          </div>
+        ) : null}
+
+        {/* Conversion en facture */}
+        {item.convertedToInvoice ? (
+          <div
+            style={{
+              background: '#eff6ff',
+              border: '1.5px solid #93c5fd',
+              borderRadius: 16,
+              padding: '1.25rem 1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ color: '#1e3a8a', fontSize: 14 }}>
+              Cette soumission a été convertie en facture <strong>{item.convertedToInvoice.number}</strong>.
+            </p>
+          </div>
+        ) : null}
+
+        {/* Description du projet */}
+        {item.description ? (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.82)',
+              border: '1px solid rgba(46,36,29,0.1)',
+              borderRadius: 20,
+              padding: '1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#8d7665', marginBottom: 8 }}>
+              Description du projet
+            </p>
+            <p style={{ color: '#4a3828', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{item.description}</p>
+          </div>
+        ) : null}
+
+        {/* Tableau des services */}
+        {item.lines.length > 0 ? (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.9)',
+              border: '1px solid rgba(46,36,29,0.1)',
+              borderRadius: 20,
+              overflow: 'hidden',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <div
+              style={{
+                padding: '1rem 1.5rem',
+                borderBottom: '1px solid rgba(46,36,29,0.08)',
+                display: 'grid',
+                gridTemplateColumns: '1fr auto auto auto',
+                gap: '0.75rem',
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: '#8d7665',
+              }}
+            >
+              <span>Service</span>
+              <span style={{ textAlign: 'right' }}>Qté</span>
+              <span style={{ textAlign: 'right' }}>Prix unit.</span>
+              <span style={{ textAlign: 'right' }}>Sous-total</span>
+            </div>
+
+            {item.lines.map((line, idx) => (
+              <div
+                key={line.id}
+                style={{
+                  padding: '1rem 1.5rem',
+                  borderBottom: idx < item.lines.length - 1 ? '1px solid rgba(46,36,29,0.07)' : 'none',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto auto auto',
+                  gap: '0.75rem',
+                  alignItems: 'center',
+                }}
+              >
+                <div>
+                  <p style={{ fontWeight: 600, color: '#2e241d', fontSize: 14 }}>{line.title}</p>
+                  {line.description ? (
+                    <p style={{ color: '#8d7665', fontSize: 12, marginTop: 3 }}>{line.description}</p>
+                  ) : null}
+                </div>
+                <p style={{ color: '#6a5a4c', fontSize: 13, textAlign: 'right', whiteSpace: 'nowrap' }}>{line.quantity}</p>
+                <p style={{ color: '#6a5a4c', fontSize: 13, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  {formatMoney(line.unitPrice, item.currency)}
+                </p>
+                <p style={{ fontWeight: 700, color: '#2e241d', fontSize: 14, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  {formatMoney(line.subtotal, item.currency)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {/* Résumé des montants */}
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.9)',
+            border: '1px solid rgba(46,36,29,0.1)',
+            borderRadius: 20,
+            padding: '1.5rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          {hasTax ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6a5a4c', fontSize: 14, marginBottom: 6 }}>
                 <span>Sous-total</span>
                 <span>{formatMoney(item.subtotal, item.currency)}</span>
               </div>
-              <div className="flex items-center justify-between gap-3">
-                <span>Taxes</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6a5a4c', fontSize: 14, marginBottom: 10 }}>
+                <span>Taxes (TPS/TVQ)</span>
                 <span>{formatMoney(item.taxAmount, item.currency)}</span>
               </div>
-              <div className="mt-3 border-t border-slate-800 pt-3">
-                <div className="flex items-center justify-between gap-3 text-base font-semibold text-white">
-                  <span>Total</span>
-                  <span>{formatMoney(item.totalAmount, item.currency)}</span>
-                </div>
+              <div
+                style={{
+                  borderTop: '1.5px solid rgba(46,36,29,0.1)',
+                  paddingTop: 12,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span style={{ fontWeight: 700, fontSize: 16, color: '#2e241d' }}>Total</span>
+                <span
+                  style={{
+                    fontWeight: 800,
+                    fontSize: 22,
+                    color: '#b86f3d',
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  {formatMoney(item.totalAmount, item.currency)}
+                </span>
               </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700, fontSize: 16, color: '#2e241d' }}>Total</span>
+              <span style={{ fontWeight: 800, fontSize: 22, color: '#b86f3d', letterSpacing: '-0.02em' }}>
+                {formatMoney(item.totalAmount, item.currency)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Erreur d'action */}
+        {actionError ? (
+          <div
+            style={{
+              background: '#fef2f2',
+              border: '1.5px solid #fca5a5',
+              borderRadius: 12,
+              padding: '0.875rem 1.25rem',
+              color: '#991b1b',
+              fontSize: 14,
+              marginBottom: '1.25rem',
+            }}
+          >
+            {actionError}
+          </div>
+        ) : null}
+
+        {/* Boutons d'action */}
+        {canRespond ? (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.82)',
+              border: '1px solid rgba(46,36,29,0.1)',
+              borderRadius: 20,
+              padding: '1.5rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <p style={{ color: '#4a3828', fontSize: 14, marginBottom: '1rem', lineHeight: 1.6 }}>
+              Souhaitez-vous accepter cette soumission ? Vous pouvez aussi me contacter directement si vous avez des questions avant de décider.
+            </p>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                gap: '0.75rem',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => void respond('accept')}
+                disabled={busy}
+                style={{
+                  background: busy ? '#d6b89a' : 'linear-gradient(135deg, #c97445 0%, #a05530 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '0.875rem 1.5rem',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  cursor: busy ? 'not-allowed' : 'pointer',
+                  transition: 'opacity 0.15s',
+                  boxShadow: busy ? 'none' : '0 2px 8px rgba(184,111,61,0.3)',
+                }}
+              >
+                {busy ? 'Traitement…' : '✓ Accepter la soumission'}
+              </button>
+              <button
+                type="button"
+                onClick={() => void respond('decline')}
+                disabled={busy}
+                style={{
+                  background: '#fff',
+                  color: '#7f1d1d',
+                  border: '1.5px solid #fca5a5',
+                  borderRadius: 12,
+                  padding: '0.875rem 1.5rem',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  cursor: busy ? 'not-allowed' : 'pointer',
+                  opacity: busy ? 0.55 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                Refuser
+              </button>
             </div>
           </div>
+        ) : null}
 
-          {feedback ? <p className="rounded-2xl border border-emerald-600/40 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">{feedback}</p> : null}
-          {error ? <p className="rounded-2xl border border-red-600/40 bg-red-950/20 px-4 py-3 text-sm text-red-200">{error}</p> : null}
-
-          {canRespond ? (
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
-              <p className="mb-3 text-sm text-slate-300">Vous pouvez accepter ou refuser cette soumission.</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => void respond('accept')}
-                  disabled={busy}
-                  className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-60"
-                >
-                  {busy ? 'Traitement en cours...' : 'Accepter'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void respond('decline')}
-                  disabled={busy}
-                  className="w-full rounded-xl border border-red-600/50 bg-red-950/20 px-4 py-2.5 text-sm font-medium text-red-200 transition hover:bg-red-900/30 disabled:opacity-60"
-                >
-                  Refuser
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {item.convertedToInvoice ? (
-            <p className="rounded-2xl border border-sky-700/40 bg-sky-950/20 px-4 py-3 text-sm text-sky-200">
-              Cette soumission est convertie en facture {item.convertedToInvoice.number}.
-            </p>
-          ) : null}
-        </aside>
-      </div>
-    </main>
+        {/* Pied de page contact */}
+        <div style={{ textAlign: 'center', color: '#8d7665', fontSize: 13, marginTop: '2.5rem', lineHeight: 1.7 }}>
+          <p>Une question ? Écrivez-moi à</p>
+          <a
+            href="mailto:simonmorin@nowis.store"
+            style={{ color: '#b86f3d', fontWeight: 600, fontSize: 14 }}
+          >
+            simonmorin@nowis.store
+          </a>
+          <p style={{ marginTop: 4 }}>ou appelez le (819) 388-3407</p>
+          <p style={{ marginTop: 12, fontSize: 12, color: '#b8a898' }}>© Création Nowis — Simon Morin</p>
+        </div>
+      </main>
+    </div>
   );
 }
