@@ -1010,12 +1010,49 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
 
   const issuer = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
   const customer = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
+  const recipientEmail = trimToNull(customer.email) || trimToNull(invoice.contact.email);
+  const merchantEmail = await getPayPalMerchantEmailUsed();
+
+  // Live PayPal can reject invoices sent to the same email as the merchant account.
+  if (recipientEmail && merchantEmail && recipientEmail.toLowerCase() === merchantEmail.toLowerCase()) {
+    throw new Error(
+      'Le courriel client est identique au courriel marchand PayPal. Utilise une adresse client differente pour envoyer la facture PayPal.',
+    );
+  }
+
   const missingIssuer = validateIssuerSnapshot(issuer);
   const missingCustomer = validateCustomerSnapshot(customer);
   if (missingIssuer.length > 0 || missingCustomer.length > 0) {
     throw new Error(
       `Facturation incomplete avant envoi PayPal. Emetteur: ${missingIssuer.join(', ') || 'ok'}. Client: ${missingCustomer.join(', ') || 'ok'}.`,
     );
+  }
+
+  const remoteBeforeSend = await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}`, {
+    method: 'GET',
+  });
+  const payloadBeforeSend = asRecord(await remoteBeforeSend.json());
+  const statusBeforeSend = extractPayPalStatus(payloadBeforeSend) || 'UNKNOWN';
+
+  // If already sent/paid remotely, avoid a second send call that returns 422 and just sync local state.
+  if (!['DRAFT', 'SCHEDULED'].includes(statusBeforeSend)) {
+    const syncUpdateBeforeSend = derivePayPalInvoiceSyncUpdate({
+      invoice,
+      payload: payloadBeforeSend,
+    });
+    const updatedBeforeSend = await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        ...syncUpdateBeforeSend,
+        paypalStatus: extractPayPalStatus(payloadBeforeSend) || invoice.paypalStatus,
+        paypalSentAt: invoice.paypalSentAt || new Date(),
+        status:
+          syncUpdateBeforeSend.status ||
+          (invoice.status === InvoiceStatus.DRAFT ? InvoiceStatus.SENT : invoice.status),
+      },
+    });
+
+    return toSyncSummary(updatedBeforeSend);
   }
 
   await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}/send`, {
