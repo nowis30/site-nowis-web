@@ -588,6 +588,22 @@ function extractPayPalStatus(payload: JsonRecord): string | null {
   return null;
 }
 
+function extractPayPalPrimaryRecipientEmail(payload: JsonRecord): string | null {
+  const recipients = Array.isArray(payload.primary_recipients) ? payload.primary_recipients : [];
+  for (const recipientValue of recipients) {
+    const recipient = asRecord(recipientValue);
+    const billingInfo = asRecord(recipient.billing_info);
+    const email = readString(billingInfo.email_address);
+    if (email) return email;
+  }
+  return null;
+}
+
+function extractPayPalInvoicerEmail(payload: JsonRecord): string | null {
+  const invoicer = asRecord(payload.invoicer);
+  return readString(invoicer.email_address);
+}
+
 function mapPayPalStatus(paypalStatus: string | null) {
   const normalized = paypalStatus?.toUpperCase() || null;
   if (!normalized) {
@@ -1033,6 +1049,20 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
   });
   const payloadBeforeSend = asRecord(await remoteBeforeSend.json());
   const statusBeforeSend = extractPayPalStatus(payloadBeforeSend) || 'UNKNOWN';
+  const remoteRecipientEmail = trimToNull(extractPayPalPrimaryRecipientEmail(payloadBeforeSend));
+  const remoteInvoicerEmail = trimToNull(extractPayPalInvoicerEmail(payloadBeforeSend));
+
+  if (remoteRecipientEmail && remoteInvoicerEmail && remoteRecipientEmail.toLowerCase() === remoteInvoicerEmail.toLowerCase()) {
+    throw new Error(
+      'PayPal refuse l envoi: le destinataire de la facture est identique au courriel emetteur PayPal. Mets un courriel client different, puis recree la facture PayPal.',
+    );
+  }
+
+  if (remoteRecipientEmail && merchantEmail && remoteRecipientEmail.toLowerCase() === merchantEmail.toLowerCase()) {
+    throw new Error(
+      'PayPal refuse l envoi: le destinataire de la facture correspond au compte marchand PayPal. Mets un courriel client different, puis recree la facture PayPal.',
+    );
+  }
 
   // If already sent/paid remotely, avoid a second send call that returns 422 and just sync local state.
   if (!['DRAFT', 'SCHEDULED'].includes(statusBeforeSend)) {
