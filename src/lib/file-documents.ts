@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OFFICIAL_DOCUMENT_CATEGORIES } from '@/features/documents/document-categories';
 
 export const fileVisibilitySchema = z.enum(['admin_only', 'client_visible']);
 export type FileVisibilityInput = z.infer<typeof fileVisibilitySchema>;
@@ -28,15 +29,7 @@ export const ALLOWED_UPLOAD_MIME_TYPES = [
 
 export const ALLOWED_UPLOAD_EXTENSIONS = ['.mp3', '.wav', '.m4a', '.mp4', '.pdf', '.txt', '.doc', '.docx'] as const;
 
-export const FILE_CATEGORY_OPTIONS = [
-  'song',
-  'lyrics',
-  'poem',
-  'notes',
-  'document',
-  'demo',
-  'text',
-] as const;
+export const FILE_CATEGORY_OPTIONS = OFFICIAL_DOCUMENT_CATEGORIES;
 
 export const DEFAULT_MAX_UPLOAD_SIZE_BYTES = 250 * 1024 * 1024;
 

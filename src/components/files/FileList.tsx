@@ -2,6 +2,13 @@
 
 import { useState } from 'react';
 import { Download, Eye, Trash2 } from 'lucide-react';
+import {
+  getDocumentCategoryDescription,
+  getDocumentCategoryLabel,
+  getDocumentOriginLabel,
+  resolveDocumentCategory,
+  resolveDocumentOrigin,
+} from '@/features/documents/document-categories';
 
 export type FileListItem = {
   id: string;
@@ -13,6 +20,14 @@ export type FileListItem = {
   category: string;
   visibility: 'ADMIN_ONLY' | 'CLIENT_VISIBLE';
   createdAt: string;
+  origin?: 'client' | 'admin' | 'system';
+  songRequest?: { id: string; title: string | null } | null;
+  workshopRequest?: { id: string; title: string | null } | null;
+  songRequestId?: string | null;
+  workshopRequestId?: string | null;
+  commercialQuoteId?: string | null;
+  invoiceId?: string | null;
+  uploadedByUserId?: string | null;
 };
 
 function formatBytes(size: number) {
@@ -57,45 +72,85 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
     <div className="space-y-3">
       {items.map((item) => (
         <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3.5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <p className="break-words text-sm font-semibold text-white">{item.originalName}</p>
-              <p className="mt-1 text-xs text-slate-400">
-                {item.category} · {item.mimeType} · {formatBytes(item.size)} · {formatDate(item.createdAt)}
-              </p>
-              <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                {item.visibility === 'CLIENT_VISIBLE' ? 'Visible client' : 'Admin only'}
-              </p>
-              {item.mimeType?.startsWith('audio/') ? (
-                <audio
-                  controls
-                  className="mt-3 w-full max-w-md"
-                  preload="none"
-                  src={`${downloadPrefix}/${item.id}/download`}
-                >
-                  Votre navigateur ne supporte pas la lecture audio.
-                </audio>
-              ) : null}
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir</span>
-              </a>
-              <a href={`${downloadPrefix}/${item.id}/download`} download={item.originalName} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                <span className="inline-flex items-center gap-1.5"><Download size={13} />Telecharger</span>
-              </a>
-              {canDelete ? (
-                <button
-                  type="button"
-                  disabled={deletingId === item.id}
-                  onClick={() => handleDelete(item.id)}
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-red-700/40 px-3 py-2 text-xs font-medium text-red-300 transition hover:border-red-500/60 hover:text-red-200 disabled:opacity-60 sm:w-auto sm:py-1.5"
-                >
-                  <span className="inline-flex items-center gap-1.5"><Trash2 size={13} />Supprimer</span>
-                </button>
-              ) : null}
-            </div>
-          </div>
+          {(() => {
+            const resolvedCategory = resolveDocumentCategory({
+              category: item.category,
+              mimeType: item.mimeType,
+              songRequestId: item.songRequest?.id ?? item.songRequestId ?? null,
+              workshopRequestId: item.workshopRequest?.id ?? item.workshopRequestId ?? null,
+              commercialQuoteId: item.commercialQuoteId ?? null,
+              invoiceId: item.invoiceId ?? null,
+              uploadedByUserId: item.uploadedByUserId ?? (item.origin === 'admin' ? 'admin' : null),
+              visibility: item.visibility,
+            });
+
+            const origin = resolveDocumentOrigin({
+              songRequestId: item.songRequest?.id ?? item.songRequestId ?? null,
+              workshopRequestId: item.workshopRequest?.id ?? item.workshopRequestId ?? null,
+              commercialQuoteId: item.commercialQuoteId ?? null,
+              invoiceId: item.invoiceId ?? null,
+              uploadedByUserId: item.uploadedByUserId ?? (item.origin === 'admin' ? 'admin' : null),
+              visibility: item.visibility,
+            });
+
+            return (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-sm font-semibold text-white">{item.originalName}</p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {getDocumentCategoryLabel(resolvedCategory.category)} · {item.mimeType} · {formatBytes(item.size)} · {formatDate(item.createdAt)}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">{getDocumentCategoryDescription(resolvedCategory.category)}</p>
+                  {(item.songRequest || item.workshopRequest) ? (
+                    <p className="mt-1 text-xs text-slate-400">
+                      {item.songRequest ? `Chanson: ${item.songRequest.title || item.songRequest.id}` : null}
+                      {item.songRequest && item.workshopRequest ? ' · ' : null}
+                      {item.workshopRequest ? `Atelier: ${item.workshopRequest.title || item.workshopRequest.id}` : null}
+                    </p>
+                  ) : null}
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-500">
+                    {item.visibility === 'CLIENT_VISIBLE' ? 'Visible client' : 'Admin only'}
+                  </p>
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-500">
+                    Origine: {getDocumentOriginLabel(origin)}
+                  </p>
+                  {resolvedCategory.source === 'fallback' ? (
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-amber-300">
+                      Categorie deduite (fallback)
+                    </p>
+                  ) : null}
+                  {item.mimeType?.startsWith('audio/') ? (
+                    <audio
+                      controls
+                      className="mt-3 w-full max-w-md"
+                      preload="none"
+                      src={`${downloadPrefix}/${item.id}/download`}
+                    >
+                      Votre navigateur ne supporte pas la lecture audio.
+                    </audio>
+                  ) : null}
+                </div>
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                  <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
+                    <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir</span>
+                  </a>
+                  <a href={`${downloadPrefix}/${item.id}/download`} download={item.originalName} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
+                    <span className="inline-flex items-center gap-1.5"><Download size={13} />Telecharger</span>
+                  </a>
+                  {canDelete ? (
+                    <button
+                      type="button"
+                      disabled={deletingId === item.id}
+                      onClick={() => handleDelete(item.id)}
+                      className="inline-flex w-full items-center justify-center rounded-xl border border-red-700/40 px-3 py-2 text-xs font-medium text-red-300 transition hover:border-red-500/60 hover:text-red-200 disabled:opacity-60 sm:w-auto sm:py-1.5"
+                    >
+                      <span className="inline-flex items-center gap-1.5"><Trash2 size={13} />Supprimer</span>
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })()}
         </article>
       ))}
     </div>

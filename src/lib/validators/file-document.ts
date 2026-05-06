@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { ALLOWED_UPLOAD_MIME_TYPES, FILE_CATEGORY_OPTIONS, fileVisibilitySchema, formatBytes, getMaxUploadSizeBytes } from '@/lib/file-documents';
+import { ALLOWED_UPLOAD_MIME_TYPES, fileVisibilitySchema, formatBytes, getMaxUploadSizeBytes } from '@/lib/file-documents';
+import { getDefaultCategoryForUpload } from '@/features/documents/document-categories';
 
 export const uploadFileMetadataSchema = z.object({
   contactId: z.string().uuid().optional(),
@@ -9,7 +10,7 @@ export const uploadFileMetadataSchema = z.object({
     .trim()
     .min(2, 'Categorie invalide')
     .max(80, 'Categorie trop longue')
-    .default(FILE_CATEGORY_OPTIONS[4]),
+    .default(getDefaultCategoryForUpload({ context: 'general' })),
   visibility: fileVisibilitySchema.default('client_visible'),
 });
 

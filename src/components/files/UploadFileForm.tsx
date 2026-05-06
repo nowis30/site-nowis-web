@@ -8,6 +8,7 @@ import {
   formatBytes,
   getClientMaxUploadSizeBytes,
 } from '@/lib/file-documents';
+import { getDocumentCategoryLabel, type DocumentCategory } from '@/features/documents/document-categories';
 
 interface UploadFileFormProps {
   endpoint: string;
@@ -16,7 +17,8 @@ interface UploadFileFormProps {
   submitLabel?: string;
   extraFields?: Record<string, string | undefined>;
   allowVisibility?: boolean;
-  defaultCategory?: string;
+  defaultCategory?: DocumentCategory;
+  categoryOptions?: readonly DocumentCategory[];
 }
 
 export function UploadFileForm({
@@ -26,7 +28,8 @@ export function UploadFileForm({
   submitLabel = 'Deposer un fichier',
   extraFields,
   allowVisibility = false,
-  defaultCategory = 'document',
+  defaultCategory = 'client-shared',
+  categoryOptions,
 }: UploadFileFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -36,6 +39,7 @@ export function UploadFileForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const clientMaxSize = getClientMaxUploadSizeBytes();
+  const availableCategoryOptions = categoryOptions ?? FILE_CATEGORY_OPTIONS;
 
   async function handleFile(file: File) {
     if (file.size > clientMaxSize) {
@@ -141,11 +145,11 @@ export function UploadFileForm({
           <span>Categorie</span>
           <select
             value={category}
-            onChange={(event) => setCategory(event.target.value)}
+            onChange={(event) => setCategory(event.target.value as DocumentCategory)}
             className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60"
           >
-            {FILE_CATEGORY_OPTIONS.map((option) => (
-              <option key={option} value={option}>{option}</option>
+            {availableCategoryOptions.map((option) => (
+              <option key={option} value={option}>{getDocumentCategoryLabel(option)}</option>
             ))}
           </select>
         </label>

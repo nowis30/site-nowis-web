@@ -5,10 +5,13 @@ import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { FILE_VISIBILITY_DB } from '@/lib/file-documents';
 import { assertStoredObjectMetadata } from '@/lib/file-storage';
+import { canClientAccessSongRequest, canClientAccessWorkshopRequest } from '@/features/client-portal/documents/security';
+import { getDefaultCategoryForUpload, resolveDocumentCategory } from '@/features/documents/document-categories';
 
 const finalizeUploadSchema = z.object({
   songRequestId: z.string().uuid().optional(),
-  category: z.string().trim().min(2).max(80).default('document'),
+  workshopRequestId: z.string().uuid().optional(),
+  category: z.string().trim().max(80).optional(),
   file: z.object({
     storageKey: z.string().trim().min(8).max(500),
     url: z.string().url(),
@@ -21,6 +24,7 @@ const finalizeUploadSchema = z.object({
 
 const querySchema = z.object({
   songRequestId: z.string().uuid().optional(),
+  workshopRequestId: z.string().uuid().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -31,10 +35,21 @@ export async function GET(request: NextRequest) {
 
   const parsedQuery = querySchema.safeParse({
     songRequestId: request.nextUrl.searchParams.get('songRequestId') || undefined,
+    workshopRequestId: request.nextUrl.searchParams.get('workshopRequestId') || undefined,
   });
 
   if (!parsedQuery.success) {
     return NextResponse.json({ error: 'Parametres invalides' }, { status: 400 });
+  }
+
+  if (parsedQuery.data.workshopRequestId) {
+    const workshopExists = await canClientAccessWorkshopRequest({
+      workshopRequestId: parsedQuery.data.workshopRequestId,
+      sessionContactId: session.contactId,
+    });
+    if (!workshopExists) {
+      return NextResponse.json({ error: 'Demande atelier introuvable' }, { status: 404 });
+    }
   }
 
   const items = await prisma.fileDocument.findMany({
@@ -42,6 +57,7 @@ export async function GET(request: NextRequest) {
       contactId: session.contactId,
       visibility: 'CLIENT_VISIBLE',
       ...(parsedQuery.data.songRequestId ? { songRequestId: parsedQuery.data.songRequestId } : {}),
+      ...(parsedQuery.data.workshopRequestId ? { workshopRequestId: parsedQuery.data.workshopRequestId } : {}),
     },
     orderBy: { createdAt: 'desc' },
     take: 100,
@@ -72,13 +88,24 @@ export async function POST(request: NextRequest) {
     const payload = finalizeUploadSchema.parse(await request.json());
 
     if (payload.songRequestId) {
-      const requestExists = await prisma.songRequest.findFirst({
-        where: { id: payload.songRequestId, contactId: session.contactId },
-        select: { id: true },
+      const requestExists = await canClientAccessSongRequest({
+        songRequestId: payload.songRequestId,
+        sessionContactId: session.contactId,
       });
 
       if (!requestExists) {
         return NextResponse.json({ error: 'Demande de chanson introuvable' }, { status: 404 });
+      }
+    }
+
+    if (payload.workshopRequestId) {
+      const workshopExists = await canClientAccessWorkshopRequest({
+        workshopRequestId: payload.workshopRequestId,
+        sessionContactId: session.contactId,
+      });
+
+      if (!workshopExists) {
+        return NextResponse.json({ error: 'Demande atelier introuvable' }, { status: 404 });
       }
     }
 
@@ -87,10 +114,27 @@ export async function POST(request: NextRequest) {
       size: payload.file.size,
     });
 
+    const categoryResolution = resolveDocumentCategory({
+      category: payload.category,
+      mimeType: payload.file.mimeType,
+      songRequestId: payload.songRequestId ?? null,
+      workshopRequestId: payload.workshopRequestId ?? null,
+      uploadedByUserId: null,
+      visibility: 'CLIENT_VISIBLE',
+    });
+
+    const persistedCategory = categoryResolution.source === 'fallback'
+      ? getDefaultCategoryForUpload({
+          context: payload.songRequestId ? 'song' : payload.workshopRequestId ? 'workshop' : 'general',
+          mimeType: payload.file.mimeType,
+        })
+      : categoryResolution.category;
+
     const item = await prisma.fileDocument.create({
       data: {
         contactId: session.contactId,
         songRequestId: payload.songRequestId ?? null,
+        workshopRequestId: payload.workshopRequestId ?? null,
         uploadedByUserId: null,
         filename: payload.file.filename,
         originalName: payload.file.originalName,
@@ -98,7 +142,7 @@ export async function POST(request: NextRequest) {
         size: payload.file.size,
         storageKey: payload.file.storageKey,
         url: payload.file.url,
-        category: payload.category,
+        category: persistedCategory,
         visibility: FILE_VISIBILITY_DB.client_visible,
       },
     });
@@ -106,10 +150,14 @@ export async function POST(request: NextRequest) {
     await prisma.activity.create({
       data: {
         type: 'FILE',
-        title: payload.songRequestId ? 'Document ajoute a la demande de chanson' : 'Fichier depose',
+        title: payload.songRequestId
+          ? 'Document ajoute a la demande de chanson'
+          : payload.workshopRequestId
+            ? 'Document ajoute a la demande atelier'
+            : 'Fichier depose',
         description: [
           `Nom: ${payload.file.originalName}`,
-          `Categorie: ${payload.category}`,
+          `Categorie: ${persistedCategory}`,
           'Depose depuis le portail client',
         ].join('\n'),
         contactId: session.contactId,

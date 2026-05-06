@@ -323,6 +323,11 @@ export default async function ContactDetailPage({ params }: PageProps) {
         mimeType: item.mimeType,
         category: item.category,
         visibility: item.visibility,
+        songRequestId: item.songRequestId,
+        workshopRequestId: item.workshopRequestId,
+        commercialQuoteId: item.commercialQuoteId,
+        invoiceId: item.invoiceId,
+        uploadedByUserId: item.uploadedByUserId,
       }))}
       timeline={timeline}
       canImpersonate={session.role === 'ADMIN'}

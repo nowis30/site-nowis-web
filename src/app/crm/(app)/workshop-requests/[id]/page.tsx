@@ -4,6 +4,7 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { listCalendarConnections } from '@/lib/calendar/service';
 import { WorkshopRequestAdminPage } from '@/features/crm/components/workshops/WorkshopRequestAdminPage';
+import { LinkedDocumentsPanel } from '@/features/crm/components/documents/LinkedDocumentsPanel';
 
 type WorkshopRequestDetailRecord = Prisma.WorkshopRequestGetPayload<{
   include: {
@@ -45,9 +46,23 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
 
   const calendarConnections = await listCalendarConnections();
 
+  const linkedDocuments = await prisma.fileDocument.findMany({
+    where: {
+      contactId: item.contactId ?? undefined,
+      OR: [
+        { workshopRequestId: item.id },
+        { commercialQuote: { workshopRequestId: item.id } },
+        { invoice: { convertedFromQuote: { workshopRequestId: item.id } } },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 80,
+  });
+
   return (
-    <WorkshopRequestAdminPage
-      item={{
+    <>
+      <WorkshopRequestAdminPage
+        item={{
         id: item.id,
         title: item.title,
         status: item.status,
@@ -116,14 +131,38 @@ export default async function WorkshopRequestDetailPage({ params }: { params: { 
           createdAt: quote.createdAt.toISOString(),
         })),
       }}
-      calendarConnections={calendarConnections.map((connection) => ({
-        id: connection.id,
-        provider: connection.provider,
-        accountName: connection.accountName,
-        accountEmail: connection.accountEmail,
-        status: connection.status,
-      }))}
-      isAdmin={isAdmin}
-    />
+        calendarConnections={calendarConnections.map((connection) => ({
+          id: connection.id,
+          provider: connection.provider,
+          accountName: connection.accountName,
+          accountEmail: connection.accountEmail,
+          status: connection.status,
+        }))}
+        isAdmin={isAdmin}
+      />
+
+      <LinkedDocumentsPanel
+        title="Documents liés"
+        subtitle="Documents du client et documents liés à cet atelier."
+        items={linkedDocuments.map((file) => ({
+          id: file.id,
+          originalName: file.originalName,
+          mimeType: file.mimeType,
+          category: file.category,
+          createdAtIso: file.createdAt.toISOString(),
+          downloadUrl: `/api/crm/file-documents/${file.id}/download`,
+          songRequestId: file.songRequestId,
+          workshopRequestId: file.workshopRequestId,
+          commercialQuoteId: file.commercialQuoteId,
+          invoiceId: file.invoiceId,
+          uploadedByUserId: file.uploadedByUserId,
+          visibility: file.visibility,
+        }))}
+        quickLinks={[
+          ...(item.contactId ? [{ href: `/crm/contacts/${item.contactId}`, label: 'Dossier client' }] : []),
+          { href: `/crm/workshop-requests/${item.id}`, label: 'Dossier atelier' },
+        ]}
+      />
+    </>
   );
 }

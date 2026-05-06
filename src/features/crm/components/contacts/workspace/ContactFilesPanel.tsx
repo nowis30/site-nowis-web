@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { FileList, type FileListItem } from '@/components/files/FileList';
 import { UploadFileForm } from '@/components/files/UploadFileForm';
+import { getDefaultCategoryForUpload } from '@/features/documents/document-categories';
 
 interface ContactFilesPanelProps {
   contactId: string;
@@ -24,6 +25,7 @@ export function ContactFilesPanel({ contactId, files }: ContactFilesPanelProps) 
         title="Deposer un fichier"
         description="Liez un fichier au contact. Vous pouvez choisir la visibilite client ou admin only."
         allowVisibility
+        defaultCategory={getDefaultCategoryForUpload({ context: 'admin-internal' })}
         extraFields={{ contactId }}
       />
 

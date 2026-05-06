@@ -5,11 +5,13 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { FILE_VISIBILITY_DB } from '@/lib/file-documents';
 import { assertStoredObjectMetadata } from '@/lib/file-storage';
+import { getDefaultCategoryForUpload, resolveDocumentCategory } from '@/features/documents/document-categories';
 
 const finalizeUploadSchema = z.object({
   contactId: z.string().uuid().optional(),
   songRequestId: z.string().uuid().optional(),
-  category: z.string().trim().min(2).max(80).default('document'),
+  workshopRequestId: z.string().uuid().optional(),
+  category: z.string().trim().max(80).optional(),
   visibility: z.enum(['admin_only', 'client_visible']).default('client_visible'),
   file: z.object({
     storageKey: z.string().trim().min(8).max(500),
@@ -24,6 +26,7 @@ const finalizeUploadSchema = z.object({
 const querySchema = z.object({
   contactId: z.string().uuid().optional(),
   songRequestId: z.string().uuid().optional(),
+  workshopRequestId: z.string().uuid().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -33,6 +36,7 @@ export async function GET(request: NextRequest) {
   const parsedQuery = querySchema.safeParse({
     contactId: request.nextUrl.searchParams.get('contactId') || undefined,
     songRequestId: request.nextUrl.searchParams.get('songRequestId') || undefined,
+    workshopRequestId: request.nextUrl.searchParams.get('workshopRequestId') || undefined,
   });
 
   if (!parsedQuery.success) {
@@ -43,6 +47,7 @@ export async function GET(request: NextRequest) {
     where: {
       ...(parsedQuery.data.contactId ? { contactId: parsedQuery.data.contactId } : {}),
       ...(parsedQuery.data.songRequestId ? { songRequestId: parsedQuery.data.songRequestId } : {}),
+      ...(parsedQuery.data.workshopRequestId ? { workshopRequestId: parsedQuery.data.workshopRequestId } : {}),
     },
     orderBy: { createdAt: 'desc' },
     include: {
@@ -88,6 +93,20 @@ export async function POST(request: NextRequest) {
       contactId = songRequest.contactId;
     }
 
+    if (payload.workshopRequestId) {
+      const workshopRequest = await prisma.workshopRequest.findUnique({
+        where: { id: payload.workshopRequestId },
+        select: { id: true, contactId: true },
+      });
+      if (!workshopRequest) {
+        return NextResponse.json({ error: 'Demande atelier introuvable' }, { status: 404 });
+      }
+      if (contactId && contactId !== workshopRequest.contactId) {
+        return NextResponse.json({ error: 'Le contact et la demande atelier ne correspondent pas' }, { status: 400 });
+      }
+      contactId = workshopRequest.contactId;
+    }
+
     if (!contactId) {
       return NextResponse.json({ error: 'Le contact est obligatoire' }, { status: 400 });
     }
@@ -102,10 +121,34 @@ export async function POST(request: NextRequest) {
       size: payload.file.size,
     });
 
+    const dbVisibility = FILE_VISIBILITY_DB[payload.visibility];
+    const categoryResolution = resolveDocumentCategory({
+      category: payload.category,
+      mimeType: payload.file.mimeType,
+      songRequestId: payload.songRequestId ?? null,
+      workshopRequestId: payload.workshopRequestId ?? null,
+      uploadedByUserId: guard.session.sub,
+      visibility: dbVisibility,
+    });
+
+    const persistedCategory = categoryResolution.source === 'fallback'
+      ? getDefaultCategoryForUpload({
+          context: payload.songRequestId
+            ? 'song'
+            : payload.workshopRequestId
+              ? 'workshop'
+              : payload.visibility === 'admin_only'
+                ? 'admin-internal'
+                : 'general',
+          mimeType: payload.file.mimeType,
+        })
+      : categoryResolution.category;
+
     const item = await prisma.fileDocument.create({
       data: {
         contactId,
         songRequestId: payload.songRequestId ?? null,
+        workshopRequestId: payload.workshopRequestId ?? null,
         uploadedByUserId: guard.session.sub,
         filename: payload.file.filename,
         originalName: payload.file.originalName,
@@ -113,8 +156,8 @@ export async function POST(request: NextRequest) {
         size: payload.file.size,
         storageKey: payload.file.storageKey,
         url: payload.file.url,
-        category: payload.category,
-        visibility: FILE_VISIBILITY_DB[payload.visibility],
+        category: persistedCategory,
+        visibility: dbVisibility,
       },
       include: { uploadedByUser: { select: { id: true, fullName: true } } },
     });
@@ -122,12 +165,17 @@ export async function POST(request: NextRequest) {
     await prisma.activity.create({
       data: {
         type: 'FILE',
-        title: payload.songRequestId ? 'Document ajoute a la demande de chanson' : 'Fichier depose',
+        title: payload.songRequestId
+          ? 'Document ajoute a la demande de chanson'
+          : payload.workshopRequestId
+            ? 'Document ajoute a la demande atelier'
+            : 'Fichier depose',
         description: [
           `Nom: ${payload.file.originalName}`,
-          `Categorie: ${payload.category}`,
+          `Categorie: ${persistedCategory}`,
           `Visibilite: ${payload.visibility}`,
           payload.songRequestId ? `Demande chanson: ${payload.songRequestId}` : null,
+          payload.workshopRequestId ? `Demande atelier: ${payload.workshopRequestId}` : null,
         ].filter(Boolean).join('\n'),
         contactId,
         songRequestId: payload.songRequestId ?? null,

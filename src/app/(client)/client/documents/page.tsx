@@ -1,21 +1,13 @@
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
-import { EmptyState, ListToolbar, PageHeader, SectionCard } from '@/features/client-portal/components/ui';
+import { EmptyState, PageHeader, SectionCard } from '@/features/client-portal/components/ui';
 import { FileText } from 'lucide-react';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { UploadFileForm } from '@/components/files/UploadFileForm';
 import { ClientDocumentsList } from '@/features/client-portal/components/ClientDocumentsList';
-
-type DocumentsTab = 'all' | 'contact' | 'song_requests' | 'quotes' | 'invoices';
-
-function parseTab(input?: string): DocumentsTab {
-  return input === 'contact' || input === 'song_requests' || input === 'quotes' || input === 'invoices' ? input : 'all';
-}
-
-export default async function ClientDocumentsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+import { getClientDocumentSection, getDefaultCategoryForUpload } from '@/features/documents/document-categories';
+export default async function ClientDocumentsPage() {
   const session = await requireClientPortalSession();
-  const resolvedSearchParams = (await searchParams) || {};
-  const tab = parseTab(typeof resolvedSearchParams.tab === 'string' ? resolvedSearchParams.tab : undefined);
 
   const contact = await prisma.contact.findUnique({ where: { id: session.contactId }, select: { id: true } });
 
@@ -23,13 +15,26 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
     return <div className="crm-surface p-8 text-sm text-slate-300">Aucun dossier client disponible.</div>;
   }
 
-  let documents = [] as Awaited<ReturnType<typeof prisma.fileDocument.findMany>>;
+  type DocumentItem = Prisma.FileDocumentGetPayload<{
+    include: {
+      songRequest: { select: { id: true; title: true } };
+      workshopRequest: { select: { id: true; title: true } };
+      uploadedByUser: { select: { id: true } };
+    };
+  }>;
+
+  let documents: DocumentItem[] = [];
 
   try {
     documents = await prisma.fileDocument.findMany({
       where: {
         contactId: contact.id,
         visibility: 'CLIENT_VISIBLE',
+      },
+      include: {
+        songRequest: { select: { id: true, title: true } },
+        workshopRequest: { select: { id: true, title: true } },
+        uploadedByUser: { select: { id: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: 100,
@@ -42,13 +47,34 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
     }
   }
 
-  const filteredDocuments = documents.filter((document) => {
-    if (tab === 'contact') return !document.songRequestId && !document.invoiceId && !document.commercialQuoteId;
-    if (tab === 'song_requests') return !!document.songRequestId;
-    if (tab === 'quotes') return !!document.commercialQuoteId;
-    if (tab === 'invoices') return !!document.invoiceId;
-    return true;
-  });
+  const mappedDocuments = documents.map((document) => ({
+    id: document.id,
+    filename: document.filename,
+    originalName: document.originalName,
+    mimeType: document.mimeType,
+    size: document.size,
+    url: document.url,
+    category: document.category,
+    visibility: document.visibility,
+    createdAt: document.createdAt.toISOString(),
+    origin: document.uploadedByUserId ? 'admin' as const : 'client' as const,
+    songRequest: document.songRequest ? { id: document.songRequest.id, title: document.songRequest.title } : null,
+    workshopRequest: document.workshopRequest ? { id: document.workshopRequest.id, title: document.workshopRequest.title } : null,
+    songRequestId: document.songRequestId,
+    workshopRequestId: document.workshopRequestId,
+    commercialQuoteId: document.commercialQuoteId,
+    invoiceId: document.invoiceId,
+    uploadedByUserId: document.uploadedByUserId,
+  }));
+
+  const grouped = {
+    quotes: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'quotes'),
+    invoices: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'invoices'),
+    shared: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'shared'),
+    songDeliverables: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'song-deliverables'),
+    workshopDeliverables: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'workshop-deliverables'),
+    other: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'other'),
+  };
 
   return (
     <section className="space-y-6">
@@ -62,39 +88,39 @@ export default async function ClientDocumentsPage({ searchParams }: { searchPara
           endpoint="/api/client-portal/file-documents"
           title="Deposer un document"
           description="Vous pouvez transmettre des textes, paroles, poemes, notes, audios de demo et documents de projet."
-          defaultCategory="document"
+          defaultCategory={getDefaultCategoryForUpload({ context: 'general' })}
         />
       </SectionCard>
 
       <SectionCard title="Bibliothèque" subtitle="Historique des documents disponibles avec téléchargement rapide.">
-        <ListToolbar
-          filters={[
-            { label: 'Tous', href: '/client/documents?tab=all', active: tab === 'all' },
-            { label: 'Contact', href: '/client/documents?tab=contact', active: tab === 'contact' },
-            { label: 'Demandes chanson', href: '/client/documents?tab=song_requests', active: tab === 'song_requests' },
-            { label: 'Devis', href: '/client/documents?tab=quotes', active: tab === 'quotes' },
-            { label: 'Factures', href: '/client/documents?tab=invoices', active: tab === 'invoices' },
-          ]}
-          actions={[{ label: 'Tout voir', href: '/client/documents?tab=all' }]}
-        />
-
-        {filteredDocuments.length === 0 ? (
+        {mappedDocuments.length === 0 ? (
           <EmptyState icon={<FileText size={18} />} title="Aucun document" description="Aucun document ne correspond à ce filtre pour le moment." />
         ) : (
-          <ClientDocumentsList
-            items={filteredDocuments.map((document) => ({
-              id: document.id,
-              filename: document.filename,
-              originalName: document.originalName,
-              mimeType: document.mimeType,
-              size: document.size,
-              url: document.url,
-              category: document.category,
-              visibility: document.visibility,
-              createdAt: document.createdAt.toISOString(),
-            }))}
-            emptyLabel="Aucun document"
-          />
+          <div className="space-y-4">
+            <SectionCard title="Soumissions">
+              <ClientDocumentsList items={grouped.quotes} emptyLabel="Aucune soumission" />
+            </SectionCard>
+
+            <SectionCard title="Factures">
+              <ClientDocumentsList items={grouped.invoices} emptyLabel="Aucune facture" />
+            </SectionCard>
+
+            <SectionCard title="Documents partages">
+              <ClientDocumentsList items={grouped.shared} emptyLabel="Aucun document partage" />
+            </SectionCard>
+
+            <SectionCard title="Livrables chanson">
+              <ClientDocumentsList items={grouped.songDeliverables} emptyLabel="Aucun livrable chanson" />
+            </SectionCard>
+
+            <SectionCard title="Livrables atelier">
+              <ClientDocumentsList items={grouped.workshopDeliverables} emptyLabel="Aucun livrable atelier" />
+            </SectionCard>
+
+            <SectionCard title="Autres documents">
+              <ClientDocumentsList items={grouped.other} emptyLabel="Aucun autre document" />
+            </SectionCard>
+          </div>
         )}
       </SectionCard>
     </section>

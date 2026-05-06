@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { SongRequestDetailPage } from '@/features/crm/components/song-requests/SongRequestDetailPage';
 import { buildClientPortalUrl, signClientPortalToken } from '@/lib/client-portal';
+import { LinkedDocumentsPanel } from '@/features/crm/components/documents/LinkedDocumentsPanel';
 
 interface PageProps {
   params: { id: string };
@@ -82,9 +83,23 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
     fullName: song.fullName,
   });
 
+  const linkedDocuments = await prisma.fileDocument.findMany({
+    where: {
+      contactId: song.contactId,
+      OR: [
+        { songRequestId: song.id },
+        { commercialQuote: { songRequestId: song.id } },
+        { invoice: { convertedFromQuote: { songRequestId: song.id } } },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 80,
+  });
+
   return (
-    <SongRequestDetailPage
-      item={{
+    <>
+      <SongRequestDetailPage
+        item={{
         id: String(song.id),
         fullName: song.fullName || '',
         email: song.email || '',
@@ -188,9 +203,33 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
           createdAt: file.createdAt.toISOString(),
         })),
       }}
-      clientPortalUrl={buildClientPortalUrl(clientPortalToken)}
-      canCreateCommercialQuote={can(session.role, 'commercialQuotes', 'create')}
-      canCreateInvoice={can(session.role, 'invoices', 'create')}
-    />
+        clientPortalUrl={buildClientPortalUrl(clientPortalToken)}
+        canCreateCommercialQuote={can(session.role, 'commercialQuotes', 'create')}
+        canCreateInvoice={can(session.role, 'invoices', 'create')}
+      />
+
+      <LinkedDocumentsPanel
+        title="Documents liés"
+        subtitle="Documents du client et documents liés à cette chanson."
+        items={linkedDocuments.map((item) => ({
+          id: item.id,
+          originalName: item.originalName,
+          mimeType: item.mimeType,
+          category: item.category,
+          createdAtIso: item.createdAt.toISOString(),
+          downloadUrl: `/api/crm/file-documents/${item.id}/download`,
+          songRequestId: item.songRequestId,
+          workshopRequestId: item.workshopRequestId,
+          commercialQuoteId: item.commercialQuoteId,
+          invoiceId: item.invoiceId,
+          uploadedByUserId: item.uploadedByUserId,
+          visibility: item.visibility,
+        }))}
+        quickLinks={[
+          { href: `/crm/contacts/${song.contact.id}`, label: 'Dossier client' },
+          { href: `/crm/song-requests/${song.id}`, label: 'Dossier chanson' },
+        ]}
+      />
+    </>
   );
 }
