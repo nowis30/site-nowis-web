@@ -245,5 +245,5 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     },
   }).catch(() => undefined);
 
-  return NextResponse.json({ success: true, id: current.id, redirectTo: '/client/song-requests' });
+  return NextResponse.json({ success: true, id: current.id, redirectTo: '/client/song-requests?deleted=1' });
 }

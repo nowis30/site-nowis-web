@@ -20,7 +20,9 @@ function formatDateTime(value: Date | null | undefined) {
 
 const CLIENT_EDITABLE_STATUSES = new Set(['BROUILLON', 'NEW', 'CONTACTED', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'SCHEDULED']);
 
-export default async function ClientWorkshopsPage() {
+export default async function ClientWorkshopsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+  const resolvedSearchParams = (await searchParams) || {};
+  const deleted = typeof resolvedSearchParams.deleted === 'string' ? resolvedSearchParams.deleted : undefined;
   const session = await requireClientPortalSession();
 
   let requests = [] as Array<{
@@ -65,6 +67,12 @@ export default async function ClientWorkshopsPage() {
   return (
     <section className="space-y-6">
       <PageHeader title="Ateliers" subtitle="Suivez vos demandes d’atelier, les rendez-vous confirmés et les prochaines étapes avec Nowis." />
+
+      {deleted === '1' ? (
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          Demande supprimée avec succès.
+        </div>
+      ) : null}
 
       <SectionCard title="Actions" subtitle="Démarrer une nouvelle demande d'atelier depuis votre portail sécurisé.">
         <ListToolbar

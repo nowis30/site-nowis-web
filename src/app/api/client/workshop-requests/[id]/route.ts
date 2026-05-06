@@ -169,5 +169,5 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     },
   }).catch(() => undefined);
 
-  return NextResponse.json({ success: true, id: item.id, redirectTo: '/client/workshops' });
+  return NextResponse.json({ success: true, id: item.id, redirectTo: '/client/workshops?deleted=1' });
 }

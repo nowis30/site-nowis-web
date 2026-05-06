@@ -40,6 +40,7 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
   const session = await requireClientPortalSession();
   const resolvedSearchParams = (await searchParams) || {};
   const tab = parseTab(typeof resolvedSearchParams.tab === 'string' ? resolvedSearchParams.tab : undefined);
+  const deleted = typeof resolvedSearchParams.deleted === 'string' ? resolvedSearchParams.deleted : undefined;
 
   const requests = await prisma.songRequest.findMany({
     where: { contactId: session.contactId },
@@ -69,6 +70,12 @@ export default async function ClientSongRequestsPage({ searchParams }: { searchP
         subtitle="Vos demandes en un coup d'oeil."
         actions={<Link href="/client/song-requests/nouveau" className="rounded-xl border border-primary-500/40 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-100 transition hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Nouvelle demande</Link>}
       />
+
+      {deleted === '1' ? (
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          Demande supprimée avec succès.
+        </div>
+      ) : null}
 
       <SectionCard title="Liste" subtitle="Touchez un titre pour ouvrir.">
         <ListToolbar
