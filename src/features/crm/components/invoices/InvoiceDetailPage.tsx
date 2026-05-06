@@ -478,6 +478,17 @@ export function InvoiceDetailPage({
 
               <div>
                 <label className="mb-1 block text-xs uppercase tracking-[0.18em] text-slate-500">Apercu PDF en direct</label>
+                <div className="mb-3 rounded-xl border border-slate-700 bg-slate-950/60 p-3 text-sm text-slate-200">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Adresse de facturation</p>
+                  <p className="mt-1 font-semibold text-white">{billedName}</p>
+                  {billedCompany ? <p>{billedCompany}</p> : null}
+                  {billedAddressLine1 ? <p>{billedAddressLine1}</p> : null}
+                  {billedAddressLine2 ? <p>{billedAddressLine2}</p> : null}
+                  {billedCityLine ? <p>{billedCityLine}</p> : null}
+                  {billedCountry ? <p>{billedCountry}</p> : null}
+                  {billedEmail ? <p>{billedEmail}</p> : null}
+                  {billedPhone ? <p>{billedPhone}</p> : null}
+                </div>
                 <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-950/60">
                   <iframe
                     title={`Apercu PDF facture ${invoice.number}`}
