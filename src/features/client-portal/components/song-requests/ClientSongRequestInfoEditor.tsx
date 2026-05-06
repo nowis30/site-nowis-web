@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type InfoItem = {
   id: string;
@@ -31,10 +32,50 @@ export function ClientSongRequestInfoEditor({
   initial: InfoItem;
   canEdit: boolean;
 }) {
+  const router = useRouter();
   const [item, setItem] = useState(initial);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteChecked, setDeleteChecked] = useState(false);
+  const [deleteKeyword, setDeleteKeyword] = useState('');
+  const [deleteReason, setDeleteReason] = useState('');
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
+
+  const canConfirmDelete = deleteChecked && deleteKeyword.trim().toUpperCase() === 'SUPPRIMER' && !deleting;
+
+  async function confirmDelete() {
+    if (!canConfirmDelete) return;
+    setDeleting(true);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/client/song-requests/${item.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          confirmed: true,
+          confirmationText: deleteKeyword,
+          reason: deleteReason,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+        redirectTo?: string;
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Suppression impossible');
+      }
+
+      router.push(data?.redirectTo || '/client/song-requests');
+    } catch (error) {
+      setMessage({ text: error instanceof Error ? error.message : 'Erreur inconnue', ok: false });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -210,13 +251,86 @@ export function ClientSongRequestInfoEditor({
       ) : null}
 
       {canEdit ? (
-        <button
-          type="button"
-          onClick={() => setIsEditing(true)}
-          className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white"
-        >
-          Modifier
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white"
+          >
+            Modifier
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setShowDeleteConfirm((current) => !current);
+              setMessage(null);
+            }}
+            className="rounded-xl border border-red-700/60 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:border-red-500 hover:text-red-100"
+          >
+            Supprimer définitivement
+          </button>
+        </div>
+      ) : null}
+
+      {canEdit && showDeleteConfirm ? (
+        <div className="rounded-xl border border-red-800/60 bg-red-950/30 p-4 text-sm text-red-100">
+          <p className="font-medium">Suppression définitive (double validation)</p>
+          <p className="mt-2 text-red-200">Cette action retirera la demande de votre portail et ne pourra pas être annulée par vous.</p>
+
+          <label className="mt-3 flex items-start gap-2 text-xs text-red-200">
+            <input
+              type="checkbox"
+              checked={deleteChecked}
+              onChange={(event) => setDeleteChecked(event.target.checked)}
+              className="mt-0.5"
+            />
+            Je confirme vouloir supprimer cette demande définitivement.
+          </label>
+
+          <label className="mt-3 block">
+            <span className="mb-1 block text-xs text-red-200">Tapez SUPPRIMER pour confirmer</span>
+            <input
+              value={deleteKeyword}
+              onChange={(event) => setDeleteKeyword(event.target.value)}
+              className="w-full rounded-xl border border-red-800 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+              placeholder="SUPPRIMER"
+            />
+          </label>
+
+          <label className="mt-3 block">
+            <span className="mb-1 block text-xs text-red-200">Raison (optionnel)</span>
+            <textarea
+              rows={2}
+              value={deleteReason}
+              onChange={(event) => setDeleteReason(event.target.value)}
+              className="w-full rounded-xl border border-red-800 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+              placeholder="Ex: erreur dans la demande"
+            />
+          </label>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={confirmDelete}
+              disabled={!canConfirmDelete}
+              className="rounded-xl border border-red-700 bg-red-700/20 px-3 py-2 text-xs font-semibold text-red-100 disabled:opacity-50"
+            >
+              {deleting ? 'Suppression en cours...' : 'Confirmer la suppression'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setDeleteChecked(false);
+                setDeleteKeyword('');
+                setDeleteReason('');
+              }}
+              className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {message ? <p className={`text-sm ${message.ok ? 'text-green-400' : 'text-red-400'}`}>{message.text}</p> : null}

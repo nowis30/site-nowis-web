@@ -13,7 +13,27 @@ const clientSongPatchSchema = z.object({
   desiredDeadline: z.string().datetime().optional().or(z.literal('')),
 }).strict();
 
+const clientSongDeleteSchema = z.object({
+  confirmationText: z.string().trim().optional(),
+  confirmed: z.boolean().optional(),
+  reason: z.string().trim().max(500).optional().or(z.literal('')),
+}).strict();
+
 const CLIENT_EDITABLE_STATUSES = new Set(['NEW', 'CONTACTED', 'IN_PROGRESS', 'IN_PRODUCTION']);
+
+function canClientEditSongRequest(current: {
+  status: string;
+  convertedInvoiceId: string | null;
+  archivedAt: Date | null;
+  deletedAt: Date | null;
+}) {
+  return (
+    CLIENT_EDITABLE_STATUSES.has(current.status)
+    && !current.convertedInvoiceId
+    && !current.archivedAt
+    && !current.deletedAt
+  );
+}
 
 function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
@@ -85,11 +105,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
   if (!item) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
   if (item.contactId !== session.contactId) return forbidden();
-  const canEdit =
-    CLIENT_EDITABLE_STATUSES.has(item.status as string)
-    && !item.convertedInvoiceId
-    && !item.archivedAt
-    && !item.deletedAt;
+  const canEdit = canClientEditSongRequest(item);
 
   return NextResponse.json({ item: toClientSongRequest(item), canEdit });
 }
@@ -105,11 +121,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   if (!current) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
   if (current.contactId !== session.contactId) return forbidden();
 
-  const canEdit =
-    CLIENT_EDITABLE_STATUSES.has(current.status)
-    && !current.convertedInvoiceId
-    && !current.archivedAt
-    && !current.deletedAt;
+  const canEdit = canClientEditSongRequest(current);
 
   if (!canEdit) {
     return NextResponse.json({
@@ -167,4 +179,71 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }).catch(() => undefined);
 
   return NextResponse.json({ item: toClientSongRequest(item) });
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  if (!session) return unauthorized();
+
+  const current = await prisma.songRequest.findUnique({
+    where: { id: params.id },
+    select: {
+      id: true,
+      contactId: true,
+      title: true,
+      status: true,
+      convertedInvoiceId: true,
+      archivedAt: true,
+      deletedAt: true,
+    },
+  });
+
+  if (!current) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
+  if (current.contactId !== session.contactId) return forbidden();
+
+  const parsed = clientSongDeleteSchema.safeParse(await request.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Validation suppression invalide.' }, { status: 400 });
+  }
+
+  const payload = parsed.data;
+  if (!payload.confirmed || payload.confirmationText !== 'SUPPRIMER') {
+    return NextResponse.json({ error: 'Double validation requise pour supprimer cette demande.' }, { status: 400 });
+  }
+
+  if (!canClientEditSongRequest(current)) {
+    return NextResponse.json({
+      error: 'Cette demande ne peut plus être modifiée directement. Contactez Création Nowis pour faire un changement.',
+      blocked: true,
+      messageUrl: 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client',
+      fallbackMailto: 'mailto:simonmorin@nowis.store?subject=Demande%20depuis%20le%20portail%20client',
+    }, { status: 409 });
+  }
+
+  await prisma.songRequest.update({
+    where: { id: current.id },
+    data: {
+      status: 'DELETED',
+      deletedAt: new Date(),
+      deletedBy: null,
+      deleteReason: payload.reason && payload.reason.trim().length > 0
+        ? `Suppression client: ${payload.reason.trim()}`
+        : 'Suppression demandee par le client (portail).',
+    },
+  });
+
+  await prisma.activity.create({
+    data: {
+      type: 'FORM',
+      title: 'Demande de chanson supprimée par le client',
+      description: `Suppression client sur ${current.title || 'demande chanson'}`,
+      contactId: session.contactId,
+      songRequestId: current.id,
+      relatedType: 'SONG_REQUEST',
+      relatedId: current.id,
+      relatedUrl: `/crm/song-requests/${current.id}`,
+    },
+  }).catch(() => undefined);
+
+  return NextResponse.json({ success: true, id: current.id, redirectTo: '/client/song-requests' });
 }

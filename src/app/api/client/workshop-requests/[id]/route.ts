@@ -19,6 +19,12 @@ const clientWorkshopPatchSchema = z.object({
   contactEmail: z.string().trim().email().optional().or(z.literal('')),
 });
 
+const clientWorkshopDeleteSchema = z.object({
+  confirmationText: z.string().trim().optional(),
+  confirmed: z.boolean().optional(),
+  reason: z.string().trim().max(500).optional().or(z.literal('')),
+});
+
 const CLIENT_EDITABLE_STATUSES = new Set(['BROUILLON', 'NEW', 'CONTACTED', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'SCHEDULED']);
 
 function normalizeOptionalString(value?: string) {
@@ -111,4 +117,57 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }).catch(() => undefined);
 
   return NextResponse.json({ item: updated });
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  if (!session) return unauthorized();
+
+  const item = await loadOwnedWorkshop(session.contactId, params.id);
+  if (!item) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
+
+  const parsed = clientWorkshopDeleteSchema.safeParse(await request.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Validation suppression invalide.' }, { status: 400 });
+  }
+
+  const payload = parsed.data;
+  if (!payload.confirmed || payload.confirmationText !== 'SUPPRIMER') {
+    return NextResponse.json({ error: 'Double validation requise pour supprimer cette demande.' }, { status: 400 });
+  }
+
+  if (!CLIENT_EDITABLE_STATUSES.has(item.status)) {
+    return NextResponse.json({
+      error: 'Cette demande ne peut plus être modifiée directement. Contactez Création Nowis pour faire un changement.',
+      blocked: true,
+      messageUrl: 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client',
+      fallbackMailto: 'mailto:simonmorin@nowis.store?subject=Demande%20depuis%20le%20portail%20client',
+    }, { status: 409 });
+  }
+
+  await prisma.workshopRequest.update({
+    where: { id: item.id },
+    data: {
+      status: 'DELETED',
+      deletedAt: new Date(),
+      deletedBy: null,
+      deleteReason: payload.reason && payload.reason.trim().length > 0
+        ? `Suppression client: ${payload.reason.trim()}`
+        : 'Suppression demandee par le client (portail).',
+    },
+  });
+
+  await prisma.activity.create({
+    data: {
+      type: 'FORM',
+      title: 'Demande d\'atelier supprimée par le client',
+      description: `Suppression client sur ${item.title}`,
+      contactId: session.contactId,
+      relatedType: 'WORKSHOP_REQUEST',
+      relatedId: item.id,
+      relatedUrl: `/crm/workshop-requests/${item.id}`,
+    },
+  }).catch(() => undefined);
+
+  return NextResponse.json({ success: true, id: item.id, redirectTo: '/client/workshops' });
 }
