@@ -66,13 +66,41 @@ function buildDefaultSubject(invoiceNumber: string, businessName: string) {
   return `Facture ${invoiceNumber} - ${businessName}`;
 }
 
-function buildDefaultMessage(contactName: string, invoiceNumber: string, amount: string | number, dueDate: string, businessName: string) {
+function buildBillingAddressLines(customerSnapshot: ReturnType<typeof toCustomerSnapshot>) {
+  if (!customerSnapshot) return [] as string[];
+
+  const cityLine = [customerSnapshot.city, customerSnapshot.state, customerSnapshot.postalCode].filter(Boolean).join(', ');
+  const lines = [
+    customerSnapshot.fullName,
+    customerSnapshot.companyName,
+    customerSnapshot.addressLine1,
+    customerSnapshot.addressLine2,
+    cityLine || null,
+    customerSnapshot.country,
+  ].filter(Boolean) as string[];
+
+  return lines;
+}
+
+function buildDefaultMessage(
+  contactName: string,
+  invoiceNumber: string,
+  amount: string | number,
+  dueDate: string,
+  businessName: string,
+  customerSnapshot: ReturnType<typeof toCustomerSnapshot>,
+) {
+  const billingAddressLines = buildBillingAddressLines(customerSnapshot);
+
   return [
     `Bonjour ${contactName},`,
     '',
     `Veuillez trouver ci-joint la facture ${invoiceNumber}.`,
     `Montant: ${formatMoney(amount)}`,
     `Echeance: ${formatDate(dueDate)}`,
+    ...(billingAddressLines.length > 0
+      ? ['', 'Adresse de facturation:', ...billingAddressLines]
+      : []),
     '',
     'Merci,',
     businessName,
@@ -86,9 +114,11 @@ function buildTemplateMessageByStatus(
   amount: string | number,
   dueDate: string,
   businessName: string,
+  customerSnapshot: ReturnType<typeof toCustomerSnapshot>,
 ) {
   const total = formatMoney(amount);
   const due = formatDate(dueDate);
+  const billingAddressLines = buildBillingAddressLines(customerSnapshot);
 
   if (status === 'OVERDUE') {
     return [
@@ -96,6 +126,9 @@ function buildTemplateMessageByStatus(
       '',
       `Petit rappel: la facture ${invoiceNumber} (${total}) est arrivee a echeance le ${due}.`,
       'Merci de proceder au paiement dans les meilleurs delais.',
+      ...(billingAddressLines.length > 0
+        ? ['', 'Adresse de facturation au dossier:', ...billingAddressLines]
+        : []),
       '',
       'Merci,',
       businessName,
@@ -108,6 +141,9 @@ function buildTemplateMessageByStatus(
       '',
       `Confirmation de reception pour la facture ${invoiceNumber} (${total}).`,
       'Merci pour votre paiement et votre confiance.',
+      ...(billingAddressLines.length > 0
+        ? ['', 'Adresse de facturation au dossier:', ...billingAddressLines]
+        : []),
       '',
       'Cordialement,',
       businessName,
@@ -121,13 +157,16 @@ function buildTemplateMessageByStatus(
       `Je vous renvoie la facture ${invoiceNumber} en piece jointe.`,
       `Montant: ${total}`,
       `Echeance: ${due}`,
+      ...(billingAddressLines.length > 0
+        ? ['', 'Adresse de facturation:', ...billingAddressLines]
+        : []),
       '',
       'Merci,',
       businessName,
     ].join('\n');
   }
 
-  return buildDefaultMessage(contactName, invoiceNumber, amount, dueDate, businessName);
+  return buildDefaultMessage(contactName, invoiceNumber, amount, dueDate, businessName, customerSnapshot);
 }
 
 function validateEmailListInput(value: string) {
@@ -170,11 +209,19 @@ export function InvoiceDetailPage({
   const [emailSubject, setEmailSubject] = useState(buildDefaultSubject(invoice.number, businessProfile.displayName));
   const [emailCc, setEmailCc] = useState('');
   const [emailBcc, setEmailBcc] = useState('');
+  const customerSnapshot = toCustomerSnapshot(invoice.customerSnapshot);
   const [emailMessage, setEmailMessage] = useState(
-    buildTemplateMessageByStatus(invoice.status, invoice.contact.fullName, invoice.number, invoice.amount, invoice.dueDate, businessProfile.displayName),
+    buildTemplateMessageByStatus(
+      invoice.status,
+      invoice.contact.fullName,
+      invoice.number,
+      invoice.amount,
+      invoice.dueDate,
+      businessProfile.displayName,
+      customerSnapshot,
+    ),
   );
   const lines = (invoice.description || 'Prestation professionnelle').split('\n').filter(Boolean);
-  const customerSnapshot = toCustomerSnapshot(invoice.customerSnapshot);
   const billedName = customerSnapshot?.fullName || invoice.contact.fullName;
   const billedCompany = customerSnapshot?.companyName || invoice.contact.companyName;
   const billedEmail = customerSnapshot?.email || invoice.contact.email;
@@ -328,7 +375,17 @@ export function InvoiceDetailPage({
                     type="button"
                     onClick={() => {
                       setEmailSubject(buildDefaultSubject(invoice.number, businessProfile.displayName));
-                      setEmailMessage(buildTemplateMessageByStatus('DRAFT', invoice.contact.fullName, invoice.number, invoice.amount, invoice.dueDate, businessProfile.displayName));
+                      setEmailMessage(
+                        buildTemplateMessageByStatus(
+                          'DRAFT',
+                          invoice.contact.fullName,
+                          invoice.number,
+                          invoice.amount,
+                          invoice.dueDate,
+                          businessProfile.displayName,
+                          customerSnapshot,
+                        ),
+                      );
                     }}
                     className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500"
                   >
@@ -338,7 +395,17 @@ export function InvoiceDetailPage({
                     type="button"
                     onClick={() => {
                       setEmailSubject(`Rappel facture ${invoice.number} - ${businessProfile.displayName}`);
-                      setEmailMessage(buildTemplateMessageByStatus('OVERDUE', invoice.contact.fullName, invoice.number, invoice.amount, invoice.dueDate, businessProfile.displayName));
+                      setEmailMessage(
+                        buildTemplateMessageByStatus(
+                          'OVERDUE',
+                          invoice.contact.fullName,
+                          invoice.number,
+                          invoice.amount,
+                          invoice.dueDate,
+                          businessProfile.displayName,
+                          customerSnapshot,
+                        ),
+                      );
                     }}
                     className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500"
                   >
@@ -348,7 +415,17 @@ export function InvoiceDetailPage({
                     type="button"
                     onClick={() => {
                       setEmailSubject(`Confirmation paiement ${invoice.number} - ${businessProfile.displayName}`);
-                      setEmailMessage(buildTemplateMessageByStatus('PAID', invoice.contact.fullName, invoice.number, invoice.amount, invoice.dueDate, businessProfile.displayName));
+                      setEmailMessage(
+                        buildTemplateMessageByStatus(
+                          'PAID',
+                          invoice.contact.fullName,
+                          invoice.number,
+                          invoice.amount,
+                          invoice.dueDate,
+                          businessProfile.displayName,
+                          customerSnapshot,
+                        ),
+                      );
                     }}
                     className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:border-slate-500"
                   >
