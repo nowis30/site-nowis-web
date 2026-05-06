@@ -160,6 +160,15 @@ function readString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value : null;
 }
 
+function extractInvoiceIdFromUrl(value: string | null | undefined) {
+  const raw = readString(value);
+  if (!raw) return null;
+
+  // Accept both absolute URLs and relative API paths.
+  const match = raw.match(/\/v2\/invoicing\/invoices\/([A-Za-z0-9-]+)/i);
+  return match?.[1] || null;
+}
+
 function trimToNull(value: string | null | undefined) {
   if (!value) return null;
   const trimmed = value.trim();
@@ -396,7 +405,24 @@ export function isDuplicatePayPalInvoiceNumberError(error: unknown) {
 
 function extractPayPalInvoiceId(payload: JsonRecord) {
   const invoice = asRecord(payload.invoice);
-  return readString(payload.id) || readString(invoice.id);
+  const directId =
+    readString(payload.id) ||
+    readString(payload.invoice_id) ||
+    readString(invoice.id) ||
+    readString(invoice.invoice_id);
+  if (directId) return directId;
+
+  const hrefId = extractInvoiceIdFromUrl(readString(payload.href));
+  if (hrefId) return hrefId;
+
+  const links = Array.isArray(payload.links) ? payload.links : [];
+  for (const linkValue of links) {
+    const link = asRecord(linkValue);
+    const linkId = extractInvoiceIdFromUrl(readString(link.href));
+    if (linkId) return linkId;
+  }
+
+  return null;
 }
 
 function extractPayPalInvoiceNumber(payload: JsonRecord) {
@@ -874,9 +900,13 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
       method: 'POST',
       body: JSON.stringify(payload),
     });
+    const locationHeader = readString(response.headers.get('location'));
     const created = asRecord(await response.json());
     const createdInvoice = asRecord(created.invoice);
-    const paypalInvoiceId = readString(created.id) || readString(createdInvoice.id);
+    const paypalInvoiceId =
+      extractPayPalInvoiceId(created) ||
+      extractPayPalInvoiceId(createdInvoice) ||
+      extractInvoiceIdFromUrl(locationHeader);
 
     if (!paypalInvoiceId) {
       throw new Error('PayPal n a pas retourne d identifiant de facture.');
