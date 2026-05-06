@@ -17,6 +17,21 @@ type InvoicePayload = {
   paymentAmount: string | null;
   paymentCurrency: string | null;
   paypalPaidAt: string | null;
+  customerSnapshot?: {
+    fullName: string;
+    companyName: string | null;
+    legalName: string | null;
+    email: string | null;
+    phone: string | null;
+    addressLine1: string | null;
+    addressLine2: string | null;
+    city: string | null;
+    state: string | null;
+    postalCode: string | null;
+    country: string | null;
+    taxId: string | null;
+    notes: string | null;
+  } | null;
   contact: { fullName: string; email: string | null };
 };
 
@@ -64,6 +79,14 @@ export default function PublicInvoicePage({ params }: { params: { token: string 
   }
 
   const paid = (item.paymentStatus || '').toLowerCase() === 'paid' || item.status === 'PAID';
+  const billed = item.customerSnapshot;
+  const billedName = billed?.fullName || item.contact.fullName;
+  const billedCompany = billed?.companyName || null;
+  const billedAddressLine1 = billed?.addressLine1 || null;
+  const billedAddressLine2 = billed?.addressLine2 || null;
+  const billedCityLine = [billed?.city, billed?.state, billed?.postalCode].filter(Boolean).join(', ');
+  const billedCountry = billed?.country || null;
+  const billedEmail = billed?.email || item.contact.email;
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 text-slate-100">
@@ -71,6 +94,17 @@ export default function PublicInvoicePage({ params }: { params: { token: string 
       <p className="mt-2 text-sm text-slate-400">Client: {item.contact.fullName}</p>
 
       <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="mb-4 rounded-xl border border-slate-700 bg-slate-950/40 p-3">
+          <p className="text-xs uppercase tracking-[0.12em] text-slate-500">Adresse de facturation</p>
+          <p className="mt-1 text-sm font-semibold text-white">{billedName}</p>
+          {billedCompany ? <p className="text-sm text-slate-300">{billedCompany}</p> : null}
+          {billedAddressLine1 ? <p className="text-sm text-slate-300">{billedAddressLine1}</p> : null}
+          {billedAddressLine2 ? <p className="text-sm text-slate-300">{billedAddressLine2}</p> : null}
+          {billedCityLine ? <p className="text-sm text-slate-300">{billedCityLine}</p> : null}
+          {billedCountry ? <p className="text-sm text-slate-300">{billedCountry}</p> : null}
+          {billedEmail ? <p className="text-sm text-slate-300">{billedEmail}</p> : null}
+        </div>
+
         <p className="text-sm text-slate-300">Statut CRM: <strong>{item.status}</strong></p>
         <p className="text-sm text-slate-300">Statut paiement: <strong>{item.paymentStatus || 'unpaid'}</strong></p>
         <p className="mt-2 text-sm text-slate-400">Emise le {new Date(item.issueDate).toLocaleDateString('fr-CA')} · Echeance {new Date(item.dueDate).toLocaleDateString('fr-CA')}</p>

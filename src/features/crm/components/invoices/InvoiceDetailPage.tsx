@@ -6,6 +6,7 @@ import { ArrowLeft, Mail, Printer } from 'lucide-react';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
 import { InvoiceBusinessProfile } from '@/lib/invoice-profile';
 import { PayPalInvoicePanel } from '@/features/crm/components/invoices/PayPalInvoicePanel';
+import { toCustomerSnapshot } from '@/lib/billing-profile';
 
 interface InvoiceDetailPageProps {
   invoice: {
@@ -27,6 +28,7 @@ interface InvoiceDetailPageProps {
     paymentStatus: string | null;
     paymentAmount: string | number | null;
     paymentCurrency: string | null;
+    customerSnapshot?: unknown;
     contact: {
       fullName: string;
       email: string | null;
@@ -172,6 +174,16 @@ export function InvoiceDetailPage({
     buildTemplateMessageByStatus(invoice.status, invoice.contact.fullName, invoice.number, invoice.amount, invoice.dueDate, businessProfile.displayName),
   );
   const lines = (invoice.description || 'Prestation professionnelle').split('\n').filter(Boolean);
+  const customerSnapshot = toCustomerSnapshot(invoice.customerSnapshot);
+  const billedName = customerSnapshot?.fullName || invoice.contact.fullName;
+  const billedCompany = customerSnapshot?.companyName || invoice.contact.companyName;
+  const billedEmail = customerSnapshot?.email || invoice.contact.email;
+  const billedPhone = customerSnapshot?.phone || invoice.contact.phone;
+  const billedAddressLine1 = customerSnapshot?.addressLine1 || null;
+  const billedAddressLine2 = customerSnapshot?.addressLine2 || null;
+  const billedCityLine = [customerSnapshot?.city, customerSnapshot?.state, customerSnapshot?.postalCode].filter(Boolean).join(', ');
+  const billedCountry = customerSnapshot?.country || null;
+  const billedTaxId = customerSnapshot?.taxId || null;
   const ccError = validateEmailListInput(emailCc);
   const bccError = validateEmailListInput(emailBcc);
   const canSendEmail =
@@ -462,10 +474,15 @@ export function InvoiceDetailPage({
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Facturé à</p>
             <div className="space-y-1 text-sm">
-              <p className="font-semibold text-slate-950">{invoice.contact.fullName}</p>
-              {invoice.contact.companyName ? <p>{invoice.contact.companyName}</p> : null}
-              {invoice.contact.email ? <p>{invoice.contact.email}</p> : null}
-              {invoice.contact.phone ? <p>{invoice.contact.phone}</p> : null}
+              <p className="font-semibold text-slate-950">{billedName}</p>
+              {billedCompany ? <p>{billedCompany}</p> : null}
+              {billedAddressLine1 ? <p>{billedAddressLine1}</p> : null}
+              {billedAddressLine2 ? <p>{billedAddressLine2}</p> : null}
+              {billedCityLine ? <p>{billedCityLine}</p> : null}
+              {billedCountry ? <p>{billedCountry}</p> : null}
+              {billedEmail ? <p>{billedEmail}</p> : null}
+              {billedPhone ? <p>{billedPhone}</p> : null}
+              {billedTaxId ? <p>ID fiscal: {billedTaxId}</p> : null}
             </div>
           </div>
         </div>
