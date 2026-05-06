@@ -28,6 +28,7 @@ type WorkshopPayload = {
 export function ClientWorkshopRequestEditor({ initialItem, canEditInitially }: { initialItem: WorkshopPayload; canEditInitially: boolean }) {
   const [item, setItem] = useState(initialItem);
   const [canEdit, setCanEdit] = useState(canEditInitially);
+  const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -59,6 +60,7 @@ export function ClientWorkshopRequestEditor({ initialItem, canEditInitially }: {
       if (!response.ok) {
         if (data?.blocked) {
           setCanEdit(false);
+          setIsEditing(false);
         }
         throw new Error(data?.error || 'Sauvegarde impossible');
       }
@@ -66,6 +68,7 @@ export function ClientWorkshopRequestEditor({ initialItem, canEditInitially }: {
       if (data?.item) {
         setItem((current) => ({ ...current, ...data.item }));
       }
+      setIsEditing(false);
       setMessage('Demande enregistrée avec succès.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Erreur inconnue');
@@ -83,11 +86,39 @@ export function ClientWorkshopRequestEditor({ initialItem, canEditInitially }: {
 
       {!canEdit ? (
         <div className="rounded-2xl border border-primary-500/30 bg-primary-500/10 p-4 text-sm text-primary-100">
-          <p>Cette demande est confirmée. Pour la modifier, envoyez-nous un message.</p>
+          <p>Cette demande ne peut plus être modifiée directement. Contactez Création Nowis pour faire un changement.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a href={OUTLOOK_MESSAGE_URL} target="_blank" rel="noreferrer" className="rounded-xl border border-primary-400/40 bg-primary-400/15 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-400/25">Envoyer un message</a>
             <a href={MAILTO_MESSAGE_URL} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 transition hover:border-primary-500/40 hover:text-white">Fallback courriel</a>
           </div>
+        </div>
+      ) : !isEditing ? (
+        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <InfoField label="Titre / sujet" value={item.title} />
+            <InfoField label="Participants" value={String(item.estimatedParticipants || item.participantEstimate || '—')} />
+            <InfoField label="Date souhaitée" value={formatDate(item.requestedDate)} />
+            <InfoField label="Heure souhaitée" value={item.requestedTime || '—'} />
+            <InfoField label="Durée (minutes)" value={item.durationMinutes ? String(item.durationMinutes) : '—'} />
+            <InfoField label="Type de rencontre" value={item.meetingType || '—'} />
+            <InfoField label="Lieu souhaité" value={item.location || '—'} full />
+            <InfoField label="Responsable" value={item.contactPerson || '—'} />
+            <InfoField label="Téléphone" value={item.contactPhone || '—'} />
+            <InfoField label="Courriel" value={item.contactEmail || '—'} full />
+            <InfoField label="Description / message" value={item.objectives || '—'} full multiline />
+            <InfoField label="Notes / précisions" value={item.notes || '—'} full multiline />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMessage(null);
+              setIsEditing(true);
+            }}
+            className="w-full rounded-xl border border-primary-500/40 bg-primary-500/10 px-4 py-2 text-sm font-medium text-primary-100 transition hover:bg-primary-500/20"
+          >
+            Modifier
+          </button>
         </div>
       ) : (
         <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
@@ -150,6 +181,16 @@ export function ClientWorkshopRequestEditor({ initialItem, canEditInitially }: {
           <button type="button" onClick={save} disabled={saving} className="w-full rounded-xl border border-primary-500/40 bg-primary-500/10 px-4 py-2 text-sm font-medium text-primary-100 transition hover:bg-primary-500/20 disabled:opacity-60">
             {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditing(false);
+              setMessage(null);
+            }}
+            className="w-full rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-primary-500/40 hover:text-white"
+          >
+            Annuler
+          </button>
         </div>
       )}
 
@@ -159,5 +200,29 @@ export function ClientWorkshopRequestEditor({ initialItem, canEditInitially }: {
         <Link href="/client/workshops" className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200 hover:text-white">Retour aux ateliers</Link>
       </div>
     </section>
+  );
+}
+
+function formatDate(value: string | null) {
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium' }).format(new Date(value));
+}
+
+function InfoField({
+  label,
+  value,
+  full = false,
+  multiline = false,
+}: {
+  label: string;
+  value: string;
+  full?: boolean;
+  multiline?: boolean;
+}) {
+  return (
+    <div className={`rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-sm ${full ? 'sm:col-span-2' : ''}`}>
+      <p className="text-xs text-slate-400">{label}</p>
+      <p className={`mt-1 text-slate-100 ${multiline ? 'whitespace-pre-wrap leading-6' : ''}`}>{value}</p>
+    </div>
   );
 }

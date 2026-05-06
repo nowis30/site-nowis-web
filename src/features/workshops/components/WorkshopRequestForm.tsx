@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { workshopSelectClassName } from '@/components/forms/select-styles';
 import { trackWorkshopRequestSubmitted } from '@/lib/tracking/google';
@@ -16,6 +17,7 @@ interface WorkshopRequestFormProps {
 }
 
 export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhone = '', initialGroupType = 'ECOLE' }: WorkshopRequestFormProps) {
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const lastTrackedRequestIdRef = useRef<string | null>(null);
@@ -81,6 +83,17 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
     }
 
     const requestId = typeof data?.item?.id === 'string' ? data.item.id : null;
+    const redirectTo = typeof data?.redirectTo === 'string'
+      ? data.redirectTo
+      : requestId
+        ? `/client/workshops/${requestId}`
+        : null;
+
+    if (redirectTo) {
+      router.push(redirectTo);
+      return;
+    }
+
     if (requestId && lastTrackedRequestIdRef.current !== requestId) {
       trackWorkshopRequestSubmitted(requestId);
       lastTrackedRequestIdRef.current = requestId;

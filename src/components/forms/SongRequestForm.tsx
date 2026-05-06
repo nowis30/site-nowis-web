@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import type { FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { songRequestPortalInputSchema } from '@/lib/validators/song-request';
@@ -15,6 +16,14 @@ type SongRequestFormValues = z.input<typeof songRequestFormSchema>;
 
 type SongRequestSuccess = {
   message: string;
+};
+
+type SongRequestCreateResponse = {
+  success?: boolean;
+  id?: string;
+  redirectTo?: string;
+  error?: string;
+  loginUrl?: string;
 };
 
 const songTypeOptions = [
@@ -73,6 +82,7 @@ interface SongRequestFormProps {
 }
 
 export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }: SongRequestFormProps = {}) {
+  const router = useRouter();
   const { user } = useAuth();
   const [successState, setSuccessState] = useState<SongRequestSuccess | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -140,7 +150,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json().catch(() => null);
+      const data = (await response.json().catch(() => null)) as SongRequestCreateResponse | null;
 
       if (response.status === 401 && typeof data?.loginUrl === 'string') {
         window.location.href = data.loginUrl;
@@ -149,6 +159,12 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
 
       if (!response.ok) {
         setSubmitError(data?.error ?? 'Impossible d’envoyer la demande. Merci de réessayer.');
+        return;
+      }
+
+      const redirectTo = data?.redirectTo || (data?.id ? `/client/song-requests/${data.id}` : null);
+      if (redirectTo) {
+        router.push(redirectTo);
         return;
       }
 

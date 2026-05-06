@@ -227,7 +227,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
+        success: true,
         ok: true,
+        id: result.workshopRequest.id,
+        requestType: 'workshop-request',
+        redirectTo: `/client/workshops/${result.workshopRequest.id}`,
         item: result.workshopRequest,
         organizationId: result.organization.id,
         contactId: result.contact.id,

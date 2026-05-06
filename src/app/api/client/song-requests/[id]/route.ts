@@ -13,7 +13,7 @@ const clientSongPatchSchema = z.object({
   desiredDeadline: z.string().datetime().optional().or(z.literal('')),
 }).strict();
 
-const CLIENT_BLOCKED_STATUSES = new Set(['QUOTED', 'DELIVERED', 'COMPLETED', 'DELETED']);
+const CLIENT_EDITABLE_STATUSES = new Set(['NEW', 'CONTACTED', 'IN_PROGRESS', 'IN_PRODUCTION']);
 
 function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
@@ -77,12 +77,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       createdAt: true,
       updatedAt: true,
       desiredDeadline: true,
+      convertedInvoiceId: true,
+      archivedAt: true,
+      deletedAt: true,
     },
   });
 
   if (!item) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
   if (item.contactId !== session.contactId) return forbidden();
-  return NextResponse.json({ item: toClientSongRequest(item), canEdit: !CLIENT_BLOCKED_STATUSES.has(item.status as string) });
+  const canEdit =
+    CLIENT_EDITABLE_STATUSES.has(item.status as string)
+    && !item.convertedInvoiceId
+    && !item.archivedAt
+    && !item.deletedAt;
+
+  return NextResponse.json({ item: toClientSongRequest(item), canEdit });
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -96,9 +105,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   if (!current) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
   if (current.contactId !== session.contactId) return forbidden();
 
-  if (CLIENT_BLOCKED_STATUSES.has(current.status)) {
+  const canEdit =
+    CLIENT_EDITABLE_STATUSES.has(current.status)
+    && !current.convertedInvoiceId
+    && !current.archivedAt
+    && !current.deletedAt;
+
+  if (!canEdit) {
     return NextResponse.json({
-      error: 'Cette demande est confirmée. Pour la modifier, envoyez-nous un message.',
+      error: 'Cette demande ne peut plus être modifiée directement. Contactez Création Nowis pour faire un changement.',
       blocked: true,
       messageUrl: 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client',
       fallbackMailto: 'mailto:simonmorin@nowis.store?subject=Demande%20depuis%20le%20portail%20client',

@@ -70,7 +70,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   if (!CLIENT_EDITABLE_STATUSES.has(item.status)) {
     return NextResponse.json({
-      error: 'Cette demande est confirmée. Pour la modifier, envoyez-nous un message.',
+      error: 'Cette demande ne peut plus être modifiée directement. Contactez Création Nowis pour faire un changement.',
       blocked: true,
       messageUrl: 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client',
       fallbackMailto: 'mailto:simonmorin@nowis.store?subject=Demande%20depuis%20le%20portail%20client',

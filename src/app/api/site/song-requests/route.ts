@@ -73,10 +73,15 @@ export async function POST(request: NextRequest) {
     const result = await submitSongRequestFromWebsite(normalizedInput, {
       contactId: session.contactId,
     });
+    const redirectTo = `/client/song-requests/${result.songRequestId}`;
 
     return applyCorsHeaders(
       NextResponse.json({
+        success: true,
         ok: true,
+        id: result.songRequestId,
+        requestType: 'song-request',
+        redirectTo,
         message: 'Demande envoyée avec succès.',
         clientPortalUrl: buildClientPortalUrl(result.clientPortalPath.replace('/crm/client/', ''), request.nextUrl.origin),
         ...result,

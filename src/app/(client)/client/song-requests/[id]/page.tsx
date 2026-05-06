@@ -19,6 +19,8 @@ const statusLabels: Record<SongRequestStatus, string> = {
   DELETED: 'Supprimée',
 };
 
+const CLIENT_EDITABLE_STATUSES = new Set<SongRequestStatus>(['NEW', 'CONTACTED', 'IN_PROGRESS', 'IN_PRODUCTION']);
+
 function statusTone(status: SongRequestStatus): 'warning' | 'info' | 'success' | 'danger' {
   if (status === 'NEW' || status === 'CONTACTED') return 'warning';
   if (status === 'IN_PROGRESS' || status === 'IN_PRODUCTION' || status === 'QUOTED') return 'info';
@@ -51,6 +53,9 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
       details: true,
       desiredDeadline: true,
       status: true,
+      convertedInvoiceId: true,
+      archivedAt: true,
+      deletedAt: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -71,6 +76,12 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
       </section>
     );
   }
+
+  const canEdit =
+    CLIENT_EDITABLE_STATUSES.has(request.status)
+    && !request.convertedInvoiceId
+    && !request.archivedAt
+    && !request.deletedAt;
 
   return (
     <section className="space-y-6">
@@ -103,7 +114,7 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
             clientMessage: request.specialMessage,
             desiredDeadline: request.desiredDeadline ? new Date(String(request.desiredDeadline)).toISOString() : null,
           }}
-          canEdit={!['QUOTED', 'DELIVERED', 'COMPLETED', 'DELETED'].includes(request.status)}
+          canEdit={canEdit}
         />
       </SectionCard>
     </section>
