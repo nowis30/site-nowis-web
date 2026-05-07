@@ -106,6 +106,24 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
     take: 200,
   });
 
+  const relatedQuotes = await prisma.commercialQuote.findMany({
+    where: {
+      contactId: session.contactId,
+      songRequestId: songRequest.id,
+    },
+    select: {
+      id: true,
+      quoteNumber: true,
+      title: true,
+      status: true,
+      validUntil: true,
+      totalAmount: true,
+      currency: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  });
+
   const quoteDocuments = documents.filter((doc) => getClientDocumentSection(doc) === 'quotes');
   const invoiceDocuments = documents.filter((doc) => getClientDocumentSection(doc) === 'invoices');
   const deliveredDocuments = documents.filter((doc) => getClientDocumentSection(doc) === 'song-deliverables');
@@ -119,6 +137,7 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
       originalName: document.originalName,
       mimeType: document.mimeType,
       size: document.size,
+      storageKey: document.storageKey,
       url: document.url,
       category: document.category,
       visibility: document.visibility,
@@ -167,6 +186,24 @@ export default async function ClientSongRequestDetailPage({ params }: { params: 
           }}
           canEdit={canEdit}
         />
+      </SectionCard>
+
+      <SectionCard title="Soumissions liees" subtitle="Consultez vos soumissions associees a cette demande.">
+        {relatedQuotes.length === 0 ? (
+          <p className="text-sm text-slate-400">Aucune soumission liee pour le moment.</p>
+        ) : (
+          <div className="space-y-2">
+            {relatedQuotes.map((quote) => (
+              <Link
+                key={quote.id}
+                href={`/client/soumissions/${quote.id}`}
+                className="block rounded-xl border border-slate-800 bg-slate-950/45 px-3 py-2 text-sm text-slate-200 hover:border-primary-500/30 hover:text-white"
+              >
+                {quote.quoteNumber} · {quote.title} · {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: quote.currency }).format(Number(quote.totalAmount))}
+              </Link>
+            ))}
+          </div>
+        )}
       </SectionCard>
 
       <SectionCard title="Documents de cette chanson" subtitle="Soumission, facture, livrables et fichiers partagés pour cette demande.">

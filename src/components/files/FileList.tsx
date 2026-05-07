@@ -16,6 +16,7 @@ export type FileListItem = {
   originalName: string;
   mimeType: string;
   size: number;
+  storageKey?: string;
   url: string;
   category: string;
   visibility: 'ADMIN_ONLY' | 'CLIENT_VISIBLE';
@@ -73,6 +74,9 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
       {items.map((item) => (
         <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3.5">
           {(() => {
+            const hasQuoteLink = Boolean(item.commercialQuoteId);
+            const isQuotePlaceholder = hasQuoteLink && item.size === 0 && (item.storageKey?.startsWith('quotes/') ?? false);
+            const canDownload = !isQuotePlaceholder;
             const resolvedCategory = resolveDocumentCategory({
               category: item.category,
               mimeType: item.mimeType,
@@ -131,12 +135,21 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
                   ) : null}
                 </div>
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                  <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                    <span className="inline-flex items-center gap-1.5"><Eye size={13} />{resolvedCategory.category === 'invoice' ? 'Ouvrir la facture' : 'Voir'}</span>
-                  </a>
-                  <a href={`${downloadPrefix}/${item.id}/download`} download={item.originalName} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                    <span className="inline-flex items-center gap-1.5"><Download size={13} />Telecharger</span>
-                  </a>
+                  {hasQuoteLink ? (
+                    <a href={`/client/soumissions/${item.commercialQuoteId}`} className="inline-flex w-full items-center justify-center rounded-xl border border-primary-500/40 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-500/15 sm:w-auto sm:py-1.5">
+                      <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir la soumission</span>
+                    </a>
+                  ) : null}
+                  {canDownload ? (
+                    <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
+                      <span className="inline-flex items-center gap-1.5"><Eye size={13} />{resolvedCategory.category === 'invoice' ? 'Ouvrir la facture' : 'Voir'}</span>
+                    </a>
+                  ) : null}
+                  {canDownload ? (
+                    <a href={`${downloadPrefix}/${item.id}/download`} download={item.originalName} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
+                      <span className="inline-flex items-center gap-1.5"><Download size={13} />Telecharger</span>
+                    </a>
+                  ) : null}
                   {canDelete ? (
                     <button
                       type="button"

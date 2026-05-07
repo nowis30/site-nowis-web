@@ -143,7 +143,7 @@ export default function AteliersPage() {
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
-              href="/ateliers/demande"
+              href="/api/client-auth/google/start?next=/client/workshops/nouveau"
               className="cta-primary w-full justify-center px-7 py-4 sm:w-auto"
             >
               Demander un atelier
@@ -159,7 +159,7 @@ export default function AteliersPage() {
             {groupCtas.map((item) => (
               <Link
                 key={item.groupType}
-                href={`/ateliers/demande?groupType=${item.groupType}`}
+                href={`/api/client-auth/google/start?next=${encodeURIComponent(`/client/workshops/nouveau?groupType=${item.groupType}`)}`}
                 className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-100 transition hover:border-primary-400/50 hover:bg-primary-500/10"
               >
                 {item.label}

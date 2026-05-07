@@ -60,6 +60,22 @@ export default async function ClientWorkshopDetailPage({ params }: { params: { i
     take: 200,
   });
 
+  const relatedQuotes = await prisma.commercialQuote.findMany({
+    where: {
+      contactId: session.contactId,
+      workshopRequestId: workshop.id,
+    },
+    select: {
+      id: true,
+      quoteNumber: true,
+      title: true,
+      totalAmount: true,
+      currency: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  });
+
   const quoteDocuments = workshopDocuments.filter((doc) => getClientDocumentSection(doc) === 'quotes');
   const invoiceDocuments = workshopDocuments.filter((doc) => getClientDocumentSection(doc) === 'invoices');
   const clientSharedDocuments = workshopDocuments.filter((doc) => getClientDocumentSection(doc) === 'shared');
@@ -73,6 +89,7 @@ export default async function ClientWorkshopDetailPage({ params }: { params: { i
       originalName: document.originalName,
       mimeType: document.mimeType,
       size: document.size,
+      storageKey: document.storageKey,
       url: document.url,
       category: document.category,
       visibility: document.visibility,
@@ -103,6 +120,24 @@ export default async function ClientWorkshopDetailPage({ params }: { params: { i
         }}
         canEditInitially={CLIENT_EDITABLE_STATUSES.has(workshop.status)}
       />
+
+      <SectionCard title="Soumissions liees" subtitle="Consultez vos soumissions associees a cet atelier.">
+        {relatedQuotes.length === 0 ? (
+          <p className="text-sm text-slate-400">Aucune soumission liee pour le moment.</p>
+        ) : (
+          <div className="space-y-2">
+            {relatedQuotes.map((quote) => (
+              <Link
+                key={quote.id}
+                href={`/client/soumissions/${quote.id}`}
+                className="block rounded-xl border border-slate-800 bg-slate-950/45 px-3 py-2 text-sm text-slate-200 hover:border-primary-500/30 hover:text-white"
+              >
+                {quote.quoteNumber} · {quote.title} · {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: quote.currency }).format(Number(quote.totalAmount))}
+              </Link>
+            ))}
+          </div>
+        )}
+      </SectionCard>
 
       <SectionCard title="Documents de cet atelier" subtitle="Soumission, facture, fichiers préparatoires et livrables de l'atelier.">
         <div className="space-y-4">

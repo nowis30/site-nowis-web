@@ -16,6 +16,10 @@ interface WorkshopRequestFormProps {
   initialGroupType?: WorkshopRequestFormInput['groupType'];
 }
 
+function inputClass() {
+  return 'w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white';
+}
+
 export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhone = '', initialGroupType = 'ECOLE' }: WorkshopRequestFormProps) {
   const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
@@ -78,7 +82,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
       return;
     }
     if (!response.ok) {
-      setServerError(data?.error || 'Impossible d’envoyer la demande.');
+      setServerError(data?.error || 'Impossible d envoyer la demande.');
       return;
     }
 
@@ -115,18 +119,20 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
   if (submitted) {
     return (
       <div className="rounded-[2rem] border border-emerald-400/20 bg-emerald-500/10 p-8 text-white">
-        <h2 className="text-2xl font-semibold">Demande envoyée</h2>
-        <p className="mt-3 text-sm leading-7 text-emerald-50">Votre demande d’atelier a bien été transmise. Elle entre maintenant dans le CRM Nowis avec un suivi dédié pour l’organisation, le contact et les prochaines étapes.</p>
+        <h2 className="text-2xl font-semibold">Demande envoyee</h2>
+        <p className="mt-3 text-sm leading-7 text-emerald-50">Votre demande d atelier a bien ete transmise. Vous pouvez suivre la suite dans votre portail client.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 backdrop-blur-sm">
+    <form onSubmit={onSubmit} className="space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 backdrop-blur-sm md:p-8">
       <input type="hidden" {...register('organizationType')} />
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <label className="md:col-span-2">
+      <section className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-200">Essentiel</h3>
+
+        <label>
           <span className="mb-2 block text-sm font-medium text-white">Type de groupe</span>
           <select {...register('groupType')} className={workshopSelectClassName}>
             <option value="AINES_RESIDENCE">Aines / residence</option>
@@ -136,145 +142,152 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
             <option value="PRIVE">Prive</option>
             <option value="AUTRE">Autre</option>
           </select>
-          {errors.groupType ? <p className="mt-2 text-xs text-red-300">{errors.groupType.message}</p> : null}
         </label>
 
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">{organizationLabel}</span>
-          <input {...register('organizationName')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-          {errors.organizationName ? <p className="mt-2 text-xs text-red-300">{errors.organizationName.message}</p> : null}
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Nom de la personne contact</span>
-          <input {...register('contactName')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-          {errors.contactName ? <p className="mt-2 text-xs text-red-300">{errors.contactName.message}</p> : null}
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Poste ou fonction</span>
-          <input {...register('role')} placeholder="Enseignant, direction, coordination..." className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Email</span>
-          <input type="email" {...register('email')} readOnly className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200" />
-          <p className="mt-2 text-xs text-slate-400">Email de votre compte client (utilise pour lier automatiquement votre dossier).</p>
-          {errors.email ? <p className="mt-2 text-xs text-red-300">{errors.email.message}</p> : null}
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Téléphone</span>
-          <input {...register('phone')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-          {errors.phone ? <p className="mt-2 text-xs text-red-300">{errors.phone.message}</p> : null}
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Ville</span>
-          <input {...register('city')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-          {errors.city ? <p className="mt-2 text-xs text-red-300">{errors.city.message}</p> : null}
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Format</span>
-          <select {...register('format')} className={workshopSelectClassName}>
-            <option value="IN_PERSON">Sur place</option>
-            <option value="VIRTUAL">Virtuel</option>
-            <option value="HYBRID">Hybride</option>
-          </select>
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Tranche d’âge</span>
-          <input {...register('ageRange')} placeholder="5 à 8 ans" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Public visé</span>
-          <select {...register('audienceType')} className={workshopSelectClassName}>
-            <option value="PRESCHOOL">Préscolaire</option>
-            <option value="ELEMENTARY">Primaire</option>
-            <option value="TEENS">Adolescents</option>
-            <option value="MIXED">Groupe mixte</option>
-          </select>
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Nombre approximatif de participants</span>
-          <input type="number" {...register('estimatedParticipants')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Date souhaitée</span>
-          <input type="date" {...register('requestedDate')} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        </label>
-        <label>
-          <span className="mb-2 block text-sm font-medium text-white">Plage préférée</span>
-          <input {...register('preferredTime')} placeholder="Mardi 9h à 11h" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        </label>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">{organizationLabel}</span>
+            <input {...register('organizationName')} className={inputClass()} />
+            {errors.organizationName ? <p className="mt-2 text-xs text-red-300">{errors.organizationName.message}</p> : null}
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Personne contact</span>
+            <input {...register('contactName')} className={inputClass()} />
+            {errors.contactName ? <p className="mt-2 text-xs text-red-300">{errors.contactName.message}</p> : null}
+          </label>
 
-        {groupType === 'AINES_RESIDENCE' ? (
-          <>
-            <label>
-              <span className="mb-2 block text-sm font-medium text-white">Nom de la residence</span>
-              <input {...register('residenceName')} placeholder="Residence des Moulins" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-              {errors.residenceName ? <p className="mt-2 text-xs text-red-300">{errors.residenceName.message}</p> : null}
-            </label>
-            <label>
-              <span className="mb-2 block text-sm font-medium text-white">Unite / secteur (optionnel)</span>
-              <input {...register('residenceUnit')} placeholder="3e etage, aile A" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-            </label>
-            <label>
-              <span className="mb-2 block text-sm font-medium text-white">Coordonnatrice ou coordonnateur</span>
-              <input {...register('coordinatorName')} placeholder="Nom complet" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-              {errors.coordinatorName ? <p className="mt-2 text-xs text-red-300">{errors.coordinatorName.message}</p> : null}
-            </label>
-            <label>
-              <span className="mb-2 block text-sm font-medium text-white">Role de coordination</span>
-              <input {...register('coordinatorRole')} placeholder="Coordonnatrice des loisirs" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-            </label>
-            <label>
-              <span className="mb-2 block text-sm font-medium text-white">Email coordination</span>
-              <input type="email" {...register('coordinatorEmail')} placeholder="coordination@residence.ca" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-              {errors.coordinatorEmail ? <p className="mt-2 text-xs text-red-300">{errors.coordinatorEmail.message}</p> : null}
-            </label>
-            <label>
-              <span className="mb-2 block text-sm font-medium text-white">Telephone coordination</span>
-              <input {...register('coordinatorPhone')} placeholder="819 000-0000" className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-            </label>
-            <label className="md:col-span-2">
-              <span className="mb-2 block text-sm font-medium text-white">Profil des participants (optionnel)</span>
-              <textarea {...register('seniorsProfile')} rows={3} placeholder="Autonomie, capacites, contexte du groupe..." className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-            </label>
-          </>
-        ) : null}
-      </div>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Telephone</span>
+            <input {...register('phone')} className={inputClass()} />
+            {errors.phone ? <p className="mt-2 text-xs text-red-300">{errors.phone.message}</p> : null}
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Ville</span>
+            <input {...register('city')} className={inputClass()} />
+            {errors.city ? <p className="mt-2 text-xs text-red-300">{errors.city.message}</p> : null}
+          </label>
 
-      <fieldset>
-        <legend className="mb-3 text-sm font-medium text-white">Jours préférés</legend>
-        <div className="flex flex-wrap gap-4 text-sm text-slate-200">
-          <label className="inline-flex items-center gap-2"><input type="checkbox" value="TUESDAY" {...register('preferredDays')} /> Mardi</label>
-          <label className="inline-flex items-center gap-2"><input type="checkbox" value="THURSDAY" {...register('preferredDays')} /> Jeudi</label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Theme de l atelier</span>
+            <input {...register('workshopTheme')} className={inputClass()} placeholder="Ecriture, rythme, creation..." />
+            {errors.workshopTheme ? <p className="mt-2 text-xs text-red-300">{errors.workshopTheme.message}</p> : null}
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Date souhaitee</span>
+            <input type="date" {...register('requestedDate')} className={inputClass()} />
+          </label>
+
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Tranche d age</span>
+            <input {...register('ageRange')} className={inputClass()} placeholder="Ex: 8 a 12 ans" />
+            {errors.ageRange ? <p className="mt-2 text-xs text-red-300">{errors.ageRange.message}</p> : null}
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Nombre de participants</span>
+            <input type="number" {...register('estimatedParticipants')} className={inputClass()} />
+            {errors.estimatedParticipants ? <p className="mt-2 text-xs text-red-300">{errors.estimatedParticipants.message}</p> : null}
+          </label>
         </div>
-        {errors.preferredDays ? <p className="mt-2 text-xs text-red-300">{errors.preferredDays.message}</p> : null}
-      </fieldset>
 
-      <label>
-        <span className="mb-2 block text-sm font-medium text-white">Thème souhaité</span>
-        <input {...register('workshopTheme')} placeholder="Écriture, musique, imagination, rythme..." className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        {errors.workshopTheme ? <p className="mt-2 text-xs text-red-300">{errors.workshopTheme.message}</p> : null}
-      </label>
+        <label>
+          <span className="mb-2 block text-sm font-medium text-white">Objectifs de l atelier</span>
+          <textarea {...register('objectives')} rows={5} className={inputClass()} />
+          {errors.objectives ? <p className="mt-2 text-xs text-red-300">{errors.objectives.message}</p> : null}
+        </label>
+      </section>
 
-      <label>
-        <span className="mb-2 block text-sm font-medium text-white">Objectifs de l’atelier</span>
-        <textarea {...register('objectives')} rows={5} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-        {errors.objectives ? <p className="mt-2 text-xs text-red-300">{errors.objectives.message}</p> : null}
-      </label>
+      <details className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.14em] text-slate-200">Options avancees</summary>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Poste ou fonction</span>
+            <input {...register('role')} className={inputClass()} />
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Email</span>
+            <input type="email" {...register('email')} readOnly className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200" />
+          </label>
 
-      <label>
-        <span className="mb-2 block text-sm font-medium text-white">Lieu ou contexte</span>
-        <input {...register('location')} placeholder="École, salle polyvalente, lien visio..." className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-      </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Format</span>
+            <select {...register('format')} className={workshopSelectClassName}>
+              <option value="IN_PERSON">Sur place</option>
+              <option value="VIRTUAL">Virtuel</option>
+              <option value="HYBRID">Hybride</option>
+            </select>
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Public vise</span>
+            <select {...register('audienceType')} className={workshopSelectClassName}>
+              <option value="PRESCHOOL">Prescolaire</option>
+              <option value="ELEMENTARY">Primaire</option>
+              <option value="TEENS">Adolescents</option>
+              <option value="MIXED">Groupe mixte</option>
+            </select>
+          </label>
 
-      <label>
-        <span className="mb-2 block text-sm font-medium text-white">Autres informations utiles</span>
-        <textarea {...register('notes')} rows={4} className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white" />
-      </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Plage preferee</span>
+            <input {...register('preferredTime')} className={inputClass()} placeholder="Mardi 9h a 11h" />
+          </label>
+          <fieldset>
+            <legend className="mb-2 block text-sm font-medium text-white">Jours preferes</legend>
+            <div className="flex flex-wrap gap-4 text-sm text-slate-200">
+              <label className="inline-flex items-center gap-2"><input type="checkbox" value="TUESDAY" {...register('preferredDays')} /> Mardi</label>
+              <label className="inline-flex items-center gap-2"><input type="checkbox" value="THURSDAY" {...register('preferredDays')} /> Jeudi</label>
+            </div>
+          </fieldset>
+
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Lieu ou contexte</span>
+            <input {...register('location')} className={inputClass()} />
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-medium text-white">Autres informations</span>
+            <textarea {...register('notes')} rows={3} className={inputClass()} />
+          </label>
+
+          {groupType === 'AINES_RESIDENCE' ? (
+            <>
+              <label>
+                <span className="mb-2 block text-sm font-medium text-white">Nom de la residence</span>
+                <input {...register('residenceName')} className={inputClass()} />
+                {errors.residenceName ? <p className="mt-2 text-xs text-red-300">{errors.residenceName.message}</p> : null}
+              </label>
+              <label>
+                <span className="mb-2 block text-sm font-medium text-white">Unite / secteur</span>
+                <input {...register('residenceUnit')} className={inputClass()} />
+              </label>
+              <label>
+                <span className="mb-2 block text-sm font-medium text-white">Coordonnateur(trice)</span>
+                <input {...register('coordinatorName')} className={inputClass()} />
+                {errors.coordinatorName ? <p className="mt-2 text-xs text-red-300">{errors.coordinatorName.message}</p> : null}
+              </label>
+              <label>
+                <span className="mb-2 block text-sm font-medium text-white">Role de coordination</span>
+                <input {...register('coordinatorRole')} className={inputClass()} />
+              </label>
+              <label>
+                <span className="mb-2 block text-sm font-medium text-white">Email coordination</span>
+                <input type="email" {...register('coordinatorEmail')} className={inputClass()} />
+              </label>
+              <label>
+                <span className="mb-2 block text-sm font-medium text-white">Telephone coordination</span>
+                <input {...register('coordinatorPhone')} className={inputClass()} />
+              </label>
+              <label className="md:col-span-2">
+                <span className="mb-2 block text-sm font-medium text-white">Profil des participants</span>
+                <textarea {...register('seniorsProfile')} rows={3} className={inputClass()} />
+              </label>
+            </>
+          ) : null}
+        </div>
+      </details>
 
       {serverError ? <p className="rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-200">{serverError}</p> : null}
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande d’atelier'}
+        {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande d atelier'}
       </Button>
     </form>
   );

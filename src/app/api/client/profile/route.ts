@@ -5,6 +5,7 @@ import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal
 import { prisma } from '@/lib/prisma';
 
 const billingProfileSchema = z.object({
+  phone: z.string().trim().min(7).max(40),
   billingLegalName: z.string().trim().min(1).max(160),
   billingCompanyName: z.string().trim().max(160).nullish(),
   billingEmail: z.string().trim().email(),
@@ -47,6 +48,7 @@ export async function PATCH(request: NextRequest) {
     const updated = await prisma.contact.update({
       where: { id: contact.id },
       data: {
+        phone: payload.phone,
         billingLegalName: payload.billingLegalName,
         billingCompanyName: payload.billingCompanyName || null,
         billingEmail: payload.billingEmail,

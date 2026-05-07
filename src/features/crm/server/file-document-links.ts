@@ -6,6 +6,9 @@ export async function ensureQuoteFileDocument(params: {
   quoteNumber: string;
   contactId: string;
 }) {
+  void params.quoteNumber;
+  void params.contactId;
+
   const existing = await prisma.fileDocument.findFirst({
     where: { commercialQuoteId: params.quoteId },
     select: { id: true },
@@ -13,32 +16,9 @@ export async function ensureQuoteFileDocument(params: {
 
   if (existing) return existing;
 
-  try {
-    return await prisma.fileDocument.create({
-      data: {
-        contactId: params.contactId,
-        commercialQuoteId: params.quoteId,
-        filename: `${params.quoteNumber}.pdf`,
-        originalName: `Devis ${params.quoteNumber}`,
-        mimeType: 'application/pdf',
-        size: 0,
-        storageKey: `quotes/${params.quoteId}`,
-        url: `/api/crm/commercial-quotes/${params.quoteId}/pdf`,
-        category: 'quote',
-        visibility: 'CLIENT_VISIBLE',
-      },
-      select: { id: true },
-    });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      const afterConflict = await prisma.fileDocument.findFirst({
-        where: { commercialQuoteId: params.quoteId },
-        select: { id: true },
-      });
-      if (afterConflict) return afterConflict;
-    }
-    throw error;
-  }
+  // Ne pas créer de faux PDF de soumission.
+  // Les soumissions client sont consultables via /client/soumissions/[id].
+  return null;
 }
 
 export async function ensureInvoiceFileDocument(params: {

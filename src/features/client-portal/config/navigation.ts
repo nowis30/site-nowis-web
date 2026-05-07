@@ -25,6 +25,12 @@ export const clientPortalNavigation: ClientPortalNavItem[] = [
     matches: (pathname: string) => pathname === '/client/workshops' || pathname.startsWith('/client/workshops/'),
   },
   {
+    href: '/client/soumissions',
+    label: 'Soumissions',
+    shortLabel: 'Devis',
+    matches: (pathname: string) => pathname === '/client/soumissions' || pathname.startsWith('/client/soumissions/'),
+  },
+  {
     href: '/client/documents',
     label: 'Documents',
     shortLabel: 'Docs',
@@ -62,6 +68,12 @@ export const clientPortalMobileBottomNavigation: ClientPortalNavItem[] = [
     label: 'Ateliers',
     shortLabel: 'Ateliers',
     matches: (pathname: string) => pathname === '/client/workshops' || pathname.startsWith('/client/workshops/'),
+  },
+  {
+    href: '/client/soumissions',
+    label: 'Soumissions',
+    shortLabel: 'Devis',
+    matches: (pathname: string) => pathname === '/client/soumissions' || pathname.startsWith('/client/soumissions/'),
   },
   {
     href: '/client/documents',

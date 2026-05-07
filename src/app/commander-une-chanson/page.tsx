@@ -279,7 +279,7 @@ export default async function CommanderUneChansonPage() {
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
-              href="#acces-portail"
+              href="/api/client-auth/google/start?next=/client/song-requests/nouveau"
               className="inline-flex w-full items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white transition hover:brightness-105 sm:w-auto"
             >
               Demander une chanson
@@ -293,7 +293,13 @@ export default async function CommanderUneChansonPage() {
           </div>
         </div>
 
-        <ClientPortalRequestGate nextPath="/client/song-requests/nouveau" showBackToPortal />
+        <div id="acces-portail" className="rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/70 p-4 md:p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--site-accent-strong)]">Autre methode</p>
+          <p className="mt-2 text-sm text-[color:var(--site-muted)]">Vous pouvez aussi passer par le portail client classique (inscription ou connexion manuelle).</p>
+          <div className="mt-4">
+            <ClientPortalRequestGate nextPath="/client/song-requests/nouveau" showBackToPortal />
+          </div>
+        </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">

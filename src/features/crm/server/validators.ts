@@ -112,6 +112,12 @@ export const commercialQuoteLineInputSchema = z.object({
 
 const commercialQuoteStatusSchema = z.enum(['DRAFT', 'SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED', 'CONVERTED', 'ARCHIVED']);
 
+const quoteDateTimeSchema = z.string().trim().refine((value) => {
+  if (value.length === 0) return false;
+  const normalized = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) ? `${value}:00` : value;
+  return !Number.isNaN(new Date(normalized).getTime());
+}, 'Date de validite invalide');
+
 export const commercialQuoteCreateSchema = z.object({
   title: z.string().min(2).max(240),
   description: z.string().max(4000).optional().or(z.literal('')),
@@ -121,7 +127,7 @@ export const commercialQuoteCreateSchema = z.object({
   songRequestId: z.string().uuid().optional().or(z.literal('')),
   appointmentId: z.string().uuid().optional().or(z.literal('')),
   currency: z.string().min(3).max(8).default('CAD'),
-  validUntil: z.string().datetime().optional().or(z.literal('')),
+  validUntil: quoteDateTimeSchema.optional().or(z.literal('')),
   notes: z.string().max(6000).optional().or(z.literal('')),
   internalNotes: z.string().max(6000).optional().or(z.literal('')),
   lines: z.array(commercialQuoteLineInputSchema).min(1),
@@ -137,7 +143,7 @@ export const commercialQuotePatchSchema = z.object({
   songRequestId: z.string().uuid().optional().or(z.literal('')),
   appointmentId: z.string().uuid().optional().or(z.literal('')),
   currency: z.string().min(3).max(8).optional(),
-  validUntil: z.string().datetime().optional().or(z.literal('')),
+  validUntil: quoteDateTimeSchema.optional().or(z.literal('')),
   notes: z.string().max(6000).optional().or(z.literal('')),
   internalNotes: z.string().max(6000).optional().or(z.literal('')),
   lines: z.array(commercialQuoteLineInputSchema).min(1).optional(),

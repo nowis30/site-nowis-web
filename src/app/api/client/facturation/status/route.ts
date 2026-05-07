@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       id: true,
       fullName: true,
       email: true,
+      phone: true,
       billingLegalName: true,
       billingEmail: true,
       billingAddressLine1: true,

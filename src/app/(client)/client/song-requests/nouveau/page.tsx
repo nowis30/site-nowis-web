@@ -27,6 +27,7 @@ export default async function NouvelleDemandePortalPage() {
   const billingComplete = isClientBillingComplete({
     fullName: session.fullName,
     email: session.email,
+    phone: contact?.phone,
     billingLegalName: contact?.billingLegalName,
     billingEmail: contact?.billingEmail,
     billingAddressLine1: contact?.billingAddressLine1,

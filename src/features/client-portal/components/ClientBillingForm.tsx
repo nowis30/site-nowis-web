@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 type BillingFields = {
+  phone: string | null;
   billingLegalName: string | null;
   billingCompanyName: string | null;
   billingEmail: string | null;
@@ -27,6 +28,7 @@ const labelClass = 'mb-1.5 block text-sm font-medium text-slate-200';
 
 export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) {
   const [fields, setFields] = useState<BillingFields>({
+    phone: initial.phone,
     billingLegalName: initial.billingLegalName || initial.fullName,
     billingCompanyName: initial.billingCompanyName,
     billingEmail: initial.billingEmail || initial.email,
@@ -53,6 +55,7 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
     setSuccess(false);
 
     const required = [
+      { key: 'phone', label: 'Telephone' },
       { key: 'billingLegalName', label: 'Nom de facturation' },
       { key: 'billingEmail', label: 'Courriel de facturation' },
       { key: 'billingAddressLine1', label: 'Adresse' },
@@ -124,6 +127,16 @@ export function ClientBillingForm({ initial, nextUrl }: ClientBillingFormProps) 
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className={labelClass}>Téléphone principal <span className="text-amber-400">*</span></label>
+            <input
+              value={fields.phone ?? ''}
+              onChange={(e) => set('phone', e.target.value)}
+              placeholder="819 000-0000"
+              className={inputClass}
+              required
+            />
+          </div>
           <div>
             <label className={labelClass}>Courriel de facturation <span className="text-amber-400">*</span></label>
             <input

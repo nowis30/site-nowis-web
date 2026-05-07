@@ -4,6 +4,7 @@ import { requireClientPortalSession } from '@/features/client-portal/auth/sessio
 import { PageHeader, SectionCard } from '@/features/client-portal/components/ui';
 import { ClientBillingForm } from '@/features/client-portal/components/ClientBillingForm';
 import { prisma } from '@/lib/prisma';
+import { sanitizeNextPath } from '@/lib/safe-next';
 
 export default async function ClientFacturationPage({
   searchParams,
@@ -11,7 +12,9 @@ export default async function ClientFacturationPage({
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const session = await requireClientPortalSession();
-  const nextUrl = typeof searchParams?.next === 'string' ? searchParams.next : undefined;
+  const nextUrl = typeof searchParams?.next === 'string'
+    ? sanitizeNextPath(searchParams.next, '/client/dashboard')
+    : undefined;
 
   const contact = await prisma.contact.findUnique({
     where: { id: session.contactId },
@@ -19,6 +22,7 @@ export default async function ClientFacturationPage({
       id: true,
       fullName: true,
       email: true,
+      phone: true,
       billingLegalName: true,
       billingCompanyName: true,
       billingEmail: true,
@@ -81,6 +85,7 @@ export default async function ClientFacturationPage({
               id: contact.id,
               fullName: contact.fullName,
               email: contact.email ?? session.email,
+              phone: contact.phone,
               billingLegalName: contact.billingLegalName,
               billingCompanyName: contact.billingCompanyName,
               billingEmail: contact.billingEmail,

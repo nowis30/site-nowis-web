@@ -13,7 +13,7 @@ import {
   sanitizeGoogleNextPath,
 } from '@/features/client-portal/auth/google';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
-import { isClientProfileIncomplete } from '@/features/client-portal/profile';
+import { isClientBillingComplete } from '@/lib/client-billing';
 
 interface GoogleTokenResponse {
   access_token?: string;
@@ -48,6 +48,21 @@ function redirectWithGoogleCleanup(request: NextRequest, code: string, nextPath:
   response.headers.append('Set-Cookie', clearGoogleOauthStateCookie());
   response.headers.append('Set-Cookie', clearGoogleOauthNextCookie());
   return response;
+}
+
+function needsBillingCompletion(input: {
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  billingLegalName?: string | null;
+  billingEmail?: string | null;
+  billingAddressLine1?: string | null;
+  billingCity?: string | null;
+  billingState?: string | null;
+  billingPostalCode?: string | null;
+  billingCountry?: string | null;
+}) {
+  return !isClientBillingComplete(input);
 }
 
 export async function GET(request: NextRequest) {
@@ -142,6 +157,13 @@ export async function GET(request: NextRequest) {
           profileMeta: unknown;
           tags: string[];
           source: string | null;
+          billingLegalName: string | null;
+          billingEmail: string | null;
+          billingAddressLine1: string | null;
+          billingCity: string | null;
+          billingState: string | null;
+          billingPostalCode: string | null;
+          billingCountry: string | null;
         } | null;
       };
     } | null = null;
@@ -245,7 +267,18 @@ export async function GET(request: NextRequest) {
           email,
           fullName,
           createdNewUser: false,
-          profileIncomplete: isClientProfileIncomplete({ phone: contact.phone, notes: contact.notes, profileMeta: contact.profileMeta }),
+          billingIncomplete: needsBillingCompletion({
+            fullName,
+            email,
+            phone: contact.phone,
+            billingLegalName: contact.billingLegalName,
+            billingEmail: contact.billingEmail,
+            billingAddressLine1: contact.billingAddressLine1,
+            billingCity: contact.billingCity,
+            billingState: contact.billingState,
+            billingPostalCode: contact.billingPostalCode,
+            billingCountry: contact.billingCountry,
+          }),
         };
       }
 
@@ -410,7 +443,18 @@ export async function GET(request: NextRequest) {
         email,
         fullName,
         createdNewUser: !existingUser,
-        profileIncomplete: isClientProfileIncomplete({ phone: contact?.phone, notes: contact?.notes, profileMeta: contact?.profileMeta }),
+        billingIncomplete: needsBillingCompletion({
+          fullName,
+          email,
+          phone: contact?.phone,
+          billingLegalName: contact?.billingLegalName,
+          billingEmail: contact?.billingEmail,
+          billingAddressLine1: contact?.billingAddressLine1,
+          billingCity: contact?.billingCity,
+          billingState: contact?.billingState,
+          billingPostalCode: contact?.billingPostalCode,
+          billingCountry: contact?.billingCountry,
+        }),
       };
     });
 
@@ -421,7 +465,9 @@ export async function GET(request: NextRequest) {
       fullName: result.fullName,
     });
 
-    const targetPath = result.profileIncomplete ? '/client/profil' : nextPath;
+    const targetPath = result.billingIncomplete
+      ? `/client/facturation?next=${encodeURIComponent(nextPath)}`
+      : nextPath;
 
     const response = NextResponse.redirect(new URL(targetPath, request.url), {
       headers: { 'Cache-Control': 'no-store' },

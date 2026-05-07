@@ -16,6 +16,9 @@ export default async function NouvelleDemandeAtelierPage({
   const session = await requireClientPortalSession();
   const groupTypeParam = typeof searchParams?.groupType === 'string' ? searchParams.groupType : '';
   const initialGroupType = GROUP_TYPES.has(groupTypeParam) ? groupTypeParam : 'ECOLE';
+  const nextAfterBilling = GROUP_TYPES.has(groupTypeParam)
+    ? `/client/workshops/nouveau?groupType=${groupTypeParam}`
+    : '/client/workshops/nouveau';
 
   const contact = await prisma.contact.findUnique({
     where: { id: session.contactId },
@@ -34,6 +37,7 @@ export default async function NouvelleDemandeAtelierPage({
   const billingComplete = isClientBillingComplete({
     fullName: session.fullName,
     email: session.email,
+    phone: contact?.phone,
     billingLegalName: contact?.billingLegalName,
     billingEmail: contact?.billingEmail,
     billingAddressLine1: contact?.billingAddressLine1,
@@ -69,7 +73,7 @@ export default async function NouvelleDemandeAtelierPage({
             Ces informations sont nécessaires pour établir votre contrat et votre facture.
           </p>
           <Link
-            href="/client/facturation?next=/client/workshops/nouveau"
+            href={`/client/facturation?next=${encodeURIComponent(nextAfterBilling)}`}
             className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-500"
           >
             <FileText className="h-4 w-4" />

@@ -135,13 +135,9 @@ export default function ConnexionPage() {
               <GoogleClientAuthCard nextPath={nextPath} />
             </div>
 
-            <div className="mb-5 flex items-center gap-3">
-              <div className="h-px flex-1 bg-[color:var(--site-border)]" />
-              <span className="text-xs uppercase tracking-[0.22em] text-[color:var(--site-soft)]">ou avec email</span>
-              <div className="h-px flex-1 bg-[color:var(--site-border)]" />
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <details className="group rounded-xl border border-[color:var(--site-border)] bg-white/75 p-4">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-[color:var(--site-heading)]">Autre methode: connexion email/mot de passe</summary>
+              <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-[color:var(--site-heading)]">Adresse e-mail</label>
                 <input
@@ -173,10 +169,11 @@ export default function ConnexionPage() {
 
               {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Connexion...' : 'Se connecter'}
-              </Button>
-            </form>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Connexion...' : 'Se connecter'}
+                </Button>
+              </form>
+            </details>
 
             <p className="mt-6 text-sm text-[color:var(--site-muted)]">
               Pas encore d'acces ?{' '}

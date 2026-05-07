@@ -73,6 +73,7 @@ export default async function ClientProfilePage() {
               id: contact.id,
               fullName: contact.fullName,
               email: contact.email ?? session.email,
+              phone: contact.phone,
               billingLegalName: contact.billingLegalName,
               billingCompanyName: contact.billingCompanyName,
               billingEmail: contact.billingEmail,

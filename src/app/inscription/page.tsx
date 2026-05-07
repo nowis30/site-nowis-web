@@ -86,13 +86,9 @@ export default function InscriptionPage() {
           <GoogleClientAuthCard nextPath={nextPath} />
         </div>
 
-        <div className="mb-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-[color:var(--site-border)]" />
-          <span className="text-xs uppercase tracking-[0.22em] text-[color:var(--site-soft)]">ou inscription classique</span>
-          <div className="h-px flex-1 bg-[color:var(--site-border)]" />
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <details className="group rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+          <summary className="cursor-pointer list-none text-sm font-semibold text-gray-700">Autre methode: inscription email/mot de passe</summary>
+          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nom complet</label>
             <input
@@ -143,10 +139,11 @@ export default function InscriptionPage() {
 
           {error && <div className="text-sm text-red-600">{error}</div>}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creation en cours...' : 'Creer mon acces'}
-          </Button>
-        </form>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Creation en cours...' : 'Creer mon acces'}
+            </Button>
+          </form>
+        </details>
 
         <p className="mt-6 text-sm text-gray-600">
           Vous avez deja un compte ?{' '}

@@ -59,6 +59,7 @@ export default async function ClientDocumentsPage() {
     originalName: document.originalName,
     mimeType: document.mimeType,
     size: document.size,
+    storageKey: document.storageKey,
     url: document.url,
     category: document.category,
     visibility: document.visibility,
@@ -73,13 +74,31 @@ export default async function ClientDocumentsPage() {
     uploadedByUserId: document.uploadedByUserId,
   }));
 
+  const seenQuotePlaceholders = new Set<string>();
+  const cleanedDocuments = mappedDocuments.filter((document) => {
+    const isQuotePlaceholder = Boolean(document.commercialQuoteId)
+      && document.size === 0
+      && document.storageKey?.startsWith('quotes/');
+
+    if (!isQuotePlaceholder || !document.commercialQuoteId) {
+      return true;
+    }
+
+    if (seenQuotePlaceholders.has(document.commercialQuoteId)) {
+      return false;
+    }
+
+    seenQuotePlaceholders.add(document.commercialQuoteId);
+    return true;
+  });
+
   const grouped = {
-    quotes: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'quotes'),
-    invoices: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'invoices'),
-    shared: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'shared'),
-    songDeliverables: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'song-deliverables'),
-    workshopDeliverables: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'workshop-deliverables'),
-    other: mappedDocuments.filter((document) => getClientDocumentSection(document) === 'other'),
+    quotes: cleanedDocuments.filter((document) => getClientDocumentSection(document) === 'quotes'),
+    invoices: cleanedDocuments.filter((document) => getClientDocumentSection(document) === 'invoices'),
+    shared: cleanedDocuments.filter((document) => getClientDocumentSection(document) === 'shared'),
+    songDeliverables: cleanedDocuments.filter((document) => getClientDocumentSection(document) === 'song-deliverables'),
+    workshopDeliverables: cleanedDocuments.filter((document) => getClientDocumentSection(document) === 'workshop-deliverables'),
+    other: cleanedDocuments.filter((document) => getClientDocumentSection(document) === 'other'),
   };
 
   return (
@@ -99,7 +118,7 @@ export default async function ClientDocumentsPage() {
       </SectionCard>
 
       <SectionCard title="Bibliothèque" subtitle="Historique des documents disponibles avec téléchargement rapide.">
-        {mappedDocuments.length === 0 ? (
+        {cleanedDocuments.length === 0 ? (
           <EmptyState icon={<FileText size={18} />} title="Aucun document" description="Aucun document ne correspond à ce filtre pour le moment." />
         ) : (
           <div className="space-y-4">
