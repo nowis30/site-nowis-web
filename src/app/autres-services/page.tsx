@@ -1,5 +1,9 @@
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
+import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
+
+const hourlyRegularPrice = REGULAR_PRICES.hourly;
+const hourlyLaunchPrice = getLaunchPrice(hourlyRegularPrice);
 
 export const metadata = buildMetadata({
   title: 'Autres services créatifs — Création Nowis | Vidéos IA, jeux et accompagnement artistique',
@@ -81,7 +85,7 @@ export default function AutresServicesPage() {
             jeux interactifs, accompagnement d&apos;artistes, vidéos créatives et projets sur mesure. Tout ce qui croise musique, IA et création humaine.
           </p>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--site-soft)]">
-            Tarif de base universel : 120 $ / heure. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
+            Tarif horaire regulier : {formatPrice(hourlyRegularPrice, ' / h')}. Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(hourlyLaunchPrice, ' / h')}. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
@@ -137,7 +141,7 @@ export default function AutresServicesPage() {
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
           <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tarification claire selon le type de mandat</h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
-            Le tarif de base est de 120 $ / heure pour l accompagnement et les mandats qui suivent une logique horaire. Les projets speciaux et les productions plus complexes sont etablis sur soumission, selon les livrables et le contexte.
+            Le tarif horaire regulier est de {formatPrice(hourlyRegularPrice, ' / h')} pour l accompagnement et les mandats qui suivent une logique horaire. Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(hourlyLaunchPrice, ' / h')}. Les projets speciaux et les productions plus complexes sont etablis sur soumission, selon les livrables et le contexte.
           </p>
           <Link
             href="/contact"

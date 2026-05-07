@@ -9,10 +9,10 @@ export const REGULAR_PRICES = {
     hours2: 240,
     hours3: 360,
   },
-  hourly: 120,
+  hourly: 60,
   songs: {
     memorySong: 25,
-    videoWithSong: 100,
+    videoWithSong: 60,
   },
   groupFromPerPerson: 10,
 } as const;

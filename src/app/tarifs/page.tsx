@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
 import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
+import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
 
 export const metadata = buildMetadata({
   title: 'Tarifs — Création Nowis | Ateliers, chansons personnalisées et services créatifs',
@@ -43,10 +44,17 @@ const ateliers = [
   },
 ];
 
+const hourlyRegularPrice = REGULAR_PRICES.hourly;
+const hourlyLaunchPrice = getLaunchPrice(hourlyRegularPrice);
+const songVideoRegularPrice = REGULAR_PRICES.songs.videoWithSong;
+const songVideoLaunchPrice = getLaunchPrice(songVideoRegularPrice);
+
 const servicesPersonnalises = [
   {
     name: 'Tarif de base universel',
-    tarif: '120 $ / heure',
+    regularPrice: hourlyRegularPrice,
+    launchPrice: hourlyLaunchPrice,
+    suffix: ' / h',
     conditions: 'Minimum 1 heure',
     desc: 'Pour l accompagnement creatif, les mandats ponctuels et les besoins personnalises qui suivent la meme base horaire.',
   },
@@ -67,7 +75,8 @@ const produits = [
   },
   {
     name: 'Vidéo IA avec chanson',
-    tarif: '100 $',
+    regularPrice: songVideoRegularPrice,
+    launchPrice: songVideoLaunchPrice,
     format: 'Standard',
     desc: 'Video souvenir ou amusante avec chanson IA, en format simple.',
   },
@@ -94,6 +103,22 @@ const preferentiels = [
   { clientele: 'Organismes et groupes prives', note: 'Formule lancement de groupe disponible pour certains mandats' },
 ];
 
+function DiscountPrice({ regular, promo, suffix = '' }: { regular: number; promo: number; suffix?: string }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-sm text-[color:var(--site-soft)]">
+        Prix régulier:{' '}
+        <span className="line-through decoration-2 decoration-rose-300/70">
+          {formatPrice(regular, suffix)}
+        </span>
+      </p>
+      <p className="text-base font-semibold text-emerald-200">
+        Avec rabais {LAUNCH_DISCOUNT_PERCENT} %: {formatPrice(promo, suffix)}
+      </p>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function TarifsPage() {
@@ -118,11 +143,11 @@ export default function TarifsPage() {
             Tarifs — Création Nowis
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-            La grille officielle de Creation Nowis est maintenant simple et coherente partout sur le site. Le tarif de base universel est de 120 $ / heure, les ateliers suivent exactement cette meme logique horaire et certaines activites de groupe peuvent aussi etre offertes a partir de 10 $ par personne.
+            La grille officielle de Creation Nowis est maintenant simple et coherente partout sur le site. Le tarif horaire regulier est de {formatPrice(hourlyRegularPrice, ' / h')} et l offre de lancement applique {LAUNCH_DISCOUNT_PERCENT} % de rabais, soit {formatPrice(hourlyLaunchPrice, ' / h')}. Certaines activites de groupe peuvent aussi etre offertes a partir de 10 $ par personne.
           </p>
-          <p className="mt-4 inline-flex rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200">
-            Tarif de base : 120 $ / heure
-          </p>
+          <div className="mt-4 inline-flex rounded-2xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-3">
+            <DiscountPrice regular={hourlyRegularPrice} promo={hourlyLaunchPrice} suffix=" / h" />
+          </div>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
               href="/ateliers/demande"
@@ -218,9 +243,15 @@ export default function TarifsPage() {
                   <div>
                     <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{s.name}</h3>
                   </div>
-                  <span className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-sm font-bold text-primary-200">
-                    {s.tarif}
-                  </span>
+                  {s.regularPrice !== undefined && s.launchPrice !== undefined ? (
+                    <div className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-2 text-right">
+                      <DiscountPrice regular={s.regularPrice} promo={s.launchPrice} suffix={s.suffix} />
+                    </div>
+                  ) : (
+                    <span className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-sm font-bold text-primary-200">
+                      {s.tarif}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-xs font-semibold text-[color:var(--site-soft)]">{s.conditions}</p>
                 <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">{s.desc}</p>
@@ -244,7 +275,11 @@ export default function TarifsPage() {
               <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{p.desc}</p>
               <div className="mt-5 space-y-1">
                 <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Tarif</span>
-                <span className="block text-2xl font-bold text-amber-200">{p.tarif}</span>
+                {p.regularPrice !== undefined && p.launchPrice !== undefined ? (
+                  <DiscountPrice regular={p.regularPrice} promo={p.launchPrice} />
+                ) : (
+                  <span className="block text-2xl font-bold text-amber-200">{p.tarif}</span>
+                )}
               </div>
             </article>
           ))}
@@ -309,7 +344,7 @@ export default function TarifsPage() {
             <thead>
               <tr className="border-b border-[rgba(131,97,67,0.12)] bg-[rgba(255,250,244,0.82)]">
                 <th className="px-5 py-4 text-left font-semibold text-[color:var(--site-heading)]">Service</th>
-                <th className="px-5 py-4 text-right font-semibold text-amber-300">Tarif</th>
+                <th className="px-5 py-4 text-left font-semibold text-amber-300 sm:text-right">Tarif</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(131,97,67,0.08)]">
@@ -318,15 +353,15 @@ export default function TarifsPage() {
                 { service: 'Atelier 90 minutes', tarif: '180 $' },
                 { service: 'Atelier 2 heures', tarif: '240 $' },
                 { service: 'Atelier 3 heures', tarif: '360 $' },
-                { service: 'Tarif de base universel', tarif: '120 $ / heure' },
+                { service: 'Tarif horaire', tarif: `Prix régulier: ${formatPrice(hourlyRegularPrice, ' / h')} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(hourlyLaunchPrice, ' / h')}` },
                 { service: 'Formule groupe', tarif: 'A partir de 10 $ / personne' },
                 { service: 'Chanson IA souvenir', tarif: '25 $' },
-                { service: 'Video IA avec chanson', tarif: '100 $' },
+                { service: 'Video IA avec chanson', tarif: `Prix régulier: ${formatPrice(songVideoRegularPrice)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(songVideoLaunchPrice)}` },
                 { service: 'Projet special', tarif: 'Sur soumission' },
               ].map((row, i) => (
                 <tr key={row.service} className={i % 2 === 0 ? 'bg-transparent' : 'bg-[rgba(255,248,241,0.72)]'}>
                   <td className="px-5 py-3.5 text-[color:var(--site-heading)]">{row.service}</td>
-                  <td className="px-5 py-3.5 text-right font-semibold text-amber-200">{row.tarif}</td>
+                  <td className="px-5 py-3.5 text-left font-semibold text-amber-200 whitespace-normal break-words sm:text-right">{row.tarif}</td>
                 </tr>
               ))}
             </tbody>

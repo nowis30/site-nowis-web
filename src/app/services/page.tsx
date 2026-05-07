@@ -3,6 +3,12 @@ import { PageHero } from '@/components/marketing/PageHero';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { serviceOffers } from '@/data/serviceOffers';
 import { buildMetadata } from '@/lib/seo';
+import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
+
+const hourlyRegularPrice = REGULAR_PRICES.hourly;
+const hourlyLaunchPrice = getLaunchPrice(hourlyRegularPrice);
+const songVideoRegularPrice = REGULAR_PRICES.songs.videoWithSong;
+const songVideoLaunchPrice = getLaunchPrice(songVideoRegularPrice);
 
 export const metadata = buildMetadata({
   title: 'Services créatifs — Création Nowis | Chansons personnalisées, vidéos IA et concepts sur mesure',
@@ -18,7 +24,7 @@ export default function ServicesPage() {
       <PageHero
         eyebrow="Services / Collaborations"
         title="Des services créatifs clairs pour transformer une idée en projet concret"
-        description="Creation Nowis accompagne les projets qui ont besoin d une chanson personnalisee, d une video IA, d un visuel ou d une direction creative claire. Le tarif de base est de 120 $ / heure, et les projets speciaux sont etablis sur soumission."
+        description={`Creation Nowis accompagne les projets qui ont besoin d une chanson personnalisee, d une video IA, d un visuel ou d une direction creative claire. Tarif horaire regulier: ${formatPrice(hourlyRegularPrice, ' / h')}. Avec rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(hourlyLaunchPrice, ' / h')}. Les projets speciaux restent etablis sur soumission.`}
         primaryCta={{ label: 'Parler de mon projet', href: '/contact?projectType=autre&message=Bonjour, je veux discuter d’un projet créatif avec Création Nowis.' }}
         secondaryCta={{ label: 'Écouter mes chansons', href: '/musique' }}
       />
@@ -26,7 +32,7 @@ export default function ServicesPage() {
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="glass-panel-soft mb-8 rounded-3xl p-6 shadow-sm">
           <p className="text-sm leading-7 text-[color:var(--site-muted)]">
-            Tarif de base universel : 120 $ / heure. Chanson IA souvenir : 25 $. Video IA avec chanson : 100 $. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
+            Tarif horaire regulier : {formatPrice(hourlyRegularPrice, ' / h')}. Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(hourlyLaunchPrice, ' / h')}. Chanson IA souvenir : {formatPrice(REGULAR_PRICES.songs.memorySong)}. Video IA avec chanson : prix regulier {formatPrice(songVideoRegularPrice)}, avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(songVideoLaunchPrice)}. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
           </p>
         </div>
         <div className="grid gap-8 md:grid-cols-2">
