@@ -26,7 +26,20 @@ function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_request: NextRequest, _ctx: { params: { id: string } }) {
+  return NextResponse.json(
+    {
+      error:
+        'Les rendez-vous d\'atelier doivent être réservés via Calendly pour éviter les conflits d\'horaire. Le CRM se synchronise automatiquement via le webhook Calendly.',
+      code: 'WORKSHOP_APPOINTMENT_MANUAL_CREATION_DISABLED',
+    },
+    { status: 405 },
+  );
+}
+
+// Kept for reference — replaced by POST above which enforces the Calendly-only rule.
+async function _disabledManualWorkshopAppointmentCreate(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'appointments', 'create');
   if (guard.error) return guard.error;
 

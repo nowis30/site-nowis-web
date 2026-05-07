@@ -31,7 +31,20 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ items });
 }
 
-export async function POST(request: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_request: NextRequest) {
+  return NextResponse.json(
+    {
+      error:
+        'Les factures doivent être créées à partir d\'une soumission acceptée. Utilisez : POST /api/crm/commercial-quotes/:id/convert-to-invoice',
+      code: 'INVOICE_DIRECT_CREATION_DISABLED',
+    },
+    { status: 405 },
+  );
+}
+
+// Kept for reference — replaced by POST above which enforces the business rule.
+async function _disabledDirectInvoiceCreate(request: NextRequest) {
   const guard = requireApiPermission(request, 'invoices', 'create');
   if (guard.error) return guard.error;
 

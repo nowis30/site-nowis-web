@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FileText, Plus, TrendingUp, Euro } from 'lucide-react';
+import { FileText, TrendingUp, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -223,123 +223,6 @@ function InvoiceCard({ inv, onStatusChange }: { inv: Invoice; onStatusChange: ()
   );
 }
 
-function NewInvoiceForm({
-  contacts,
-  onCreated,
-  initialForm,
-}: {
-  contacts: Contact[];
-  onCreated: () => void;
-  initialForm?: {
-    contactId?: string;
-    description?: string;
-    amount?: string;
-    sourceWorkshopRequestId?: string;
-    sourceSongRequestId?: string;
-  } | null;
-}) {
-  const defaultDueDate = new Date();
-  defaultDueDate.setDate(defaultDueDate.getDate() + 30);
-  const [open, setOpen] = useState(Boolean(initialForm?.contactId || initialForm?.description || initialForm?.amount));
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    number: '',
-    contactId: initialForm?.contactId || '',
-    issueDate: '',
-    dueDate: defaultDueDate.toISOString().slice(0, 10),
-    amount: initialForm?.amount || '',
-    description: initialForm?.description || '',
-    status: 'DRAFT',
-    sourceWorkshopRequestId: initialForm?.sourceWorkshopRequestId || '',
-    sourceSongRequestId: initialForm?.sourceSongRequestId || '',
-  });
-
-  useEffect(() => {
-    if (!initialForm) return;
-    setOpen(Boolean(initialForm.contactId || initialForm.description || initialForm.amount));
-    setForm((current) => ({
-      ...current,
-      contactId: initialForm.contactId || current.contactId,
-      amount: initialForm.amount || current.amount,
-      description: initialForm.description || current.description,
-      sourceWorkshopRequestId: initialForm.sourceWorkshopRequestId || current.sourceWorkshopRequestId,
-      sourceSongRequestId: initialForm.sourceSongRequestId || current.sourceSongRequestId,
-    }));
-  }, [initialForm]);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.contactId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/crm/invoices', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          issueDate: form.issueDate ? new Date(form.issueDate).toISOString() : undefined,
-          dueDate: new Date(form.dueDate).toISOString(),
-          amount: parseFloat(form.amount),
-          sourceWorkshopRequestId: form.sourceWorkshopRequestId || undefined,
-          sourceSongRequestId: form.sourceSongRequestId || undefined,
-        }),
-      });
-      const data = (await response.json().catch(() => null)) as { error?: string } | null;
-      if (!response.ok) {
-        throw new Error(data?.error || 'Creation facture impossible');
-      }
-
-      setOpen(false);
-      setForm({ number: '', contactId: '', issueDate: '', dueDate: defaultDueDate.toISOString().slice(0, 10), amount: '', description: '', status: 'DRAFT', sourceWorkshopRequestId: '', sourceSongRequestId: '' });
-      onCreated();
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Creation facture impossible');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (!open) return (
-    <button onClick={() => setOpen(true)} className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 transition-colors">
-      <Plus size={16} /> Nouvelle facture
-    </button>
-  );
-
-  return (
-    <form onSubmit={submit} className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-3 mb-4">
-      <h3 className="font-semibold text-white">Nouvelle facture</h3>
-      {error ? <p className="rounded-lg border border-red-700/50 bg-red-950/20 px-3 py-2 text-xs text-red-200">{error}</p> : null}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input required placeholder="N° facture (ex: FAC-2026-001)" value={form.number} onChange={e => setForm(f => ({ ...f, number: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400" />
-          <p className="rounded-lg border border-slate-600 bg-slate-700/40 px-3 py-2 text-xs text-slate-400 italic">Numéro auto-généré à la création</p>
-        <select required value={form.contactId} onChange={e => setForm(f => ({ ...f, contactId: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
-          <option value="">— Contact * —</option>
-          {contacts.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
-        </select>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-400">Date d'émission</label>
-          <input type="date" value={form.issueDate} onChange={e => setForm(f => ({ ...f, issueDate: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-400">Échéance *</label>
-          <input type="date" required value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
-        </div>
-        <input required type="number" step="0.01" min="0" placeholder="Montant ($) *" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400" />
-        <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
-          {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-        <textarea placeholder="Description / prestations" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="sm:col-span-2 rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 resize-none" />
-      </div>
-      <div className="flex gap-2 justify-end">
-        <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Annuler</button>
-        <button type="submit" disabled={loading} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50">{loading ? 'Création...' : 'Créer'}</button>
-      </div>
-    </form>
-  );
-}
-
 interface InvoicesPageProps {
   invoices: Invoice[];
   contacts: Contact[];
@@ -353,7 +236,7 @@ interface InvoicesPageProps {
   } | null;
 }
 
-export function InvoicesPage({ invoices, contacts, stats, initialForm }: InvoicesPageProps) {
+export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm: _initialForm }: InvoicesPageProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<'ALL' | string>('ALL');
@@ -394,7 +277,20 @@ export function InvoicesPage({ invoices, contacts, stats, initialForm }: Invoice
           <h2 className="text-2xl font-bold text-white flex items-center gap-2"><FileText size={22} /> Factures</h2>
           <p className="text-sm text-slate-400 mt-0.5">Suivi de facturation</p>
         </div>
-        <NewInvoiceForm contacts={contacts} onCreated={() => router.refresh()} initialForm={initialForm} />
+        <Link
+          href="/crm/commercial-quotes/new"
+          className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 transition-colors"
+        >
+          <ExternalLink size={16} /> Créer une soumission
+        </Link>
+      </div>
+
+      {/* Règle métier */}
+      <div className="rounded-xl border border-amber-600/30 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
+        <TrendingUp size={14} className="inline mr-2 mb-0.5" />
+        Les factures sont générées automatiquement depuis une{' '}
+        <Link href="/crm/commercial-quotes" className="underline hover:text-amber-100">soumission acceptée</Link>.
+        Allez dans <strong>Soumissions</strong> → acceptez la soumission → cliquez <strong>Convertir en facture</strong>.
       </div>
 
       {/* Stats */}

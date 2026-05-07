@@ -179,10 +179,25 @@ export function CrmCalendarPage({
   }
 
   function navigateToCreatePage(startAtIso: string) {
-    const date = new Date(startAtIso);
-    const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
-    const dateParam = safeDate.toISOString().slice(0, 10);
-    router.push(`/crm/calendrier/nouveau?date=${dateParam}`);
+    const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ?? process.env.NEXT_PUBLIC_CALENDLY_URL;
+    if (calendlyUrl) {
+      const url = new URL(calendlyUrl);
+      try {
+        const date = new Date(startAtIso);
+        if (!Number.isNaN(date.getTime())) {
+          url.searchParams.set('date', date.toISOString());
+        }
+      } catch {
+        // date invalide — pas de pré-sélection
+      }
+      window.open(url.toString(), '_blank', 'noreferrer');
+    } else {
+      // Calendly non configuré : rediriger vers la page de réservation CRM
+      const date = new Date(startAtIso);
+      const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+      const dateParam = safeDate.toISOString().slice(0, 10);
+      router.push(`/crm/calendrier/nouveau?date=${dateParam}`);
+    }
   }
 
   async function removeFromCalendar(item: CalendarEventItem) {

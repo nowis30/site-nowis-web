@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, Plus, Clock, MapPin, User, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, User, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 type Appointment = {
@@ -38,10 +38,6 @@ function formatTime(iso: string) {
 }
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-CA', { weekday: 'short', day: 'numeric', month: 'short' });
-}
-
-function fromLocalInputValue(value: string) {
-  return new Date(value).toISOString();
 }
 
 function AppointmentCard({ apt, onStatusChange }: { apt: Appointment; onStatusChange: () => void }) {
@@ -100,130 +96,54 @@ function AppointmentCard({ apt, onStatusChange }: { apt: Appointment; onStatusCh
   );
 }
 
-function NewAppointmentForm({ contacts, onCreated }: { contacts: { id: string; fullName: string }[]; onCreated: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    title: '', type: 'MEETING', status: 'PENDING', startAt: '', endAt: '',
-    description: '', contactId: '',
-  });
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    if (!form.title.trim()) {
-      setError('Le titre est obligatoire.');
-      return;
-    }
-
-    if (!form.startAt || !form.endAt) {
-      setError('Les dates de debut et de fin sont obligatoires.');
-      return;
-    }
-
-    const startDate = new Date(form.startAt);
-    const endDate = new Date(form.endAt);
-    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate <= startDate) {
-      setError('La date de fin doit etre posterieure a la date de debut.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const payload = {
-        ...form,
-        title: form.title.trim(),
-        startAt: fromLocalInputValue(form.startAt),
-        endAt: fromLocalInputValue(form.endAt),
-      };
-
-      const response = await fetch('/api/crm/appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(data?.error || 'Creation impossible');
-      }
-
-      setOpen(false);
-      setForm({ title: '', type: 'MEETING', status: 'PENDING', startAt: '', endAt: '', description: '', contactId: '' });
-      onCreated();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (!open) {
-    return (
-      <button onClick={() => setOpen(true)} className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 transition-colors">
-        <Plus size={16} /> Nouveau rendez-vous
-      </button>
-    );
-  }
-
-  return (
-    <form onSubmit={submit} className="rounded-xl border border-slate-700 bg-slate-800 p-5 space-y-3">
-      <h3 className="font-semibold text-white">Nouveau rendez-vous</h3>
-      {error && <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{error}</p>}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input required placeholder="Titre *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="col-span-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400" />
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-400">Début *</label>
-          <input type="datetime-local" required value={form.startAt} onChange={e => setForm(f => ({ ...f, startAt: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-400">Fin *</label>
-          <input type="datetime-local" required value={form.endAt} onChange={e => setForm(f => ({ ...f, endAt: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white" />
-        </div>
-        <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
-          {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-        <select value={form.contactId} onChange={e => setForm(f => ({ ...f, contactId: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
-          <option value="">— Contact (optionnel) —</option>
-          {contacts.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
-        </select>
-        <textarea placeholder="Description" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="col-span-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 resize-none" />
-      </div>
-      <div className="flex gap-2 justify-end">
-        <button type="button" onClick={() => {
-          setOpen(false);
-          setError(null);
-        }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Annuler</button>
-        <button type="submit" disabled={loading} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50">
-          {loading ? 'Création...' : 'Créer'}
-        </button>
-      </div>
-    </form>
-  );
-}
-
 interface AppointmentsListProps {
   session: { fullName: string; role: string };
   todayAppointments: Appointment[];
   upcomingAppointments: Appointment[];
 }
 
+function CalendlyBookingButton() {
+  const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ?? process.env.NEXT_PUBLIC_CALENDLY_URL ?? null;
+  if (!calendlyUrl) {
+    return (
+      <span className="rounded-lg border border-amber-600/40 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
+        Lien Calendly non configuré — ajouter NEXT_PUBLIC_CALENDLY_EVENT_URL dans Vercel
+      </span>
+    );
+  }
+  return (
+    <a
+      href={calendlyUrl}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 transition-colors"
+    >
+      <ExternalLink size={16} /> Réserver via Calendly
+    </a>
+  );
+}
+
 export function AppointmentsList({ todayAppointments, upcomingAppointments }: AppointmentsListProps) {
   const [refresh, setRefresh] = useState(0);
-  const [contacts] = useState<{ id: string; fullName: string }[]>([]);
 
   const allEmpty = todayAppointments.length === 0 && upcomingAppointments.length === 0;
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2"><Calendar size={22} /> Calendrier</h2>
           <p className="text-sm text-slate-400 mt-0.5">Vos rendez-vous et événements</p>
         </div>
-        <NewAppointmentForm contacts={contacts} onCreated={() => setRefresh(r => r + 1)} />
+        <CalendlyBookingButton />
+      </div>
+
+      {/* Règle métier */}
+      <div className="rounded-xl border border-blue-600/30 bg-blue-950/20 px-4 py-3 text-sm text-blue-200">
+        <ExternalLink size={14} className="inline mr-2 mb-0.5" />
+        Les rendez-vous sont créés automatiquement via{' '}
+        <strong>Calendly</strong> pour éviter les conflits d'horaire.
+        Le CRM se synchronise via webhook dès qu'une réservation est confirmée.
       </div>
 
       {/* Aujourd'hui */}

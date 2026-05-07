@@ -40,7 +40,20 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ items });
 }
 
-export async function POST(request: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_request: NextRequest) {
+  return NextResponse.json(
+    {
+      error:
+        'Les rendez-vous doivent être réservés via Calendly pour éviter les conflits d\'horaire. Configurez votre lien Calendly dans les paramètres.',
+      code: 'APPOINTMENT_MANUAL_CREATION_DISABLED',
+    },
+    { status: 405 },
+  );
+}
+
+// Kept for reference — replaced by POST above which enforces the Calendly-only rule.
+async function _disabledManualAppointmentCreate(request: NextRequest) {
   const guard = requireApiPermission(request, 'appointments', 'create');
   if (guard.error) return guard.error;
 
