@@ -77,12 +77,28 @@ type PayPalErrorDetail = {
   value?: string;
 };
 
+type PayPalLink = {
+  href?: string;
+  rel?: string;
+  method?: string;
+  encType?: string;
+};
+
 type PayPalApiErrorShape = {
   httpStatus: number;
   name: string | null;
   message: string;
   details: PayPalErrorDetail[];
   debugId: string | null;
+  links: PayPalLink[];
+};
+
+type PayPalErrorContext = {
+  path: string;
+  method: string;
+  operation?: string;
+  invoiceId?: string;
+  invoiceNumber?: string;
 };
 
 type PayPalPayloadAddress = {
@@ -248,6 +264,7 @@ export class PayPalApiError extends Error {
   paypalName: string | null;
   details: PayPalErrorDetail[];
   debugId: string | null;
+  links: PayPalLink[];
 
   constructor(shape: PayPalApiErrorShape) {
     super(shape.message);
@@ -256,6 +273,19 @@ export class PayPalApiError extends Error {
     this.paypalName = shape.name;
     this.details = shape.details;
     this.debugId = shape.debugId;
+    this.links = shape.links;
+  }
+}
+
+export class PayPalValidationError extends Error {
+  code: string;
+  details: PayPalErrorDetail[];
+
+  constructor(message: string, details: PayPalErrorDetail[]) {
+    super(message);
+    this.name = 'PayPalValidationError';
+    this.code = 'PAYPAL_PREVALIDATION_FAILED';
+    this.details = details;
   }
 }
 
@@ -263,17 +293,70 @@ export function isPayPalApiError(error: unknown): error is PayPalApiError {
   return error instanceof PayPalApiError;
 }
 
+export function isPayPalValidationError(error: unknown): error is PayPalValidationError {
+  return error instanceof PayPalValidationError;
+}
+
+function summarizePayPalDetails(details: PayPalErrorDetail[]) {
+  return details
+    .map((detail) => {
+      const prefix = detail.field ? `${detail.field}: ` : '';
+      return prefix + (detail.description || detail.issue || detail.value || '').trim();
+    })
+    .filter(Boolean)
+    .join(' | ');
+}
+
+function buildPayPalDisplayMessage(params: {
+  message: string;
+  name?: string | null;
+  debugId?: string | null;
+  details?: PayPalErrorDetail[];
+}) {
+  const detailsSummary = summarizePayPalDetails(params.details || []);
+  return [
+    params.message,
+    params.name ? `Type: ${params.name}` : null,
+    params.debugId ? `Debug ID: ${params.debugId}` : null,
+    detailsSummary || null,
+  ].filter(Boolean).join(' · ');
+}
+
 export function serializePayPalApiError(error: unknown, fallbackMessage: string) {
   if (isPayPalApiError(error)) {
+    const displayMessage = buildPayPalDisplayMessage({
+      message: error.message,
+      name: error.paypalName,
+      debugId: error.debugId,
+      details: error.details,
+    });
     return {
       status: error.httpStatus,
       body: {
-        error: error.message,
+        error: displayMessage,
         paypalStatus: error.httpStatus,
         paypalName: error.paypalName,
         paypalMessage: error.message,
         paypalDetails: error.details,
         paypalDebugId: error.debugId,
+        paypalLinks: error.links,
+      },
+    };
+  }
+
+  if (isPayPalValidationError(error)) {
+    return {
+      status: 400,
+      body: {
+        error: buildPayPalDisplayMessage({
+          message: error.message,
+          name: error.code,
+          details: error.details,
+        }),
+        paypalName: error.code,
+        paypalMessage: error.message,
+        paypalDetails: error.details,
+        paypalDebugId: null,
       },
     };
   }
@@ -369,10 +452,53 @@ function normalizePayPalDetails(details: unknown): PayPalErrorDetail[] {
   });
 }
 
-async function readPayPalError(response: Response) {
-  const payload = asRecord(await response.json().catch(() => null));
+function normalizePayPalLinks(links: unknown): PayPalLink[] {
+  if (!Array.isArray(links)) return [];
+  return links.map((link) => {
+    const item = asRecord(link);
+    return {
+      href: readString(item.href) || undefined,
+      rel: readString(item.rel) || undefined,
+      method: readString(item.method) || undefined,
+      encType: readString(item.encType) || undefined,
+    };
+  });
+}
+
+function logPayPalApiError(error: PayPalApiError, context: PayPalErrorContext) {
+  console.error('[paypal] API error', {
+    operation: context.operation || null,
+    method: context.method,
+    path: context.path,
+    env: getPayPalEnv(),
+    invoiceId: context.invoiceId || null,
+    invoiceNumber: context.invoiceNumber || null,
+    response: {
+      statusCode: error.httpStatus,
+      name: error.paypalName,
+      message: error.message,
+      debug_id: error.debugId,
+      details: error.details,
+      links: error.links,
+    },
+  });
+}
+
+async function readPayPalError(response: Response, context: PayPalErrorContext) {
+  const rawBody = await response.text().catch(() => '');
+  let parsedPayload: unknown = null;
+
+  if (rawBody) {
+    try {
+      parsedPayload = JSON.parse(rawBody);
+    } catch {
+      parsedPayload = null;
+    }
+  }
+
+  const payload = asRecord(parsedPayload);
   const details = normalizePayPalDetails(payload.details);
-  return new PayPalApiError({
+  const error = new PayPalApiError({
     httpStatus: response.status,
     name: readString(payload.name),
     message:
@@ -380,11 +506,16 @@ async function readPayPalError(response: Response) {
       readString(payload.error_description) ||
       details[0]?.description ||
       details[0]?.issue ||
+      readString(rawBody) ||
       response.statusText ||
       'Erreur PayPal inconnue',
     details,
     debugId: readString(payload.debug_id),
+    links: normalizePayPalLinks(payload.links),
   });
+
+  logPayPalApiError(error, context);
+  return error;
 }
 
 export function isDuplicatePayPalInvoiceNumberError(error: unknown) {
@@ -401,6 +532,61 @@ export function isDuplicatePayPalInvoiceNumberError(error: unknown) {
     .toLowerCase();
 
   return haystack.includes('invoice number is duplicate') || (haystack.includes('invoice') && haystack.includes('duplicate'));
+}
+
+type PayPalInvoicePrevalidationInput = {
+  invoice: {
+    id: string;
+    number: string;
+    amount: Prisma.Decimal | number | string;
+    description: string | null;
+    paymentCurrency: string | null;
+    contactId?: string | null;
+  };
+  contact: {
+    id: string;
+    email: string | null;
+  } | null;
+  issuerMissing: string[];
+  customerMissing: string[];
+  hasLineItems: boolean;
+  currency: string;
+};
+
+export function validatePayPalInvoicePreconditions(input: PayPalInvoicePrevalidationInput) {
+  const details: PayPalErrorDetail[] = [];
+  const effectiveCurrency = (trimToNull(input.invoice.paymentCurrency) || trimToNull(input.currency) || 'CAD').toUpperCase();
+  const total = Number(input.invoice.amount);
+  const hasDescription = Boolean(trimToNull(input.invoice.description));
+
+  if (!input.invoice.id) {
+    details.push({ field: 'invoice.id', issue: 'MISSING_REQUIRED_VALUE', description: 'La facture CRM est introuvable.' });
+  }
+  if (!input.contact?.id) {
+    details.push({ field: 'contact.id', issue: 'MISSING_REQUIRED_VALUE', description: 'Aucun client n est lie a cette facture.' });
+  }
+  if (!trimToNull(input.contact?.email)) {
+    details.push({ field: 'primary_recipients[0].billing_info.email_address', issue: 'MISSING_REQUIRED_VALUE', description: 'Le client de cette facture n a pas de courriel.' });
+  }
+  if (!Number.isFinite(total) || total <= 0) {
+    details.push({ field: 'amount.value', issue: 'INVALID_VALUE', description: 'Le montant total doit etre strictement superieur a 0.' });
+  }
+  if (effectiveCurrency !== 'CAD') {
+    details.push({ field: 'detail.currency_code', issue: 'UNSUPPORTED_CURRENCY', description: `La devise PayPal attendue est CAD. Valeur recue: ${effectiveCurrency}.` });
+  }
+  if (!input.hasLineItems && !hasDescription) {
+    details.push({ field: 'items', issue: 'MISSING_REQUIRED_VALUE', description: 'La facture doit contenir des lignes ou une description exploitable avant envoi a PayPal.' });
+  }
+  for (const label of input.issuerMissing) {
+    details.push({ field: 'invoicer', issue: 'MISSING_REQUIRED_VALUE', description: `Profil emetteur incomplet: ${label}.` });
+  }
+  for (const label of input.customerMissing) {
+    details.push({ field: 'primary_recipients[0].billing_info', issue: 'MISSING_REQUIRED_VALUE', description: `Profil client incomplet: ${label}.` });
+  }
+
+  if (details.length > 0) {
+    throw new PayPalValidationError('Validation PayPal echouee avant appel API.', details);
+  }
 }
 
 function extractPayPalInvoiceId(payload: JsonRecord) {
@@ -447,6 +633,9 @@ async function findPayPalInvoiceByInvoiceNumber(invoiceNumber: string) {
   while (page <= maxPages) {
     const response = await paypalFetch(`/v2/invoicing/invoices?page=${page}&page_size=${pageSize}&total_required=true`, {
       method: 'GET',
+    }, {
+      operation: 'findPayPalInvoiceByInvoiceNumber',
+      invoiceNumber: normalizedInvoiceNumber,
     });
     const payload = asRecord(await response.json());
     const items = Array.isArray(payload.items) ? payload.items : [];
@@ -699,7 +888,11 @@ export async function getPayPalAccessToken() {
   });
 
   if (!response.ok) {
-    throw await readPayPalError(response);
+    throw await readPayPalError(response, {
+      path: '/v1/oauth2/token',
+      method: 'POST',
+      operation: 'getPayPalAccessToken',
+    });
   }
 
   const payload = await response.json() as { access_token?: string };
@@ -710,7 +903,7 @@ export async function getPayPalAccessToken() {
   return payload.access_token;
 }
 
-async function paypalFetch(path: string, init?: RequestInit) {
+async function paypalFetch(path: string, init?: RequestInit, context?: Omit<PayPalErrorContext, 'path' | 'method'>) {
   const token = await getPayPalAccessToken();
   const response = await fetch(`${getPayPalBaseUrl()}${path}`, {
     ...init,
@@ -723,7 +916,13 @@ async function paypalFetch(path: string, init?: RequestInit) {
   });
 
   if (!response.ok) {
-    throw await readPayPalError(response);
+    throw await readPayPalError(response, {
+      path,
+      method: (init?.method || 'GET').toUpperCase(),
+      operation: context?.operation,
+      invoiceId: context?.invoiceId,
+      invoiceNumber: context?.invoiceNumber,
+    });
   }
 
   return response;
@@ -872,6 +1071,12 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
     throw new Error('Facture CRM introuvable.');
   }
 
+  if (!invoice.contact) {
+    throw new PayPalValidationError('Validation PayPal echouee avant appel API.', [
+      { field: 'contact.id', issue: 'MISSING_REQUIRED_VALUE', description: 'Aucun client n est lie a cette facture.' },
+    ]);
+  }
+
   const existing = await reuseExistingPayPalInvoiceIfPresent({
     invoiceId: invoice.id,
     paypalInvoiceId: invoice.paypalInvoiceId,
@@ -881,18 +1086,46 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
     return existing;
   }
 
-  if (!invoice.contact.email) {
-    throw new Error('Le client de cette facture n a pas de courriel.');
-  }
-
   const issuer = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
   const customer = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
   const missingIssuer = validateIssuerSnapshot(issuer);
   const missingCustomer = validateCustomerSnapshot(customer);
-  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
-    throw new Error(
-      `Facturation incomplete avant creation PayPal. Emetteur: ${missingIssuer.join(', ') || 'ok'}. Client: ${missingCustomer.join(', ') || 'ok'}.`,
-    );
+
+  validatePayPalInvoicePreconditions({
+    invoice: {
+      id: invoice.id,
+      number: invoice.number,
+      amount: invoice.amount,
+      description: invoice.description,
+      paymentCurrency: invoice.paymentCurrency,
+      contactId: invoice.contactId,
+    },
+    contact: invoice.contact ? { id: invoice.contact.id, email: invoice.contact.email } : null,
+    issuerMissing: missingIssuer,
+    customerMissing: missingCustomer,
+    hasLineItems: (invoice.convertedFromQuote?.lines || []).length > 0,
+    currency: config.currency,
+  });
+
+  const remoteDuplicateBeforeCreate = await findPayPalInvoiceByInvoiceNumber(invoice.number);
+  if (remoteDuplicateBeforeCreate?.paypalInvoiceId) {
+    await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        paypalInvoiceId: remoteDuplicateBeforeCreate.paypalInvoiceId,
+        paymentProvider: 'PAYPAL',
+      },
+    });
+
+    await writePaypalActivity({
+      title: `Facture PayPal rattachee : ${invoice.number}`,
+      description: `Facture PayPal existante ${remoteDuplicateBeforeCreate.paypalInvoiceId} rattachee avant creation apres verification preventive du numero ${invoice.number}.`,
+      contactId: invoice.contact.id,
+      invoiceId: invoice.id,
+      userId,
+    });
+
+    return syncPayPalInvoiceStatusByPayPalInvoiceId(remoteDuplicateBeforeCreate.paypalInvoiceId, { userId });
   }
 
   const items = buildInvoiceLineItems(invoice, config.currency);
@@ -915,6 +1148,10 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
     const response = await paypalFetch('/v2/invoicing/invoices', {
       method: 'POST',
       body: JSON.stringify(payload),
+    }, {
+      operation: 'createPayPalInvoiceFromCrmInvoice',
+      invoiceId: invoice.id,
+      invoiceNumber: invoice.number,
     });
     const locationHeader = readString(response.headers.get('location'));
     const created = asRecord(await response.json());
@@ -930,7 +1167,11 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
 
     let paypalInvoiceUrl = extractPayPalInvoiceUrl(created);
     if (!paypalInvoiceUrl) {
-      const detailResponse = await paypalFetch(`/v2/invoicing/invoices/${paypalInvoiceId}`, { method: 'GET' });
+      const detailResponse = await paypalFetch(`/v2/invoicing/invoices/${paypalInvoiceId}`, { method: 'GET' }, {
+        operation: 'createPayPalInvoiceFromCrmInvoice.detail',
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.number,
+      });
       const detailPayload = asRecord(await detailResponse.json());
       paypalInvoiceUrl = extractPayPalInvoiceUrl(detailPayload);
     }
@@ -989,6 +1230,7 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
 }
 
 export async function sendPayPalInvoice(invoiceId: string, userId?: string | null) {
+  const config = getPayPalConfig();
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     include: {
@@ -1020,6 +1262,12 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
     throw new Error('Facture CRM introuvable.');
   }
 
+  if (!invoice.contact) {
+    throw new PayPalValidationError('Validation PayPal echouee avant appel API.', [
+      { field: 'contact.id', issue: 'MISSING_REQUIRED_VALUE', description: 'Aucun client n est lie a cette facture.' },
+    ]);
+  }
+
   if (!invoice.paypalInvoiceId) {
     throw new Error('Aucune facture PayPal liee. Cree la facture PayPal avant envoi.');
   }
@@ -1038,14 +1286,28 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
 
   const missingIssuer = validateIssuerSnapshot(issuer);
   const missingCustomer = validateCustomerSnapshot(customer);
-  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
-    throw new Error(
-      `Facturation incomplete avant envoi PayPal. Emetteur: ${missingIssuer.join(', ') || 'ok'}. Client: ${missingCustomer.join(', ') || 'ok'}.`,
-    );
-  }
+  validatePayPalInvoicePreconditions({
+    invoice: {
+      id: invoice.id,
+      number: invoice.number,
+      amount: invoice.amount,
+      description: invoice.description,
+      paymentCurrency: invoice.paymentCurrency,
+      contactId: invoice.contactId,
+    },
+    contact: invoice.contact ? { id: invoice.contact.id, email: invoice.contact.email } : null,
+    issuerMissing: missingIssuer,
+    customerMissing: missingCustomer,
+    hasLineItems: true,
+    currency: config.currency,
+  });
 
   const remoteBeforeSend = await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}`, {
     method: 'GET',
+  }, {
+    operation: 'sendPayPalInvoice.precheck',
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.number,
   });
   const payloadBeforeSend = asRecord(await remoteBeforeSend.json());
   const statusBeforeSend = extractPayPalStatus(payloadBeforeSend) || 'UNKNOWN';
@@ -1088,10 +1350,18 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
   await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}/send`, {
     method: 'POST',
     body: JSON.stringify({}),
+  }, {
+    operation: 'sendPayPalInvoice.send',
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.number,
   });
 
   const remote = await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}`, {
     method: 'GET',
+  }, {
+    operation: 'sendPayPalInvoice.status',
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.number,
   });
   const payload = asRecord(await remote.json());
   const syncUpdate = derivePayPalInvoiceSyncUpdate({
@@ -1140,6 +1410,10 @@ export async function syncPayPalInvoiceStatusByPayPalInvoiceId(paypalInvoiceId: 
 
   const remote = await paypalFetch(`/v2/invoicing/invoices/${paypalInvoiceId}`, {
     method: 'GET',
+  }, {
+    operation: 'syncPayPalInvoiceStatusByPayPalInvoiceId',
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.number,
   });
   const payload = asRecord(await remote.json());
   const syncUpdate = derivePayPalInvoiceSyncUpdate({
@@ -1210,6 +1484,10 @@ export async function getPayPalInvoiceAdminDiagnostics(invoiceId: string): Promi
     try {
       const remote = await paypalFetch(`/v2/invoicing/invoices/${invoice.paypalInvoiceId}`, {
         method: 'GET',
+      }, {
+        operation: 'getPayPalInvoiceAdminDiagnostics',
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.number,
       });
       const payload = asRecord(await remote.json());
       const invoicer = asRecord(payload.invoicer);
@@ -1378,7 +1656,11 @@ export async function verifyPayPalWebhookSignature(request: NextRequest, rawBody
   });
 
   if (!response.ok) {
-    throw await readPayPalError(response);
+    throw await readPayPalError(response, {
+      path: '/v1/notifications/verify-webhook-signature',
+      method: 'POST',
+      operation: 'verifyPayPalWebhookSignature',
+    });
   }
 
   const payload = await response.json() as { verification_status?: string };

@@ -52,11 +52,33 @@ type PayPalRoutePayload = {
     value?: string;
   }>;
   paypalDebugId?: string | null;
+  paypalLinks?: Array<{
+    href?: string;
+    rel?: string;
+    method?: string;
+    encType?: string;
+  }>;
   missingIssuer?: string[];
   missingCustomer?: string[];
   billingUpdateUrl?: string | null;
   editCustomerUrl?: string | null;
 };
+
+function formatPayPalErrorMessage(data: PayPalRoutePayload | null, fallback: string) {
+  const detailLines = (data?.paypalDetails || [])
+    .map((detail) => {
+      const prefix = detail.field ? `${detail.field}: ` : '';
+      return prefix + (detail.description || detail.issue || detail.value || '').trim();
+    })
+    .filter(Boolean);
+
+  return [
+    data?.error || data?.paypalMessage || fallback,
+    data?.paypalName ? `Type: ${data.paypalName}` : null,
+    data?.paypalDebugId ? `Debug ID: ${data.paypalDebugId}` : null,
+    detailLines.length > 0 ? `Détails: ${detailLines.join(' | ')}` : null,
+  ].filter(Boolean).join(' · ');
+}
 
 type PayPalDiagnosticsPayload = {
   configured: boolean;
@@ -259,19 +281,7 @@ export function PayPalInvoicePanel({
             editCustomerUrl: data?.editCustomerUrl || null,
           });
         }
-        const details = (data?.paypalDetails || [])
-          .map((detail) => detail.description || detail.issue || detail.field)
-          .filter(Boolean)
-          .join(' | ');
-        const debugId = data?.paypalDebugId ? `Debug ID: ${data.paypalDebugId}` : null;
-        const message = [
-          data?.error || data?.paypalMessage || 'Action PayPal impossible',
-          data?.paypalName ? `Code: ${data.paypalName}` : null,
-          details || null,
-          debugId,
-        ].filter(Boolean).join(' · ');
-
-        throw new Error(message);
+        throw new Error(formatPayPalErrorMessage(data, 'Action PayPal impossible'));
       }
 
       setMeta((current) => ({

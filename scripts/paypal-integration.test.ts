@@ -7,7 +7,10 @@ import {
   derivePayPalInvoiceSyncUpdate,
   isDuplicatePayPalInvoiceNumberError,
   PayPalApiError,
+  PayPalValidationError,
   reuseExistingPayPalInvoiceIfPresent,
+  serializePayPalApiError,
+  validatePayPalInvoicePreconditions,
 } from '@/lib/server/paypal';
 import { handlePayPalWebhookRequest } from '@/lib/server/paypal-webhook';
 import {
@@ -150,6 +153,55 @@ test('duplicate invoice number PayPal est detecte pour rattachement distant', ()
   });
 
   assert.equal(isDuplicatePayPalInvoiceNumberError(error), true);
+});
+
+test('serializePayPalApiError expose type, debug_id et details utiles', () => {
+  const error = new PayPalApiError({
+    httpStatus: 422,
+    name: 'UNPROCESSABLE_ENTITY',
+    message: 'The requested action could not be performed, semantically incorrect, or failed business validation.',
+    details: [{ field: '/detail/invoice_number', description: 'Invoice number is duplicate.' }],
+    debugId: 'debug-422',
+    links: [{ href: 'https://api-m.paypal.com/v2/invoicing/invoices/INV2-123', rel: 'self', method: 'GET' }],
+  });
+
+  const serialized = serializePayPalApiError(error, 'Creation PayPal impossible');
+  assert.equal(serialized.status, 422);
+  assert.equal(serialized.body.paypalName, 'UNPROCESSABLE_ENTITY');
+  assert.equal(serialized.body.paypalDebugId, 'debug-422');
+  assert.equal(Array.isArray(serialized.body.paypalLinks), true);
+  assert.equal(String(serialized.body.error).includes('Type: UNPROCESSABLE_ENTITY'), true);
+  assert.equal(String(serialized.body.error).includes('Debug ID: debug-422'), true);
+  assert.equal(String(serialized.body.error).includes('Invoice number is duplicate.'), true);
+});
+
+test('validatePayPalInvoicePreconditions bloque email manquant, montant nul et devise non CAD', () => {
+  assert.throws(
+    () => validatePayPalInvoicePreconditions({
+      invoice: {
+        id: 'inv-1',
+        number: 'FAC-20260505-003',
+        amount: new Prisma.Decimal('0.00'),
+        description: null,
+        paymentCurrency: 'USD',
+        contactId: 'contact-1',
+      },
+      contact: { id: 'contact-1', email: null },
+      issuerMissing: ['nom legal'],
+      customerMissing: ['adresse'],
+      hasLineItems: false,
+      currency: 'CAD',
+    }),
+    (error: unknown) => {
+      assert.equal(error instanceof PayPalValidationError, true);
+      const validationError = error as PayPalValidationError;
+      assert.equal(validationError.details.some((detail) => detail.field === 'primary_recipients[0].billing_info.email_address'), true);
+      assert.equal(validationError.details.some((detail) => detail.field === 'amount.value'), true);
+      assert.equal(validationError.details.some((detail) => detail.field === 'detail.currency_code'), true);
+      assert.equal(validationError.details.some((detail) => detail.field === 'items'), true);
+      return true;
+    },
+  );
 });
 
 test('webhook PAID met Invoice.status a PAID', () => {
