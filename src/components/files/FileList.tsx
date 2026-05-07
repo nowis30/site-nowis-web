@@ -132,7 +132,7 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
                 </div>
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                   <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                    <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir</span>
+                    <span className="inline-flex items-center gap-1.5"><Eye size={13} />{resolvedCategory.category === 'invoice' ? 'Ouvrir la facture' : 'Voir'}</span>
                   </a>
                   <a href={`${downloadPrefix}/${item.id}/download`} download={item.originalName} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
                     <span className="inline-flex items-center gap-1.5"><Download size={13} />Telecharger</span>

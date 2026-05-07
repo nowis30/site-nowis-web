@@ -5,7 +5,11 @@ import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { FILE_VISIBILITY_DB } from '@/lib/file-documents';
 import { assertStoredObjectMetadata } from '@/lib/file-storage';
-import { canClientAccessSongRequest, canClientAccessWorkshopRequest } from '@/features/client-portal/documents/security';
+import {
+  canClientAccessFileDocument,
+  canClientAccessSongRequest,
+  canClientAccessWorkshopRequest,
+} from '@/features/client-portal/documents/security';
 import { getDefaultCategoryForUpload, resolveDocumentCategory } from '@/features/documents/document-categories';
 
 const finalizeUploadSchema = z.object({
@@ -42,6 +46,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Parametres invalides' }, { status: 400 });
   }
 
+  if (parsedQuery.data.songRequestId) {
+    const songExists = await canClientAccessSongRequest({
+      songRequestId: parsedQuery.data.songRequestId,
+      sessionContactId: session.contactId,
+    });
+    if (!songExists) {
+      return NextResponse.json({ error: 'Demande de chanson introuvable' }, { status: 404 });
+    }
+  }
+
   if (parsedQuery.data.workshopRequestId) {
     const workshopExists = await canClientAccessWorkshopRequest({
       workshopRequestId: parsedQuery.data.workshopRequestId,
@@ -54,16 +68,40 @@ export async function GET(request: NextRequest) {
 
   const items = await prisma.fileDocument.findMany({
     where: {
-      contactId: session.contactId,
       visibility: 'CLIENT_VISIBLE',
+      OR: [
+        { contactId: session.contactId },
+        { songRequest: { contactId: session.contactId } },
+        { workshopRequest: { OR: [{ contactId: session.contactId }, { clientId: session.contactId }] } },
+        { invoice: { contactId: session.contactId } },
+        { commercialQuote: { contactId: session.contactId } },
+      ],
       ...(parsedQuery.data.songRequestId ? { songRequestId: parsedQuery.data.songRequestId } : {}),
       ...(parsedQuery.data.workshopRequestId ? { workshopRequestId: parsedQuery.data.workshopRequestId } : {}),
+    },
+    include: {
+      songRequest: { select: { contactId: true } },
+      workshopRequest: { select: { contactId: true, clientId: true } },
+      invoice: { select: { contactId: true } },
+      commercialQuote: { select: { contactId: true } },
     },
     orderBy: { createdAt: 'desc' },
     take: 100,
   });
 
-  return NextResponse.json({ items });
+  const visibleItems = items.filter((item) => canClientAccessFileDocument({
+    sessionContactId: session.contactId,
+    visibility: item.visibility,
+    category: item.category,
+    contactId: item.contactId,
+    songRequestContactId: item.songRequest?.contactId,
+    workshopRequestContactId: item.workshopRequest?.contactId,
+    workshopRequestClientId: item.workshopRequest?.clientId,
+    invoiceContactId: item.invoice?.contactId,
+    commercialQuoteContactId: item.commercialQuote?.contactId,
+  })).map(({ songRequest, workshopRequest, invoice, commercialQuote, ...item }) => item);
+
+  return NextResponse.json({ items: visibleItems });
 }
 
 export async function POST(request: NextRequest) {

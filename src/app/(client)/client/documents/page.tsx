@@ -28,8 +28,14 @@ export default async function ClientDocumentsPage() {
   try {
     documents = await prisma.fileDocument.findMany({
       where: {
-        contactId: contact.id,
         visibility: 'CLIENT_VISIBLE',
+        OR: [
+          { contactId: contact.id },
+          { songRequest: { contactId: contact.id } },
+          { workshopRequest: { OR: [{ contactId: contact.id }, { clientId: contact.id }] } },
+          { invoice: { contactId: contact.id } },
+          { commercialQuote: { contactId: contact.id } },
+        ],
       },
       include: {
         songRequest: { select: { id: true, title: true } },
