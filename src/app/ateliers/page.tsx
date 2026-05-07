@@ -2,6 +2,23 @@ import Script from 'next/script';
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
 import { buildFaqSchema, buildServiceSchema } from '@/lib/structured-data';
+import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
+
+const workshopPrices = [
+  { label: '60 minutes', regular: REGULAR_PRICES.workshops.minutes60 },
+  { label: '90 minutes', regular: REGULAR_PRICES.workshops.minutes90 },
+  { label: '2 heures', regular: REGULAR_PRICES.workshops.hours2 },
+  { label: '3 heures', regular: REGULAR_PRICES.workshops.hours3 },
+];
+
+const groupRegularPrice = REGULAR_PRICES.groupFromPerPerson;
+const groupLaunchPrice = getLaunchPrice(groupRegularPrice);
+
+function workshopPriceLine() {
+  return workshopPrices
+    .map((item) => `${item.label} : prix régulier ${formatPrice(item.regular)}, rabais ${LAUNCH_DISCOUNT_PERCENT} % ${formatPrice(getLaunchPrice(item.regular))}`)
+    .join(' · ');
+}
 
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
@@ -24,7 +41,7 @@ const faqItems = [
   },
   {
     q: 'Quel est le coût d\'un atelier ?',
-    a: 'Les ateliers suivent la grille officielle : 60 minutes = 120 $, 90 minutes = 180 $, 2 heures = 240 $ et 3 heures = 360 $. Pour certains groupes, une formule lancement peut aussi etre offerte a partir de 10 $ par personne.',
+    a: `Les ateliers suivent la grille officielle : ${workshopPriceLine()}. Pour certains groupes, une formule groupe peut etre offerte a ${formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou ${formatPrice(groupLaunchPrice, ' / personne')} avec rabais ${LAUNCH_DISCOUNT_PERCENT} % .`,
   },
   {
     q: 'Est-ce que Nowis Morin se déplace jusqu\'à chez nous ?',
@@ -122,7 +139,7 @@ export default function AteliersPage() {
             Animés en personne par Nowis Morin, les ateliers de création musicale avec l&apos;IA invitent chaque groupe à créer une chanson à partir de ses propres émotions, souvenirs et idées, puis à repartir avec une vidéo souvenir téléchargeable.
           </p>
           <p className="mt-3 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
-            Une formule pensee pour les ecoles, les aines, les organismes et les groupes de Drummondville et partout au Quebec. Le tarif suit une grille simple : 120 $ pour 60 minutes, 180 $ pour 90 minutes, 240 $ pour 2 heures et 360 $ pour 3 heures.
+            Une formule pensee pour les ecoles, les aines, les organismes et les groupes de Drummondville et partout au Quebec. Chaque atelier affiche maintenant son prix regulier et son prix avec rabais {LAUNCH_DISCOUNT_PERCENT} %.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
@@ -276,7 +293,7 @@ export default function AteliersPage() {
             <span className="text-3xl" role="img" aria-hidden="true">⏱️</span>
             <h3 className="mt-4 font-display text-2xl text-white">Durée adaptable</h3>
             <p className="mt-2 text-sm leading-7 text-slate-300">
-              Choisissez la formule qui convient a votre groupe : <strong className="text-white">60 minutes a 120 $</strong>, <strong className="text-white">90 minutes a 180 $</strong>, <strong className="text-white">2 heures a 240 $</strong> ou <strong className="text-white">3 heures a 360 $</strong>.
+              Choisissez la formule qui convient a votre groupe : <strong className="text-white">60 minutes = {formatPrice(REGULAR_PRICES.workshops.minutes60)} (rabais {formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.minutes60))})</strong>, <strong className="text-white">90 minutes = {formatPrice(REGULAR_PRICES.workshops.minutes90)} (rabais {formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.minutes90))})</strong>, <strong className="text-white">2 heures = {formatPrice(REGULAR_PRICES.workshops.hours2)} (rabais {formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.hours2))})</strong> ou <strong className="text-white">3 heures = {formatPrice(REGULAR_PRICES.workshops.hours3)} (rabais {formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.hours3))})</strong>.
             </p>
           </div>
           <div className="rounded-[2rem] border border-emerald-400/15 bg-emerald-500/[0.06] p-7">
@@ -295,19 +312,16 @@ export default function AteliersPage() {
           <span className="text-3xl" role="img" aria-hidden="true">💬</span>
           <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tarifs des ateliers</h2>
           <div className="mx-auto mt-6 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
-            {[
-              '60 minutes : 120 $',
-              '90 minutes : 180 $',
-              '2 heures : 240 $',
-              '3 heures : 360 $',
-            ].map((item) => (
-              <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-[color:var(--site-heading)]">
-                {item}
+            {workshopPrices.map((item) => (
+              <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-[color:var(--site-heading)]">
+                <p>{item.label}</p>
+                <p className="mt-1 text-xs text-[color:var(--site-soft)]">Prix régulier : {formatPrice(item.regular)}</p>
+                <p className="mt-1 text-sm text-emerald-300">Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(getLaunchPrice(item.regular))}</p>
               </div>
             ))}
           </div>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-[color:var(--site-muted)]">
-            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a partir de 10 $ par personne pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
+            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a {formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou {formatPrice(groupLaunchPrice, ' / personne')} avec rabais {LAUNCH_DISCOUNT_PERCENT} % pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
           </p>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[color:var(--site-muted)]">
             Le deplacement est inclus jusqu a 100 km aller-retour depuis Drummondville. Au-dela, une soumission complementaire peut etre discutee.

@@ -17,28 +17,28 @@ const ateliers = [
   {
     name: 'Atelier 60 minutes',
     duree: '60 minutes',
-    tarif: '120 $',
+    regularPrice: REGULAR_PRICES.workshops.minutes60,
     desc: 'Format direct pour initier un groupe a la creation musicale avec l IA et produire un premier resultat concret.',
     accent: false,
   },
   {
     name: 'Atelier 90 minutes',
     duree: '90 minutes',
-    tarif: '180 $',
+    regularPrice: REGULAR_PRICES.workshops.minutes90,
     desc: 'Formule la plus frequente pour aller plus loin dans les idees, les paroles et la mise en chanson.',
     accent: false,
   },
   {
     name: 'Atelier 2 heures',
     duree: '2 heures',
-    tarif: '240 $',
+    regularPrice: REGULAR_PRICES.workshops.hours2,
     desc: 'Atelier approfondi pour laisser plus de place a la participation, a l expression et au raffinement du resultat.',
     accent: true,
   },
   {
     name: 'Atelier 3 heures',
     duree: '3 heures',
-    tarif: '360 $',
+    regularPrice: REGULAR_PRICES.workshops.hours3,
     desc: 'Experience immersive pour les groupes qui veulent une demarche plus complete ou un moment fort sur mesure.',
     accent: false,
   },
@@ -46,6 +46,10 @@ const ateliers = [
 
 const hourlyRegularPrice = REGULAR_PRICES.hourly;
 const hourlyLaunchPrice = getLaunchPrice(hourlyRegularPrice);
+const groupRegularPrice = REGULAR_PRICES.groupFromPerPerson;
+const groupLaunchPrice = getLaunchPrice(groupRegularPrice);
+const memorySongRegularPrice = REGULAR_PRICES.songs.memorySong;
+const memorySongLaunchPrice = getLaunchPrice(memorySongRegularPrice);
 const songVideoRegularPrice = REGULAR_PRICES.songs.videoWithSong;
 const songVideoLaunchPrice = getLaunchPrice(songVideoRegularPrice);
 
@@ -68,8 +72,9 @@ const servicesPersonnalises = [
 
 const produits = [
   {
-    name: 'Chanson IA souvenir',
-    tarif: '25 $',
+    name: 'Chanson souvenir',
+    regularPrice: memorySongRegularPrice,
+    launchPrice: memorySongLaunchPrice,
     format: 'Simple',
     desc: 'Creation d une chanson amusante ou souvenir a partir des informations fournies.',
   },
@@ -97,7 +102,7 @@ const inclus = [
 ];
 
 const preferentiels = [
-  { clientele: 'Ecoles', note: 'Formule groupe possible a partir de 10 $ par personne selon le projet' },
+  { clientele: 'Ecoles', note: `Formule groupe possible : prix regulier ${formatPrice(groupRegularPrice, ' / personne')}, avec rabais ${LAUNCH_DISCOUNT_PERCENT} % : ${formatPrice(groupLaunchPrice, ' / personne')}` },
   { clientele: 'Maisons des jeunes', note: 'Option groupe disponible pour les activites collectives et les series d ateliers' },
   { clientele: 'Residences pour aines', note: 'Tarification adaptee possible selon le contexte et le nombre de participants' },
   { clientele: 'Organismes et groupes prives', note: 'Formule lancement de groupe disponible pour certains mandats' },
@@ -143,7 +148,7 @@ export default function TarifsPage() {
             Tarifs — Création Nowis
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-            La grille officielle de Creation Nowis est maintenant simple et coherente partout sur le site. Le tarif horaire regulier est de {formatPrice(hourlyRegularPrice, ' / h')} et l offre de lancement applique {LAUNCH_DISCOUNT_PERCENT} % de rabais, soit {formatPrice(hourlyLaunchPrice, ' / h')}. Certaines activites de groupe peuvent aussi etre offertes a partir de 10 $ par personne.
+            La grille officielle de Creation Nowis est maintenant simple et coherente partout sur le site. Le tarif horaire regulier est de {formatPrice(hourlyRegularPrice, ' / h')} et l offre de lancement applique {LAUNCH_DISCOUNT_PERCENT} % de rabais, soit {formatPrice(hourlyLaunchPrice, ' / h')}. La formule de groupe peut aussi etre offerte a {formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou {formatPrice(groupLaunchPrice, ' / personne')} avec rabais.
           </p>
           <div className="mt-4 inline-flex rounded-2xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-3">
             <DiscountPrice regular={hourlyRegularPrice} promo={hourlyLaunchPrice} suffix=" / h" />
@@ -176,7 +181,7 @@ export default function TarifsPage() {
             Formules d&apos;ateliers
           </h2>
           <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
-            Meme logique tarifaire partout : 60 minutes = 120 $, 90 minutes = 180 $, 2 heures = 240 $ et 3 heures = 360 $. Deplacement inclus jusqu a 100 km aller-retour depuis Drummondville.
+            Meme logique tarifaire partout : chaque formule d atelier affiche maintenant son prix regulier et son prix avec rabais {LAUNCH_DISCOUNT_PERCENT} %. Deplacement inclus jusqu a 100 km aller-retour depuis Drummondville.
           </p>
 
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -199,7 +204,7 @@ export default function TarifsPage() {
                 <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{a.desc}</p>
                 <div className="mt-5 border-t border-white/10 pt-4">
                   <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Tarif</span>
-                  <p className="mt-1 text-2xl font-bold text-amber-200">{a.tarif}</p>
+                  <DiscountPrice regular={a.regularPrice} promo={getLaunchPrice(a.regularPrice)} />
                 </div>
               </article>
             ))}
@@ -293,7 +298,7 @@ export default function TarifsPage() {
           {/* Préférentiels */}
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Formule groupe disponible</p>
-            <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Certaines activites peuvent aussi etre offertes a partir de 10 $ par personne</h2>
+            <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Certaines activites peuvent aussi etre offertes a partir de {formatPrice(groupRegularPrice, ' / personne')}</h2>
             <div className="mt-6 space-y-3">
               {preferentiels.map((pref) => (
                 <div key={pref.clientele} className="glass-panel-soft flex gap-3 rounded-xl p-4">
@@ -306,7 +311,7 @@ export default function TarifsPage() {
               ))}
             </div>
             <p className="mt-5 text-sm leading-7 text-[color:var(--site-muted)]">
-              Ideal pour : ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
+              Ideal pour : ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives. Avec rabais {LAUNCH_DISCOUNT_PERCENT} %, cette formule descend a {formatPrice(groupLaunchPrice, ' / personne')}.
             </p>
           </div>
 
@@ -349,13 +354,13 @@ export default function TarifsPage() {
             </thead>
             <tbody className="divide-y divide-[rgba(131,97,67,0.08)]">
               {[
-                { service: 'Atelier 60 minutes', tarif: '120 $' },
-                { service: 'Atelier 90 minutes', tarif: '180 $' },
-                { service: 'Atelier 2 heures', tarif: '240 $' },
-                { service: 'Atelier 3 heures', tarif: '360 $' },
+                { service: 'Atelier 60 minutes', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.minutes60)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.minutes60))}` },
+                { service: 'Atelier 90 minutes', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.minutes90)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.minutes90))}` },
+                { service: 'Atelier 2 heures', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.hours2)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.hours2))}` },
+                { service: 'Atelier 3 heures', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.hours3)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.hours3))}` },
                 { service: 'Tarif horaire', tarif: `Prix régulier: ${formatPrice(hourlyRegularPrice, ' / h')} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(hourlyLaunchPrice, ' / h')}` },
-                { service: 'Formule groupe', tarif: 'A partir de 10 $ / personne' },
-                { service: 'Chanson IA souvenir', tarif: '25 $' },
+                { service: 'Formule groupe', tarif: `Prix régulier: ${formatPrice(groupRegularPrice, ' / personne')} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(groupLaunchPrice, ' / personne')}` },
+                { service: 'Chanson souvenir', tarif: `Prix régulier: ${formatPrice(memorySongRegularPrice)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(memorySongLaunchPrice)}` },
                 { service: 'Video IA avec chanson', tarif: `Prix régulier: ${formatPrice(songVideoRegularPrice)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(songVideoLaunchPrice)}` },
                 { service: 'Projet special', tarif: 'Sur soumission' },
               ].map((row, i) => (

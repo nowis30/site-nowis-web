@@ -11,7 +11,7 @@ export const REGULAR_PRICES = {
   },
   hourly: 60,
   songs: {
-    memorySong: 25,
+    memorySong: 30,
     videoWithSong: 60,
   },
   groupFromPerPerson: 10,

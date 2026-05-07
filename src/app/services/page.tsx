@@ -7,6 +7,8 @@ import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } 
 
 const hourlyRegularPrice = REGULAR_PRICES.hourly;
 const hourlyLaunchPrice = getLaunchPrice(hourlyRegularPrice);
+const memorySongRegularPrice = REGULAR_PRICES.songs.memorySong;
+const memorySongLaunchPrice = getLaunchPrice(memorySongRegularPrice);
 const songVideoRegularPrice = REGULAR_PRICES.songs.videoWithSong;
 const songVideoLaunchPrice = getLaunchPrice(songVideoRegularPrice);
 
@@ -32,7 +34,7 @@ export default function ServicesPage() {
       <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
         <div className="glass-panel-soft mb-8 rounded-3xl p-6 shadow-sm">
           <p className="text-sm leading-7 text-[color:var(--site-muted)]">
-            Tarif horaire regulier : {formatPrice(hourlyRegularPrice, ' / h')}. Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(hourlyLaunchPrice, ' / h')}. Chanson IA souvenir : {formatPrice(REGULAR_PRICES.songs.memorySong)}. Video IA avec chanson : prix regulier {formatPrice(songVideoRegularPrice)}, avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(songVideoLaunchPrice)}. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
+            Tarif horaire regulier : {formatPrice(hourlyRegularPrice, ' / h')}. Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(hourlyLaunchPrice, ' / h')}. Chanson souvenir : prix regulier {formatPrice(memorySongRegularPrice)}, avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(memorySongLaunchPrice)}. Video IA avec chanson : prix regulier {formatPrice(songVideoRegularPrice)}, avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(songVideoLaunchPrice)}. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
           </p>
         </div>
         <div className="grid gap-8 md:grid-cols-2">

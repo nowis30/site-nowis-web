@@ -1,6 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
+import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
+
+const workshopPrices = [
+  { label: '60 minutes', regular: REGULAR_PRICES.workshops.minutes60 },
+  { label: '90 minutes', regular: REGULAR_PRICES.workshops.minutes90 },
+  { label: '2 heures', regular: REGULAR_PRICES.workshops.hours2 },
+  { label: '3 heures', regular: REGULAR_PRICES.workshops.hours3 },
+];
+
+const groupRegularPrice = REGULAR_PRICES.groupFromPerPerson;
+const groupLaunchPrice = getLaunchPrice(groupRegularPrice);
 
 export const metadata: Metadata = buildMetadata({
   title: 'Atelier de création musicale avec l\'IA | Nowis Morin',
@@ -567,14 +578,11 @@ export default function AtelierCreatifPage() {
                 le rythme du groupe, le cadre de l activite et le niveau d implication souhaite.
               </p>
               <p>
-                La meme logique tarifaire s applique partout : 120 $, 180 $, 240 $ ou 360 $ selon la duree retenue. Pour certains groupes, une formule lancement peut aussi etre offerte a partir de 10 $ par personne.
+                La meme logique tarifaire s applique partout : chaque duree affiche un prix regulier et un prix avec rabais {LAUNCH_DISCOUNT_PERCENT} %. Pour certains groupes, une formule lancement peut aussi etre offerte a {formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou {formatPrice(groupLaunchPrice, ' / personne')} avec rabais.
               </p>
               <ul className="mt-2 space-y-3">
                 {[
-                  '60 minutes : 120 $',
-                  '90 minutes : 180 $',
-                  '2 heures : 240 $',
-                  '3 heures : 360 $',
+                  ...workshopPrices.map((item) => `${item.label} : prix régulier ${formatPrice(item.regular)} · rabais ${formatPrice(getLaunchPrice(item.regular))}`),
                   'Adaptable selon la taille du groupe',
                   'Aucun équipement spécial requis de votre côté',
                   'En salle de classe, salle communautaire ou autre',
@@ -601,19 +609,16 @@ export default function AtelierCreatifPage() {
             Une grille simple pour reserver l atelier
           </h2>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {[
-              '60 minutes : 120 $',
-              '90 minutes : 180 $',
-              '2 heures : 240 $',
-              '3 heures : 360 $',
-            ].map((item) => (
-              <div key={item} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-4 text-sm font-semibold text-[color:var(--site-heading)]">
-                {item}
+            {workshopPrices.map((item) => (
+              <div key={item.label} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-4 text-sm font-semibold text-[color:var(--site-heading)]">
+                <p>{item.label}</p>
+                <p className="mt-1 text-xs text-[color:var(--site-soft)]">Prix régulier : {formatPrice(item.regular)}</p>
+                <p className="mt-1 text-sm text-emerald-300">Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(getLaunchPrice(item.regular))}</p>
               </div>
             ))}
           </div>
           <p className="mt-6 text-sm leading-7 text-[color:var(--site-muted)]">
-            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a partir de 10 $ par personne pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
+            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a {formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou {formatPrice(groupLaunchPrice, ' / personne')} avec rabais {LAUNCH_DISCOUNT_PERCENT} % pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
           </p>
         </div>
       </section>
