@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPublicQuoteToken } from '@/lib/public-links';
-import { assertCanSendQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
+import { assertCanSendQuoteForSongRequest, findExistingInvoiceForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
+import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 const ALLOWED = new Set(['accept', 'decline']);
 
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
       quoteNumber: true,
       contactId: true,
       songRequestId: true,
+      workshopRequestId: true,
       status: true,
       convertedToInvoiceId: true,
     },
@@ -90,40 +92,39 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
     }
   }
 
-    // Créer une tâche si la soumission est acceptée et liée à une demande de chanson
-    if (action === 'accept' && quote.songRequestId) {
-      try {
-        const songRequest = await prisma.songRequest.findUnique({
-          where: { id: quote.songRequestId },
-          select: {
-            id: true,
-            title: true,
-            fullName: true,
-          },
+  if (action === 'accept') {
+    try {
+      const existingInvoice = quote.songRequestId
+        ? await findExistingInvoiceForSongRequest(quote.songRequestId)
+        : quote.convertedToInvoiceId
+          ? { id: quote.convertedToInvoiceId }
+          : null;
+
+      if (existingInvoice) {
+        console.info(`[QUOTE_ACCEPT] Facture déjà existante pour le devis ${quote.id}. Aucune tâche CREATE_INVOICE créée.`);
+      } else {
+        await ensureCrmTask({
+          type: 'CREATE_INVOICE',
+          title: 'Créer la facture',
+          description: `Soumission acceptée: ${quote.quoteNumber}. Préparer la facture client.`,
+          priority: 'HIGH',
+          linkedType: quote.songRequestId
+            ? 'SONG_REQUEST'
+            : quote.workshopRequestId
+              ? 'WORKSHOP_REQUEST'
+              : 'CONTACT',
+          linkedId: quote.songRequestId ?? quote.workshopRequestId ?? quote.contactId ?? null,
+          contactId: quote.contactId ?? null,
+          songRequestId: quote.songRequestId ?? null,
+          workshopRequestId: quote.workshopRequestId ?? null,
+          commercialQuoteId: quote.id,
+          isAutoCreated: true,
         });
-
-        if (songRequest) {
-          const taskTitle = songRequest.title
-            ? `Créer la chanson: "${songRequest.title}" pour ${songRequest.fullName}`
-            : `Créer la chanson pour ${songRequest.fullName}`;
-
-          await prisma.activity.create({
-            data: {
-              type: 'TASK',
-              title: taskTitle,
-              description: `Soumission acceptée - Devis ${quote.quoteNumber}. La chanson doit être créée selon les paramètres définis dans la demande.`,
-              songRequestId: quote.songRequestId,
-              contactId: quote.contactId,
-              relatedType: 'SONG_REQUEST',
-              relatedId: quote.songRequestId,
-              relatedUrl: `/crm/song-requests/${quote.songRequestId}`,
-            },
-          });
-        }
-      } catch (error) {
-        console.error('Erreur création tâche pour demande de chanson:', error);
       }
+    } catch (error) {
+      console.error('Erreur création tâche CREATE_INVOICE:', error);
     }
+  }
 
-    return NextResponse.json({ ok: true, status: item.status });
+  return NextResponse.json({ ok: true, status: item.status });
 }

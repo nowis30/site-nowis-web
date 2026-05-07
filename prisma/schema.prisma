@@ -65,6 +65,7 @@ enum TaskStatus {
   TODO
   IN_PROGRESS
   DONE
+  CANCELLED
 }
 
 enum TaskPriority {
@@ -77,7 +78,15 @@ enum TaskType {
   CALL
   EMAIL
   SONG
+  CALLBACK
+  CREATE_QUOTE
+  CREATE_INVOICE
+  CREATE_SONG
+  UPLOAD_SONG_FILE
+  SCHEDULE_WORKSHOP
   FOLLOW_UP
+  DOCUMENT_REVIEW
+  CUSTOM
 }
 
 enum CommunicationDirection {
@@ -427,6 +436,7 @@ model Organization {
   appointments        Appointment[]
   commercialQuotes    CommercialQuote[]
   songRequests        SongRequest[]
+  tasks               Task[]
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedOrganization")
 
   @@index([name])
@@ -530,6 +540,8 @@ model WorkshopRequest {
   appointments          WorkshopAppointment[]
   crmAppointments       Appointment[]
   commercialQuotes      CommercialQuote[]
+  tasks                 Task[]
+  fileDocuments         FileDocument[]
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedWorkshopRequest")
 
   @@index([organizationId])
@@ -682,10 +694,17 @@ model Task {
   status         TaskStatus   @default(TODO)
   priority       TaskPriority @default(MEDIUM)
   dueDate        DateTime?
+  completedAt    DateTime?
+  isAutoCreated  Boolean      @default(false)
   caseId         String?      @db.Uuid
   assignedToId   String?      @db.Uuid
   createdById    String?      @db.Uuid
   songRequestId  String?      @db.Uuid
+  organizationId String?      @db.Uuid
+  workshopRequestId String?   @db.Uuid
+  commercialQuoteId String?   @db.Uuid
+  invoiceId      String?      @db.Uuid
+  appointmentId  String?      @db.Uuid
   linkedType     LinkedType?
   linkedId       String?      @db.Uuid
   createdAt      DateTime     @default(now())
@@ -695,9 +714,20 @@ model Task {
   assignedTo     User?        @relation("TaskAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
   createdBy      User?        @relation("TaskCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   songRequest    SongRequest? @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  workshopRequest WorkshopRequest? @relation(fields: [workshopRequestId], references: [id], onDelete: SetNull)
+  commercialQuote CommercialQuote? @relation(fields: [commercialQuoteId], references: [id], onDelete: SetNull)
+  invoice        Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
   @@index([caseId])
   @@index([songRequestId])
+  @@index([organizationId])
+  @@index([workshopRequestId])
+  @@index([commercialQuoteId])
+  @@index([invoiceId])
+  @@index([appointmentId])
+  @@index([status, type])
   @@index([linkedType, linkedId])
   @@map("tasks")
 }
@@ -724,6 +754,7 @@ model FileDocument {
   id               String         @id @default(uuid()) @db.Uuid
   contactId        String?        @db.Uuid
   songRequestId    String?        @db.Uuid
+  workshopRequestId String?       @db.Uuid
   invoiceId        String?        @db.Uuid
   commercialQuoteId String?        @db.Uuid
   uploadedByUserId String?        @db.Uuid
@@ -740,12 +771,14 @@ model FileDocument {
 
   contact           Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
   songRequest       SongRequest?       @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
+  workshopRequest   WorkshopRequest?   @relation(fields: [workshopRequestId], references: [id], onDelete: SetNull)
   invoice           Invoice?           @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
   commercialQuote   CommercialQuote?   @relation(fields: [commercialQuoteId], references: [id], onDelete: SetNull)
   uploadedByUser    User?              @relation("FileDocumentUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
 
   @@index([contactId])
   @@index([songRequestId])
+  @@index([workshopRequestId])
   @@index([invoiceId])
   @@index([commercialQuoteId])
   @@index([visibility])
@@ -807,6 +840,7 @@ model Appointment {
   workshopRequest WorkshopRequest? @relation(fields: [workshopRequestId], references: [id], onDelete: SetNull)
   songRequest SongRequest?      @relation(fields: [songRequestId], references: [id], onDelete: SetNull)
   commercialQuotes CommercialQuote[]
+  tasks       Task[]
   user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   calendarConnection CalendarConnection? @relation(fields: [calendarConnectionId], references: [id], onDelete: SetNull)
   linkedCalendarExternalEvents CalendarExternalEvent[] @relation("CalendarExternalEventLinkedAppointment")
@@ -926,6 +960,7 @@ model Invoice {
   contact           Contact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
   convertedFromQuote CommercialQuote?
   fileDocuments     FileDocument[]
+  tasks             Task[]
 
   @@index([contactId])
   @@index([status])
@@ -1096,6 +1131,7 @@ model CommercialQuote {
   convertedToInvoice    Invoice?             @relation(fields: [convertedToInvoiceId], references: [id], onDelete: SetNull)
   lines                 CommercialQuoteLine[]
   fileDocuments         FileDocument[]
+  tasks                 Task[]
 
   @@index([contactId])
   @@index([organizationId])

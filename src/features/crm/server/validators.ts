@@ -147,13 +147,31 @@ export const commercialQuotePatchSchema = z.object({
 export const taskInputSchema = z.object({
   title: z.string().min(2).max(200),
   description: z.string().max(2000).optional(),
-  type: z.enum(['CALL', 'EMAIL', 'SONG', 'FOLLOW_UP']).default('FOLLOW_UP'),
+  type: z.enum([
+    'CALL',
+    'EMAIL',
+    'SONG',
+    'CALLBACK',
+    'CREATE_QUOTE',
+    'CREATE_INVOICE',
+    'CREATE_SONG',
+    'UPLOAD_SONG_FILE',
+    'SCHEDULE_WORKSHOP',
+    'FOLLOW_UP',
+    'DOCUMENT_REVIEW',
+    'CUSTOM',
+  ]).default('FOLLOW_UP'),
   payload: z.unknown().optional(),
-  status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).default('TODO'),
+  status: z.enum(['TODO', 'IN_PROGRESS', 'DONE', 'CANCELLED']).default('TODO'),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
   dueDate: z.string().datetime().optional().or(z.literal('')),
   caseId: z.string().uuid().optional().or(z.literal('')),
   songRequestId: z.string().uuid().optional().or(z.literal('')),
+  organizationId: z.string().uuid().optional().or(z.literal('')),
+  workshopRequestId: z.string().uuid().optional().or(z.literal('')),
+  commercialQuoteId: z.string().uuid().optional().or(z.literal('')),
+  invoiceId: z.string().uuid().optional().or(z.literal('')),
+  appointmentId: z.string().uuid().optional().or(z.literal('')),
 }).superRefine((value, ctx) => {
   const type = coerceTaskType(value.type);
   const payload = coerceTaskPayload(value.payload);

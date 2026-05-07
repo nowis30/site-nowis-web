@@ -4,6 +4,7 @@ import { hashPassword } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { buildClientPortalPath, signClientPortalToken } from '@/lib/client-portal';
 import { SongRequestInput } from '@/lib/validators/song-request';
+import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 function normalizeBudget(value?: string) {
   if (!value || value.trim().length === 0) return null;
@@ -179,19 +180,22 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + followUpDays);
 
-    const task = await tx.task.create({
-      data: {
-        title: 'Analyser demande chanson',
+    const task = await ensureCrmTask(
+      {
+        title: 'Préparer la soumission pour la chanson',
         description: `Analyse à faire pour ${input.fullName} (${input.songType} - ${input.eventType}).\nDemande: /crm/song-requests/${songRequest.id}\nPortail client: ${clientPortalPath}`,
-        status: 'TODO',
+        type: 'CREATE_QUOTE',
         priority: 'MEDIUM',
         dueDate,
         songRequestId: songRequest.id,
         linkedType: 'SONG_REQUEST',
         linkedId: songRequest.id,
         createdById: ensuredUser.id,
+        contactId: contact.id,
+        isAutoCreated: true,
       },
-    });
+      tx,
+    );
 
     await tx.contact.update({
       where: { id: contact.id },
@@ -205,7 +209,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
       contactId: contact.id,
       songRequestId: songRequest.id,
       activityId: activity.id,
-      taskId: task.id,
+      taskId: task.taskId,
       userId: ensuredUser.id,
       clientPortalPath,
     };

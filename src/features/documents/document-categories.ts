@@ -28,6 +28,8 @@ type CategoryMeta = {
 type CategoryResolutionInput = {
   category?: string | null;
   mimeType?: string | null;
+  filename?: string | null;
+  originalName?: string | null;
   songRequestId?: string | null;
   workshopRequestId?: string | null;
   commercialQuoteId?: string | null;
@@ -50,7 +52,7 @@ const CATEGORY_META: Record<DocumentCategory, CategoryMeta> = {
     group: 'invoices',
   },
   'client-shared': {
-    label: 'Document partage',
+    label: 'Document partagé',
     description: 'Fichier partage par le client',
     group: 'shared',
   },
@@ -60,27 +62,27 @@ const CATEGORY_META: Record<DocumentCategory, CategoryMeta> = {
     group: 'song-deliverables',
   },
   'workshop-song': {
-    label: 'Chanson atelier',
+    label: 'Chanson d\'atelier',
     description: 'Chanson generee pendant un atelier',
     group: 'workshop-deliverables',
   },
   'workshop-video': {
-    label: 'Video atelier',
+    label: 'Vidéo d\'atelier',
     description: 'Video generee pendant un atelier',
     group: 'workshop-deliverables',
   },
   'song-audio': {
-    label: 'Audio chanson',
+    label: 'Audio de chanson',
     description: 'Fichier audio de chanson',
     group: 'song-deliverables',
   },
   'song-video': {
-    label: 'Video chanson',
+    label: 'Vidéo de chanson',
     description: 'Fichier video de chanson',
     group: 'song-deliverables',
   },
   'admin-internal': {
-    label: 'Interne CRM',
+    label: 'Document interne',
     description: 'Document interne non client',
     group: 'other',
   },
@@ -125,6 +127,34 @@ const LEGACY_CATEGORY_ALIASES: Record<string, DocumentCategory> = {
 
 function normalizeToken(value: string) {
   return value.trim().toLowerCase().replace(/[\s_]+/g, '-');
+}
+
+const VIDEO_EXTENSIONS = ['.mp4', '.mov', '.webm'];
+const AUDIO_EXTENSIONS = ['.mp3', '.wav', '.m4a', '.aac'];
+
+function hasAnyExtension(value: string | null | undefined, extensions: string[]) {
+  if (!value) return false;
+  const normalized = value.toLowerCase();
+  return extensions.some((ext) => normalized.endsWith(ext));
+}
+
+function resolveLegacySongCategory(document: CategoryResolutionInput): DocumentCategory {
+  const mimeType = (document.mimeType || '').toLowerCase();
+  if (mimeType.startsWith('video/')) return 'song-video';
+  if (mimeType.startsWith('audio/')) return 'song-audio';
+
+  const hasVideoExt =
+    hasAnyExtension(document.originalName, VIDEO_EXTENSIONS)
+    || hasAnyExtension(document.filename, VIDEO_EXTENSIONS);
+  if (hasVideoExt) return 'song-video';
+
+  const hasAudioExt =
+    hasAnyExtension(document.originalName, AUDIO_EXTENSIONS)
+    || hasAnyExtension(document.filename, AUDIO_EXTENSIONS);
+  if (hasAudioExt) return 'song-audio';
+
+  // Fallback prudent: audio seulement en l'absence d'indice vidéo.
+  return 'song-audio';
 }
 
 export function isOfficialDocumentCategory(input?: string | null): input is DocumentCategory {
@@ -191,6 +221,14 @@ export function resolveDocumentCategory(document: CategoryResolutionInput): {
     return {
       category: token,
       source: 'explicit',
+      rawCategory,
+    };
+  }
+
+  if (token === 'song') {
+    return {
+      category: resolveLegacySongCategory(document),
+      source: 'legacy-normalized',
       rawCategory,
     };
   }

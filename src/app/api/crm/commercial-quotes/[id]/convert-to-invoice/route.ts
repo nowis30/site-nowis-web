@@ -6,6 +6,7 @@ import { getBillingIssuerSnapshot, buildCustomerSnapshotFromContact, toCustomerS
 import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
 import { resolveExistingInvoiceForQuoteConversion } from '@/features/crm/server/song-request-quote-guards';
 import { ensureInvoiceFileDocument } from '@/features/crm/server/file-document-links';
+import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'commercialQuotes', 'update');
@@ -174,6 +175,42 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   } catch (error) {
     // Ne pas bloquer si le FileDocument échoue
     console.error('Erreur création FileDocument pour facture:', error);
+  }
+
+  try {
+    if (quote.songRequestId) {
+      await ensureCrmTask({
+        type: 'CREATE_SONG',
+        title: 'Créer la chanson et déposer les fichiers',
+        description: `Facture ${result.invoice.number} créée depuis le devis ${quote.quoteNumber}.`,
+        priority: 'HIGH',
+        linkedType: 'SONG_REQUEST',
+        linkedId: quote.songRequestId,
+        songRequestId: quote.songRequestId,
+        commercialQuoteId: quote.id,
+        invoiceId: result.invoice.id,
+        contactId: quote.contactId,
+        createdById: admin.session.sub,
+        isAutoCreated: true,
+      });
+    } else if (quote.workshopRequestId) {
+      await ensureCrmTask({
+        type: 'SCHEDULE_WORKSHOP',
+        title: "Planifier l'atelier au calendrier",
+        description: `Facture ${result.invoice.number} créée depuis le devis ${quote.quoteNumber}.`,
+        priority: 'HIGH',
+        linkedType: 'WORKSHOP_REQUEST',
+        linkedId: quote.workshopRequestId,
+        workshopRequestId: quote.workshopRequestId,
+        commercialQuoteId: quote.id,
+        invoiceId: result.invoice.id,
+        contactId: quote.contactId,
+        createdById: admin.session.sub,
+        isAutoCreated: true,
+      });
+    }
+  } catch (error) {
+    console.error('Erreur création tâche post-conversion facture:', error);
   }
 
   return NextResponse.json({ ok: true, invoiceId: result.invoice.id, quoteId: result.updatedQuote.id });

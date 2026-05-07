@@ -1,4 +1,19 @@
-export const TASK_TYPE_VALUES = ['CALL', 'EMAIL', 'SONG', 'FOLLOW_UP'] as const;
+export const TASK_TYPE_VALUES = [
+  // Legacy values kept for backward compatibility.
+  'CALL',
+  'EMAIL',
+  'SONG',
+  // New automation-oriented values.
+  'CALLBACK',
+  'CREATE_QUOTE',
+  'CREATE_INVOICE',
+  'CREATE_SONG',
+  'UPLOAD_SONG_FILE',
+  'SCHEDULE_WORKSHOP',
+  'FOLLOW_UP',
+  'DOCUMENT_REVIEW',
+  'CUSTOM',
+] as const;
 
 export type TaskType = (typeof TASK_TYPE_VALUES)[number];
 

@@ -19,6 +19,81 @@ test('normalizeDocumentCategory convertit les valeurs legacy', () => {
   assert.equal(normalizeDocumentCategory('soumission'), 'quote');
 });
 
+test('legacy song + video/mp4 => song-video', () => {
+  const resolved = resolveDocumentCategory({
+    category: 'song',
+    mimeType: 'video/mp4',
+  });
+  assert.equal(resolved.category, 'song-video');
+  assert.equal(resolved.source, 'legacy-normalized');
+});
+
+test('legacy song + audio/mpeg => song-audio', () => {
+  const resolved = resolveDocumentCategory({
+    category: 'song',
+    mimeType: 'audio/mpeg',
+  });
+  assert.equal(resolved.category, 'song-audio');
+  assert.equal(resolved.source, 'legacy-normalized');
+});
+
+test('legacy song + filename .mp4 sans mimeType => song-video', () => {
+  const resolved = resolveDocumentCategory({
+    category: 'song',
+    filename: 'clip-client.mp4',
+  });
+  assert.equal(resolved.category, 'song-video');
+  assert.equal(resolved.source, 'legacy-normalized');
+});
+
+test('legacy song + filename .mp3 sans mimeType => song-audio', () => {
+  const resolved = resolveDocumentCategory({
+    category: 'song',
+    originalName: 'ma-chanson.mp3',
+  });
+  assert.equal(resolved.category, 'song-audio');
+  assert.equal(resolved.source, 'legacy-normalized');
+});
+
+test('catégorie officielle song-audio reste song-audio', () => {
+  const resolved = resolveDocumentCategory({
+    category: 'song-audio',
+    mimeType: 'video/mp4',
+    filename: 'clip.mp4',
+  });
+  assert.equal(resolved.category, 'song-audio');
+  assert.equal(resolved.source, 'explicit');
+});
+
+test('catégorie officielle song-video reste song-video', () => {
+  const resolved = resolveDocumentCategory({
+    category: 'song-video',
+    mimeType: 'audio/mpeg',
+    filename: 'audio.mp3',
+  });
+  assert.equal(resolved.category, 'song-video');
+  assert.equal(resolved.source, 'explicit');
+});
+
+test('cohérence audit/fix: resolveDocumentCategory sur ligne document brute', () => {
+  const resolvedVideo = resolveDocumentCategory({
+    category: 'song',
+    mimeType: 'video/mp4',
+    originalName: 'veux-tu-un-show-IA.mp4',
+    filename: 'veux-tu-un-show-IA.mp4',
+  });
+
+  const resolvedAudio = resolveDocumentCategory({
+    category: 'song',
+    mimeType: 'audio/mpeg',
+    originalName: 'Tape à Mesurer Tremble.mp3',
+    filename: 'Tape à Mesurer Tremble.mp3',
+  });
+
+  assert.equal(resolvedVideo.category, 'song-video');
+  assert.equal(resolvedAudio.category, 'song-audio');
+});
+
 test('normalizeDocumentCategory retourne other pour valeur invalide', () => {
   assert.equal(normalizeDocumentCategory('valeur-inconnue'), 'other');
   assert.equal(normalizeDocumentCategory(''), 'other');

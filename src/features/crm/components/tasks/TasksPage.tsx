@@ -40,11 +40,18 @@ type Task = {
   description: string | null;
   type: TaskType | string | null;
   payload: unknown;
-  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+  status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   dueDate: string | null;
   linkedType: string | null;
   linkedId: string | null;
+  isAutoCreated?: boolean;
+  songRequestId?: string | null;
+  workshopRequestId?: string | null;
+  commercialQuoteId?: string | null;
+  invoiceId?: string | null;
+  appointmentId?: string | null;
+  clientName?: string | null;
   caseRecord: { title: string; referenceCode: string } | null;
 };
 
@@ -58,10 +65,33 @@ const TASK_TYPE_LABELS: Record<TaskType, string> = {
   CALL: 'Appel',
   EMAIL: 'Email',
   SONG: 'Chanson',
+  CALLBACK: 'Rappel client',
+  CREATE_QUOTE: 'Créer soumission',
+  CREATE_INVOICE: 'Créer facture',
+  CREATE_SONG: 'Créer chanson',
+  UPLOAD_SONG_FILE: 'Déposer fichiers chanson',
+  SCHEDULE_WORKSHOP: 'Planifier atelier',
   FOLLOW_UP: 'Suivi',
+  DOCUMENT_REVIEW: 'Révision document',
+  CUSTOM: 'Personnalisée',
 };
 
 function getLinkedResourceHref(task: Task): { href: string; label: string } | null {
+  if (task.invoiceId) {
+    return { href: `/crm/invoices/${task.invoiceId}`, label: 'Voir la facture' };
+  }
+  if (task.commercialQuoteId) {
+    return { href: `/crm/commercial-quotes/${task.commercialQuoteId}`, label: 'Voir la soumission' };
+  }
+  if (task.workshopRequestId) {
+    return { href: `/crm/workshop-requests/${task.workshopRequestId}`, label: "Voir l'atelier" };
+  }
+  if (task.songRequestId) {
+    return { href: `/crm/song-requests/${task.songRequestId}`, label: 'Voir la chanson' };
+  }
+  if (task.appointmentId) {
+    return { href: `/crm/calendar`, label: 'Voir le calendrier' };
+  }
   if (!task.linkedType || !task.linkedId) return null;
   switch (task.linkedType) {
     case 'CONTACT':
@@ -90,7 +120,7 @@ function parseTaskPayload(payload: unknown): TaskPayload | null {
 }
 
 function isOverdue(task: Task) {
-  if (!task.dueDate || task.status === 'DONE') return false;
+  if (!task.dueDate || task.status === 'DONE' || task.status === 'CANCELLED') return false;
   return new Date(task.dueDate) < new Date();
 }
 
@@ -112,7 +142,7 @@ function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: ()
   async function changeStatus(status: Task['status']) {
     setLoading(true);
     await fetch(`/api/crm/tasks/${task.id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
@@ -120,14 +150,14 @@ function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: ()
     onUpdate();
   }
 
-  async function deleteTask() {
-    const ok = window.confirm('Supprimer cette tâche ?');
+  async function cancelTask() {
+    const ok = window.confirm('Annuler cette tâche ?');
     if (!ok) return;
     setLoading(true);
     try {
       const response = await fetch(`/api/crm/tasks/${task.id}`, { method: 'DELETE' });
       if (!response.ok) {
-        let message = 'Impossible de supprimer la tâche.';
+        let message = 'Impossible d\'annuler la tâche.';
         try {
           const body = await response.json();
           if (body?.error && typeof body.error === 'string') {
@@ -145,13 +175,31 @@ function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: ()
     }
   }
 
+  async function editTask() {
+    const nextTitle = window.prompt('Modifier le titre de la tâche', task.title);
+    if (!nextTitle || nextTitle.trim().length === 0) return;
+    const nextDescription = window.prompt('Modifier la description (optionnel)', task.description || '') ?? '';
+
+    setLoading(true);
+    await fetch(`/api/crm/tasks/${task.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: nextTitle.trim(),
+        description: nextDescription.trim() || null,
+      }),
+    });
+    setLoading(false);
+    onUpdate();
+  }
+
   return (
     <div className={`rounded-2xl border p-3.5 md:p-4 space-y-3 ${isOverdue(task) ? 'border-red-700/50 bg-red-950/20' : 'border-slate-700 bg-slate-800/50'}`}>
       <div className="flex items-start gap-2.5">
         <button
           type="button"
           onClick={() => changeStatus(task.status === 'DONE' ? 'TODO' : 'DONE')}
-          disabled={loading}
+          disabled={loading || task.status === 'CANCELLED'}
           className={`mt-0.5 shrink-0 h-5 w-5 rounded border transition-colors ${task.status === 'DONE' ? 'bg-green-500 border-green-500' : 'border-slate-500 hover:border-primary-400'}`}
         >
           {task.status === 'DONE' && <span className="text-white text-[10px] flex items-center justify-center h-full">✓</span>}
@@ -165,7 +213,8 @@ function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: ()
               {PRIORITY_LABELS[task.priority]}
             </span>
           </div>
-          <p className={`text-sm font-medium ${task.status === 'DONE' ? 'line-through text-slate-500' : 'text-white'}`}>{task.title}</p>
+          <p className={`text-sm font-medium ${task.status === 'DONE' || task.status === 'CANCELLED' ? 'line-through text-slate-500' : 'text-white'}`}>{task.title}</p>
+          {task.clientName ? <p className="text-xs text-slate-400">Client: {task.clientName}</p> : null}
           {(payload?.summary || description) && <p className="mt-0.5 line-clamp-2 text-xs text-slate-400">{payload?.summary || description}</p>}
         </div>
       </div>
@@ -276,13 +325,21 @@ function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: ()
       <div className="flex flex-wrap gap-2 pl-7">
         <button
           type="button"
-          onClick={deleteTask}
-          disabled={loading}
+          onClick={editTask}
+          disabled={loading || task.status === 'CANCELLED'}
+          className="rounded-lg border border-slate-500/40 bg-slate-700/30 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-700/50 disabled:opacity-60"
+        >
+          Modifier
+        </button>
+        <button
+          type="button"
+          onClick={cancelTask}
+          disabled={loading || task.status === 'CANCELLED'}
           className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 disabled:opacity-60"
         >
-          <span className="inline-flex items-center gap-1.5"><Trash2 size={12} /> Supprimer</span>
+          <span className="inline-flex items-center gap-1.5"><Trash2 size={12} /> Annuler</span>
         </button>
-        {task.status !== 'DONE' && (
+        {task.status !== 'DONE' && task.status !== 'CANCELLED' && (
           <>
           {task.status === 'TODO' && (
             <button type="button" onClick={() => changeStatus('IN_PROGRESS')} disabled={loading} className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3 py-1.5 text-xs font-medium text-yellow-300 hover:bg-yellow-500/20 disabled:opacity-60">
@@ -390,6 +447,14 @@ function NewTaskForm({ onCreated }: { onCreated: () => void }) {
           <option value="CALL">Appel</option>
           <option value="EMAIL">Email</option>
           <option value="SONG">Chanson</option>
+          <option value="CALLBACK">Rappel client</option>
+          <option value="CREATE_QUOTE">Créer soumission</option>
+          <option value="CREATE_INVOICE">Créer facture</option>
+          <option value="CREATE_SONG">Créer chanson</option>
+          <option value="UPLOAD_SONG_FILE">Déposer fichiers chanson</option>
+          <option value="SCHEDULE_WORKSHOP">Planifier atelier</option>
+          <option value="DOCUMENT_REVIEW">Révision document</option>
+          <option value="CUSTOM">Personnalisée</option>
         </select>
         <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
           <option value="LOW">Faible</option><option value="MEDIUM">Normal</option><option value="HIGH">Urgent</option>
@@ -438,13 +503,17 @@ function NewTaskForm({ onCreated }: { onCreated: () => void }) {
   );
 }
 
-interface TasksPageProps { todo: Task[]; inProgress: Task[]; done: Task[]; }
+interface TasksPageProps { todo: Task[]; inProgress: Task[]; done: Task[]; cancelled: Task[]; }
 
-export function TasksPage({ todo, inProgress, done }: TasksPageProps) {
+export function TasksPage({ todo, inProgress, done, cancelled }: TasksPageProps) {
   const router = useRouter();
   const [emailDraft, setEmailDraft] = useState<EmailDraft | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | TaskType>('ALL');
+  const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'>('ALL');
+  const [clientFilter, setClientFilter] = useState('');
 
   async function sendTaskEmail(event: React.FormEvent) {
     event.preventDefault();
@@ -473,13 +542,26 @@ export function TasksPage({ todo, inProgress, done }: TasksPageProps) {
     }
   }
 
+  function matchesFilters(task: Task) {
+    const normalizedType = coerceTaskType(task.type);
+    const normalizedClientName = (task.clientName || '').toLowerCase();
+    const needle = clientFilter.trim().toLowerCase();
+
+    if (statusFilter !== 'ALL' && task.status !== statusFilter) return false;
+    if (typeFilter !== 'ALL' && normalizedType !== typeFilter) return false;
+    if (priorityFilter !== 'ALL' && task.priority !== priorityFilter) return false;
+    if (needle.length > 0 && !normalizedClientName.includes(needle)) return false;
+    return true;
+  }
+
   const columns = [
-    { label: 'À faire', tasks: todo, color: 'text-slate-300', accent: 'border-l-slate-500' },
-    { label: 'En cours', tasks: inProgress, color: 'text-yellow-300', accent: 'border-l-yellow-500' },
-    { label: 'Terminées', tasks: done, color: 'text-green-300', accent: 'border-l-green-500' },
+    { label: 'À faire', tasks: todo.filter(matchesFilters), color: 'text-slate-300', accent: 'border-l-slate-500' },
+    { label: 'En cours', tasks: inProgress.filter(matchesFilters), color: 'text-yellow-300', accent: 'border-l-yellow-500' },
+    { label: 'Terminées', tasks: done.filter(matchesFilters), color: 'text-green-300', accent: 'border-l-green-500' },
+    { label: 'Annulées', tasks: cancelled.filter(matchesFilters), color: 'text-rose-300', accent: 'border-l-rose-500' },
   ];
 
-  const overdueCount = [...todo, ...inProgress].filter(isOverdue).length;
+  const overdueCount = [...todo, ...inProgress].filter(matchesFilters).filter(isOverdue).length;
 
   return (
     <section className="space-y-5">
@@ -493,7 +575,38 @@ export function TasksPage({ todo, inProgress, done }: TasksPageProps) {
         <NewTaskForm onCreated={() => router.refresh()} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 p-3 sm:grid-cols-4">
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
+          <option value="ALL">Tous statuts</option>
+          <option value="TODO">À faire</option>
+          <option value="IN_PROGRESS">En cours</option>
+          <option value="DONE">Terminées</option>
+          <option value="CANCELLED">Annulées</option>
+        </select>
+
+        <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as typeof typeFilter)} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
+          <option value="ALL">Tous types</option>
+          {Object.entries(TASK_TYPE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+
+        <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as typeof priorityFilter)} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
+          <option value="ALL">Toutes priorités</option>
+          <option value="LOW">Faible</option>
+          <option value="MEDIUM">Normal</option>
+          <option value="HIGH">Urgent</option>
+        </select>
+
+        <input
+          value={clientFilter}
+          onChange={(event) => setClientFilter(event.target.value)}
+          placeholder="Filtrer par client"
+          className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
         {columns.map(col => (
           <div key={col.label} className={`rounded-2xl border border-slate-800 bg-slate-900/40 p-3.5 sm:p-4 ${col.accent} border-l-2`}>
             <div className="flex items-center gap-2 mb-3">

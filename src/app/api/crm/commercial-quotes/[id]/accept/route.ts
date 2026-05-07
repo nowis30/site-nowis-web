@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { assertCanSendQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 import { ensureQuoteFileDocument } from '@/features/crm/server/file-document-links';
+import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 function ensureAdmin(request: NextRequest) {
   const guard = requireApiPermission(request, 'commercialQuotes', 'update');
@@ -71,6 +72,33 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     } catch (error) {
       console.error('Erreur création FileDocument pour devis (accept):', error);
     }
+  }
+
+  try {
+    if (item.convertedToInvoiceId) {
+      console.info(`[QUOTE_ACCEPT_ADMIN] Facture déjà existante pour le devis ${item.id}. Aucune tâche CREATE_INVOICE créée.`);
+    } else {
+      await ensureCrmTask({
+        type: 'CREATE_INVOICE',
+        title: 'Créer la facture',
+        description: `Soumission acceptée: ${item.quoteNumber}. Préparer la facture client.`,
+        priority: 'HIGH',
+        linkedType: item.songRequestId
+          ? 'SONG_REQUEST'
+          : item.workshopRequestId
+            ? 'WORKSHOP_REQUEST'
+            : 'CONTACT',
+        linkedId: item.songRequestId ?? item.workshopRequestId ?? item.contactId ?? null,
+        contactId: item.contactId ?? null,
+        songRequestId: item.songRequestId ?? null,
+        workshopRequestId: item.workshopRequestId ?? null,
+        commercialQuoteId: item.id,
+        isAutoCreated: true,
+        createdById: admin.session.sub,
+      });
+    }
+  } catch (error) {
+    console.error('Erreur création tâche CREATE_INVOICE (accept admin):', error);
   }
 
   return NextResponse.json({ ok: true, item });

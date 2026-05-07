@@ -7,6 +7,7 @@ import { hashPassword } from '@/lib/auth';
 import { mapWorkshopGroupTypeToOrganizationType, workshopRequestFormSchema } from '@/features/workshops/schemas';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { buildAuthRedirect } from '@/lib/safe-next';
+import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
@@ -209,18 +210,23 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      await tx.task.create({
-        data: {
-          title: "Faire le suivi de la demande d'atelier",
+      await ensureCrmTask(
+        {
+          title: "Préparer la soumission pour l'atelier",
           description: `${payload.organizationName} · ${payload.contactName}\n\nTheme: ${payload.workshopTheme}\nParticipants: ${payload.estimatedParticipants}\nJours preferes: ${payload.preferredDays.join(', ')}`,
-          status: 'TODO',
+          type: 'CREATE_QUOTE',
           priority: 'HIGH',
           dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
           linkedType: 'WORKSHOP_REQUEST',
           linkedId: workshopRequest.id,
+          workshopRequestId: workshopRequest.id,
+          organizationId: organization.id,
+          contactId: contact.id,
           createdById: linkedUser.id,
+          isAutoCreated: true,
         },
-      });
+        tx,
+      );
 
       return { workshopRequest, organization, contact };
     });

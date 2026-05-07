@@ -7,6 +7,7 @@ import { createClientPortalSessionCookie, signClientPortalSession } from '@/feat
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
 import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
 import { sanitizeNextPath } from '@/lib/safe-next';
+import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -109,18 +110,20 @@ export async function POST(request: NextRequest) {
 
       const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      await tx.task.create({
-        data: {
-          title: 'Contacter le client sous 24h',
+      await ensureCrmTask(
+        {
+          type: 'CALLBACK',
+          title: 'Rappeler le nouveau client',
           description: `Nouveau client inscrit via le site: ${payload.fullName} (${email}). Premier contact requis dans les 24 heures.`,
-          status: 'TODO',
           priority: 'HIGH',
           dueDate,
+          contactId: contact.id,
           linkedType: 'CONTACT',
           linkedId: contact.id,
-          createdById: null,
+          isAutoCreated: true,
         },
-      });
+        tx,
+      );
 
       return { user, contact };
     });

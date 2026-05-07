@@ -7,6 +7,7 @@ import { createWithSequentialDocumentNumber } from '@/features/crm/server/docume
 import { findExistingInvoiceForSongRequest } from '@/features/crm/server/song-request-quote-guards';
 import { z } from 'zod';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
+import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']);
 
@@ -148,6 +149,40 @@ export async function POST(request: NextRequest) {
           userId: guard.session.sub,
         },
       }).catch(() => undefined);
+    }
+
+    try {
+      if (sourceSongRequestId) {
+        await ensureCrmTask({
+          type: 'CREATE_SONG',
+          title: 'Créer la chanson et déposer les fichiers',
+          description: `Facture ${item.number} créée pour la demande chanson.`,
+          priority: 'HIGH',
+          linkedType: 'SONG_REQUEST',
+          linkedId: sourceSongRequestId,
+          songRequestId: sourceSongRequestId,
+          invoiceId: item.id,
+          contactId: item.contactId,
+          createdById: guard.session.sub,
+          isAutoCreated: true,
+        });
+      } else if (sourceWorkshopRequestId) {
+        await ensureCrmTask({
+          type: 'SCHEDULE_WORKSHOP',
+          title: "Planifier l'atelier au calendrier",
+          description: `Facture ${item.number} créée depuis l'atelier.`,
+          priority: 'HIGH',
+          linkedType: 'WORKSHOP_REQUEST',
+          linkedId: sourceWorkshopRequestId,
+          workshopRequestId: sourceWorkshopRequestId,
+          invoiceId: item.id,
+          contactId: item.contactId,
+          createdById: guard.session.sub,
+          isAutoCreated: true,
+        });
+      }
+    } catch (error) {
+      console.error('Erreur création tâche post-facture:', error);
     }
 
     return NextResponse.json({ item }, { status: 201 });
