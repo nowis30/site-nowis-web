@@ -2,6 +2,7 @@ export type ClientBillingLike = {
   fullName?: string | null;
   email?: string | null;
   phone?: string | null;
+  billingPhone?: string | null;
   billingLegalName?: string | null;
   billingEmail?: string | null;
   billingAddressLine1?: string | null;
@@ -49,7 +50,7 @@ export function getClientBillingMissingKeys(input: ClientBillingLike): ClientBil
   const identity = getClientBillingIdentity(input);
   const missing: ClientBillingMissingKey[] = [];
 
-  if (!normalize(input.phone)) missing.push('phone');
+  if (!normalize(input.phone) && !normalize(input.billingPhone)) missing.push('phone');
   if (!identity.billingName) missing.push('billingName');
   if (!identity.billingEmail) missing.push('billingEmail');
   if (!normalize(input.billingAddressLine1)) missing.push('billingAddressLine1');

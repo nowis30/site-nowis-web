@@ -34,6 +34,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           id: true,
           fullName: true,
           email: true,
+          phone: true,
+          billingPhone: true,
           billingLegalName: true,
           billingEmail: true,
           billingAddressLine1: true,
