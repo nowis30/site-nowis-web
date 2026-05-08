@@ -311,7 +311,7 @@ export function InvoiceDetailPage({
             onClick={() => window.print()}
             className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500"
           >
-            <Printer size={16} /> Imprimer / PDF
+            <Printer size={16} /> Imprimer
           </button>
         </div>
       </div>
@@ -489,12 +489,9 @@ export function InvoiceDetailPage({
                   {billedEmail ? <p>{billedEmail}</p> : null}
                   {billedPhone ? <p>{billedPhone}</p> : null}
                 </div>
-                <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-950/60">
-                  <iframe
-                    title={`Apercu PDF facture ${invoice.number}`}
-                    src={`/api/crm/invoices/${invoice.id}/preview-pdf`}
-                    className="h-[520px] w-full"
-                  />
+                <div className="rounded-xl border border-slate-700 bg-slate-950/60 p-4 text-sm text-slate-300">
+                  L aperçu PDF intégré a été retiré pour éviter les dépendances à une route de prévisualisation.
+                  Le PDF reste généré côté serveur lors de l envoi email de la facture.
                 </div>
               </div>
             </div>

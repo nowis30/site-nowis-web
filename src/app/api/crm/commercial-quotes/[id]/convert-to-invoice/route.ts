@@ -164,8 +164,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     },
   }).catch(() => undefined);
 
-  // Créer automatiquement un FileDocument pour la facture dans les documents client.
-  // Idempotent pour éviter les doublons en cas de retry.
+  // Tenter le lien document facture si un vrai FileDocument existe deja (mode idempotent).
+  // Ne plus générer de placeholder facture dans la bibliothèque Documents client.
   try {
     await ensureInvoiceFileDocument({
       contactId: quote.contactId,
