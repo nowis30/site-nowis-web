@@ -109,6 +109,11 @@ export async function POST(request: NextRequest) {
   const rawBody = await request.text();
 
   if (signingKey && !verifyCalendlySignature(rawBody, signatureHeader, signingKey)) {
+    await recordCalendarActivity({
+      title: 'Webhook Calendly rejeté',
+      description: 'Signature invalide (401)',
+      relatedId: null,
+    });
     debug.skippedReason = 'invalid_signature';
     return respondWebhook({ error: 'Signature webhook invalide' }, debug, 401);
   }
@@ -117,6 +122,11 @@ export async function POST(request: NextRequest) {
   try {
     body = JSON.parse(rawBody) as CalendlyEventPayload;
   } catch {
+    await recordCalendarActivity({
+      title: 'Webhook Calendly rejeté',
+      description: 'Payload JSON invalide (400)',
+      relatedId: null,
+    });
     debug.skippedReason = 'invalid_payload';
     return respondWebhook({ error: 'Payload invalide' }, debug, 400);
   }
@@ -127,6 +137,11 @@ export async function POST(request: NextRequest) {
   debug.eventType = eventType || null;
 
   if (!eventType || !payload) {
+    await recordCalendarActivity({
+      title: 'Webhook Calendly ignoré',
+      description: 'event/payload manquant',
+      relatedId: null,
+    });
     debug.skippedReason = 'missing_event_or_payload';
     return respondWebhook({ ok: true, skipped: true }, debug);
   }
@@ -143,6 +158,18 @@ export async function POST(request: NextRequest) {
   debug.inviteeEmail = inviteeEmail;
   debug.hasStartAt = Boolean(startAt);
   debug.hasEndAt = Boolean(endAt);
+
+  await recordCalendarActivity({
+    title: 'Webhook Calendly reçu',
+    description: [
+      `eventType=${eventType}`,
+      `scheduledEventUri=${scheduledEventUri || 'null'}`,
+      `inviteeEmail=${inviteeEmail || 'null'}`,
+      `hasStartAt=${Boolean(startAt)}`,
+      `hasEndAt=${Boolean(endAt)}`,
+    ].join(' · '),
+    relatedId: scheduledEventUri || null,
+  });
 
   console.info('[CALENDLY_WEBHOOK] Rendez-vous reçu', {
     eventType,

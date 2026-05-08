@@ -79,6 +79,8 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
             const isQuotePlaceholder = hasQuoteLink && item.size === 0 && (item.storageKey?.startsWith('quotes/') ?? false);
             const isInvoicePlaceholder = hasInvoiceLink && item.size === 0 && (item.storageKey?.startsWith('invoices/') ?? false);
             const canDownload = !isQuotePlaceholder && !isInvoicePlaceholder;
+            const isCrmContext = downloadPrefix.startsWith('/api/crm/');
+            const invoiceViewBasePath = isCrmContext ? '/crm/invoices' : '/client/invoices';
             const resolvedCategory = resolveDocumentCategory({
               category: item.category,
               mimeType: item.mimeType,
@@ -143,7 +145,7 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
                     </a>
                   ) : null}
                   {isInvoicePlaceholder && item.invoiceId ? (
-                    <a href={`/client/invoices/${item.invoiceId}`} className="inline-flex w-full items-center justify-center rounded-xl border border-primary-500/40 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-500/15 sm:w-auto sm:py-1.5">
+                    <a href={`${invoiceViewBasePath}/${item.invoiceId}`} className="inline-flex w-full items-center justify-center rounded-xl border border-primary-500/40 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-500/15 sm:w-auto sm:py-1.5">
                       <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir la facture</span>
                     </a>
                   ) : null}
