@@ -62,27 +62,73 @@ function verifyCalendlySignature(rawBody: string, signatureHeader: string | null
   return timingSafeEqual(expectedBuffer, receivedBuffer);
 }
 
+type CalendlyWebhookDebug = {
+  eventType: string | null;
+  scheduledEventUri: string | null;
+  inviteeEmail: string | null;
+  hasStartAt: boolean;
+  hasEndAt: boolean;
+  matchedWorkshopRequestId: string | null;
+  createdAppointmentId: string | null;
+  createdWorkshopAppointmentId: string | null;
+  skippedReason: string | null;
+};
+
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+function respondWebhook(payload: Record<string, unknown>, debug: CalendlyWebhookDebug, status = 200) {
+  if (IS_PRODUCTION) {
+    console.info('[CALENDLY_WEBHOOK] réponse', debug);
+    return NextResponse.json(payload, { status });
+  }
+
+  return NextResponse.json(
+    {
+      ...payload,
+      debug,
+    },
+    { status },
+  );
+}
+
 export async function POST(request: NextRequest) {
+  const debug: CalendlyWebhookDebug = {
+    eventType: null,
+    scheduledEventUri: null,
+    inviteeEmail: null,
+    hasStartAt: false,
+    hasEndAt: false,
+    matchedWorkshopRequestId: null,
+    createdAppointmentId: null,
+    createdWorkshopAppointmentId: null,
+    skippedReason: null,
+  };
+
   const signingKey = process.env.CALENDLY_WEBHOOK_SIGNING_KEY?.trim();
   const signatureHeader = request.headers.get('calendly-webhook-signature');
   const rawBody = await request.text();
 
   if (signingKey && !verifyCalendlySignature(rawBody, signatureHeader, signingKey)) {
-    return NextResponse.json({ error: 'Signature webhook invalide' }, { status: 401 });
+    debug.skippedReason = 'invalid_signature';
+    return respondWebhook({ error: 'Signature webhook invalide' }, debug, 401);
   }
 
   let body: CalendlyEventPayload;
   try {
     body = JSON.parse(rawBody) as CalendlyEventPayload;
   } catch {
-    return NextResponse.json({ error: 'Payload invalide' }, { status: 400 });
+    debug.skippedReason = 'invalid_payload';
+    return respondWebhook({ error: 'Payload invalide' }, debug, 400);
   }
 
   const eventType = body.event;
   const payload = body.payload;
 
+  debug.eventType = eventType || null;
+
   if (!eventType || !payload) {
-    return NextResponse.json({ ok: true, skipped: true });
+    debug.skippedReason = 'missing_event_or_payload';
+    return respondWebhook({ ok: true, skipped: true }, debug);
   }
 
   const inviteeUri = payload.uri || null;
@@ -92,6 +138,11 @@ export async function POST(request: NextRequest) {
   const startAt = parseCalendlyDate(payload.scheduled_event?.start_time);
   const endAt = parseCalendlyDate(payload.scheduled_event?.end_time);
   const durationMinutes = computeDurationMinutes(startAt, endAt);
+
+  debug.scheduledEventUri = scheduledEventUri;
+  debug.inviteeEmail = inviteeEmail;
+  debug.hasStartAt = Boolean(startAt);
+  debug.hasEndAt = Boolean(endAt);
 
   console.info('[CALENDLY_WEBHOOK] Rendez-vous reçu', {
     eventType,
@@ -139,6 +190,8 @@ export async function POST(request: NextRequest) {
     },
     orderBy: { updatedAt: 'desc' },
   });
+
+  debug.matchedWorkshopRequestId = workshopRequest?.id || null;
 
   if (eventType === 'invitee.created') {
     if (!startAt || !endAt) {
@@ -193,6 +246,7 @@ export async function POST(request: NextRequest) {
             workshopRequestId: updated.id,
             workshopAppointmentId: existingAppointment.id,
           });
+          debug.createdWorkshopAppointmentId = existingAppointment.id;
         } else {
           const createdWorkshopAppointment = await prisma.workshopAppointment.create({
             data: {
@@ -212,6 +266,7 @@ export async function POST(request: NextRequest) {
             workshopRequestId: updated.id,
             workshopAppointmentId: createdWorkshopAppointment.id,
           });
+          debug.createdWorkshopAppointmentId = createdWorkshopAppointment.id;
         }
       } else if (!updated.organizationId && startAt && endAt) {
         const existingCrmAppointment = scheduledEventUri
@@ -253,6 +308,7 @@ export async function POST(request: NextRequest) {
             workshopRequestId: updated.id,
             appointmentId: existingCrmAppointment.id,
           });
+          debug.createdAppointmentId = existingCrmAppointment.id;
         } else {
           const createdCrmAppointment = await prisma.appointment.create({
             data: {
@@ -273,6 +329,7 @@ export async function POST(request: NextRequest) {
             workshopRequestId: updated.id,
             appointmentId: createdCrmAppointment.id,
           });
+          debug.createdAppointmentId = createdCrmAppointment.id;
         }
       }
 
@@ -320,7 +377,7 @@ export async function POST(request: NextRequest) {
         relatedId: updated.id,
       });
 
-      return NextResponse.json({ ok: true, status: nextStatus });
+      return respondWebhook({ ok: true, status: nextStatus }, debug);
     }
 
     if (startAt && endAt && scheduledEventUri) {
@@ -366,6 +423,8 @@ export async function POST(request: NextRequest) {
         { appointmentId: appointment.id, scheduledEventUri },
       );
 
+      debug.createdAppointmentId = appointment.id;
+
       if (calendlyConnection) {
         await prisma.calendarExternalEvent.upsert({
           where: {
@@ -408,10 +467,11 @@ export async function POST(request: NextRequest) {
         relatedId: appointment.id,
       });
 
-      return NextResponse.json({ ok: true, status: 'CONFIRMED', appointmentId: appointment.id });
+      return respondWebhook({ ok: true, status: 'CONFIRMED', appointmentId: appointment.id }, debug);
     }
 
-    return NextResponse.json({ ok: true, skipped: true, reason: 'missing_schedule_data' });
+    debug.skippedReason = 'missing_schedule_data';
+    return respondWebhook({ ok: true, skipped: true, reason: 'missing_schedule_data' }, debug);
   }
 
   if (eventType === 'invitee.canceled') {
@@ -494,8 +554,9 @@ export async function POST(request: NextRequest) {
       relatedId: workshopRequest?.id || null,
     });
 
-    return NextResponse.json({ ok: true, status: 'EN_ATTENTE_RDV' });
+    return respondWebhook({ ok: true, status: 'EN_ATTENTE_RDV' }, debug);
   }
 
-  return NextResponse.json({ ok: true, skipped: true, reason: 'event_not_handled' });
+  debug.skippedReason = 'event_not_handled';
+  return respondWebhook({ ok: true, skipped: true, reason: 'event_not_handled' }, debug);
 }

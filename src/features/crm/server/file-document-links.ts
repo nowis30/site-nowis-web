@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 export async function ensureQuoteFileDocument(params: {
@@ -26,6 +25,9 @@ export async function ensureInvoiceFileDocument(params: {
   invoiceNumber: string;
   contactId: string;
 }) {
+  void params.invoiceNumber;
+  void params.contactId;
+
   const existing = await prisma.fileDocument.findFirst({
     where: { invoiceId: params.invoiceId },
     select: { id: true },
@@ -33,30 +35,6 @@ export async function ensureInvoiceFileDocument(params: {
 
   if (existing) return existing;
 
-  try {
-    return await prisma.fileDocument.create({
-      data: {
-        contactId: params.contactId,
-        invoiceId: params.invoiceId,
-        filename: `${params.invoiceNumber}.pdf`,
-        originalName: `Facture ${params.invoiceNumber}`,
-        mimeType: 'application/pdf',
-        size: 0,
-        storageKey: `invoices/${params.invoiceId}`,
-        url: `/api/client-portal/invoices/${params.invoiceId}/pdf`,
-        category: 'invoice',
-        visibility: 'CLIENT_VISIBLE',
-      },
-      select: { id: true },
-    });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      const afterConflict = await prisma.fileDocument.findFirst({
-        where: { invoiceId: params.invoiceId },
-        select: { id: true },
-      });
-      if (afterConflict) return afterConflict;
-    }
-    throw error;
-  }
+  // Ne pas créer de faux PDF de facture. Les factures client sont consultables via /client/invoices/[id].
+  return null;
 }

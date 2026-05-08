@@ -75,10 +75,23 @@ export default async function ClientDocumentsPage() {
   }));
 
   const seenQuotePlaceholders = new Set<string>();
+  const seenInvoicePlaceholders = new Set<string>();
   const cleanedDocuments = mappedDocuments.filter((document) => {
     const isQuotePlaceholder = Boolean(document.commercialQuoteId)
       && document.size === 0
       && document.storageKey?.startsWith('quotes/');
+    const isInvoicePlaceholder = Boolean(document.invoiceId)
+      && document.size === 0
+      && document.storageKey?.startsWith('invoices/');
+
+    if (isInvoicePlaceholder && document.invoiceId) {
+      if (seenInvoicePlaceholders.has(document.invoiceId)) {
+        return false;
+      }
+      seenInvoicePlaceholders.add(document.invoiceId);
+      // Les factures sont consultables depuis /client/invoices, on masque les placeholders dans Documents.
+      return false;
+    }
 
     if (!isQuotePlaceholder || !document.commercialQuoteId) {
       return true;

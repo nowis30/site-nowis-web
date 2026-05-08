@@ -14,7 +14,13 @@ export default async function CalendarPage() {
 
   const [appointments, contacts, organizations, workshopRequests, songRequests, workshopAppointments, workshopAvailabilities, externalCalendarEvents] = await Promise.all([
     prisma.appointment.findMany({
-      where: { status: { not: 'CANCELLED' } },
+      // Inclure explicitement les rendez-vous Calendly CONFIRMED, même sans contactId.
+      where: {
+        OR: [
+          { status: { not: 'CANCELLED' } },
+          { externalProvider: 'CALENDLY', status: 'CONFIRMED' },
+        ],
+      },
       include: {
         contact: { select: { fullName: true } },
         organization: { select: { id: true, name: true } },

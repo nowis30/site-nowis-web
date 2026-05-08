@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../src/lib/prisma';
 
 async function ensureQuoteDocuments() {
@@ -52,53 +51,13 @@ async function ensureQuoteDocuments() {
 }
 
 async function ensureInvoiceDocuments() {
-  const invoices = await prisma.invoice.findMany({
+  const invoices = await prisma.invoice.count({
     where: { contactId: { not: null } },
-    select: { id: true, number: true, contactId: true },
   });
 
-  const invoiceIds = invoices.map((invoice) => invoice.id);
-  const existingDocs = invoiceIds.length
-    ? await prisma.fileDocument.findMany({
-        where: { invoiceId: { in: invoiceIds } },
-        select: { invoiceId: true },
-      })
-    : [];
-
-  const existingInvoiceIds = new Set(
-    existingDocs
-      .map((document) => document.invoiceId)
-      .filter((value): value is string => Boolean(value)),
-  );
-
-  let created = 0;
-  for (const invoice of invoices) {
-    if (!invoice.contactId || existingInvoiceIds.has(invoice.id)) continue;
-
-    try {
-      await prisma.fileDocument.create({
-        data: {
-          contactId: invoice.contactId,
-          invoiceId: invoice.id,
-          filename: `${invoice.number}.pdf`,
-          originalName: `Facture ${invoice.number}`,
-          mimeType: 'application/pdf',
-          size: 0,
-          storageKey: `invoices/${invoice.id}`,
-          url: `/api/client-portal/invoices/${invoice.id}/pdf`,
-          category: 'invoice',
-          visibility: 'CLIENT_VISIBLE',
-        },
-      });
-      created += 1;
-    } catch (error) {
-      if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) {
-        throw error;
-      }
-    }
-  }
-
-  return { total: invoices.length, created };
+  // Ne plus créer de placeholders invoice dans la bibliothèque documents.
+  // Les factures client sont accessibles via /client/invoices/[id].
+  return { total: invoices, created: 0 };
 }
 
 async function main() {
