@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
 
 const hourlyRegularPrice = REGULAR_PRICES.hourly;
@@ -176,7 +177,7 @@ export default function AutresServicesPage() {
                 Des chansons créées sur mesure pour les occasions qui comptent — anniversaires, mariages, hommages et projets personnels.
               </p>
               <Link
-                href="/commander-une-chanson"
+                href={SONG_REQUEST_GOOGLE_AUTH_URL}
                 className="cta-secondary mt-5 px-6 py-3 text-sm"
               >
                 Commander une chanson →

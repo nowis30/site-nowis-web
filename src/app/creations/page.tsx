@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'Créations de Création Nowis | Musique, vidéos IA et projets sur mesure',
@@ -28,7 +29,7 @@ export default function CreationsPage() {
             Si tu hésites entre un atelier, une chanson personnalisée, une vidéo IA ou un projet plus hybride, le plus simple est de commencer par une prise de contact. La soumission se construit ensuite selon ton objectif réel.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Link href="/commander-une-chanson" className="cta-secondary px-6 py-3.5">Demander une chanson</Link>
+            <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="cta-secondary px-6 py-3.5">Demander une chanson</Link>
             <Link href="/ateliers" className="cta-secondary px-6 py-3.5">Demander un atelier</Link>
             <ContactPrefillLink href="/contact" className="cta-primary px-6 py-3.5">Me contacter</ContactPrefillLink>
           </div>

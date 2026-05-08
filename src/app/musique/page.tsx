@@ -2,6 +2,7 @@ import { SongCard } from '@/components/music/SongCard';
 import { PageHero } from '@/components/marketing/PageHero';
 import { getAllSongs } from '@/data/songs';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
 
 const DEFAULT_MUSIQUE_CONTENT = {
@@ -10,7 +11,7 @@ const DEFAULT_MUSIQUE_CONTENT = {
     title: 'Des exemples pour entendre le style des chansons Création Nowis',
     description:
       'Cette page rassemble les chansons publiées pour te permettre d’écouter des exemples concrets avant de commander une création sur mesure.',
-    primaryCta: { label: 'Commander une chanson', href: '/commander-une-chanson' },
+    primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL },
     secondaryCta: { label: 'Voir les vidéos', href: '/videos' },
   },
   grid: {

@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { PageHero } from '@/components/marketing/PageHero';
 import { getAllArtists } from '@/data/artists';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'Artistes | Création Nowis',
@@ -106,9 +108,9 @@ export default function ArtistesPage() {
               ))}
             </div>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je souhaite une chanson personnalisée pour un moment important." className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
+              <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
                 Demander une chanson personnalisée
-              </ContactPrefillLink>
+              </Link>
               <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-50">
                 Parler de mon projet
               </ContactPrefillLink>

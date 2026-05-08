@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 import { PublicCommentsSection } from '@/components/public-comments/PublicCommentsSection';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
 const quickOffers = [
   {
@@ -12,7 +13,7 @@ const quickOffers = [
   {
     title: 'Chansons personnalisées',
     description: 'Une chanson pour une personne, une famille, un événement ou un souvenir.',
-    href: '/commander-une-chanson',
+    href: SONG_REQUEST_GOOGLE_AUTH_URL,
     cta: 'Demander une chanson',
   },
   {
@@ -47,7 +48,7 @@ export function HomeScreen() {
           <Link href="/booking" className="inline-flex items-center justify-center rounded-xl bg-[color:var(--site-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:brightness-110">
             Réserver un atelier
           </Link>
-          <Link href="/commander-une-chanson" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">
+          <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">
             Demander une chanson
           </Link>
           <Link href="/creations" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">

@@ -14,6 +14,7 @@ import {
 } from '@/components/marketing/SongSalesSections';
 import { legalLinks } from '@/data/legal';
 import { portfolioDisclosure, songPackages, songProcessSteps, songSalesCtas } from '@/data/songSales';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { buildMetadata } from '@/lib/seo';
 import { buildServiceSchema } from '@/lib/structured-data';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
@@ -23,7 +24,7 @@ const DEFAULT_SONG_PAGE_CONTENT = {
     eyebrow: 'Chanson personnalisee',
     title: 'Une chanson sur mesure a partir de votre histoire',
     description: 'Je cree des chansons personnalisees a partir de vos paroles, de vos souvenirs ou d un moment important de votre vie.',
-    primaryCta: { label: songSalesCtas.order.label, href: '#acces-portail' },
+    primaryCta: { label: songSalesCtas.order.label, href: SONG_REQUEST_GOOGLE_AUTH_URL },
     secondaryCta: { label: songSalesCtas.listen.label, href: songSalesCtas.listen.href },
   },
   how: {
@@ -40,7 +41,7 @@ const DEFAULT_SONG_PAGE_CONTENT = {
     title: 'Un projet musical simple a lancer, sans complication',
     description:
       'Si tu veux passer a l action, tu peux lancer directement la demande ou commencer par m expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.',
-    primaryCta: { label: 'Commander une chanson', href: '#commande' },
+    primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL },
     secondaryCta: { label: songSalesCtas.talk.label, href: songSalesCtas.talk.href },
   },
 };

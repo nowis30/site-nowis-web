@@ -2,6 +2,7 @@ import { PageHero } from '@/components/marketing/PageHero';
 import { VideoCard } from '@/components/videos/VideoCard';
 import { getAllVideos } from '@/data/videos';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { buildMetadata } from '@/lib/seo';
 
 const DEFAULT_VIDEOS_CONTENT = {
@@ -10,7 +11,7 @@ const DEFAULT_VIDEOS_CONTENT = {
     title: 'Des options visuelles et videos IA pour accompagner une chanson',
     description:
       'Cette section presente les videos et formats visuels comme complements creatifs autour de la musique, et non comme le service principal.',
-    primaryCta: { label: 'Commander une chanson', href: '/commander-une-chanson' },
+    primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL },
     secondaryCta: {
       label: 'Parler de mon projet',
       href: '/contact?projectType=video&message=Bonjour, je veux discuter d une option visuelle ou video IA pour accompagner une chanson.',

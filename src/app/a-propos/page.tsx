@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'À propos de Nowis Morin | Création Nowis à Drummondville',
@@ -161,7 +162,7 @@ export default function AProposPage() {
                 icon: '🎼',
                 title: 'Chansons personnalisées',
                 desc: 'Je crée des chansons sur mesure pour des occasions importantes : anniversaires, mariages, hommages, projets artistiques et plus encore.',
-                href: '/commander-une-chanson',
+                href: SONG_REQUEST_GOOGLE_AUTH_URL,
                 cta: 'Commander une chanson',
                 featured: false,
               },

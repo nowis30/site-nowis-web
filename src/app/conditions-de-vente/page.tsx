@@ -3,6 +3,7 @@ import { PageHero } from '@/components/marketing/PageHero';
 import { complianceNotes, conditionsContent, legalConfig, legalLinks } from '@/data/legal';
 import { songPackages, videoExtraOptions } from '@/data/songSales';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'Conditions de vente | Création Nowis',
@@ -27,7 +28,7 @@ export default function ConditionsDeVentePage() {
         eyebrow="Conditions de vente"
         title="Des conditions claires pour vendre les services de façon plus propre et plus compréhensible"
         description="Cette page explique les informations utiles avant de commander : services offerts, validation du projet, paiement, délais, révisions, remboursement, annulation et droits d’utilisation."
-        primaryCta={{ label: 'Commander une chanson', href: '/commander-une-chanson' }}
+        primaryCta={{ label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL }}
         secondaryCta={{ label: 'Politique de confidentialité', href: legalLinks.privacy }}
       />
 

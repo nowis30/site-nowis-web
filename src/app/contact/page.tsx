@@ -4,6 +4,7 @@ import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
 import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
 
 const DEFAULT_CONTACT_CONTENT = {
@@ -22,7 +23,7 @@ const DEFAULT_CONTACT_CONTENT = {
     },
     button2: {
       label: 'Commander une chanson personnalisée',
-      href: '/connexion?next=%2Fclient%2Fsong-requests%2Fnouveau',
+      href: SONG_REQUEST_GOOGLE_AUTH_URL,
     },
   },
   social: {
@@ -217,7 +218,7 @@ export default async function ContactPage() {
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <a href="/ateliers" className="cta-secondary rounded-2xl px-5 py-3">Demander un atelier</a>
-              <a href="/commander-une-chanson" className="cta-secondary rounded-2xl px-5 py-3">Demander une chanson</a>
+              <a href={SONG_REQUEST_GOOGLE_AUTH_URL} className="cta-secondary rounded-2xl px-5 py-3">Demander une chanson</a>
               <a href="/creations" className="cta-secondary rounded-2xl px-5 py-3">Voir mes créations</a>
             </div>
           </div>

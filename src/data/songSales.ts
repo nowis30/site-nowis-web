@@ -1,3 +1,5 @@
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+
 export type SongSalesCta = {
 	label: string;
 	href: string;
@@ -32,7 +34,7 @@ export type VideoExtraOption = {
 export const songSalesCtas = {
 	order: {
 		label: 'Commander une chanson',
-		href: '/commander-une-chanson',
+		href: SONG_REQUEST_GOOGLE_AUTH_URL,
 	} satisfies SongSalesCta,
 	listen: {
 		label: 'Écouter des exemples',

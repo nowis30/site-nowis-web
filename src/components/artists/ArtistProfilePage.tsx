@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import type { ArtistProfile } from '@/data/artists';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
 const platformStyles: Record<string, string> = {
   Spotify: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
@@ -49,9 +50,9 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
               </div>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <ContactPrefillLink href={artist.contactHref} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+                <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
                   Demander une chanson personnalisée
-                </ContactPrefillLink>
+                </Link>
                 <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
                   Parler de mon projet
                 </ContactPrefillLink>
@@ -272,9 +273,9 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
           </div>
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <ContactPrefillLink href={artist.contactHref} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+            <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
               Demander une chanson personnalisée
-            </ContactPrefillLink>
+            </Link>
             <Link href="/artistes" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
               Voir les autres artistes
             </Link>

@@ -1,6 +1,7 @@
 import { PageHero } from '@/components/marketing/PageHero';
 import { ProjectAssistant } from '@/components/tools/ProjectAssistant';
 import { buildMetadata } from '@/lib/seo';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'Assistant projet | Création Nowis',
@@ -33,7 +34,7 @@ export default function AssistantProjetPage() {
         title="Clarifie ton idée avant de passer à l’action"
         description="Cette page t’aide à repérer la bonne direction pour ton projet créatif. Ce n’est pas un faux assistant spectaculaire : c’est un outil simple pour mieux formuler ton besoin avant de contacter Création Nowis."
         primaryCta={{ label: 'Parler de mon projet', href: '/contact?projectType=autre&message=Bonjour, je veux discuter d’un projet créatif avec Création Nowis.' }}
-        secondaryCta={{ label: 'Commander une chanson personnalisée', href: '/commander-une-chanson' }}
+        secondaryCta={{ label: 'Commander une chanson personnalisée', href: SONG_REQUEST_GOOGLE_AUTH_URL }}
       />
 
       <section className="mx-auto max-w-7xl px-6 pt-16 md:pt-20">

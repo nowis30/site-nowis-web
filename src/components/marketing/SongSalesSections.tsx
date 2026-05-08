@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import {
   portfolioDisclosure,
   satisfactionGuarantee,
@@ -323,7 +324,7 @@ export function SongFinalCtaSection() {
       </p>
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
         <Link
-          href="#commande"
+          href={SONG_REQUEST_GOOGLE_AUTH_URL}
           className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-6 py-3 font-semibold text-white shadow-fire transition hover:-translate-y-0.5 hover:brightness-110"
         >
           Commander une chanson
@@ -423,7 +424,7 @@ type SongFinalCtaData = {
 };
 
 export function SongFinalCtaSectionWithData({ data }: { data?: SongFinalCtaData }) {
-  const primary = data?.primaryCta || { label: 'Commander une chanson', href: '#commande' };
+  const primary = data?.primaryCta || { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL };
   const secondary = data?.secondaryCta || { label: songSalesCtas.talk.label, href: songSalesCtas.talk.href };
 
   return (
