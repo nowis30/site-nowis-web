@@ -17,6 +17,19 @@ type CalendlyEventPayload = {
   };
 };
 
+function parseCalendlyDate(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function computeDurationMinutes(startAt: Date | null, endAt: Date | null) {
+  if (!startAt || !endAt) return null;
+  const durationMs = endAt.getTime() - startAt.getTime();
+  if (durationMs <= 0) return null;
+  return Math.round(durationMs / 60_000);
+}
+
 function parseCalendlySignatureHeader(rawHeader: string | null) {
   if (!rawHeader) return null;
 
@@ -76,8 +89,17 @@ export async function POST(request: NextRequest) {
   const scheduledEventUri = payload.scheduled_event?.uri || null;
   const inviteeEmail = payload.email?.trim().toLowerCase() || null;
   const inviteeName = payload.name?.trim() || null;
-  const startAt = payload.scheduled_event?.start_time ? new Date(payload.scheduled_event.start_time) : null;
-  const endAt = payload.scheduled_event?.end_time ? new Date(payload.scheduled_event.end_time) : null;
+  const startAt = parseCalendlyDate(payload.scheduled_event?.start_time);
+  const endAt = parseCalendlyDate(payload.scheduled_event?.end_time);
+  const durationMinutes = computeDurationMinutes(startAt, endAt);
+
+  console.info('[CALENDLY_WEBHOOK] Rendez-vous reçu', {
+    eventType,
+    scheduledEventUri,
+    inviteeEmail,
+    hasStartAt: Boolean(startAt),
+    hasEndAt: Boolean(endAt),
+  });
 
   let matchedContact = inviteeEmail
     ? await prisma.contact.findFirst({
@@ -119,6 +141,14 @@ export async function POST(request: NextRequest) {
   });
 
   if (eventType === 'invitee.created') {
+    if (!startAt || !endAt) {
+      console.info('[CALENDLY_WEBHOOK] startAt/endAt manquant', {
+        scheduledEventUri,
+        inviteeEmail,
+        payloadUri: payload.scheduled_event?.uri || null,
+      });
+    }
+
     if (workshopRequest) {
       const nextStatus = workshopRequest.status === 'CONFIRME' ? 'CONFIRME' : 'RDV_PLANIFIE';
 
@@ -129,6 +159,11 @@ export async function POST(request: NextRequest) {
           calendlyEventUri: scheduledEventUri || workshopRequest.calendlyEventUri,
           calendlyInviteeUri: inviteeUri || workshopRequest.calendlyInviteeUri,
           scheduledAt: startAt || workshopRequest.scheduledAt,
+          startAt: startAt || workshopRequest.startAt,
+          endAt: endAt || workshopRequest.endAt,
+          durationMinutes: durationMinutes || workshopRequest.durationMinutes,
+          meetingType: workshopRequest.meetingType || 'CALENDLY',
+          calendlyUrl: scheduledEventUri || workshopRequest.calendlyUrl,
         },
       });
 
@@ -138,10 +173,28 @@ export async function POST(request: NextRequest) {
             workshopRequestId: updated.id,
             startAt,
           },
+          orderBy: { updatedAt: 'desc' },
         });
 
-        if (!existingAppointment) {
-          await prisma.workshopAppointment.create({
+        if (existingAppointment) {
+          await prisma.workshopAppointment.update({
+            where: { id: existingAppointment.id },
+            data: {
+              title: `Rendez-vous atelier - ${updated.title}`,
+              description: 'Synchronisé depuis Calendly',
+              endAt,
+              status: 'CONFIRMED',
+              location: updated.addressOrLocation || updated.location,
+              contactId: updated.contactId,
+              organizationContactId: updated.organizationContactId,
+            },
+          });
+          console.info('[CALENDLY_WEBHOOK] WorkshopAppointment mis à jour', {
+            workshopRequestId: updated.id,
+            workshopAppointmentId: existingAppointment.id,
+          });
+        } else {
+          const createdWorkshopAppointment = await prisma.workshopAppointment.create({
             data: {
               workshopRequestId: updated.id,
               organizationId: updated.organizationId,
@@ -154,6 +207,71 @@ export async function POST(request: NextRequest) {
               status: 'CONFIRMED',
               location: updated.addressOrLocation || updated.location,
             },
+          });
+          console.info('[CALENDLY_WEBHOOK] WorkshopAppointment créé', {
+            workshopRequestId: updated.id,
+            workshopAppointmentId: createdWorkshopAppointment.id,
+          });
+        }
+      } else if (!updated.organizationId && startAt && endAt) {
+        const existingCrmAppointment = scheduledEventUri
+          ? await prisma.appointment.findFirst({
+              where: {
+                externalProvider: 'CALENDLY',
+                externalEventId: scheduledEventUri,
+              },
+              orderBy: { updatedAt: 'desc' },
+            })
+          : await prisma.appointment.findFirst({
+              where: {
+                externalProvider: 'CALENDLY',
+                workshopRequestId: updated.id,
+                startAt,
+              },
+              orderBy: { updatedAt: 'desc' },
+            });
+
+        const appointmentContactId = matchedContact?.id || updated.clientId || updated.contactId || null;
+        if (existingCrmAppointment) {
+          await prisma.appointment.update({
+            where: { id: existingCrmAppointment.id },
+            data: {
+              title: `Rendez-vous atelier - ${updated.title}`,
+              description: 'Synchronisé depuis Calendly',
+              startAt,
+              endAt,
+              type: 'WORKSHOP',
+              status: 'CONFIRMED',
+              workshopRequestId: updated.id,
+              contactId: appointmentContactId,
+              externalProvider: 'CALENDLY',
+              externalEventId: scheduledEventUri || existingCrmAppointment.externalEventId,
+              meetingUrl: scheduledEventUri || existingCrmAppointment.meetingUrl,
+            },
+          });
+          console.info('[CALENDLY_WEBHOOK] Appointment CRM atelier mis à jour', {
+            workshopRequestId: updated.id,
+            appointmentId: existingCrmAppointment.id,
+          });
+        } else {
+          const createdCrmAppointment = await prisma.appointment.create({
+            data: {
+              title: `Rendez-vous atelier - ${updated.title}`,
+              description: 'Synchronisé depuis Calendly',
+              startAt,
+              endAt,
+              type: 'WORKSHOP',
+              status: 'CONFIRMED',
+              workshopRequestId: updated.id,
+              contactId: appointmentContactId,
+              externalProvider: 'CALENDLY',
+              externalEventId: scheduledEventUri,
+              meetingUrl: scheduledEventUri,
+            },
+          });
+          console.info('[CALENDLY_WEBHOOK] Appointment CRM atelier créé', {
+            workshopRequestId: updated.id,
+            appointmentId: createdCrmAppointment.id,
           });
         }
       }
@@ -223,6 +341,9 @@ export async function POST(request: NextRequest) {
               endAt,
               status: 'CONFIRMED',
               contactId: matchedContact?.id || existingAppointment.contactId,
+              externalProvider: 'CALENDLY',
+              externalEventId: scheduledEventUri,
+              meetingUrl: scheduledEventUri,
             },
           })
         : await prisma.appointment.create({
@@ -239,6 +360,11 @@ export async function POST(request: NextRequest) {
               meetingUrl: scheduledEventUri,
             },
           });
+
+      console.info(
+        `[CALENDLY_WEBHOOK] Appointment CRM ${existingAppointment ? 'mis à jour' : 'créé'}`,
+        { appointmentId: appointment.id, scheduledEventUri },
+      );
 
       if (calendlyConnection) {
         await prisma.calendarExternalEvent.upsert({
@@ -289,15 +415,6 @@ export async function POST(request: NextRequest) {
   }
 
   if (eventType === 'invitee.canceled') {
-    if (workshopRequest) {
-      await prisma.workshopRequest.update({
-        where: { id: workshopRequest.id },
-        data: {
-          status: 'EN_ATTENTE_RDV',
-        },
-      });
-    }
-
     if (scheduledEventUri) {
       await prisma.appointment.updateMany({
         where: {
@@ -308,6 +425,8 @@ export async function POST(request: NextRequest) {
           status: 'CANCELLED',
         },
       }).catch(() => undefined);
+
+      console.info('[CALENDLY_WEBHOOK] Appointment CRM annulé(s)', { scheduledEventUri });
 
       if (calendlyConnection) {
         await prisma.calendarExternalEvent.updateMany({
@@ -320,6 +439,52 @@ export async function POST(request: NextRequest) {
             rawPayload: body,
           },
         }).catch(() => undefined);
+      }
+    }
+
+    if (workshopRequest) {
+      if (startAt) {
+        await prisma.workshopAppointment.updateMany({
+          where: {
+            workshopRequestId: workshopRequest.id,
+            startAt,
+          },
+          data: {
+            status: 'CANCELLED',
+          },
+        }).catch(() => undefined);
+
+        console.info('[CALENDLY_WEBHOOK] WorkshopAppointment annulé(s)', {
+          workshopRequestId: workshopRequest.id,
+          startAt: startAt.toISOString(),
+        });
+      }
+
+      const [remainingWorkshopAppointments, remainingCrmAppointments] = await Promise.all([
+        prisma.workshopAppointment.count({
+          where: {
+            workshopRequestId: workshopRequest.id,
+            status: { not: 'CANCELLED' },
+          },
+        }).catch(() => 0),
+        prisma.appointment.count({
+          where: {
+            workshopRequestId: workshopRequest.id,
+            status: { not: 'CANCELLED' },
+          },
+        }).catch(() => 0),
+      ]);
+
+      const hasUpcomingRelatedAppointments = remainingWorkshopAppointments > 0 || remainingCrmAppointments > 0;
+      const terminalStatuses = new Set(['TERMINE', 'COMPLETED', 'ANNULE', 'CANCELLED', 'DELETED', 'ARCHIVED']);
+
+      if (!hasUpcomingRelatedAppointments && !terminalStatuses.has(workshopRequest.status)) {
+        await prisma.workshopRequest.update({
+          where: { id: workshopRequest.id },
+          data: {
+            status: 'EN_ATTENTE_RDV',
+          },
+        });
       }
     }
 
