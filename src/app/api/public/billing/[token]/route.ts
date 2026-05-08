@@ -78,6 +78,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { token:
       select: {
         fullName: true,
         email: true,
+        phone: true,
         billingLegalName: true,
         billingEmail: true,
         billingAddressLine1: true,
@@ -94,6 +95,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { token:
 
     const candidate = {
       ...current,
+      // Le check de complétude exige un téléphone principal; on garde le phone existant
+      // et on autorise un fallback sur billingPhone si le phone est absent.
+      phone: normalizeOptional(current.phone) || normalizeOptional(payload.billingPhone),
       billingLegalName: payload.billingLegalName !== undefined ? normalizeOptional(payload.billingLegalName) : current.billingLegalName,
       billingEmail: payload.billingEmail !== undefined ? normalizeOptional(payload.billingEmail) : current.billingEmail,
       billingAddressLine1: payload.billingAddressLine1 !== undefined ? normalizeOptional(payload.billingAddressLine1) : current.billingAddressLine1,
