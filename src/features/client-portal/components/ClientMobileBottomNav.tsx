@@ -9,6 +9,7 @@ const navIcons: Record<string, LucideIcon> = {
   '/client/dashboard': Home,
   '/client/song-requests': Music4,
   '/client/workshops': Sparkles,
+  '/client/soumissions': FileText,
   '/client/documents': FileText,
   '/client/appointments': CalendarDays,
   '/client/profil': CircleUser,
@@ -16,7 +17,7 @@ const navIcons: Record<string, LucideIcon> = {
 
 export function ClientMobileBottomNav() {
   const pathname = usePathname();
-  // Keep the mobile bar focused on the 5 primary tabs.
+  // Keep the mobile bar focused on the primary tabs.
   const primaryMobileItems = clientPortalMobileBottomNavigation.filter((item) => item.href !== '/client/profil');
 
   return (
@@ -24,10 +25,13 @@ export function ClientMobileBottomNav() {
       aria-label="Navigation mobile du portail client"
       className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-slate-700/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_24px_rgba(2,6,23,0.18)] backdrop-blur md:hidden"
     >
-      <div className="mx-auto grid w-full max-w-[88rem] grid-cols-5 gap-1 px-2 py-1">
+      <div
+        className="mx-auto grid w-full max-w-[88rem] gap-1 px-2 py-1"
+        style={{ gridTemplateColumns: `repeat(${primaryMobileItems.length}, minmax(0, 1fr))` }}
+      >
         {primaryMobileItems.map(({ href, shortLabel, matches }) => {
           const isActive = matches(pathname);
-          const Icon = navIcons[href];
+          const Icon = navIcons[href] ?? FileText;
 
           return (
             <Link
