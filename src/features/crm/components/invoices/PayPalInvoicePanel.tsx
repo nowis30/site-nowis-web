@@ -188,10 +188,8 @@ export function PayPalInvoicePanel({
 
   const paymentCurrency = meta.paymentCurrency || 'CAD';
   const effectiveAmount = useMemo(() => meta.paymentAmount || amount, [amount, meta.paymentAmount]);
-  const canOpenPayPal = Boolean(meta.paypalInvoiceUrl);
-  const hasPayPalInvoiceWithoutUrl = Boolean(meta.paypalInvoiceId) && !canOpenPayPal;
-  const canSend = Boolean(meta.paypalInvoiceId) && paypalConfigured;
   const canCreate = paypalConfigured;
+  const hasPayPalInvoice = Boolean(meta.paypalInvoiceId);
 
   async function loadDiagnostics() {
     setLoadingAction('diagnostics');
@@ -253,7 +251,7 @@ export function PayPalInvoicePanel({
     }
   }
 
-  async function runAction(action: 'create' | 'send' | 'status') {
+  async function runAction(action: 'create' | 'status') {
     setLoadingAction(action);
     setError(null);
     setFeedback(null);
@@ -263,9 +261,7 @@ export function PayPalInvoicePanel({
       const response = await fetch(
         action === 'create'
           ? `/api/crm/invoices/${invoiceId}/paypal/create`
-          : action === 'send'
-            ? `/api/crm/invoices/${invoiceId}/paypal/send`
-            : `/api/crm/invoices/${invoiceId}/paypal/status`,
+          : `/api/crm/invoices/${invoiceId}/paypal/status`,
         {
           method: action === 'status' ? 'GET' : 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -293,11 +289,9 @@ export function PayPalInvoicePanel({
       setFeedback(
         action === 'create'
           ? 'Facture PayPal créée.'
-          : action === 'send'
-            ? 'Facture PayPal envoyée.'
-            : hasUrlAfterAction
-              ? 'Statut PayPal synchronisé. Lien PayPal disponible.'
-              : 'Statut PayPal synchronisé, mais aucun lien PayPal ouvrable n est encore disponible.',
+          : hasUrlAfterAction
+            ? 'Statut PayPal synchronisé. Lien PayPal disponible.'
+            : 'Statut PayPal synchronisé, mais aucun lien PayPal ouvrable n est encore disponible.',
       );
     } catch (actionError) {
       setError(actionError instanceof Error ? actionError.message : 'Erreur inconnue');
@@ -329,14 +323,7 @@ export function PayPalInvoicePanel({
             >
               {loadingAction === 'create' ? 'Création...' : 'Créer facture PayPal'}
             </button>
-            <button
-              type="button"
-              onClick={() => void runAction('send')}
-              disabled={loadingAction !== null || !canSend}
-              className="rounded-xl border border-sky-600/50 bg-sky-950/30 px-3 py-2 text-xs font-medium text-sky-200 hover:bg-sky-900/40 disabled:opacity-50"
-            >
-              {loadingAction === 'send' ? 'Envoi...' : 'Envoyer facture PayPal'}
-            </button>
+
             <button
               type="button"
               onClick={() => void loadDiagnostics()}
@@ -355,26 +342,8 @@ export function PayPalInvoicePanel({
                 {loadingAction === 'reset' ? 'Reset...' : 'Réinitialiser lien PayPal test'}
               </button>
             ) : null}
-            {canOpenPayPal ? (
-              <a
-                href={meta.paypalInvoiceUrl!}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl border border-emerald-600/50 bg-emerald-950/30 px-3 py-2 text-xs font-medium text-emerald-200 hover:bg-emerald-900/40"
-              >
-                Ouvrir facture PayPal
-              </a>
-            ) : null}
-            {hasPayPalInvoiceWithoutUrl ? (
-              <button
-                type="button"
-                onClick={() => void runAction('status')}
-                disabled={loadingAction !== null || !paypalConfigured}
-                className="rounded-xl border border-amber-600/50 bg-amber-950/30 px-3 py-2 text-xs font-medium text-amber-200 hover:bg-amber-900/40 disabled:opacity-50"
-              >
-                {loadingAction === 'status' ? 'Rafraîchissement...' : 'Rafraîchir lien PayPal'}
-              </button>
-            ) : null}
+
+
             <button
               type="button"
               onClick={() => void runAction('status')}
@@ -384,15 +353,6 @@ export function PayPalInvoicePanel({
               {loadingAction === 'status' ? 'Vérification...' : 'Vérifier statut PayPal'}
             </button>
           </div>
-        ) : canOpenPayPal && (meta.paymentStatus || '').toLowerCase() !== 'paid' ? (
-          <a
-            href={meta.paypalInvoiceUrl!}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl border border-emerald-600/50 bg-emerald-950/30 px-3 py-2 text-xs font-medium text-emerald-200 hover:bg-emerald-900/40"
-          >
-            Ouvrir le paiement PayPal
-          </a>
         ) : null}
       </div>
 
@@ -402,9 +362,9 @@ export function PayPalInvoicePanel({
         </p>
       ) : null}
 
-      {hasPayPalInvoiceWithoutUrl ? (
-        <p className="mt-4 rounded-xl border border-amber-700/40 bg-amber-950/20 px-3 py-2 text-sm text-amber-200">
-          La facture PayPal existe, mais aucun lien web ouvrable n est disponible pour le moment. Utilise "Rafraîchir lien PayPal" pour resynchroniser.
+      {hasPayPalInvoice ? (
+        <p className="mt-4 rounded-xl border border-sky-700/40 bg-sky-950/20 px-3 py-2 text-sm text-sky-200">
+          La facture PayPal existe. Ouvrez votre compte PayPal pour l en voyer, la consulter ou suivre son paiement. Le CRM sert ici à synchroniser le statut.
         </p>
       ) : null}
 
