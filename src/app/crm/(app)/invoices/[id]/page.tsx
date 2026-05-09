@@ -45,6 +45,11 @@ export default async function CrmInvoiceDetailRoute({ params, searchParams }: Pa
     take: 80,
   });
 
+  const visibleLinkedDocuments = linkedDocuments.filter((file) => {
+    const isInvoicePlaceholder = Boolean(file.invoiceId) && file.size === 0 && file.storageKey.startsWith('invoices/');
+    return !isInvoicePlaceholder;
+  });
+
   return (
     <>
       <InvoiceDetailPage
@@ -70,13 +75,15 @@ export default async function CrmInvoiceDetailRoute({ params, searchParams }: Pa
       <LinkedDocumentsPanel
         title="Documents liés"
         subtitle="Documents du client et documents liés à cette facture."
-        items={linkedDocuments.map((file) => ({
+        items={visibleLinkedDocuments.map((file) => ({
           id: file.id,
           originalName: file.originalName,
           mimeType: file.mimeType,
           category: file.category,
           createdAtIso: file.createdAt.toISOString(),
           downloadUrl: `/api/crm/file-documents/${file.id}/download`,
+          size: file.size,
+          storageKey: file.storageKey,
           songRequestId: file.songRequestId,
           workshopRequestId: file.workshopRequestId,
           commercialQuoteId: file.commercialQuoteId,
@@ -86,7 +93,7 @@ export default async function CrmInvoiceDetailRoute({ params, searchParams }: Pa
         }))}
         quickLinks={[
           { href: `/crm/contacts/${invoice.contactId}`, label: 'Dossier client' },
-          { href: `/crm/invoices/${invoice.id}`, label: 'Dossier facture' },
+          { href: `/crm/invoices/${invoice.id}`, label: 'Voir la facture CRM' },
         ]}
       />
     </>

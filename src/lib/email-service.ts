@@ -27,7 +27,7 @@ export async function sendEmail(payload: EmailPayload) {
     const resend = getResendClient();
     if (!resend) {
       console.warn('RESEND_API_KEY non configurée');
-      return { success: false, error: 'Email API not configured' };
+      return { success: false, error: 'Email non configuré', code: 'RESEND_NOT_CONFIGURED' as const };
     }
 
     const response = await resend.emails.send({

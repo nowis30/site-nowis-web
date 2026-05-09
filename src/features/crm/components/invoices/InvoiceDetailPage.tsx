@@ -199,6 +199,9 @@ export function InvoiceDetailPage({
 }: InvoiceDetailPageProps) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState<string | null>(null);
+  const [emailFeedbackKind, setEmailFeedbackKind] = useState<'success' | 'error' | null>(null);
+  const [emailFallbackInvoiceUrl, setEmailFallbackInvoiceUrl] = useState<string | null>(null);
+  const [emailDiagnostic, setEmailDiagnostic] = useState<string | null>(null);
   const [billingIssues, setBillingIssues] = useState<{
     missingIssuer: string[];
     missingCustomer: string[];
@@ -243,6 +246,9 @@ export function InvoiceDetailPage({
   async function sendInvoiceEmail() {
     setSendingEmail(true);
     setEmailFeedback(null);
+    setEmailFeedbackKind(null);
+    setEmailFallbackInvoiceUrl(null);
+    setEmailDiagnostic(null);
     setBillingIssues(null);
     try {
       const response = await fetch(`/api/crm/invoices/${invoice.id}/send`, {
@@ -257,6 +263,9 @@ export function InvoiceDetailPage({
       });
       const data = (await response.json().catch(() => null)) as {
         error?: string;
+        message?: string;
+        emailSent?: boolean;
+        invoiceUrl?: string | null;
         missingIssuer?: string[];
         missingCustomer?: string[];
         billingUpdateUrl?: string | null;
@@ -271,12 +280,33 @@ export function InvoiceDetailPage({
             editCustomerUrl: data?.editCustomerUrl || null,
           });
         }
-        throw new Error(data?.error || 'Envoi impossible');
+        const errorMessage = data?.error || data?.message || 'Envoi impossible';
+        setEmailFeedback(errorMessage);
+        setEmailFeedbackKind('error');
+        setEmailFallbackInvoiceUrl(data?.invoiceUrl || null);
+        if (errorMessage.toLowerCase().includes('email non configur')) {
+          setEmailDiagnostic('Email non configuré');
+        }
+        return;
       }
-      setEmailFeedback('Facture envoyée par email avec succès.');
-      setIsComposerOpen(false);
+
+      if (data?.emailSent === true) {
+        setEmailFeedback('Facture envoyée par email avec succès.');
+        setEmailFeedbackKind('success');
+        setIsComposerOpen(false);
+        return;
+      }
+
+      const fallbackMessage = data?.error || data?.message || 'Aucun email n a été envoyé.';
+      setEmailFeedback(fallbackMessage);
+      setEmailFeedbackKind('error');
+      setEmailFallbackInvoiceUrl(data?.invoiceUrl || null);
+      if (fallbackMessage.toLowerCase().includes('email non configur')) {
+        setEmailDiagnostic('Email non configuré');
+      }
     } catch (error) {
       setEmailFeedback(error instanceof Error ? error.message : 'Envoi impossible');
+      setEmailFeedbackKind('error');
     } finally {
       setSendingEmail(false);
     }
@@ -317,8 +347,21 @@ export function InvoiceDetailPage({
       </div>
 
       {emailFeedback ? (
-        <div className={`print:hidden rounded-xl border px-4 py-3 text-sm ${emailFeedback.includes('succès') ? 'border-emerald-700/40 bg-emerald-950/20 text-emerald-300' : 'border-red-700/40 bg-red-950/20 text-red-300'}`}>
+        <div className={`print:hidden rounded-xl border px-4 py-3 text-sm ${emailFeedbackKind === 'success' ? 'border-emerald-700/40 bg-emerald-950/20 text-emerald-300' : 'border-red-700/40 bg-red-950/20 text-red-300'}`}>
           {emailFeedback}
+          {emailFeedbackKind !== 'success' && emailFallbackInvoiceUrl ? (
+            <div className="mt-2">
+              <a href={emailFallbackInvoiceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                Ouvrir le lien facture généré
+              </a>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {emailDiagnostic ? (
+        <div className="print:hidden rounded-xl border border-amber-700/40 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
+          {emailDiagnostic}
         </div>
       ) : null}
 

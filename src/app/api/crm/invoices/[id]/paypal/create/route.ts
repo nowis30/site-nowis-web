@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { createPayPalInvoiceFromCrmInvoice, serializePayPalApiError } from '@/lib/server/paypal';
+import { createPayPalInvoiceFromCrmInvoice, getPayPalDiagnostics, serializePayPalApiError } from '@/lib/server/paypal';
 import { prisma } from '@/lib/prisma';
 import { getBillingIssuerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 import { getClientBillingMissingLabels } from '@/lib/client-billing';
@@ -80,6 +80,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   try {
     const item = await createPayPalInvoiceFromCrmInvoice(params.id, admin.session.sub);
+    console.info('[PAYPAL_INVOICE_URL_SYNC]', {
+      invoiceId: item.invoiceId,
+      paypalInvoiceIdPresent: Boolean(item.paypalInvoiceId),
+      paypalInvoiceUrlPresent: Boolean(item.paypalInvoiceUrl),
+      env: getPayPalDiagnostics().env,
+    });
     return NextResponse.json({ item }, { status: 200 });
   } catch (error) {
     const serialized = serializePayPalApiError(error, 'Creation PayPal impossible');

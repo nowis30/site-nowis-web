@@ -214,14 +214,18 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   });
 
   if (!sendResult.success) {
+    const resendConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
+    const notConfigured = sendResult.code === 'RESEND_NOT_CONFIGURED' || !resendConfigured;
     return NextResponse.json(
       {
-        ok: true,
+        ok: false,
         emailSent: false,
+        error: notConfigured
+          ? 'Email non configuré. Ajoute RESEND_API_KEY côté serveur pour activer l envoi.'
+          : (sendResult.error || 'L envoi email a échoué.'),
         invoiceUrl,
-        message: 'Email non configuré. Le lien a été généré, mais aucun courriel n a été envoyé.',
       },
-      { status: 200 },
+      { status: notConfigured ? 503 : 502 },
     );
   }
 

@@ -189,6 +189,7 @@ export function PayPalInvoicePanel({
   const paymentCurrency = meta.paymentCurrency || 'CAD';
   const effectiveAmount = useMemo(() => meta.paymentAmount || amount, [amount, meta.paymentAmount]);
   const canOpenPayPal = Boolean(meta.paypalInvoiceUrl);
+  const hasPayPalInvoiceWithoutUrl = Boolean(meta.paypalInvoiceId) && !canOpenPayPal;
   const canSend = Boolean(meta.paypalInvoiceId) && paypalConfigured;
   const canCreate = paypalConfigured;
 
@@ -288,12 +289,15 @@ export function PayPalInvoicePanel({
         ...current,
         ...data.item,
       }));
+      const hasUrlAfterAction = Boolean(data.item.paypalInvoiceUrl);
       setFeedback(
         action === 'create'
           ? 'Facture PayPal créée.'
           : action === 'send'
             ? 'Facture PayPal envoyée.'
-            : 'Statut PayPal synchronisé.',
+            : hasUrlAfterAction
+              ? 'Statut PayPal synchronisé. Lien PayPal disponible.'
+              : 'Statut PayPal synchronisé, mais aucun lien PayPal ouvrable n est encore disponible.',
       );
     } catch (actionError) {
       setError(actionError instanceof Error ? actionError.message : 'Erreur inconnue');
@@ -361,6 +365,16 @@ export function PayPalInvoicePanel({
                 Ouvrir facture PayPal
               </a>
             ) : null}
+            {hasPayPalInvoiceWithoutUrl ? (
+              <button
+                type="button"
+                onClick={() => void runAction('status')}
+                disabled={loadingAction !== null || !paypalConfigured}
+                className="rounded-xl border border-amber-600/50 bg-amber-950/30 px-3 py-2 text-xs font-medium text-amber-200 hover:bg-amber-900/40 disabled:opacity-50"
+              >
+                {loadingAction === 'status' ? 'Rafraîchissement...' : 'Rafraîchir lien PayPal'}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => void runAction('status')}
@@ -385,6 +399,12 @@ export function PayPalInvoicePanel({
       {allowActions && !paypalConfigured ? (
         <p className="mt-4 rounded-xl border border-amber-700/40 bg-amber-950/20 px-3 py-2 text-sm text-amber-200">
           {missingConfigMessage || 'PayPal n est pas encore configuré. Ajoute les variables PayPal dans Vercel ou Render.'}
+        </p>
+      ) : null}
+
+      {hasPayPalInvoiceWithoutUrl ? (
+        <p className="mt-4 rounded-xl border border-amber-700/40 bg-amber-950/20 px-3 py-2 text-sm text-amber-200">
+          La facture PayPal existe, mais aucun lien web ouvrable n est disponible pour le moment. Utilise "Rafraîchir lien PayPal" pour resynchroniser.
         </p>
       ) : null}
 

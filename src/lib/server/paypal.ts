@@ -231,6 +231,27 @@ function inferPayPalUrlEnv(value: string | null | undefined): 'sandbox' | 'live'
   return null;
 }
 
+function isPayPalApiUrl(value: string | null | undefined) {
+  const host = getUrlHost(value)?.toLowerCase();
+  if (!host) return false;
+  return host === 'api-m.paypal.com' || host === 'api-m.sandbox.paypal.com';
+}
+
+function isBrowsablePayPalUrl(value: string | null | undefined) {
+  const host = getUrlHost(value)?.toLowerCase();
+  if (!host) return false;
+  if (isPayPalApiUrl(value)) return false;
+  return host === 'paypal.com' || host.endsWith('.paypal.com');
+}
+
+function buildPayPalInvoicePayerViewUrl(paypalInvoiceId: string) {
+  const env = getPayPalEnv();
+  const base = env === 'live'
+    ? 'https://www.paypal.com/invoice/payerView/details/'
+    : 'https://www.sandbox.paypal.com/invoice/payerView/details/';
+  return `${base}${encodeURIComponent(paypalInvoiceId)}`;
+}
+
 export function getPayPalDiagnostics(): PayPalDiagnostics {
   const env = getPayPalEnv();
   const clientId = trimToNull(process.env.PAYPAL_CLIENT_ID);
@@ -749,18 +770,49 @@ function extractPayPalInvoiceUrl(payload: JsonRecord): string | null {
   const detail = asRecord(payload.detail);
   const metadata = asRecord(detail.metadata);
   const recipientViewUrl = readString(metadata.recipient_view_url);
-  if (recipientViewUrl) return recipientViewUrl;
-
-  const href = readString(payload.href);
-  if (href) return href;
+  if (recipientViewUrl && isBrowsablePayPalUrl(recipientViewUrl)) return recipientViewUrl;
 
   const links = Array.isArray(payload.links) ? payload.links : [];
+
   for (const linkValue of links) {
     const link = asRecord(linkValue);
     const rel = readString(link.rel)?.toLowerCase();
-    if (rel && ['payer-view', 'view', 'self'].includes(rel)) {
-      const linkHref = readString(link.href);
-      if (linkHref) return linkHref;
+    const linkHref = readString(link.href);
+    if (!linkHref) continue;
+    if (rel && ['payer-view', 'view'].includes(rel) && isBrowsablePayPalUrl(linkHref)) {
+      return linkHref;
+    }
+  }
+
+  for (const linkValue of links) {
+    const link = asRecord(linkValue);
+    const rel = readString(link.rel)?.toLowerCase();
+    const linkHref = readString(link.href);
+    if (!linkHref) continue;
+    if (rel && ['alternate', 'approve'].includes(rel) && isBrowsablePayPalUrl(linkHref)) {
+      return linkHref;
+    }
+  }
+
+  const directHref = readString(payload.href);
+  if (directHref && isBrowsablePayPalUrl(directHref)) {
+    return directHref;
+  }
+
+  const paypalInvoiceId = extractPayPalInvoiceId(payload);
+  if (paypalInvoiceId && links.length > 0) {
+    return buildPayPalInvoicePayerViewUrl(paypalInvoiceId);
+  }
+
+  if (recipientViewUrl && !isPayPalApiUrl(recipientViewUrl)) {
+    return recipientViewUrl;
+  }
+
+  for (const linkValue of links) {
+    const link = asRecord(linkValue);
+    const linkHref = readString(link.href);
+    if (linkHref && !isPayPalApiUrl(linkHref)) {
+      return linkHref;
     }
   }
 
@@ -1190,6 +1242,10 @@ export async function createPayPalInvoiceFromCrmInvoice(invoiceId: string, userI
       },
     });
 
+    if (!updated.paypalInvoiceUrl && updated.paypalInvoiceId) {
+      return syncPayPalInvoiceStatusByPayPalInvoiceId(updated.paypalInvoiceId, { userId });
+    }
+
     await writePaypalActivity({
       title: `Facture PayPal creee : ${invoice.number}`,
       description: `Facture PayPal ${paypalInvoiceId} creee pour ${invoice.contact.email}.`,
@@ -1380,6 +1436,10 @@ export async function sendPayPalInvoice(invoiceId: string, userId?: string | nul
         (invoice.status === InvoiceStatus.DRAFT ? InvoiceStatus.SENT : invoice.status),
     },
   });
+
+  if (!updated.paypalInvoiceUrl && updated.paypalInvoiceId) {
+    return syncPayPalInvoiceStatusByPayPalInvoiceId(updated.paypalInvoiceId, { userId });
+  }
 
   await writePaypalActivity({
     title: `Facture PayPal envoyee : ${invoice.number}`,
