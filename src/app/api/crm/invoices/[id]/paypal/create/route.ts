@@ -32,6 +32,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       contact: {
         select: {
           id: true,
+          phone: true,
+          billingPhone: true,
           fullName: true,
           email: true,
           billingLegalName: true,
@@ -53,6 +55,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const missingIssuer = validateIssuerSnapshot(await getBillingIssuerSnapshot());
   const missingCustomer = getClientBillingMissingLabels(invoice.contact);
   if (missingIssuer.length > 0 || missingCustomer.length > 0) {
+    console.info('[PAYPAL_CREATE_BILLING_BLOCKED]', {
+      invoiceId: invoice.id,
+      contactId: invoice.contact.id,
+      missingIssuer,
+      missingCustomer,
+    });
     const appUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_DOMAIN || request.nextUrl.origin;
     const billingUpdateUrl = buildPublicBillingUrl(
       signPublicBillingToken({ contactId: invoice.contact.id, invoiceId: invoice.id }),
