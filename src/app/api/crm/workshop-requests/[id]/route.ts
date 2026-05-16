@@ -87,6 +87,18 @@ function computeFinalPrice(payload: {
   return Number(total.toFixed(2));
 }
 
+function inferBookingProvider(input: { explicitProvider?: string; bookingUrl?: string | null; legacyUrl?: string | null }) {
+  const explicit = input.explicitProvider?.trim().toUpperCase();
+  if (explicit === 'GOOGLE' || explicit === 'MICROSOFT' || explicit === 'CALENDLY' || explicit === 'ICLOUD') {
+    return explicit as 'GOOGLE' | 'MICROSOFT' | 'CALENDLY' | 'ICLOUD';
+  }
+
+  const url = (input.bookingUrl || input.legacyUrl || '').toLowerCase();
+  if (url.includes('calendly.com')) return 'CALENDLY';
+  if (url.includes('calendar.google.com')) return 'GOOGLE';
+  return null;
+}
+
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'workshopRequests', 'update');
   if (guard.error) return guard.error;
@@ -94,6 +106,48 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   try {
     const payload = workshopRequestInputSchema.parse(await request.json());
     const finalPrice = computeFinalPrice(payload);
+    const existing = await prisma.workshopRequest.findUnique({
+      where: { id: params.id },
+      select: {
+        id: true,
+        bookingProvider: true,
+        bookingEventUri: true,
+        bookingInviteeUri: true,
+        bookingUrl: true,
+        bookingSource: true,
+        bookingSyncedAt: true,
+        calendlyEventUri: true,
+        calendlyInviteeUri: true,
+        calendlyUrl: true,
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Atelier introuvable' }, { status: 404 });
+    }
+
+    const bookingUrl = normalizeOptionalString(payload.bookingUrl) || normalizeOptionalString(payload.calendlyUrl) || existing.bookingUrl || existing.calendlyUrl;
+    const bookingProvider = inferBookingProvider({
+      explicitProvider: payload.bookingProvider || existing.bookingProvider || undefined,
+      bookingUrl,
+      legacyUrl: payload.calendlyUrl || existing.calendlyUrl,
+    }) || existing.bookingProvider;
+
+    const bookingEventUri = normalizeOptionalString(payload.bookingEventUri)
+      || normalizeOptionalString(payload.calendlyEventUri)
+      || existing.bookingEventUri
+      || existing.calendlyEventUri;
+    const bookingInviteeUri = normalizeOptionalString(payload.bookingInviteeUri)
+      || normalizeOptionalString(payload.calendlyInviteeUri)
+      || existing.bookingInviteeUri
+      || existing.calendlyInviteeUri;
+    const bookingSource = normalizeOptionalString(payload.bookingSource) || existing.bookingSource || 'CRM_MANUAL';
+    const bookingSyncedAt = payload.bookingSyncedAt
+      ? new Date(payload.bookingSyncedAt)
+      : (bookingEventUri || bookingInviteeUri || bookingUrl ? new Date() : existing.bookingSyncedAt);
+
+    const explicitLegacyProvided = Boolean(payload.calendlyEventUri || payload.calendlyInviteeUri || payload.calendlyUrl);
+    const shouldWriteLegacyCalendly = bookingProvider === 'CALENDLY' || explicitLegacyProvided;
     const item = await prisma.workshopRequest.update({
       where: { id: params.id },
       data: {
@@ -127,9 +181,21 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         finalPrice,
         internalNotes: normalizeOptionalString(payload.internalNotes),
         clientNotes: normalizeOptionalString(payload.clientNotes),
-        calendlyEventUri: normalizeOptionalString(payload.calendlyEventUri),
-        calendlyInviteeUri: normalizeOptionalString(payload.calendlyInviteeUri),
-        calendlyUrl: normalizeOptionalString(payload.calendlyUrl),
+        bookingProvider,
+        bookingEventUri,
+        bookingInviteeUri,
+        bookingUrl,
+        bookingSource,
+        bookingSyncedAt,
+        calendlyEventUri: shouldWriteLegacyCalendly
+          ? (normalizeOptionalString(payload.calendlyEventUri) || bookingEventUri || existing.calendlyEventUri)
+          : existing.calendlyEventUri,
+        calendlyInviteeUri: shouldWriteLegacyCalendly
+          ? (normalizeOptionalString(payload.calendlyInviteeUri) || bookingInviteeUri || existing.calendlyInviteeUri)
+          : existing.calendlyInviteeUri,
+        calendlyUrl: shouldWriteLegacyCalendly
+          ? (normalizeOptionalString(payload.calendlyUrl) || bookingUrl || existing.calendlyUrl)
+          : existing.calendlyUrl,
         scheduledAt: payload.scheduledAt ? new Date(payload.scheduledAt) : null,
         startAt: payload.startAt ? new Date(payload.startAt) : null,
         endAt: payload.endAt ? new Date(payload.endAt) : null,

@@ -3,7 +3,6 @@ import { requireClientPortalSession } from '@/features/client-portal/auth/sessio
 import { EmptyState, ListToolbar, PageHeader, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
 import { CalendarClock } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
-import { getBookingEmbedUrl } from '@/lib/booking-link';
 
 type AppointmentsTab = 'all' | 'upcoming' | 'past';
 
@@ -15,7 +14,7 @@ function formatDateTime(value: Date) {
   return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(value);
 }
 
-const BOOKING_URL = getBookingEmbedUrl();
+const CONTACT_URL = '/contact?projectType=atelier&message=Bonjour%2C%20je%20veux%20planifier%20un%20atelier.';
 
 export default async function ClientAppointmentsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await requireClientPortalSession();
@@ -48,21 +47,19 @@ export default async function ClientAppointmentsPage({ searchParams }: { searchP
           ]}
           actions={[
             { label: 'Voir tous mes rendez-vous', href: '/client/appointments' },
-            { label: 'Prendre rendez-vous', href: BOOKING_URL },
+            { label: 'Contacter Nowis', href: CONTACT_URL },
           ]}
         />
 
         <div className="rounded-2xl border border-primary-500/25 bg-primary-500/10 p-4">
           <p className="text-sm text-primary-100">
-            La prise de rendez-vous se fait uniquement sur les plages horaires libres de notre calendrier.
+            La reservation en ligne est desactivee temporairement. Utilisez le contact pour planifier votre echange.
           </p>
           <Link
-            href={BOOKING_URL}
-            target="_blank"
-            rel="noreferrer"
+            href={CONTACT_URL}
             className="mt-3 inline-flex rounded-xl border border-primary-400/40 bg-primary-400/20 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-400/30"
           >
-            Ouvrir le calendrier des disponibilités
+            Ouvrir le formulaire de contact
           </Link>
         </div>
 

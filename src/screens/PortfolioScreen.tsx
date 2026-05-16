@@ -207,7 +207,7 @@ export const PortfolioScreen: React.FC = () => {
             🛍️ Voir la boutique
           </a>
           <a
-            href="/booking"
+            href="/contact?projectType=autre&message=Bonjour%2C%20je%20veux%20une%20creation%20custom."
             className="inline-block px-8 py-3 border-2 border-camp-flame text-camp-flame hover:bg-camp-flame hover:text-camp-night rounded-lg font-semibold transition-all duration-300"
           >
             🔥 Commander une création custom

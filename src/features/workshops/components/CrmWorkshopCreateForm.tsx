@@ -363,7 +363,7 @@ export function CrmWorkshopCreateForm() {
           <h3 className="text-lg font-semibold text-white">Liens prêts</h3>
           {generatedLinks.bookingUrl ? (
             <div className="mt-3 rounded-2xl bg-slate-950/60 p-3">
-              <p className="text-xs text-slate-400">Lien Calendly/booking</p>
+              <p className="text-xs text-slate-400">Lien Google Calendar/booking</p>
               <p className="mt-1 break-all text-sm text-white">{generatedLinks.bookingUrl}</p>
               <div className="mt-2 flex gap-2">
                 <button type="button" onClick={() => void handleCopy(generatedLinks.bookingUrl, 'Lien de planification')} className="min-h-[48px] rounded-xl border border-slate-600 px-4 text-sm font-semibold text-white">Copier</button>

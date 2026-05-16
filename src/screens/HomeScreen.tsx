@@ -7,8 +7,8 @@ const quickOffers = [
   {
     title: 'Ateliers IA',
     description: 'Créez une chanson en groupe avec guitare, discussion, ChatGPT et Suno.',
-    href: '/booking',
-    cta: 'Réserver un atelier',
+    href: '/contact?projectType=atelier&message=Bonjour%2C%20je%20veux%20discuter%20d%27un%20atelier.',
+    cta: 'Parler de mon atelier',
   },
   {
     title: 'Chansons personnalisées',
@@ -45,8 +45,8 @@ export function HomeScreen() {
           Une approche simple, humaine et créative pour transformer une idée en chanson, en souvenir ou en projet.
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <Link href="/booking" className="inline-flex items-center justify-center rounded-xl bg-[color:var(--site-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:brightness-110">
-            Réserver un atelier
+          <Link href="/contact?projectType=atelier&message=Bonjour%2C%20je%20veux%20discuter%20d%27un%20atelier." className="inline-flex items-center justify-center rounded-xl bg-[color:var(--site-accent)] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:brightness-110">
+            Parler de mon atelier
           </Link>
           <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">
             Demander une chanson
@@ -96,8 +96,8 @@ export function HomeScreen() {
           <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-6 py-3 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-white">
             Me contacter
           </Link>
-          <Link href="/booking" className="inline-flex items-center justify-center rounded-xl bg-[color:var(--site-accent)] px-6 py-3 text-sm font-semibold text-white hover:brightness-110">
-            Demander un atelier
+          <Link href="/contact?projectType=atelier&message=Bonjour%2C%20je%20veux%20discuter%20d%27un%20atelier." className="inline-flex items-center justify-center rounded-xl bg-[color:var(--site-accent)] px-6 py-3 text-sm font-semibold text-white hover:brightness-110">
+            Parler de mon atelier
           </Link>
         </div>
       </section>

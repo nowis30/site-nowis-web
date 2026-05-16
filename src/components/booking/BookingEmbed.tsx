@@ -1,7 +1,5 @@
 'use client';
 
-import Script from 'next/script';
-
 function isCalendlyUrl(value: string) {
   return /(^https?:\/\/)?(www\.)?calendly\.com\//i.test(value);
 }
@@ -21,19 +19,24 @@ export function BookingEmbed({
 
   if (isCalendlyUrl(url)) {
     return (
-      <>
-        <Script src="https://assets.calendly.com/assets/external/widget.js" strategy="afterInteractive" />
-        <div
-          className={normalizedClassName || undefined}
-          style={{ minWidth: 320, height: minHeight }}
-        >
-          <div
-            className="calendly-inline-widget h-full w-full"
-            data-url={url}
-            style={{ minWidth: 320, height: minHeight }}
-          />
+      <div
+        className={normalizedClassName || 'w-full'}
+        style={{ minHeight }}
+      >
+        <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-6 py-8 text-center">
+          <p className="text-sm text-slate-700">
+            Le calendrier intégré n&apos;est pas disponible dans cet environnement.
+          </p>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+          >
+            Ouvrir le lien de réservation
+          </a>
         </div>
-      </>
+      </div>
     );
   }
 

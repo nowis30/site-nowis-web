@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { BookingEmbed } from '@/components/booking/BookingEmbed';
 import { prisma } from '@/lib/prisma';
-import { getWorkshopBookingBaseUrl } from '@/lib/booking-link';
 
 function formatMoney(value: number | null | undefined) {
   if (typeof value !== 'number') return 'A confirmer';
@@ -47,6 +45,7 @@ export default async function AtelierBookingPage({ params }: { params: { token: 
       discountPercent: true,
       finalPrice: true,
       clientNotes: true,
+      bookingUrl: true,
       calendlyUrl: true,
       status: true,
     },
@@ -56,7 +55,6 @@ export default async function AtelierBookingPage({ params }: { params: { token: 
     notFound();
   }
 
-  const bookingUrl = workshop.calendlyUrl || getWorkshopBookingBaseUrl();
   const companyPhone = process.env.COMPANY_PHONE || workshop.contactPhone || '';
   const companyEmail = process.env.COMPANY_EMAIL || workshop.contactEmail || 'simonmorin@nowis.store';
 
@@ -102,14 +100,16 @@ export default async function AtelierBookingPage({ params }: { params: { token: 
         </section>
 
         <section className="rounded-3xl border border-[color:var(--site-border)] bg-white p-4 shadow-sm">
-          <a
-            href={bookingUrl}
-            target="_blank"
-            rel="noreferrer"
+          <Link
+            href="/contact?projectType=atelier&message=Bonjour%2C%20je%20veux%20planifier%20mon%20atelier."
             className="flex min-h-[64px] w-full items-center justify-center rounded-2xl bg-[color:var(--site-accent-strong)] px-5 py-4 text-center text-xl font-bold text-white"
           >
-            Choisir mon rendez-vous
-          </a>
+            Planifier mon atelier par contact
+          </Link>
+
+          <p className="mt-3 rounded-2xl bg-[color:var(--site-bg-soft)] px-4 py-3 text-sm text-[color:var(--site-muted)]">
+            La reservation en ligne est desactivee temporairement pour fiabiliser le service.
+          </p>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {companyPhone ? (
@@ -121,15 +121,6 @@ export default async function AtelierBookingPage({ params }: { params: { token: 
               Ecrire un courriel
             </a>
           </div>
-        </section>
-
-        <section className="overflow-hidden rounded-3xl border border-[color:var(--site-border)] bg-white shadow-sm">
-          <BookingEmbed
-            url={bookingUrl}
-            title="Calendrier de rendez-vous atelier"
-            minHeight={760}
-            className="w-full"
-          />
         </section>
 
         <div className="pb-4 text-center text-sm text-[color:var(--site-muted)]">

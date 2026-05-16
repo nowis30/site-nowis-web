@@ -492,6 +492,13 @@ model WorkshopRequest {
   finalPrice            Decimal?               @db.Decimal(10, 2)
   internalNotes         String?
   clientNotes           String?
+  bookingProvider       CalendarProvider?
+  bookingEventUri       String?
+  bookingInviteeUri     String?
+  bookingUrl            String?
+  bookingSource         String?
+  bookingSyncedAt       DateTime?
+  bookingRawPayload     Json?
   calendlyEventUri      String?
   calendlyInviteeUri    String?
   calendlyUrl           String?

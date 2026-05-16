@@ -31,14 +31,14 @@ export async function POST(_request: NextRequest, _ctx: { params: { id: string }
   return NextResponse.json(
     {
       error:
-        'Les rendez-vous d\'atelier doivent être réservés via Calendly pour éviter les conflits d\'horaire. Le CRM se synchronise automatiquement via le webhook Calendly.',
+        'Les rendez-vous d\'atelier doivent être réservés via Google Calendar pour éviter les conflits d\'horaire. Le CRM se synchronise automatiquement après confirmation.',
       code: 'WORKSHOP_APPOINTMENT_MANUAL_CREATION_DISABLED',
     },
     { status: 405 },
   );
 }
 
-// Kept for reference — replaced by POST above which enforces the Calendly-only rule.
+// Kept for reference — replaced by POST above which enforces the booking-link rule.
 async function _disabledManualWorkshopAppointmentCreate(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'appointments', 'create');
   if (guard.error) return guard.error;

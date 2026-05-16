@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CalendarProvider } from '@prisma/client';
+import { CalendarProvider, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { createExternalCalendarEvent, listStoredCalendarEvents, recordCalendarActivity, toSafeConnection } from '@/lib/calendar/service';
 import { requireCalendarAdminAccess } from '@/lib/calendar/oauth-routes';
+import { prisma } from '@/lib/prisma';
 
 const eventCreateSchema = z.object({
   connectionId: z.string().uuid(),
@@ -73,6 +74,21 @@ export async function POST(request: NextRequest) {
       linkedClientId: payload.linkedClientId || null,
       linkedOrganizationId: payload.linkedOrganizationId || null,
     });
+
+    if (payload.linkedWorkshopRequestId) {
+      await prisma.workshopRequest.update({
+        where: { id: payload.linkedWorkshopRequestId },
+        data: {
+          bookingProvider: item.provider,
+          bookingEventUri: item.externalEventId,
+          bookingInviteeUri: null,
+          bookingUrl: item.meetingUrl || null,
+          bookingSource: `SYNC_${item.provider}`,
+          bookingSyncedAt: new Date(),
+          bookingRawPayload: item.rawPayload ?? Prisma.JsonNull,
+        },
+      }).catch(() => undefined);
+    }
 
     await recordCalendarActivity({
       title: 'Événement externe créé',

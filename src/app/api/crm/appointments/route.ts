@@ -45,14 +45,14 @@ export async function POST(_request: NextRequest) {
   return NextResponse.json(
     {
       error:
-        'Les rendez-vous doivent être réservés via Calendly pour éviter les conflits d\'horaire. Configurez votre lien Calendly dans les paramètres.',
+        'Les rendez-vous doivent être réservés via Google Calendar pour éviter les conflits d\'horaire. Configurez votre lien de réservation dans les paramètres.',
       code: 'APPOINTMENT_MANUAL_CREATION_DISABLED',
     },
     { status: 405 },
   );
 }
 
-// Kept for reference — replaced by POST above which enforces the Calendly-only rule.
+// Kept for reference — replaced by POST above which enforces the booking-link rule.
 async function _disabledManualAppointmentCreate(request: NextRequest) {
   const guard = requireApiPermission(request, 'appointments', 'create');
   if (guard.error) return guard.error;

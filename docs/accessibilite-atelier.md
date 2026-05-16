@@ -18,7 +18,7 @@ Rendre le parcours atelier clair, lisible et simple sur telephone, y compris pou
 - Tester largeur `320px`, `375px`, `390px`.
 - Verifier que chaque champ reste lisible sans zoom.
 - Verifier que les CTA restent accessibles sans scroll excessif.
-- Verifier les liens tel/mail/Calendly sur smartphone reel.
+- Verifier les liens tel/mail/Google Calendar sur smartphone reel.
 
 ## Parcours simplifie
 1. Admin ouvre `Creer un atelier`.

@@ -15,7 +15,7 @@ const payloadSchema = z.object({
 function buildSyntheticExternalEventId(email: string, startAtIso: string, workshopRequestId?: string) {
   const base = `${email.toLowerCase()}|${startAtIso}|${workshopRequestId || 'none'}`;
   const normalized = Buffer.from(base).toString('base64url').slice(0, 40);
-  return `test-calendly-${normalized}`;
+  return `test-legacy-webhook-${normalized}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -69,14 +69,14 @@ export async function POST(request: NextRequest) {
   const type = workshopRequest ? 'WORKSHOP' : 'MEETING';
   const title = workshopRequest
     ? `Rendez-vous atelier - ${workshopRequest.title}`
-    : `Rendez-vous Calendly test - ${parsed.name}`;
+    : `Rendez-vous test - ${parsed.name}`;
 
   const appointment = existing
     ? await prisma.appointment.update({
         where: { id: existing.id },
         data: {
           title,
-          description: 'Simulation manuelle Calendly (test payload admin)',
+          description: 'Simulation manuelle webhook legacy (test payload admin)',
           startAt,
           endAt,
           type,
@@ -85,13 +85,13 @@ export async function POST(request: NextRequest) {
           workshopRequestId: workshopRequest?.id || null,
           externalProvider: 'CALENDLY',
           externalEventId,
-          meetingUrl: `https://calendly.test/scheduled_events/${externalEventId}`,
+          meetingUrl: `https://booking.test/scheduled_events/${externalEventId}`,
         },
       })
     : await prisma.appointment.create({
         data: {
           title,
-          description: 'Simulation manuelle Calendly (test payload admin)',
+          description: 'Simulation manuelle webhook legacy (test payload admin)',
           startAt,
           endAt,
           type,
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
           workshopRequestId: workshopRequest?.id || null,
           externalProvider: 'CALENDLY',
           externalEventId,
-          meetingUrl: `https://calendly.test/scheduled_events/${externalEventId}`,
+          meetingUrl: `https://booking.test/scheduled_events/${externalEventId}`,
         },
       });
 

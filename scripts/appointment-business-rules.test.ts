@@ -1,6 +1,6 @@
 ﻿/**
- * Tests des règles métier : rendez-vous uniquement via Calendly.
- * Teste directement la logique du webhook sans HTTP.
+ * Tests des règles métier : rendez-vous uniquement via Google Calendar.
+ * Teste directement la logique du webhook legacy sans HTTP.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -72,14 +72,14 @@ test('POST /api/crm/appointments: route désactivée retourne 405', async () => 
   const DISABLED_RESPONSE = {
     status: 405,
     body: {
-      error: "Les rendez-vous doivent être réservés via Calendly pour éviter les conflits d'horaire.",
+      error: "Les rendez-vous doivent être réservés via Google Calendar pour éviter les conflits d'horaire.",
       code: 'APPOINTMENT_MANUAL_CREATION_DISABLED',
     },
   };
 
   assert.equal(DISABLED_RESPONSE.status, 405);
   assert.equal(DISABLED_RESPONSE.body.code, 'APPOINTMENT_MANUAL_CREATION_DISABLED');
-  assert.ok(DISABLED_RESPONSE.body.error.includes('Calendly'));
+  assert.ok(DISABLED_RESPONSE.body.error.includes('Google Calendar'));
 });
 
 // ─── Webhook invitee.created : crée un rendez-vous CRM ──────────────────────

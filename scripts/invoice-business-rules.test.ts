@@ -152,7 +152,7 @@ test('POST /api/crm/workshop-requests/[id]/appointments: route désactivée reto
   const DISABLED_RESPONSE = {
     status: 405,
     body: {
-      error: "Les rendez-vous d'atelier doivent être réservés via Calendly.",
+      error: "Les rendez-vous d'atelier doivent être réservés via Google Calendar pour éviter les conflits d'horaire. Le CRM se synchronise automatiquement après confirmation.",
       code: 'WORKSHOP_APPOINTMENT_MANUAL_CREATION_DISABLED',
     },
   };

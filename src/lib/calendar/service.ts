@@ -91,7 +91,7 @@ const GOOGLE_SCOPES = [
 export const CALENDAR_PROVIDER_LABELS: Record<CalendarProvider, string> = {
   GOOGLE: 'Google Calendar',
   MICROSOFT: 'Microsoft Calendar',
-  CALENDLY: 'Calendly',
+  CALENDLY: 'Google Calendar',
   ICLOUD: 'iCloud Calendar',
 };
 

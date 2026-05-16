@@ -236,9 +236,9 @@ export function CalendarConnectionsAdminPage({
       </div>
 
       <div className="rounded-2xl border border-slate-700/50 bg-slate-900/40 px-5 py-4 text-sm text-slate-400">
-        <span className="font-medium text-slate-300">Calendly</span> &mdash; Le webhook Calendly est
-        actif et enregistre automatiquement les rendez-vous dans le CRM quand quelqu&apos;un reserve
-        via ton lien Calendly. Aucune connexion OAuth Calendly n&apos;est requise.
+        <span className="font-medium text-slate-300">Google Calendar</span> &mdash; Utilise le lien
+        d&apos;intégration Google Calendar pour la prise de rendez-vous. Aucune connexion OAuth
+        additionnelle n&apos;est requise pour partager ce calendrier public.
       </div>
     </section>
   );

@@ -70,9 +70,9 @@ const TYPE_LABELS: Record<string, string> = {
   SONG_MEETING: 'Rencontre chanson',
   OTHER: 'Autre',
   AVAILABILITY: 'Disponibilite',
-  GOOGLE: 'Google',
-  MICROSOFT: 'Microsoft',
-  CALENDLY: 'Calendly',
+  GOOGLE: 'Google Calendar',
+  MICROSOFT: 'Microsoft Calendar',
+  CALENDLY: 'Calendrier connecté',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -179,9 +179,15 @@ export function CrmCalendarPage({
   }
 
   function navigateToCreatePage(startAtIso: string) {
-    const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ?? process.env.NEXT_PUBLIC_CALENDLY_URL;
-    if (calendlyUrl) {
-      const url = new URL(calendlyUrl);
+    const bookingUrl =
+      process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL ??
+      process.env.GOOGLE_CALENDAR_EMBED_URL ??
+      process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL ??
+      process.env.BOOKING_CALENDAR_URL ??
+      process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ??
+      process.env.NEXT_PUBLIC_CALENDLY_URL;
+    if (bookingUrl) {
+      const url = new URL(bookingUrl);
       try {
         const date = new Date(startAtIso);
         if (!Number.isNaN(date.getTime())) {
@@ -192,7 +198,7 @@ export function CrmCalendarPage({
       }
       window.open(url.toString(), '_blank', 'noreferrer');
     } else {
-      // Calendly non configuré : rediriger vers la page de réservation CRM
+      // Lien de reservation non configure : rediriger vers la page de reservation CRM
       const date = new Date(startAtIso);
       const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
       const dateParam = safeDate.toISOString().slice(0, 10);

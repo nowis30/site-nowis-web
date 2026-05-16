@@ -368,7 +368,7 @@ export const organizationsConfig: ModulePageConfig = {
 
 export const workshopRequestsConfig: ModulePageConfig = {
   title: 'Demandes atelier',
-  description: 'Ateliers organisation/client, planification Calendly et suivi des statuts.',
+  description: 'Ateliers organisation/client, planification Google Calendar et suivi des statuts.',
   endpoint: '/api/crm/workshop-requests',
   defaultValues: {
     workshopType: 'ORGANIZATION',

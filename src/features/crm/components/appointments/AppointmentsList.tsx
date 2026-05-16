@@ -102,23 +102,30 @@ interface AppointmentsListProps {
   upcomingAppointments: Appointment[];
 }
 
-function CalendlyBookingButton() {
-  const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ?? process.env.NEXT_PUBLIC_CALENDLY_URL ?? null;
-  if (!calendlyUrl) {
+function BookingButton() {
+  const bookingUrl =
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL ??
+    process.env.GOOGLE_CALENDAR_EMBED_URL ??
+    process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL ??
+    process.env.BOOKING_CALENDAR_URL ??
+    process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ??
+    process.env.NEXT_PUBLIC_CALENDLY_URL ??
+    null;
+  if (!bookingUrl) {
     return (
       <span className="rounded-lg border border-amber-600/40 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
-        Lien Calendly non configuré — ajouter NEXT_PUBLIC_CALENDLY_EVENT_URL dans Vercel
+        Lien Google Calendar non configuré — ajouter NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL dans Vercel
       </span>
     );
   }
   return (
     <a
-      href={calendlyUrl}
+      href={bookingUrl}
       target="_blank"
       rel="noreferrer"
       className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 transition-colors"
     >
-      <ExternalLink size={16} /> Réserver via Calendly
+      <ExternalLink size={16} /> Réserver via Google Calendar
     </a>
   );
 }
@@ -135,15 +142,15 @@ export function AppointmentsList({ todayAppointments, upcomingAppointments }: Ap
           <h2 className="text-2xl font-bold text-white flex items-center gap-2"><Calendar size={22} /> Calendrier</h2>
           <p className="text-sm text-slate-400 mt-0.5">Vos rendez-vous et événements</p>
         </div>
-        <CalendlyBookingButton />
+        <BookingButton />
       </div>
 
       {/* Règle métier */}
       <div className="rounded-xl border border-blue-600/30 bg-blue-950/20 px-4 py-3 text-sm text-blue-200">
         <ExternalLink size={14} className="inline mr-2 mb-0.5" />
         Les rendez-vous sont créés automatiquement via{' '}
-        <strong>Calendly</strong> pour éviter les conflits d'horaire.
-        Le CRM se synchronise via webhook dès qu'une réservation est confirmée.
+        <strong>Google Calendar</strong> pour éviter les conflits d'horaire.
+        Le CRM se synchronise après confirmation de la réservation.
       </div>
 
       {/* Aujourd'hui */}

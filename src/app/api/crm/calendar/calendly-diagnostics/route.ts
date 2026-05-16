@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
     prisma.workshopRequest.findMany({
       where: {
         OR: [
+          { bookingEventUri: { not: null } },
+          { bookingInviteeUri: { not: null } },
           { calendlyEventUri: { not: null } },
           { calendlyInviteeUri: { not: null } },
         ],
@@ -41,6 +43,12 @@ export async function GET(request: NextRequest) {
         id: true,
         title: true,
         status: true,
+        bookingProvider: true,
+        bookingEventUri: true,
+        bookingInviteeUri: true,
+        bookingUrl: true,
+        bookingSource: true,
+        bookingSyncedAt: true,
         calendlyEventUri: true,
         calendlyInviteeUri: true,
         startAt: true,
@@ -105,6 +113,10 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     diagnosticsAt: new Date().toISOString(),
     counters: {
+      legacyWebhookAppointmentsVisibleNext180Days: visibleUpcomingCount,
+      legacyWebhookAppointmentsCancelled: cancelledCount,
+      hasLegacyWebhookConnection: Boolean(calendlyConnection),
+      // Legacy compatibility keys
       calendlyAppointmentsVisibleNext180Days: visibleUpcomingCount,
       calendlyAppointmentsCancelled: cancelledCount,
       hasCalendlyConnection: Boolean(calendlyConnection),
@@ -114,6 +126,8 @@ export async function GET(request: NextRequest) {
       workshopRequests,
       calendarExternalEvents: externalEvents,
     },
+    legacyWebhookConnection: calendlyConnection,
+    // Legacy compatibility key
     calendlyConnection,
   });
 }

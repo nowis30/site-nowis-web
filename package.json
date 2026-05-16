@@ -21,6 +21,8 @@
     "test:client-documents-security": "tsx scripts/client-documents-security.test.ts",
     "test:invoice-business-rules": "tsx scripts/invoice-business-rules.test.ts",
     "test:appointment-business-rules": "tsx scripts/appointment-business-rules.test.ts",
+    "test:booking-migration-rules": "tsx scripts/booking-migration-rules.test.ts",
+    "test:guard-no-calendly-links": "tsx scripts/guard-no-calendly-links.test.ts",
     "test:contract": "tsx scripts/admin-runtime-contract.test.ts",
     "test:song-request-api-security": "tsx scripts/song-request-api-security-check.ts",
     "test:workshop-request-validation": "tsx scripts/workshop-request-validation-check.ts",

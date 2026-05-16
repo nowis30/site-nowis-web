@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'crypto';
+﻿import { createHmac, timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { recordCalendarActivity } from '@/lib/calendar/service';
@@ -28,6 +28,11 @@ function computeDurationMinutes(startAt: Date | null, endAt: Date | null) {
   const durationMs = endAt.getTime() - startAt.getTime();
   if (durationMs <= 0) return null;
   return Math.round(durationMs / 60_000);
+}
+
+function normalizeOptionalString(value: string | null | undefined) {
+  const normalized = value?.trim();
+  return normalized ? normalized : null;
 }
 
 function parseCalendlySignatureHeader(rawHeader: string | null) {
@@ -110,7 +115,7 @@ export async function POST(request: NextRequest) {
 
   if (signingKey && !verifyCalendlySignature(rawBody, signatureHeader, signingKey)) {
     await recordCalendarActivity({
-      title: 'Webhook Calendly rejeté',
+      title: 'Webhook réservation legacy rejeté',
       description: 'Signature invalide (401)',
       relatedId: null,
     });
@@ -123,7 +128,7 @@ export async function POST(request: NextRequest) {
     body = JSON.parse(rawBody) as CalendlyEventPayload;
   } catch {
     await recordCalendarActivity({
-      title: 'Webhook Calendly rejeté',
+      title: 'Webhook réservation legacy rejeté',
       description: 'Payload JSON invalide (400)',
       relatedId: null,
     });
@@ -138,7 +143,7 @@ export async function POST(request: NextRequest) {
 
   if (!eventType || !payload) {
     await recordCalendarActivity({
-      title: 'Webhook Calendly ignoré',
+      title: 'Webhook réservation legacy ignoré',
       description: 'event/payload manquant',
       relatedId: null,
     });
@@ -160,7 +165,7 @@ export async function POST(request: NextRequest) {
   debug.hasEndAt = Boolean(endAt);
 
   await recordCalendarActivity({
-    title: 'Webhook Calendly reçu',
+    title: 'Webhook réservation legacy reçu',
     description: [
       `eventType=${eventType}`,
       `scheduledEventUri=${scheduledEventUri || 'null'}`,
@@ -194,7 +199,7 @@ export async function POST(request: NextRequest) {
         email: inviteeEmail,
         source: 'calendly-webhook',
         tags: ['calendly'],
-        notes: 'Créé automatiquement depuis un webhook Calendly.',
+        notes: 'Créé automatiquement depuis un webhook legacy.'
       },
     });
   }
@@ -210,6 +215,8 @@ export async function POST(request: NextRequest) {
   const workshopRequest = await prisma.workshopRequest.findFirst({
     where: {
       OR: [
+        inviteeUri ? { bookingInviteeUri: inviteeUri } : undefined,
+        scheduledEventUri ? { bookingEventUri: scheduledEventUri } : undefined,
         inviteeUri ? { calendlyInviteeUri: inviteeUri } : undefined,
         scheduledEventUri ? { calendlyEventUri: scheduledEventUri } : undefined,
         inviteeEmail ? { contactEmail: { equals: inviteeEmail, mode: 'insensitive' } } : undefined,
@@ -236,14 +243,21 @@ export async function POST(request: NextRequest) {
         where: { id: workshopRequest.id },
         data: {
           status: nextStatus,
+          bookingProvider: 'CALENDLY',
+          bookingEventUri: scheduledEventUri || workshopRequest.bookingEventUri || workshopRequest.calendlyEventUri,
+          bookingInviteeUri: inviteeUri || workshopRequest.bookingInviteeUri || workshopRequest.calendlyInviteeUri,
+          bookingUrl: scheduledEventUri || workshopRequest.bookingUrl || workshopRequest.calendlyUrl,
+          bookingSource: 'LEGACY_CALENDLY_WEBHOOK',
+          bookingSyncedAt: new Date(),
+          bookingRawPayload: body,
           calendlyEventUri: scheduledEventUri || workshopRequest.calendlyEventUri,
           calendlyInviteeUri: inviteeUri || workshopRequest.calendlyInviteeUri,
           scheduledAt: startAt || workshopRequest.scheduledAt,
           startAt: startAt || workshopRequest.startAt,
           endAt: endAt || workshopRequest.endAt,
           durationMinutes: durationMinutes || workshopRequest.durationMinutes,
-          meetingType: workshopRequest.meetingType || 'CALENDLY',
-          calendlyUrl: scheduledEventUri || workshopRequest.calendlyUrl,
+          meetingType: workshopRequest.meetingType || normalizeOptionalString(workshopRequest.bookingSource) || 'CALENDLY',
+          calendlyUrl: scheduledEventUri || workshopRequest.calendlyUrl || workshopRequest.bookingUrl,
         },
       });
 
@@ -261,7 +275,7 @@ export async function POST(request: NextRequest) {
             where: { id: existingAppointment.id },
             data: {
               title: `Rendez-vous atelier - ${updated.title}`,
-              description: 'Synchronisé depuis Calendly',
+              description: 'Synchronisé depuis calendrier connecté (legacy webhook)',
               endAt,
               status: 'CONFIRMED',
               location: updated.addressOrLocation || updated.location,
@@ -282,7 +296,7 @@ export async function POST(request: NextRequest) {
               contactId: updated.contactId,
               organizationContactId: updated.organizationContactId,
               title: `Rendez-vous atelier - ${updated.title}`,
-              description: 'Synchronisé depuis Calendly',
+              description: 'Synchronisé depuis calendrier connecté (legacy webhook)',
               startAt,
               endAt,
               status: 'CONFIRMED',
@@ -319,7 +333,7 @@ export async function POST(request: NextRequest) {
             where: { id: existingCrmAppointment.id },
             data: {
               title: `Rendez-vous atelier - ${updated.title}`,
-              description: 'Synchronisé depuis Calendly',
+              description: 'Synchronisé depuis calendrier connecté (legacy webhook)',
               startAt,
               endAt,
               type: 'WORKSHOP',
@@ -340,7 +354,7 @@ export async function POST(request: NextRequest) {
           const createdCrmAppointment = await prisma.appointment.create({
             data: {
               title: `Rendez-vous atelier - ${updated.title}`,
-              description: 'Synchronisé depuis Calendly',
+              description: 'Synchronisé depuis calendrier connecté (legacy webhook)',
               startAt,
               endAt,
               type: 'WORKSHOP',
@@ -372,8 +386,8 @@ export async function POST(request: NextRequest) {
             connectionId: calendlyConnection.id,
             provider: 'CALENDLY',
             externalEventId: scheduledEventUri,
-            title: `Calendly - ${updated.title}`,
-            description: inviteeName || 'Rendez-vous reçu via webhook Calendly',
+            title: `Réservation - ${updated.title}`,
+            description: inviteeName || 'Réservation reçue via webhook legacy',
             startAt,
             endAt,
             meetingUrl: scheduledEventUri,
@@ -384,8 +398,8 @@ export async function POST(request: NextRequest) {
             linkedOrganizationId: updated.organizationId,
           },
           update: {
-            title: `Calendly - ${updated.title}`,
-            description: inviteeName || 'Rendez-vous reçu via webhook Calendly',
+            title: `Réservation - ${updated.title}`,
+            description: inviteeName || 'Réservation reçue via webhook legacy',
             startAt,
             endAt,
             meetingUrl: scheduledEventUri,
@@ -399,7 +413,7 @@ export async function POST(request: NextRequest) {
       }
 
       await recordCalendarActivity({
-        title: 'Rendez-vous Calendly reçu',
+        title: 'Réservation reçue (webhook legacy)',
         description: `Atelier lié${inviteeEmail ? ` · ${inviteeEmail}` : ''}`,
         relatedId: updated.id,
       });
@@ -419,7 +433,7 @@ export async function POST(request: NextRequest) {
         ? await prisma.appointment.update({
             where: { id: existingAppointment.id },
             data: {
-              title: existingAppointment.title || 'Rendez-vous Calendly',
+              title: existingAppointment.title || 'Réservation',
               description: inviteeName || existingAppointment.description,
               startAt,
               endAt,
@@ -432,8 +446,8 @@ export async function POST(request: NextRequest) {
           })
         : await prisma.appointment.create({
             data: {
-              title: inviteeName ? `Rendez-vous Calendly - ${inviteeName}` : 'Rendez-vous Calendly',
-              description: 'Créé automatiquement depuis un webhook Calendly',
+              title: inviteeName ? `Réservation - ${inviteeName}` : 'Réservation',
+              description: 'Créé automatiquement depuis un webhook legacy',
               startAt,
               endAt,
               type: 'MEETING',
@@ -489,7 +503,7 @@ export async function POST(request: NextRequest) {
       }
 
       await recordCalendarActivity({
-        title: matchedContact ? 'Rendez-vous Calendly reçu et lié au client' : 'Rendez-vous Calendly reçu',
+        title: matchedContact ? 'Réservation reçue et liée au client (webhook legacy)' : 'Réservation reçue (webhook legacy)',
         description: inviteeEmail || inviteeName || appointment.title,
         relatedId: appointment.id,
       });
@@ -576,8 +590,8 @@ export async function POST(request: NextRequest) {
     }
 
     await recordCalendarActivity({
-      title: 'Rendez-vous Calendly annulé',
-      description: inviteeEmail || inviteeName || 'Annulation Calendly',
+      title: 'Réservation annulée (webhook legacy)',
+      description: inviteeEmail || inviteeName || 'Annulation réservation (webhook legacy)',
       relatedId: workshopRequest?.id || null,
     });
 
@@ -587,3 +601,6 @@ export async function POST(request: NextRequest) {
   debug.skippedReason = 'event_not_handled';
   return respondWebhook({ ok: true, skipped: true, reason: 'event_not_handled' }, debug);
 }
+
+
+

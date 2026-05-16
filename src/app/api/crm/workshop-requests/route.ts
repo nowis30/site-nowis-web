@@ -67,6 +67,18 @@ function normalizeWorkshopGroupType(item: {
   return 'COMMUNAUTAIRE';
 }
 
+function inferBookingProvider(input: { explicitProvider?: string; bookingUrl?: string | null; legacyUrl?: string | null }) {
+  const explicit = input.explicitProvider?.trim().toUpperCase();
+  if (explicit === 'GOOGLE' || explicit === 'MICROSOFT' || explicit === 'CALENDLY' || explicit === 'ICLOUD') {
+    return explicit as 'GOOGLE' | 'MICROSOFT' | 'CALENDLY' | 'ICLOUD';
+  }
+
+  const url = (input.bookingUrl || input.legacyUrl || '').toLowerCase();
+  if (url.includes('calendly.com')) return 'CALENDLY';
+  if (url.includes('calendar.google.com')) return 'GOOGLE';
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   const guard = requireApiPermission(request, 'workshopRequests', 'read');
   if (guard.error) return guard.error;
@@ -146,11 +158,23 @@ export async function POST(request: NextRequest) {
     const siteBaseUrl = getSiteBaseUrl(request);
     const workshopPublicUrl = `${siteBaseUrl}/atelier/${clientAccessToken}`;
 
-    const bookingUrl = payload.calendlyUrl || buildWorkshopBookingUrlWithPrefill({
+    const bookingUrl = payload.bookingUrl || payload.calendlyUrl || buildWorkshopBookingUrlWithPrefill({
       name: payload.contactPerson,
       email: payload.contactEmail,
       notes: payload.title,
     });
+
+    const bookingProvider = inferBookingProvider({
+      explicitProvider: payload.bookingProvider,
+      bookingUrl,
+      legacyUrl: payload.calendlyUrl,
+    });
+
+    const bookingEventUri = normalizeOptionalString(payload.bookingEventUri) || normalizeOptionalString(payload.calendlyEventUri);
+    const bookingInviteeUri = normalizeOptionalString(payload.bookingInviteeUri) || normalizeOptionalString(payload.calendlyInviteeUri);
+    const bookingSource = normalizeOptionalString(payload.bookingSource) || 'CRM_MANUAL';
+    const bookingSyncedAt = payload.bookingSyncedAt ? new Date(payload.bookingSyncedAt) : (bookingEventUri || bookingInviteeUri || bookingUrl ? new Date() : null);
+    const shouldWriteLegacyCalendly = bookingProvider === 'CALENDLY' || Boolean(payload.calendlyEventUri || payload.calendlyInviteeUri || payload.calendlyUrl);
 
     const item = await prisma.workshopRequest.create({
       data: {
@@ -184,9 +208,16 @@ export async function POST(request: NextRequest) {
         finalPrice,
         internalNotes: normalizeOptionalString(payload.internalNotes),
         clientNotes: normalizeOptionalString(payload.clientNotes),
-        calendlyEventUri: normalizeOptionalString(payload.calendlyEventUri),
-        calendlyInviteeUri: normalizeOptionalString(payload.calendlyInviteeUri),
-        calendlyUrl: bookingUrl,
+        bookingProvider,
+        bookingEventUri,
+        bookingInviteeUri,
+        bookingUrl,
+        bookingSource,
+        bookingSyncedAt,
+        bookingRawPayload: Prisma.JsonNull,
+        calendlyEventUri: shouldWriteLegacyCalendly ? (normalizeOptionalString(payload.calendlyEventUri) || bookingEventUri) : null,
+        calendlyInviteeUri: shouldWriteLegacyCalendly ? (normalizeOptionalString(payload.calendlyInviteeUri) || bookingInviteeUri) : null,
+        calendlyUrl: shouldWriteLegacyCalendly ? (normalizeOptionalString(payload.calendlyUrl) || bookingUrl) : null,
         scheduledAt: payload.scheduledAt ? new Date(payload.scheduledAt) : null,
         clientAccessToken,
         audienceType: payload.audienceType,

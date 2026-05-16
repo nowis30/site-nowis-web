@@ -26,7 +26,7 @@ type ConnectionOption = {
   provider: string;
 };
 
-function buildCalendlyLink(baseUrl: string, startIso: string, contact?: ContactOption) {
+function buildBookingLink(baseUrl: string, startIso: string, contact?: ContactOption) {
   const url = new URL(baseUrl);
   url.searchParams.set('date', startIso);
   if (contact?.fullName) {
@@ -60,13 +60,19 @@ export function CalendarCreateAppointmentPage({
     [contacts, selectedContactId],
   );
 
-  const calendlyBaseUrl = process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ?? process.env.NEXT_PUBLIC_CALENDLY_URL;
+  const bookingBaseUrl =
+    process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL ??
+    process.env.GOOGLE_CALENDAR_EMBED_URL ??
+    process.env.NEXT_PUBLIC_BOOKING_CALENDAR_URL ??
+    process.env.BOOKING_CALENDAR_URL ??
+    process.env.NEXT_PUBLIC_CALENDLY_EVENT_URL ??
+    process.env.NEXT_PUBLIC_CALENDLY_URL;
 
-  const calendlyLink = useMemo(() => {
-    if (!calendlyBaseUrl) return null;
+  const bookingLink = useMemo(() => {
+    if (!bookingBaseUrl) return null;
     const startIso = initialDate ? `${initialDate}T09:00:00.000Z` : new Date().toISOString();
-    return buildCalendlyLink(calendlyBaseUrl, startIso, selectedContact);
-  }, [calendlyBaseUrl, initialDate, selectedContact]);
+    return buildBookingLink(bookingBaseUrl, startIso, selectedContact);
+  }, [bookingBaseUrl, initialDate, selectedContact]);
 
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6">
@@ -75,7 +81,7 @@ export function CalendarCreateAppointmentPage({
           <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Calendrier</p>
           <h2 className="mt-2 text-3xl font-semibold text-white">Réserver un rendez-vous</h2>
           <p className="mt-2 text-sm text-slate-400">
-            Les rendez-vous se réservent via Calendly pour éviter les conflits d&apos;horaire.
+            Les rendez-vous se réservent via Google Calendar pour éviter les conflits d&apos;horaire.
           </p>
         </div>
         <Link
@@ -91,10 +97,10 @@ export function CalendarCreateAppointmentPage({
           <div className="flex items-start gap-3">
             <AlertCircle size={18} className="text-blue-300 mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-blue-200">Réservation via Calendly uniquement</p>
+              <p className="text-sm font-medium text-blue-200">Réservation via Google Calendar uniquement</p>
               <p className="mt-1 text-xs text-blue-300/80">
                 La création manuelle de rendez-vous est désactivée pour éviter les conflits d&apos;horaire.
-                Utilisez Calendly — le CRM se synchronise automatiquement via webhook dès qu&apos;une réservation est confirmée.
+                Utilisez Google Calendar — le CRM se synchronise automatiquement dès qu&apos;une réservation est confirmée.
               </p>
             </div>
           </div>
@@ -102,7 +108,7 @@ export function CalendarCreateAppointmentPage({
 
         <div>
           <label className="mb-2 block text-sm text-slate-300">
-            Contact à pré-remplir dans Calendly (optionnel)
+            Contact à pré-remplir dans Google Calendar (optionnel)
           </label>
           <select
             value={selectedContactId}
@@ -122,29 +128,29 @@ export function CalendarCreateAppointmentPage({
         </div>
 
         <div className="rounded-2xl border border-slate-700 bg-slate-900/50 p-5 text-center space-y-4">
-          {calendlyLink ? (
+          {bookingLink ? (
             <>
               <p className="text-sm text-slate-400">
-                Cliquez pour ouvrir Calendly et sélectionner un horaire.
+                Cliquez pour ouvrir Google Calendar et sélectionner un horaire.
                 {initialDate ? ` La date suggérée est le ${initialDate}.` : ''}
               </p>
               <a
-                href={calendlyLink}
+                href={bookingLink}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-2xl bg-primary-600 px-6 py-3 text-sm font-medium text-white hover:bg-primary-500 transition-colors"
               >
-                <ExternalLink size={16} /> Ouvrir Calendly pour réserver
+                <ExternalLink size={16} /> Ouvrir Google Calendar pour réserver
               </a>
               <p className="text-xs text-slate-500">
-                Le rendez-vous apparaîtra dans le CRM après confirmation par webhook Calendly.
+                Le rendez-vous apparaîtra ensuite dans le CRM.
               </p>
             </>
           ) : (
             <div className="space-y-2">
-              <p className="text-sm text-amber-300">Lien Calendly non configuré.</p>
+              <p className="text-sm text-amber-300">Lien Google Calendar non configuré.</p>
               <p className="text-xs text-slate-400">
-                Ajoutez NEXT_PUBLIC_CALENDLY_EVENT_URL dans les variables d&apos;environnement Vercel.
+                Ajoutez NEXT_PUBLIC_GOOGLE_CALENDAR_EMBED_URL dans les variables d&apos;environnement Vercel.
               </p>
             </div>
           )}

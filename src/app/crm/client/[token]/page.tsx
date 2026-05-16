@@ -3,7 +3,6 @@ import { verifyClientPortalToken } from '@/lib/client-portal';
 import { prisma } from '@/lib/prisma';
 import { ClientFileUploadForm, ClientPortalDeleteFileButton } from '@/features/crm/components/client-portal/ClientFileUploadForm';
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
-import { getBookingEmbedUrl } from '@/lib/booking-link';
 
 interface PageProps {
   params: { token: string };
@@ -38,7 +37,7 @@ const INVOICE_STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Annulée',
 };
 
-const BOOKING_URL = getBookingEmbedUrl();
+const CONTACT_URL = '/contact?projectType=autre&message=Bonjour%2C%20je%20veux%20discuter%20de%20mon%20projet.';
 const OUTLOOK_MESSAGE_URL = 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client';
 const MAILTO_MESSAGE_URL = 'mailto:simonmorin@nowis.store?subject=Demande%20depuis%20le%20portail%20client';
 
@@ -346,17 +345,12 @@ export default async function ClientPortalPage({ params }: PageProps) {
             <div>
               <p className="text-xs uppercase tracking-wide text-emerald-200">Rendez-vous</p>
               <p className="mt-2 text-sm text-emerald-100">
-                Pour planifier un échange, utilisez uniquement les plages horaires libres du calendrier.
+                La reservation en ligne est desactivee temporairement. Utilisez le formulaire de contact pour planifier un echange.
               </p>
             </div>
-            <a
-              href={BOOKING_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-300"
-            >
-              Prendre rendez-vous
-            </a>
+            <Link href={CONTACT_URL} className="inline-flex rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-300">
+              Contacter Nowis
+            </Link>
           </div>
         </section>
 
@@ -437,16 +431,11 @@ export default async function ClientPortalPage({ params }: PageProps) {
                   <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
                     <p className="text-xs uppercase tracking-wide text-emerald-200">Rendez-vous</p>
                     <p className="mt-2 text-sm text-emerald-100">
-                      Pour planifier un échange, utilisez uniquement les plages horaires libres du calendrier.
+                      La reservation en ligne est desactivee temporairement. Ecrivez-nous pour organiser votre prochain echange.
                     </p>
-                    <a
-                      href={BOOKING_URL}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 inline-flex rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-300"
-                    >
-                      Prendre rendez-vous
-                    </a>
+                    <Link href={CONTACT_URL} className="mt-3 inline-flex rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-300">
+                      Ouvrir le contact
+                    </Link>
                   </div>
                   <ClientFileUploadForm token={params.token} songRequestId={request.id} />
                   <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">

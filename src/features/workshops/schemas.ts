@@ -13,6 +13,7 @@ export const workshopPricingModeSchema = z.enum(['HORAIRE', 'PAR_PERSONNE', 'PER
 export const workshopRequestStatusSchema = z.enum(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CANCELLED', 'DELETED']);
 export const workshopAtelierStatusSchema = z.enum(['BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'TERMINE', 'ANNULE']);
 export const workshopAppointmentStatusSchema = z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'DONE']);
+export const calendarProviderSchema = z.enum(['GOOGLE', 'MICROSOFT', 'CALENDLY', 'ICLOUD']);
 
 export function mapWorkshopGroupTypeToOrganizationType(groupType?: z.infer<typeof workshopGroupTypeSchema>) {
   switch (groupType) {
@@ -145,6 +146,12 @@ export const workshopRequestInputSchema = z.object({
   finalPrice: z.coerce.number().min(0).max(999999).optional(),
   internalNotes: z.string().trim().max(4000).optional().or(z.literal('')),
   clientNotes: z.string().trim().max(4000).optional().or(z.literal('')),
+  bookingProvider: calendarProviderSchema.optional(),
+  bookingEventUri: z.string().url().optional().or(z.literal('')),
+  bookingInviteeUri: z.string().url().optional().or(z.literal('')),
+  bookingUrl: z.string().url().optional().or(z.literal('')),
+  bookingSource: z.string().trim().max(120).optional().or(z.literal('')),
+  bookingSyncedAt: z.string().datetime().optional().or(z.literal('')),
   calendlyEventUri: z.string().url().optional().or(z.literal('')),
   calendlyInviteeUri: z.string().url().optional().or(z.literal('')),
   calendlyUrl: z.string().url().optional().or(z.literal('')),

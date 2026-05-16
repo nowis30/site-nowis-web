@@ -14,7 +14,7 @@ export default async function CalendarPage() {
 
   const [appointments, contacts, organizations, workshopRequests, songRequests, workshopAppointments, workshopAvailabilities, externalCalendarEvents] = await Promise.all([
     prisma.appointment.findMany({
-      // Inclure explicitement les rendez-vous Calendly CONFIRMED, même sans contactId.
+      // Inclure explicitement les rendez-vous externes CONFIRMED, même sans contactId.
       where: {
         OR: [
           { status: { not: 'CANCELLED' } },
@@ -269,7 +269,7 @@ export default async function CalendarPage() {
       type: item.source === 'google_calendar' ? 'GOOGLE' : item.source === 'microsoft_calendar' ? 'MICROSOFT' : 'CALENDLY',
       status: 'CONFIRMED',
       contactId: null,
-      contactName: item.source === 'google_calendar' ? 'Google Calendar' : item.source === 'microsoft_calendar' ? 'Microsoft Calendar' : 'Calendly',
+      contactName: item.source === 'google_calendar' ? 'Google Calendar' : item.source === 'microsoft_calendar' ? 'Microsoft Calendar' : 'Calendrier connecté',
       calendarConnectionId: null,
       meetingUrl: null,
       source: item.source,
