@@ -151,7 +151,7 @@ function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: ()
   }
 
   async function cancelTask() {
-    const ok = window.confirm('Annuler cette tâche ?');
+    const ok = window.confirm('Archiver cette tâche ? Elle disparaîtra de la vue active.');
     if (!ok) return;
     setLoading(true);
     try {
@@ -337,7 +337,7 @@ function TaskCard({ task, onUpdate, onComposeEmail }: { task: Task; onUpdate: ()
           disabled={loading || task.status === 'CANCELLED'}
           className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 disabled:opacity-60"
         >
-          <span className="inline-flex items-center gap-1.5"><Trash2 size={12} /> Annuler</span>
+          <span className="inline-flex items-center gap-1.5"><Trash2 size={12} /> Archiver</span>
         </button>
         {task.status !== 'DONE' && task.status !== 'CANCELLED' && (
           <>
@@ -514,6 +514,7 @@ export function TasksPage({ todo, inProgress, done, cancelled }: TasksPageProps)
   const [typeFilter, setTypeFilter] = useState<'ALL' | TaskType>('ALL');
   const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'>('ALL');
   const [clientFilter, setClientFilter] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
 
   async function sendTaskEmail(event: React.FormEvent) {
     event.preventDefault();
@@ -557,8 +558,12 @@ export function TasksPage({ todo, inProgress, done, cancelled }: TasksPageProps)
   const columns = [
     { label: 'À faire', tasks: todo.filter(matchesFilters), color: 'text-slate-300', accent: 'border-l-slate-500' },
     { label: 'En cours', tasks: inProgress.filter(matchesFilters), color: 'text-yellow-300', accent: 'border-l-yellow-500' },
-    { label: 'Terminées', tasks: done.filter(matchesFilters), color: 'text-green-300', accent: 'border-l-green-500' },
-    { label: 'Annulées', tasks: cancelled.filter(matchesFilters), color: 'text-rose-300', accent: 'border-l-rose-500' },
+    ...(showArchived
+      ? [
+          { label: 'Terminées', tasks: done.filter(matchesFilters), color: 'text-green-300', accent: 'border-l-green-500' },
+          { label: 'Annulées', tasks: cancelled.filter(matchesFilters), color: 'text-rose-300', accent: 'border-l-rose-500' },
+        ]
+      : []),
   ];
 
   const overdueCount = [...todo, ...inProgress].filter(matchesFilters).filter(isOverdue).length;
@@ -575,7 +580,7 @@ export function TasksPage({ todo, inProgress, done, cancelled }: TasksPageProps)
         <NewTaskForm onCreated={() => router.refresh()} />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 p-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-800 bg-slate-900/40 p-3 sm:grid-cols-5">
         <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)} className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white">
           <option value="ALL">Tous statuts</option>
           <option value="TODO">À faire</option>
@@ -604,9 +609,21 @@ export function TasksPage({ todo, inProgress, done, cancelled }: TasksPageProps)
           placeholder="Filtrer par client"
           className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400"
         />
+
+        <button
+          type="button"
+          onClick={() => setShowArchived((prev) => !prev)}
+          className="rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-slate-200 hover:bg-slate-600"
+        >
+          {showArchived ? 'Masquer les archives' : 'Voir les archives'}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+      {!showArchived ? (
+        <p className="text-xs text-slate-400">Les tâches terminées/annulées sont archivées et masquées. Activez « Voir les archives » pour les afficher.</p>
+      ) : null}
+
+      <div className={`grid grid-cols-1 gap-5 ${showArchived ? 'lg:grid-cols-4' : 'lg:grid-cols-2'}`}>
         {columns.map(col => (
           <div key={col.label} className={`rounded-2xl border border-slate-800 bg-slate-900/40 p-3.5 sm:p-4 ${col.accent} border-l-2`}>
             <div className="flex items-center gap-2 mb-3">
