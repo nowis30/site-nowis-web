@@ -55,6 +55,26 @@ function formatDateTime(value: Date | string) {
   return new Date(value).toLocaleString('fr-CA');
 }
 
+function isAudioFile(mimeType: string | null | undefined, fileName: string) {
+  const normalizedName = fileName.toLowerCase();
+  return (mimeType || '').startsWith('audio/') || normalizedName.endsWith('.mp3') || normalizedName.endsWith('.m4a') || normalizedName.endsWith('.wav') || normalizedName.endsWith('.ogg');
+}
+
+function isVideoFile(mimeType: string | null | undefined, fileName: string) {
+  const normalizedName = fileName.toLowerCase();
+  return (mimeType || '').startsWith('video/') || normalizedName.endsWith('.mp4') || normalizedName.endsWith('.mov') || normalizedName.endsWith('.webm');
+}
+
+function isImageFile(mimeType: string | null | undefined, fileName: string) {
+  const normalizedName = fileName.toLowerCase();
+  return (mimeType || '').startsWith('image/') || normalizedName.endsWith('.png') || normalizedName.endsWith('.jpg') || normalizedName.endsWith('.jpeg') || normalizedName.endsWith('.webp');
+}
+
+function isPdfFile(mimeType: string | null | undefined, fileName: string) {
+  const normalizedName = fileName.toLowerCase();
+  return (mimeType || '').includes('pdf') || normalizedName.endsWith('.pdf');
+}
+
 export default async function ClientPortalPage({ params }: PageProps) {
   const session = verifyClientPortalToken(params.token);
 
@@ -195,6 +215,24 @@ export default async function ClientPortalPage({ params }: PageProps) {
         orderBy: { createdAt: 'desc' },
       });
 
+  const contactFileDocuments = await prisma.fileDocument.findMany({
+    where: {
+      contactId: contact.id,
+      visibility: 'CLIENT_VISIBLE',
+      songRequestId: null,
+      workshopRequestId: null,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+    select: {
+      id: true,
+      originalName: true,
+      mimeType: true,
+      category: true,
+      createdAt: true,
+    },
+  });
+
   return (
     <main className="min-h-[100dvh] overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_35%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)] px-4 py-6 pb-[calc(90px+env(safe-area-inset-bottom))] text-slate-100 sm:px-6 sm:py-8 md:pb-8">
       <div className="mx-auto max-w-5xl space-y-6">
@@ -236,18 +274,64 @@ export default async function ClientPortalPage({ params }: PageProps) {
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
               <div className="space-y-3">
-                {contactDocuments.length === 0 ? (
+                {contactDocuments.length === 0 && contactFileDocuments.length === 0 ? (
                   <p className="text-sm text-slate-400">Aucun document visible pour le moment.</p>
                 ) : (
-                  contactDocuments.map((file) => (
-                    <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                      <a href={file.fileUrl} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
-                        <p className="text-sm font-medium text-white">{file.fileName}</p>
-                        <p className="mt-1 text-xs text-slate-500">{formatDateTime(file.createdAt)}</p>
-                      </a>
-                      <div className="mt-2"><ClientPortalDeleteFileButton token={params.token} fileId={file.id} /></div>
-                    </div>
-                  ))
+                  <>
+                    {contactFileDocuments.map((file) => {
+                      const downloadUrl = `/api/client-portal/file-documents/${file.id}/download?token=${encodeURIComponent(params.token)}`;
+                      const isAudio = isAudioFile(file.mimeType, file.originalName);
+                      const isVideo = isVideoFile(file.mimeType, file.originalName);
+                      const isImage = isImageFile(file.mimeType, file.originalName);
+                      const isPdf = isPdfFile(file.mimeType, file.originalName);
+
+                      return (
+                        <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
+                          {(isImage || isVideo || isPdf) ? (
+                            <div className="mb-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-950/60">
+                              {isImage ? (
+                                // Apercu visuel image
+                                <img src={downloadUrl} alt={file.originalName} className="max-h-64 w-full object-cover" />
+                              ) : null}
+                              {isVideo ? (
+                                // Lecteur visuel video
+                                <video controls preload="metadata" className="max-h-64 w-full" src={downloadUrl}>
+                                  Votre navigateur ne supporte pas la lecture video.
+                                </video>
+                              ) : null}
+                              {isPdf ? (
+                                // Apercu PDF integre
+                                <iframe title={file.originalName} src={downloadUrl} className="h-72 w-full" />
+                              ) : null}
+                            </div>
+                          ) : null}
+
+                          {isAudio ? (
+                            <audio controls preload="metadata" className="mb-3 w-full" src={downloadUrl}>
+                              Votre navigateur ne supporte pas la lecture audio.
+                            </audio>
+                          ) : null}
+
+                          <a href={downloadUrl} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
+                            <p className="text-sm font-medium text-white">{file.originalName}</p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {file.category ? `${file.category} · ` : ''}{formatDateTime(file.createdAt)}
+                            </p>
+                          </a>
+                        </div>
+                      );
+                    })}
+
+                    {contactDocuments.map((file) => (
+                      <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
+                        <a href={file.fileUrl} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
+                          <p className="text-sm font-medium text-white">{file.fileName}</p>
+                          <p className="mt-1 text-xs text-slate-500">{formatDateTime(file.createdAt)}</p>
+                        </a>
+                        <div className="mt-2"><ClientPortalDeleteFileButton token={params.token} fileId={file.id} /></div>
+                      </div>
+                    ))}
+                  </>
                 )}
               </div>
             </div>
@@ -444,21 +528,27 @@ export default async function ClientPortalPage({ params }: PageProps) {
                       {request.fileDocuments.length === 0 ? (
                         <p className="text-sm text-slate-400">Ton dossier de chanson n&rsquo;est pas encore livré.</p>
                       ) : (
-                        request.fileDocuments.map((file) => (
-                          <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                            <a
-                              href={`/api/client-portal/file-documents/${file.id}/download?token=${encodeURIComponent(params.token)}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="block hover:text-emerald-200"
-                            >
-                              <p className="text-sm font-medium text-white">{file.originalName}</p>
-                              <p className="mt-1 text-xs text-slate-500">
-                                {file.category ? `${file.category} · ` : ''}{formatDateTime(file.createdAt)}
-                              </p>
-                            </a>
-                          </div>
-                        ))
+                        request.fileDocuments.map((file) => {
+                          const downloadUrl = `/api/client-portal/file-documents/${file.id}/download?token=${encodeURIComponent(params.token)}`;
+                          const isAudio = isAudioFile(file.mimeType, file.originalName);
+                          const isVideo = isVideoFile(file.mimeType, file.originalName);
+                          const isImage = isImageFile(file.mimeType, file.originalName);
+
+                          return (
+                            <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
+                              {isImage ? <img src={downloadUrl} alt={file.originalName} className="mb-3 max-h-64 w-full rounded-xl border border-slate-800 object-cover" /> : null}
+                              {isVideo ? <video controls preload="metadata" className="mb-3 max-h-64 w-full rounded-xl border border-slate-800" src={downloadUrl} /> : null}
+                              {isAudio ? <audio controls preload="metadata" className="mb-3 w-full" src={downloadUrl} /> : null}
+
+                              <a href={downloadUrl} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
+                                <p className="text-sm font-medium text-white">{file.originalName}</p>
+                                <p className="mt-1 text-xs text-slate-500">
+                                  {file.category ? `${file.category} · ` : ''}{formatDateTime(file.createdAt)}
+                                </p>
+                              </a>
+                            </div>
+                          );
+                        })
                       )}
                     </div>
                   </div>
