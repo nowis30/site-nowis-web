@@ -8,6 +8,7 @@ import {
   isOwnedByContact,
 } from '@/features/client-portal/documents/security';
 import { CLIENT_PORTAL_FILE_DOCUMENTS_PREFIX } from '@/features/client-portal/documents/paths';
+import { resolveClientMediaKind } from '@/features/client-portal/documents/media';
 
 function createMockDb() {
   const songs = [
@@ -141,4 +142,19 @@ test('J9. document admin-internal reste interdit côté client', () => {
 test('J10. le lien de téléchargement client utilise une route client (pas CRM)', () => {
   assert.equal(CLIENT_PORTAL_FILE_DOCUMENTS_PREFIX, '/api/client-portal/file-documents');
   assert.equal(CLIENT_PORTAL_FILE_DOCUMENTS_PREFIX.startsWith('/api/crm/'), false);
+});
+
+test('J11. un MP3 est classé audio pour le lecteur client', () => {
+  const kind = resolveClientMediaKind({ mimeType: 'audio/mpeg', originalName: 'demo.mp3' });
+  assert.equal(kind, 'audio');
+});
+
+test('J12. un MP4 est classé video pour le lecteur client', () => {
+  const kind = resolveClientMediaKind({ mimeType: 'video/mp4', originalName: 'clip.mp4' });
+  assert.equal(kind, 'video');
+});
+
+test('J13. un PDF est non supporté par le lecteur media HTML5', () => {
+  const kind = resolveClientMediaKind({ mimeType: 'application/pdf', originalName: 'doc.pdf' });
+  assert.equal(kind, 'unsupported');
 });

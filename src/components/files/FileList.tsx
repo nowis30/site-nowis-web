@@ -9,6 +9,7 @@ import {
   resolveDocumentCategory,
   resolveDocumentOrigin,
 } from '@/features/documents/document-categories';
+import { resolveClientMediaKind } from '@/features/client-portal/documents/media';
 
 export type FileListItem = {
   id: string;
@@ -47,9 +48,10 @@ interface FileListProps {
   canDelete?: boolean;
   onDelete?: (id: string) => Promise<void>;
   downloadPrefix?: string;
+  readerBasePath?: string;
 }
 
-export function FileList({ items, emptyLabel, canDelete = false, onDelete, downloadPrefix = '/api/crm/file-documents' }: FileListProps) {
+export function FileList({ items, emptyLabel, canDelete = false, onDelete, downloadPrefix = '/api/crm/file-documents', readerBasePath }: FileListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
@@ -81,6 +83,8 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
             const canDownload = !isQuotePlaceholder && !isInvoicePlaceholder;
             const isCrmContext = downloadPrefix.startsWith('/api/crm/');
             const invoiceViewBasePath = isCrmContext ? '/crm/invoices' : '/client/invoices';
+            const mediaKind = resolveClientMediaKind({ mimeType: item.mimeType, originalName: item.originalName });
+            const readerHref = readerBasePath ? `${readerBasePath}/${item.id}/lecteur` : `${downloadPrefix}/${item.id}/download`;
             const resolvedCategory = resolveDocumentCategory({
               category: item.category,
               mimeType: item.mimeType,
@@ -91,6 +95,15 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
               uploadedByUserId: item.uploadedByUserId ?? (item.origin === 'admin' ? 'admin' : null),
               visibility: item.visibility,
             });
+            const viewLabel = readerBasePath
+              ? mediaKind === 'audio'
+                ? 'Ecouter'
+                : mediaKind === 'video'
+                  ? 'Lire'
+                  : 'Ouvrir'
+              : resolvedCategory.category === 'invoice'
+                ? 'Ouvrir la facture'
+                : 'Voir';
 
             const origin = resolveDocumentOrigin({
               songRequestId: item.songRequest?.id ?? item.songRequestId ?? null,
@@ -150,8 +163,8 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
                     </a>
                   ) : null}
                   {canDownload ? (
-                    <a href={`${downloadPrefix}/${item.id}/download`} target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                      <span className="inline-flex items-center gap-1.5"><Eye size={13} />{resolvedCategory.category === 'invoice' ? 'Ouvrir la facture' : 'Voir'}</span>
+                    <a href={readerHref} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
+                      <span className="inline-flex items-center gap-1.5"><Eye size={13} />{viewLabel}</span>
                     </a>
                   ) : null}
                   {canDownload ? (

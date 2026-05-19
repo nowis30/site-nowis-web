@@ -21,5 +21,14 @@ export function ClientDocumentsList({ items, emptyLabel }: ClientDocumentsListPr
     router.refresh();
   }
 
-  return <FileList items={items} emptyLabel={emptyLabel} canDelete onDelete={handleDelete} downloadPrefix={CLIENT_PORTAL_FILE_DOCUMENTS_PREFIX} />;
+  return (
+    <FileList
+      items={items}
+      emptyLabel={emptyLabel}
+      canDelete
+      onDelete={handleDelete}
+      downloadPrefix={CLIENT_PORTAL_FILE_DOCUMENTS_PREFIX}
+      readerBasePath="/client/documents"
+    />
+  );
 }
