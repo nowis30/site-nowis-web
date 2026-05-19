@@ -58,7 +58,7 @@ export default async function CrmDashboardPage() {
         orderBy: { startAt: "asc" },
       }),
       prisma.task.findMany({
-        where: { status: { not: "DONE" }, dueDate: { lt: today } },
+        where: { status: { in: ["TODO", "IN_PROGRESS"] }, dueDate: { lt: today } },
         orderBy: { dueDate: "asc" },
         take: 5,
       }),
@@ -81,7 +81,7 @@ export default async function CrmDashboardPage() {
       }),
       prisma.task.findMany({
         where: {
-          status: { not: 'DONE' },
+          status: { in: ['TODO', 'IN_PROGRESS'] },
           title: 'Contacter le client sous 24h',
           dueDate: { lte: next24Hours },
         },
