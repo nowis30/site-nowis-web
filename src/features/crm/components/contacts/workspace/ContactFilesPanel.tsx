@@ -25,7 +25,7 @@ export function ContactFilesPanel({ contactId, files }: ContactFilesPanelProps) 
         title="Deposer un fichier"
         description="Liez un fichier au contact. Vous pouvez choisir la visibilite client ou admin only."
         allowVisibility
-        defaultCategory={getDefaultCategoryForUpload({ context: 'admin-internal' })}
+        defaultCategory={getDefaultCategoryForUpload({ context: 'general' })}
         extraFields={{ contactId }}
       />
 
