@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { S3ServiceException } from '@aws-sdk/client-s3';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { verifyClientPortalToken } from '@/lib/client-portal';
 import { canClientAccessFileDocument } from '@/features/client-portal/documents/security';
 import { getObjectForProxy } from '@/lib/file-storage';
 import { sanitizeFileBaseName } from '@/lib/file-documents';
@@ -21,8 +22,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
-  if (!session) {
+  const cookieSession = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const legacyToken = request.nextUrl.searchParams.get('token') || '';
+  const tokenSession = legacyToken ? verifyClientPortalToken(legacyToken) : null;
+  const sessionContactId = cookieSession?.contactId || tokenSession?.contactId || null;
+
+  if (!sessionContactId) {
     return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
   }
 
@@ -45,7 +50,7 @@ export async function GET(
   });
 
   if (!doc || !canClientAccessFileDocument({
-    sessionContactId: session.contactId,
+    sessionContactId,
     visibility: doc.visibility,
     category: doc.category,
     contactId: doc.contactId,

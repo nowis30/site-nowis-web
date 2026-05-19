@@ -446,7 +446,12 @@ export default async function ClientPortalPage({ params }: PageProps) {
                       ) : (
                         request.fileDocuments.map((file) => (
                           <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                            <a href={file.url} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
+                            <a
+                              href={`/api/client-portal/file-documents/${file.id}/download?token=${encodeURIComponent(params.token)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block hover:text-emerald-200"
+                            >
                               <p className="text-sm font-medium text-white">{file.originalName}</p>
                               <p className="mt-1 text-xs text-slate-500">
                                 {file.category ? `${file.category} · ` : ''}{formatDateTime(file.createdAt)}
