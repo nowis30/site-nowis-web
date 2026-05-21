@@ -14,6 +14,7 @@ import {
 } from '@/features/client-portal/auth/google';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
 import { isClientBillingComplete } from '@/lib/client-billing';
+import { sendPortalEventNotificationEmail } from '@/lib/email-service';
 
 interface GoogleTokenResponse {
   access_token?: string;
@@ -457,6 +458,23 @@ export async function GET(request: NextRequest) {
         }),
       };
     });
+
+    if (result.createdNewUser) {
+      try {
+        await sendPortalEventNotificationEmail({
+          eventLabel: 'NOUVELLE INSCRIPTION CLIENT',
+          subject: 'Nouveau client inscrit via Google',
+          headline: 'Un nouveau client vient de creer un compte via Google',
+          lines: [
+            `Nom: ${result.fullName}`,
+            `Email: ${result.email}`,
+            'Source: inscription Google',
+          ],
+        });
+      } catch (notificationError) {
+        console.error('[CLIENT_AUTH_GOOGLE_NOTIFICATION]', notificationError);
+      }
+    }
 
     const sessionToken = signClientPortalSession({
       contactId: result.contact.id,

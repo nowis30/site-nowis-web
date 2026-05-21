@@ -8,6 +8,7 @@ import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
 import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
 import { sanitizeNextPath } from '@/lib/safe-next';
 import { ensureCrmTask } from '@/features/crm/server/task-automation';
+import { sendPortalEventNotificationEmail } from '@/lib/email-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -127,6 +128,22 @@ export async function POST(request: NextRequest) {
 
       return { user, contact };
     });
+
+    try {
+      await sendPortalEventNotificationEmail({
+        eventLabel: 'NOUVELLE INSCRIPTION CLIENT',
+        subject: 'Nouveau client inscrit sur le site',
+        headline: 'Un nouveau client vient de creer un compte',
+        lines: [
+          `Nom: ${result.contact.fullName}`,
+          `Email: ${email}`,
+          payload.phone ? `Telephone: ${payload.phone}` : null,
+          'Source: inscription classique (email/mot de passe)',
+        ],
+      });
+    } catch (notificationError) {
+      console.error('[CLIENT_AUTH_REGISTER_NOTIFICATION]', notificationError);
+    }
 
     const sessionToken = signClientPortalSession({
       contactId: result.contact.id,
