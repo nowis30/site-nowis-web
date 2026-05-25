@@ -8,6 +8,7 @@ export type CrmModuleKey =
   | 'organizations'
   | 'cases'
   | 'documents'
+  | 'finance'
   | 'tasks'
   | 'appointments'
   | 'invoices'
@@ -25,6 +26,7 @@ const ADMIN_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   organizations:['read', 'create', 'update', 'delete'],
   cases:        ['read', 'create', 'update', 'delete'],
   documents:    ['read', 'create', 'update', 'delete'],
+  finance:      ['read', 'create', 'update', 'delete'],
   tasks:        ['read', 'create', 'update', 'delete'],
   appointments: ['read', 'create', 'update', 'delete'],
   invoices:     ['read', 'create', 'update', 'delete'],
@@ -43,6 +45,7 @@ const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
   organizations:['read', 'create', 'update'],
   cases:        ['read', 'create', 'update'],
   documents:    ['read', 'create', 'update'],
+  finance:      ['read', 'create', 'update'],
   tasks:        ['read', 'create', 'update'],
   appointments: ['read', 'create', 'update'],
   invoices:     ['read', 'create', 'update'],
@@ -56,14 +59,15 @@ const ASSISTANT_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
 };
 
 const PORTAL_USER_PERMISSIONS: Record<CrmModuleKey, CrmAction[]> = {
-  dashboard:    ['read'],
+  dashboard:    [],
   contacts:     [],
   organizations: [],
   cases:        [],
-  documents:    ['read'],
+  documents:    [],
+  finance:      [],
   tasks:        [],
-  appointments: ['read'],
-  invoices:     ['read'],
+  appointments: [],
+  invoices:     [],
   commercialQuotes: [],
   activities:   [],
   songRequests: [],
