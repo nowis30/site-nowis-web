@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import {
   FINANCE_ENTRY_STATUS_LABELS,
   getFinanceCategoryLabel,
@@ -19,6 +21,7 @@ type FinanceEntry = {
   totalAmount: string;
   paymentMethod: string;
   status: string;
+  notes?: string | null;
   contact?: { fullName: string } | null;
 };
 
@@ -62,9 +65,80 @@ function toNumber(value: string | number | null | undefined) {
 }
 
 export function FinancePage({ metrics, topProducts, sales, expenses, inventory }: FinancePageProps) {
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busyEntryId, setBusyEntryId] = useState<string | null>(null);
+
+  async function deleteEntry(entry: FinanceEntry) {
+    const confirmed = window.confirm(`Supprimer cette ${entry.kind === 'SALE' ? 'vente' : 'dépense'} ?`);
+    if (!confirmed) return;
+
+    setActionError(null);
+    setBusyEntryId(entry.id);
+    try {
+      const response = await fetch(`/api/crm/finance/entries/${entry.id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Suppression impossible');
+      }
+      window.location.reload();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Erreur inconnue');
+    } finally {
+      setBusyEntryId(null);
+    }
+  }
+
+  async function editEntry(entry: FinanceEntry) {
+    const nextCounterparty = window.prompt('Client / Fournisseur', entry.counterpartyName || '') ?? entry.counterpartyName ?? '';
+    const nextDescription = window.prompt('Description', entry.description || '') ?? entry.description ?? '';
+    const nextAmountBeforeTaxRaw = window.prompt('Montant avant taxes', String(toNumber(entry.amountBeforeTax)));
+    if (nextAmountBeforeTaxRaw === null) return;
+    const nextTaxAmountRaw = window.prompt('Montant des taxes', String(toNumber(entry.taxAmount)));
+    if (nextTaxAmountRaw === null) return;
+    const nextNotes = window.prompt('Notes', entry.notes || '') ?? entry.notes ?? '';
+
+    const nextAmountBeforeTax = Number(nextAmountBeforeTaxRaw);
+    const nextTaxAmount = Number(nextTaxAmountRaw);
+    if (!Number.isFinite(nextAmountBeforeTax) || nextAmountBeforeTax < 0 || !Number.isFinite(nextTaxAmount) || nextTaxAmount < 0) {
+      setActionError('Montants invalides.');
+      return;
+    }
+
+    setActionError(null);
+    setBusyEntryId(entry.id);
+    try {
+      const response = await fetch(`/api/crm/finance/entries/${entry.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          counterpartyName: nextCounterparty.trim() || null,
+          description: nextDescription.trim() || null,
+          amountBeforeTax: nextAmountBeforeTax,
+          taxAmount: nextTaxAmount,
+          notes: nextNotes.trim() || null,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Mise à jour impossible');
+      }
+      window.location.reload();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Erreur inconnue');
+    } finally {
+      setBusyEntryId(null);
+    }
+  }
 
   return (
     <section className="finance-form-surface space-y-6 pb-10">
+      {actionError ? (
+        <p className="rounded-xl border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+          {actionError}
+        </p>
+      ) : null}
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-primary-300">Module finance</p>
@@ -143,6 +217,24 @@ export function FinancePage({ metrics, topProducts, sales, expenses, inventory }
                   <span className="text-slate-400">{money.format(toNumber(entry.totalAmount))}</span>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">{entry.counterpartyName || entry.contact?.fullName || 'Sans client'} · {FINANCE_ENTRY_STATUS_LABELS[entry.status as keyof typeof FINANCE_ENTRY_STATUS_LABELS] || entry.status}</p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busyEntryId === entry.id}
+                    onClick={() => editEntry(entry)}
+                    className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-primary-500/60 disabled:opacity-50"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyEntryId === entry.id}
+                    onClick={() => deleteEntry(entry)}
+                    className="rounded-lg border border-red-500/50 px-2 py-1 text-xs text-red-200 hover:bg-red-500/10 disabled:opacity-50"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -157,6 +249,24 @@ export function FinancePage({ metrics, topProducts, sales, expenses, inventory }
                   <span className="text-slate-400">{money.format(toNumber(entry.totalAmount))}</span>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">{entry.counterpartyName || 'Fournisseur'} · {FINANCE_ENTRY_STATUS_LABELS[entry.status as keyof typeof FINANCE_ENTRY_STATUS_LABELS] || entry.status}</p>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busyEntryId === entry.id}
+                    onClick={() => editEntry(entry)}
+                    className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-primary-500/60 disabled:opacity-50"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyEntryId === entry.id}
+                    onClick={() => deleteEntry(entry)}
+                    className="rounded-lg border border-red-500/50 px-2 py-1 text-xs text-red-200 hover:bg-red-500/10 disabled:opacity-50"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>

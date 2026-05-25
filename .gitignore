@@ -32,3 +32,4 @@ coverage/
 .vercel
 tsconfig.tsbuildinfo
 archive/housing-domain/
+cleanup-reports/

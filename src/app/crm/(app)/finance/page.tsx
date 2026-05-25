@@ -105,6 +105,7 @@ export default async function FinanceDashboardPage() {
         totalAmount: item.totalAmount.toString(),
         paymentMethod: item.paymentMethod,
         status: item.status,
+        notes: item.notes,
         contact: item.contact,
       }))}
       expenses={expenses.map((item) => ({
@@ -120,6 +121,7 @@ export default async function FinanceDashboardPage() {
         totalAmount: item.totalAmount.toString(),
         paymentMethod: item.paymentMethod,
         status: item.status,
+        notes: item.notes,
         contact: item.contact,
       }))}
       inventory={inventory.map((item) => ({
