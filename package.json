@@ -60,6 +60,7 @@
     "@prisma/client": "^6.16.2",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
     "formidable": "^3.5.4",
     "glob": "^10.5.0",
     "jsonwebtoken": "^9.0.3",

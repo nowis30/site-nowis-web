@@ -107,13 +107,11 @@ export async function POST(request: NextRequest) {
       contactId = workshopRequest.contactId;
     }
 
-    if (!contactId) {
-      return NextResponse.json({ error: 'Le contact est obligatoire' }, { status: 400 });
-    }
-
-    const contact = await prisma.contact.findUnique({ where: { id: contactId }, select: { id: true } });
-    if (!contact) {
-      return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
+    if (contactId) {
+      const contact = await prisma.contact.findUnique({ where: { id: contactId }, select: { id: true } });
+      if (!contact) {
+        return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
+      }
     }
 
     await assertStoredObjectMetadata(payload.file.storageKey, {
@@ -177,7 +175,7 @@ export async function POST(request: NextRequest) {
           payload.songRequestId ? `Demande chanson: ${payload.songRequestId}` : null,
           payload.workshopRequestId ? `Demande atelier: ${payload.workshopRequestId}` : null,
         ].filter(Boolean).join('\n'),
-        contactId,
+          contactId,
         songRequestId: payload.songRequestId ?? null,
         userId: guard.session.sub,
       },

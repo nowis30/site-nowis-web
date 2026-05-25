@@ -19,6 +19,7 @@ export const crmNavigation: CrmNavItem[] = [
   { label: 'Demandes chanson', href: '/crm/song-requests', module: 'songRequests', icon: 'FileText',      section: 'Production' },
   { label: 'Demandes atelier', href: '/crm/workshop-requests', module: 'workshopRequests', icon: 'FolderOpen', section: 'Production' },
   { label: 'Fichiers',      href: '/crm/files',         module: 'documents',     icon: 'Paperclip',       section: 'Production' },
+  { label: 'Finance',       href: '/crm/finance',       module: 'finance',       icon: 'Banknote',        section: 'Finance' },
   { label: 'Soumissions commerciales', href: '/crm/commercial-quotes', module: 'commercialQuotes', icon: 'FileText', section: 'Finance' },
   { label: 'Factures',      href: '/crm/invoices',      module: 'invoices',      icon: 'FileText',        section: 'Finance' },
   { label: 'Dossiers',      href: '/crm/cases',         module: 'cases',         icon: 'FolderOpen',      section: 'Administration' },

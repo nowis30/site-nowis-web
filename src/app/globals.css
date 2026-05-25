@@ -88,6 +88,90 @@ select:focus {
   --tw-ring-offset-color: #fcf7f1;
 }
 
+.crm-main-scroll .finance-form-surface {
+  --finance-field-bg: rgb(2 6 23 / 0.72);
+  --finance-field-text: rgb(248 250 252);
+  --finance-field-placeholder: rgb(148 163 184);
+  --finance-field-border: rgb(51 65 85 / 0.95);
+  --finance-field-ring: rgb(59 130 246 / 0.45);
+}
+
+.crm-main-scroll .finance-form-surface input:not([type='checkbox']):not([type='radio']),
+.crm-main-scroll .finance-form-surface textarea,
+.crm-main-scroll .finance-form-surface select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--finance-field-bg) !important;
+  color: var(--finance-field-text) !important;
+  border-color: var(--finance-field-border) !important;
+  -webkit-text-fill-color: var(--finance-field-text) !important;
+  caret-color: var(--finance-field-text);
+}
+
+.crm-main-scroll .finance-form-surface input::placeholder,
+.crm-main-scroll .finance-form-surface textarea::placeholder {
+  color: var(--finance-field-placeholder) !important;
+  opacity: 1;
+}
+
+.crm-main-scroll .finance-form-surface input:not([type='checkbox']):not([type='radio']):focus-visible,
+.crm-main-scroll .finance-form-surface textarea:focus-visible,
+.crm-main-scroll .finance-form-surface select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--finance-field-ring);
+}
+
+.crm-main-scroll .finance-form-surface input[type='date'],
+.crm-main-scroll .finance-form-surface input[type='datetime-local'],
+.crm-main-scroll .finance-form-surface input[type='time'] {
+  color-scheme: dark;
+}
+
+.crm-main-scroll .finance-form-surface input[type='date']::-webkit-calendar-picker-indicator,
+.crm-main-scroll .finance-form-surface input[type='datetime-local']::-webkit-calendar-picker-indicator,
+.crm-main-scroll .finance-form-surface input[type='time']::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.35);
+  opacity: 0.9;
+}
+
+.crm-main-scroll .finance-form-surface select option {
+  color: rgb(15 23 42);
+  background-color: rgb(248 250 252);
+}
+
+.crm-main-scroll .finance-form-surface input:-webkit-autofill,
+.crm-main-scroll .finance-form-surface input:-webkit-autofill:hover,
+.crm-main-scroll .finance-form-surface input:-webkit-autofill:focus,
+.crm-main-scroll .finance-form-surface textarea:-webkit-autofill,
+.crm-main-scroll .finance-form-surface select:-webkit-autofill {
+  -webkit-text-fill-color: var(--finance-field-text) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--finance-field-bg) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+@media (prefers-color-scheme: light) {
+  .crm-main-scroll .finance-form-surface {
+    --finance-field-bg: rgb(255 255 255 / 0.96);
+    --finance-field-text: rgb(15 23 42);
+    --finance-field-placeholder: rgb(100 116 139);
+    --finance-field-border: rgb(148 163 184 / 0.9);
+    --finance-field-ring: rgb(59 130 246 / 0.35);
+  }
+
+  .crm-main-scroll .finance-form-surface input[type='date'],
+  .crm-main-scroll .finance-form-surface input[type='datetime-local'],
+  .crm-main-scroll .finance-form-surface input[type='time'] {
+    color-scheme: light;
+  }
+
+  .crm-main-scroll .finance-form-surface input[type='date']::-webkit-calendar-picker-indicator,
+  .crm-main-scroll .finance-form-surface input[type='datetime-local']::-webkit-calendar-picker-indicator,
+  .crm-main-scroll .finance-form-surface input[type='time']::-webkit-calendar-picker-indicator {
+    filter: invert(0.15);
+    opacity: 0.9;
+  }
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

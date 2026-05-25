@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, Activity, Calendar, CheckSquare,
-  FileText, FolderOpen, Building2, DoorOpen, UserCheck,
+  FileText, FolderOpen, Building2, DoorOpen, UserCheck, Banknote,
   Wrench, Paperclip, Bell, Star, ChevronLeft, ChevronRight, LucideIcon,
 } from 'lucide-react';
 import { crmNavigation } from '@/features/crm/config/navigation';
@@ -13,7 +13,7 @@ import { CrmRole } from '@/features/crm/auth/session';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard, Users, Activity, Calendar, CheckSquare,
-  FileText, FolderOpen, Building2, DoorOpen, UserCheck,
+  FileText, FolderOpen, Building2, DoorOpen, UserCheck, Banknote,
   Wrench, Paperclip, Bell, Star,
 };
 

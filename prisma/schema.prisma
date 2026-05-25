@@ -150,6 +150,33 @@ enum InvoiceStatus {
   DELETED
 }
 
+enum FinanceEntryKind {
+  SALE
+  EXPENSE
+}
+
+enum FinanceEntryStatus {
+  PAID
+  PARTIAL
+  UNPAID
+  CANCELLED
+}
+
+enum FinancePaymentMethod {
+  CASH
+  DEBIT
+  CREDIT
+  PAYPAL
+  TRANSFER
+  OTHER
+}
+
+enum FinanceInventoryMovementKind {
+  PURCHASE
+  SALE
+  ADJUSTMENT
+}
+
 enum CommercialQuoteStatus {
   DRAFT
   SENT
@@ -296,6 +323,8 @@ model User {
   authoredNotes              CaseNote[]
   uploadedDocuments          Document[]           @relation("DocumentUploadedBy")
   uploadedFileDocuments      FileDocument[]       @relation("FileDocumentUploadedBy")
+  createdFinanceEntries      FinanceEntry[]       @relation("FinanceEntryCreatedBy")
+  recordedInvoicePayments    InvoicePaymentHistory[] @relation("InvoicePaymentHistoryCreatedBy")
   communications             Communication[]       @relation("CommunicationUser")
   handledCommunications      Communication[]       @relation("CommunicationHandledBy")
   appointments               Appointment[]
@@ -382,6 +411,7 @@ model Contact {
   messages        Message[]
   appointments    Appointment[]
   invoices        Invoice[]
+  financeEntries  FinanceEntry[]
   commercialQuotes CommercialQuote[]
   activities      Activity[]
   fileDocuments   FileDocument[]
@@ -782,6 +812,8 @@ model FileDocument {
   invoice           Invoice?           @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
   commercialQuote   CommercialQuote?   @relation(fields: [commercialQuoteId], references: [id], onDelete: SetNull)
   uploadedByUser    User?              @relation("FileDocumentUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  financeEntries    FinanceEntry[]      @relation("FinanceEntryReceiptDocument")
+  invoicePayments   InvoicePaymentHistory[] @relation("InvoicePaymentReceiptDocument")
 
   @@index([contactId])
   @@index([songRequestId])
@@ -968,6 +1000,8 @@ model Invoice {
   convertedFromQuote CommercialQuote?
   fileDocuments     FileDocument[]
   tasks             Task[]
+  financeEntries    FinanceEntry[]
+  paymentHistory    InvoicePaymentHistory[]
 
   @@index([contactId])
   @@index([status])
@@ -977,6 +1011,106 @@ model Invoice {
   @@index([paymentStatus])
   @@index([deletedAt])
   @@map("invoices")
+}
+
+model FinanceEntry {
+  id               String                @id @default(uuid()) @db.Uuid
+  kind             FinanceEntryKind
+  entryDate        DateTime              @default(now())
+  contactId        String?               @db.Uuid
+  invoiceId        String?               @db.Uuid
+  receiptDocumentId String?              @db.Uuid
+  createdById      String?               @db.Uuid
+  counterpartyName String?
+  category         String
+  description      String?
+  quantity         Int                   @default(1)
+  amountBeforeTax  Decimal               @db.Decimal(10, 2)
+  taxAmount        Decimal               @default(0) @db.Decimal(10, 2)
+  totalAmount      Decimal               @db.Decimal(10, 2)
+  paymentMethod    FinancePaymentMethod  @default(OTHER)
+  status           FinanceEntryStatus    @default(PAID)
+  notes            String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  contact          Contact?              @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  invoice          Invoice?              @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  receiptDocument  FileDocument?         @relation("FinanceEntryReceiptDocument", fields: [receiptDocumentId], references: [id], onDelete: SetNull)
+  createdBy        User?                 @relation("FinanceEntryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  inventoryMovements FinanceInventoryMovement[]
+
+  @@index([kind])
+  @@index([entryDate])
+  @@index([contactId])
+  @@index([invoiceId])
+  @@index([category])
+  @@index([status])
+  @@map("finance_entries")
+}
+
+model FinanceInventoryItem {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  sku                String                    @unique
+  label              String
+  category           String                    @default("OTHER")
+  description        String?
+  purchaseUnitCost   Decimal                   @db.Decimal(10, 2)
+  salePrice          Decimal                   @db.Decimal(10, 2)
+  quantityPurchased  Int                       @default(0)
+  quantitySold       Int                       @default(0)
+  quantityRemaining  Int                       @default(0)
+  lowStockThreshold  Int                       @default(3)
+  active             Boolean                   @default(true)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  movements          FinanceInventoryMovement[]
+
+  @@index([sku])
+  @@index([category])
+  @@index([active])
+  @@map("finance_inventory_items")
+}
+
+model FinanceInventoryMovement {
+  id               String                   @id @default(uuid()) @db.Uuid
+  inventoryItemId  String                   @db.Uuid
+  financeEntryId   String?                  @db.Uuid
+  kind             FinanceInventoryMovementKind
+  quantityDelta    Int
+  reason           String?
+  movedAt          DateTime                 @default(now())
+  createdAt        DateTime                 @default(now())
+
+  inventoryItem    FinanceInventoryItem     @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  financeEntry     FinanceEntry?            @relation(fields: [financeEntryId], references: [id], onDelete: SetNull)
+
+  @@index([inventoryItemId])
+  @@index([financeEntryId])
+  @@index([kind])
+  @@map("finance_inventory_movements")
+}
+
+model InvoicePaymentHistory {
+  id                String         @id @default(uuid()) @db.Uuid
+  invoiceId         String         @db.Uuid
+  receiptDocumentId String?        @db.Uuid
+  createdById       String?        @db.Uuid
+  paidAt            DateTime       @default(now())
+  amount            Decimal        @db.Decimal(10, 2)
+  paymentMethod     FinancePaymentMethod @default(OTHER)
+  note              String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  invoice           Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  receiptDocument   FileDocument?  @relation("InvoicePaymentReceiptDocument", fields: [receiptDocumentId], references: [id], onDelete: SetNull)
+  createdBy         User?          @relation("InvoicePaymentHistoryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([paidAt])
+  @@map("invoice_payment_history")
 }
 
 model Activity {

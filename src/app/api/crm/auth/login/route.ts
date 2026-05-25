@@ -15,6 +15,10 @@ function errorResponse(
 }
 
 function canUseEmergencyCrmLogin(email: string, password: string) {
+  if (process.env.NODE_ENV === 'production' && process.env.CRM_ALLOW_EMERGENCY_LOGIN !== 'true') {
+    return false;
+  }
+
   const demoPassword = String(process.env.CRM_DEMO_PASSWORD || '').trim();
   const adminEmail = String(process.env.ADMIN_EMAIL || 'simonmorin30@gmail.com').toLowerCase().trim();
   return Boolean(demoPassword) && email === adminEmail && password === demoPassword;
