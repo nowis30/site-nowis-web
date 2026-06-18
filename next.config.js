@@ -15,6 +15,19 @@ const nextConfig = {
     ],
     unoptimized: false,
   },
+  // Proxy /games/* and /audio/* vers S3 (évite les problèmes cross-origin dans les iframes)
+  rewrites: async () => {
+    return [
+      {
+        source: '/games/:path*',
+        destination: 'https://nowis-crm-files.s3.us-east-1.amazonaws.com/games/:path*',
+      },
+      {
+        source: '/audio/:path*',
+        destination: 'https://nowis-crm-files.s3.us-east-1.amazonaws.com/audio/:path*',
+      },
+    ];
+  },
   // Host and path redirects
   redirects: async () => {
     return [
@@ -121,10 +134,10 @@ const nextConfig = {
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https:",
           "font-src 'self' data:",
-          "frame-src 'self' https://www.youtube.com https://youtube.com",
+          "frame-src 'self' https://www.youtube.com https://youtube.com https://nowis-crm-files.s3.us-east-1.amazonaws.com",
           "frame-ancestors 'self'",
           "connect-src 'self' https:",
-          "media-src 'self' blob: https:",
+          "media-src 'self' blob: https: https://nowis-crm-files.s3.us-east-1.amazonaws.com",
           "worker-src 'self' blob:",
           "manifest-src 'self'",
           "object-src 'none'",
