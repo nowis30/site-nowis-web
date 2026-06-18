@@ -4,8 +4,7 @@ export type GameEntry = {
   src: string;
 };
 
-const gamesBaseUrl =
-  process.env.NEXT_PUBLIC_MEDIA_GAMES_BASE_URL?.replace(/\/$/, '') || '/games/html-css-javascript-games-main';
+const gamesBaseUrl = '/games/html-css-javascript-games-main';
 
 const htmlCssJavaScriptGameFolders = [
   '01-Candy-Crush-Game',

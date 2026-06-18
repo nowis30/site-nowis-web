@@ -1,154 +1,135 @@
-'use client';
-
 import Link from 'next/link';
-import { ExternalLink, Gamepad2, Music3, PlayCircle, ShieldCheck, Sparkles } from 'lucide-react';
-import { NowisRadio } from './NowisRadio';
-import { gameCatalog } from './gameCatalog';
-
-const vibePills = ['Arcade', 'Radio', 'Création', 'Jeux'] as const;
-const vibePillClasses = [
-  'border-fuchsia-400/35 bg-fuchsia-500/12 text-white',
-  'border-cyan-400/35 bg-cyan-500/12 text-white',
-  'border-amber-300/35 bg-amber-500/12 text-white',
-  'border-emerald-400/35 bg-emerald-500/12 text-white',
-] as const;
+import { Home, Sparkles, Zap, ExternalLink } from 'lucide-react';
+import { GamesGrid } from './GamesGrid';
 
 export function GamesScreen() {
   return (
-    <div className="arcade-yellow-text mx-auto max-w-7xl px-4 pb-16 pt-6 text-slate-100 md:px-6 md:pt-10">
-      <section className="relative overflow-hidden rounded-[2.25rem] border border-sky-400/20 bg-[radial-gradient(circle_at_10%_10%,rgba(59,130,246,0.26),transparent_22%),radial-gradient(circle_at_92%_12%,rgba(34,211,238,0.20),transparent_18%),radial-gradient(circle_at_52%_0%,rgba(96,165,250,0.14),transparent_20%),linear-gradient(180deg,rgba(8,15,32,0.99),rgba(6,28,68,0.98))] px-5 py-7 shadow-[0_30px_80px_rgba(0,0,0,0.42)] md:px-8 md:py-10">
-        <div className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_10%_10%,rgba(59,130,246,0.26),transparent_22%),radial-gradient(circle_at_92%_12%,rgba(34,211,238,0.20),transparent_18%),radial-gradient(circle_at_52%_0%,rgba(96,165,250,0.14),transparent_20%)]">
-          <div className="absolute left-[-5rem] top-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.4),transparent_65%)] blur-2xl" />
-          <div className="absolute right-[-4rem] top-28 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.34),transparent_62%)] blur-2xl" />
-          <div className="absolute bottom-[-5rem] left-1/3 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(96,165,250,0.28),transparent_65%)] blur-2xl" />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Background animated elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+      </div>
 
-        <div className="relative grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
-          <div className="space-y-6">
-            <div className="flex flex-wrap gap-2">
-              {vibePills.map((pill, index) => (
-                <span key={pill} className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${vibePillClasses[index]}`}>
-                  <Sparkles size={12} className="text-white" />
-                  {pill}
-                </span>
-              ))}
+      {/* Main content */}
+      <div className="relative z-10">
+        {/* Header/Navigation */}
+        <header className="sticky top-0 z-50 backdrop-blur-sm bg-slate-950/80 border-b border-sky-400/10">
+          <div className="max-w-7xl mx-auto px-4 py-4 md:px-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
+                <Sparkles size={20} className="text-white" />
+              </div>
+              <h1 className="text-xl font-black text-white hidden sm:block">NOWIS Games</h1>
             </div>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-white text-sm font-semibold transition"
+            >
+              <Home size={16} />
+              Accueil
+            </Link>
+          </div>
+        </header>
 
-            <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-yellow-100">Jeux NOWIS</p>
-              <h1 className="mt-4 max-w-3xl bg-[linear-gradient(90deg,#ffffff_0%,#ffe4a3_26%,#86efff_55%,#ff9ed1_82%,#ffffff_100%)] bg-clip-text text-4xl font-black leading-[0.95] tracking-tight text-transparent md:text-6xl xl:text-7xl">
-                Une arcade musicale pour jouer, écouter et vibrer.
-              </h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-100 md:text-lg">
-                Lance un mini-jeu, garde la radio en fond, et profite d’une page pensée comme une vraie salle d’arcade moderne, jeune et lumineuse.
-              </p>
-            </div>
+        {/* Hero Section */}
+        <section className="px-4 md:px-6 pt-12 md:pt-16 pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="space-y-6 mb-12">
+              {/* Tag */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-400/30 bg-sky-500/10 text-white text-xs font-bold uppercase tracking-wider">
+                <Zap size={12} />
+                Zone Jeux NOWIS
+              </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              {[
-                'Mini-jeux HTML/JavaScript',
-                'Radio NOWIS en boucle',
-                'Interface mobile friendly',
-              ].map((item, index) => (
-                <div key={item} className={`rounded-2xl border px-4 py-4 text-sm font-semibold text-yellow-50 shadow-[0_16px_40px_rgba(0,0,0,0.22)] ${['border-sky-300/35 bg-sky-500/14', 'border-cyan-300/35 bg-cyan-500/14', 'border-blue-200/35 bg-blue-500/14'][index]}`}>
-                  {item}
-                </div>
-              ))}
-            </div>
+              {/* Main Title */}
+              <div className="space-y-4">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
+                  <span className="bg-gradient-to-r from-sky-200 via-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                    Joue, écoute, découvre
+                  </span>
+                </h2>
+                <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl">
+                  Amuse-toi avec des mini-jeux simples pendant que la musique NOWIS joue en arrière-plan. Une vraie salle d'arcade musicale pour passer un bon moment !
+                </p>
+              </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {gameCatalog.map((game, index) => (
-                <article
-                  key={game.src}
-                  className="group relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.04))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.25)] transition-transform duration-200 hover:-translate-y-1"
-                >
-                  <div className={`absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${index % 4 === 0 ? 'bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.30),transparent_45%)]' : index % 4 === 1 ? 'bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.26),transparent_45%)]' : index % 4 === 2 ? 'bg-[radial-gradient(circle_at_top_right,rgba(96,165,250,0.26),transparent_45%)]' : 'bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.22),transparent_45%)]'}`} />
-                  <div className={`absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${index % 4 === 0 ? 'bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.30),transparent_45%)]' : index % 4 === 1 ? 'bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.26),transparent_45%)]' : index % 4 === 2 ? 'bg-[radial-gradient(circle_at_top_right,rgba(96,165,250,0.26),transparent_45%)]' : 'bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.22),transparent_45%)]'}`} />
-                  <div className="relative">
-                    <div className="mb-4 flex items-center gap-3 text-white">
-                      <Gamepad2 size={16} />
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white">Arcade</span>
-                    </div>
-                    <p className="text-lg font-black text-white md:text-xl">{game.name}</p>
-                    <Link
-                      href={`/jeux/${game.slug}`}
-                      className={`mt-5 inline-flex min-h-11 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-black text-slate-950 shadow-[0_12px_30px_rgba(255,255,255,0.15)] transition hover:scale-[1.02] hover:bg-slate-200 ${index % 4 === 0 ? 'bg-sky-200' : index % 4 === 1 ? 'bg-cyan-200' : index % 4 === 2 ? 'bg-blue-200' : 'bg-indigo-200'}`}
-                    >
-                      <PlayCircle size={16} />
-                      Jouer
-                    </Link>
+              {/* Features Pills */}
+              <div className="flex flex-wrap gap-3 pt-4">
+                {[
+                  { icon: '🎮', text: '37+ mini-jeux' },
+                  { icon: '🎵', text: 'Radio NOWIS' },
+                  { icon: '📱', text: 'Mobile friendly' },
+                  { icon: '⚡', text: 'Sans inscription' },
+                ].map((feature) => (
+                  <div
+                    key={feature.text}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-sky-400/30 hover:bg-sky-500/10 transition"
+                  >
+                    <span className="text-lg">{feature.icon}</span>
+                    <span className="text-sm font-semibold text-white">{feature.text}</span>
                   </div>
-                </article>
-              ))}
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* Games Grid Section */}
+        <section className="px-4 md:px-6 py-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Section Title */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-1 w-12 bg-gradient-to-r from-sky-400 to-cyan-400 rounded" />
+                <h3 className="text-sm font-bold text-sky-300 uppercase tracking-wider">Tous les jeux</h3>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-white">Choisissez votre jeu</h2>
+              <p className="text-slate-400 mt-2">Cliquez sur une carte pour commencer à jouer</p>
+            </div>
+
+            {/* Games Grid */}
+            <GamesGrid />
+          </div>
+        </section>
+
+        {/* Footer CTA */}
+        <section className="px-4 md:px-6 py-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="rounded-2xl border border-sky-400/20 bg-gradient-to-r from-sky-500/10 via-cyan-500/10 to-blue-500/10 backdrop-blur-sm p-8 md:p-12 text-center space-y-6">
+              <h3 className="text-2xl md:text-3xl font-black text-white">
+                Découvrez l'univers NOWIS
+              </h3>
+              <p className="text-slate-300 max-w-2xl mx-auto">
+                NOWIS est un projet de musique, création avec IA, spectacles et divertissement. Explorez notre univers artistique et festif.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-slate-950 font-bold hover:bg-slate-100 transition"
+                >
+                  <Home size={16} />
+                  Retour à l'accueil
+                </Link>
+                <a
+                  href="https://nowis.store"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-sky-400/30 bg-sky-500/10 text-white font-bold hover:bg-sky-500/20 transition"
+                >
+                  <ExternalLink size={16} />
+                  Visiter nowis.store
+                </a>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="space-y-4">
-            <div className="rounded-[2rem] border border-sky-300/20 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24)] md:p-5">
-              <NowisRadio />
-            </div>
-            <div className="rounded-[1.75rem] border border-sky-300/20 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-5 text-sm text-yellow-50">
-              <p className="flex items-center gap-2 font-semibold text-white">
-                <Music3 size={16} className="text-white" />
-                  Mode lecture continue
-              </p>
-              <p className="mt-2 leading-6">
-                La radio suit la playlist définie dans un seul tableau facile à modifier. Les titres passent automatiquement au suivant et reviennent au début à la fin.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-8 rounded-[2rem] border border-sky-400/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-6 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white">Navigation arcade</p>
-        <h2 className="mt-2 text-2xl font-black text-white md:text-3xl">Une page dédiée pour chaque jeu</h2>
-        <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-white">
-          Choisis un jeu dans la galerie ci-dessus. Chaque bouton ouvre maintenant une page dédiée avec le jeu en grand, puis la radio NOWIS juste en dessous.
-        </p>
-      </section>
-
-      <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-3xl border border-sky-300/20 bg-[linear-gradient(135deg,rgba(8,32,64,0.96),rgba(18,74,120,0.92))] p-5 text-yellow-50 xl:col-span-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-50">Découvre aussi Création Nowis</p>
-          <h3 className="mt-3 text-2xl font-black text-yellow-50">Liens utiles</h3>
-          <p className="mt-2 text-sm leading-6 text-yellow-50">
-            Pour continuer la visite, voici les autres portes d’entrée vers l’univers Création Nowis.
-          </p>
-        </div>
-
-        {[
-          { label: 'Site officiel', href: 'https://nowis.store' },
-          { label: 'YouTube', href: 'https://www.youtube.com/@nowis30' },
-          { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61581050842840' },
-          { label: 'Revid IA', href: 'https://www.revid.ai/?via=simon-morin' },
-          { label: 'Spotify', href: 'https://open.spotify.com/intl-fr/artist/2zH00JaaHdcg4eII8dZUts?si=v0WmyoYsTBik3xG7iX6kYw' },
-        ].map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-3xl border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-5 text-yellow-50 transition hover:border-sky-200/30 hover:bg-sky-500/10"
-          >
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-yellow-50">{link.label}</p>
-            <p className="mt-3 break-words text-sm leading-6 text-yellow-50">{link.href}</p>
-            <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-yellow-50">
-              Ouvrir
-              <ExternalLink size={15} />
-            </span>
-          </a>
-        ))}
-      </section>
-
-      <section className="mt-8 rounded-3xl border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-5 text-xs leading-6 text-yellow-50 md:p-6">
-        <div className="flex items-start gap-3">
-          <ShieldCheck size={16} className="mt-0.5 shrink-0 text-[color:var(--site-accent-soft)]" />
-          <p>
-            Certains mini-jeux sont adaptés à partir de projets open source. Les licences originales sont conservées dans les dossiers des jeux.
-          </p>
-        </div>
-      </section>
+        {/* Bottom spacing */}
+        <div className="h-8" />
+      </div>
     </div>
   );
 }

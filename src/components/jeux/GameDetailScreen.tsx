@@ -1,8 +1,5 @@
-'use client';
-
 import Link from 'next/link';
-import { ArrowLeft, Gamepad2, Music3, ShieldCheck } from 'lucide-react';
-import { NowisRadio } from './NowisRadio';
+import { ArrowLeft, Gamepad2, ShieldCheck } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
 
 type GameDetailScreenProps = {
@@ -63,14 +60,6 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             allow="fullscreen"
           />
         </div>
-      </section>
-
-      <section className="mt-8 rounded-[2rem] border border-sky-300/20 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24)] md:p-5">
-        <div className="mb-4 flex items-center gap-2 text-yellow-50">
-          <Music3 size={16} />
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-yellow-50">Radio sous le jeu</p>
-        </div>
-        <NowisRadio />
       </section>
 
       <section className="mt-8 rounded-3xl border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-5 text-xs leading-6 text-yellow-50 md:p-6">

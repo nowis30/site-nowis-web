@@ -8,10 +8,19 @@ type PlaylistItem = {
   src: string;
 };
 
-const audioBaseUrl =
-  process.env.NEXT_PUBLIC_MEDIA_AUDIO_BASE_URL?.replace(/\/$/, '') || '/audio/nowis-radio';
+const audioBaseUrl = '/audio/nowis-radio';
 
 const playlistUrl = `${audioBaseUrl}/playlist.json`;
+
+function toProxyAudioSrc(src: string) {
+  const fileName = src.split('/').pop();
+
+  if (!fileName) {
+    return src;
+  }
+
+  return `${audioBaseUrl}/${encodeURIComponent(fileName)}`;
+}
 
 function titleCase(value: string) {
   return value.replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase('fr-FR'));
@@ -76,6 +85,7 @@ export function NowisRadio() {
               .map((item) => ({
                 ...item,
                 title: humanizeTrackTitle(item.title),
+                src: toProxyAudioSrc(item.src),
               }))
           : [];
 
