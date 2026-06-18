@@ -22,8 +22,11 @@ Thumbs.db
 ### Media files (heavy)
 public/videos/
 public/uploads/
+public/audio/
+public/games/
 *.mp4
 *.wav
+*.mp3
 *.jks
 
 ### Misc
