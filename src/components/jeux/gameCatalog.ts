@@ -4,6 +4,9 @@ export type GameEntry = {
   src: string;
 };
 
+const gamesBaseUrl =
+  process.env.NEXT_PUBLIC_MEDIA_GAMES_BASE_URL?.replace(/\/$/, '') || '/games/html-css-javascript-games-main';
+
 const htmlCssJavaScriptGameFolders = [
   '01-Candy-Crush-Game',
   '02-Pac-Man-Game',
@@ -65,7 +68,7 @@ function toSlug(folderName: string) {
 export const gameCatalog: GameEntry[] = htmlCssJavaScriptGameFolders.map((folderName) => ({
   slug: toSlug(folderName),
   name: formatGameTitle(folderName),
-  src: `/games/html-css-javascript-games-main/${folderName}/index.html`,
+  src: `${gamesBaseUrl}/${folderName}/index.html`,
 }));
 
 export function findGameBySlug(slug: string) {

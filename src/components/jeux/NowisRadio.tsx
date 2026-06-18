@@ -8,6 +8,11 @@ type PlaylistItem = {
   src: string;
 };
 
+const audioBaseUrl =
+  process.env.NEXT_PUBLIC_MEDIA_AUDIO_BASE_URL?.replace(/\/$/, '') || '/audio/nowis-radio';
+
+const playlistUrl = `${audioBaseUrl}/playlist.json`;
+
 function titleCase(value: string) {
   return value.replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase('fr-FR'));
 }
@@ -35,15 +40,15 @@ function humanizeTrackTitle(value: string) {
 const defaultPlaylist: PlaylistItem[] = [
   {
     title: 'NOWIS - Chanson 1',
-    src: '/audio/nowis-radio/chanson-1.mp3',
+    src: `${audioBaseUrl}/chanson-1.mp3`,
   },
   {
     title: 'NOWIS - Chanson 2',
-    src: '/audio/nowis-radio/chanson-2.mp3',
+    src: `${audioBaseUrl}/chanson-2.mp3`,
   },
   {
     title: 'NOWIS - Chanson 3',
-    src: '/audio/nowis-radio/chanson-3.mp3',
+    src: `${audioBaseUrl}/chanson-3.mp3`,
   },
 ];
 
@@ -61,7 +66,7 @@ export function NowisRadio() {
 
     async function loadPlaylist() {
       try {
-        const response = await fetch('/audio/nowis-radio/playlist.json', { cache: 'no-store' });
+        const response = await fetch(playlistUrl, { cache: 'no-store' });
         if (!response.ok) return;
 
         const data = (await response.json()) as PlaylistItem[];

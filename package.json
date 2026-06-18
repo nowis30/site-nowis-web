@@ -47,11 +47,12 @@
     "crm:reset-password": "tsx scripts/reset-crm-password.ts",
     "sync:youtube": "node scripts/sync-youtube.js",
     "sync:spotify": "node scripts/sync-spotify.js",
-    "sync:songs": "node scripts/sync-songs.js"
+    "sync:songs": "node scripts/sync-songs.js",
+    "upload:media": "node scripts/upload-media-to-s3.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.883.0",
-    "@aws-sdk/s3-request-presigner": "^3.1019.0",
+    "@aws-sdk/client-s3": "^3.1071.0",
+    "@aws-sdk/s3-request-presigner": "^3.1071.0",
     "@fullcalendar/daygrid": "^6.1.20",
     "@fullcalendar/interaction": "^6.1.20",
     "@fullcalendar/react": "^6.1.20",
