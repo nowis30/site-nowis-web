@@ -186,6 +186,17 @@ select:focus {
   overflow: hidden;
 }
 
+.arcade-yellow-text :is(p, h1, h2, h3, h4, h5, h6, span, a, li, small, strong, em, button, label, div) {
+  color: #fef08a !important;
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.42);
+}
+
+.arcade-yellow-text button {
+  border-color: rgba(250, 204, 21, 0.35) !important;
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  background-image: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98)) !important;
+}
+
 @layer components {
   .crm-main-scroll {
     scroll-padding-top: 1.5rem;

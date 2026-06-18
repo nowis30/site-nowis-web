@@ -98,6 +98,11 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/jeux" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
+                  Jeux
+                </Link>
+              </li>
+              <li>
                 <Link href="/commander-une-chanson" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
                   Chansons personnalisées
                 </Link>

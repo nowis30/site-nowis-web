@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 
 const navLinks = [
   { label: 'Accueil', href: '/' },
+  { label: 'Jeux', href: '/jeux' },
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Chansons personnalisees', href: '/commander-une-chanson' },
   { label: 'A propos', href: '/a-propos' },

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Disc3, FolderOpen, Music2, Sparkles, UsersRound, Video } from 'lucide-react';
+import { ArrowRight, Disc3, FolderOpen, Gamepad2, Music2, Sparkles, UsersRound, Video } from 'lucide-react';
 import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 import { HeroVideoPlaceholder } from '@/components/marketing/HeroVideoPlaceholder';
 
@@ -26,6 +26,13 @@ const primaryActions = [
     href: '/contact',
     cta: 'Écrire à Nowis',
     icon: UsersRound,
+  },
+  {
+    title: 'Jeux NOWIS',
+    description: 'Lance des mini-jeux et garde ta musique en écoute.',
+    href: '/jeux',
+    cta: 'Ouvrir la page Jeux',
+    icon: Gamepad2,
   },
 ];
 
@@ -81,7 +88,7 @@ export function HomeScreen() {
             </p>
 
             {/* Zone facile à capturer pour la vidéo de présentation */}
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {primaryActions.map((action) => {
                 const Icon = action.icon;
 
