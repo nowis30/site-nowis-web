@@ -12,6 +12,7 @@ type GameDetailScreenProps = {
 
 export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const gameShellRef = useRef<HTMLDivElement>(null);
   const [pressed, setPressed] = useState<Record<string, boolean>>({});
   const controls = useMemo(() => getMobileControlsForGame(game.slug), [game.slug]);
 
@@ -58,16 +59,34 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
   };
 
   const requestGameFullscreen = async () => {
+    const shell = gameShellRef.current;
     const iframe = iframeRef.current;
-    if (!iframe) {
+    const target = shell ?? iframe;
+
+    if (!target) {
       return;
     }
 
     try {
-      await iframe.requestFullscreen();
+      if (target.requestFullscreen) {
+        await target.requestFullscreen();
+        return;
+      }
+
+      const anyTarget = target as HTMLElement & {
+        webkitRequestFullscreen?: () => Promise<void> | void;
+      };
+
+      if (anyTarget.webkitRequestFullscreen) {
+        await anyTarget.webkitRequestFullscreen();
+        return;
+      }
     } catch {
-      // Certains navigateurs bloquent fullscreen sans geste utilisateur valide.
+      // Fallback ci-dessous.
     }
+
+    // Fallback mobile: ouvre le jeu seul, occupant toute la fenêtre du navigateur.
+    window.location.href = game.src;
   };
 
   const reloadGame = () => {
@@ -120,7 +139,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
           </div>
         </div>
 
-        <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-sky-300/15 bg-slate-950">
+        <div ref={gameShellRef} className="mt-5 overflow-hidden rounded-[1.5rem] border border-sky-300/15 bg-slate-950">
           <div className="flex items-center justify-between gap-3 border-b border-sky-300/15 px-4 py-3 text-xs text-yellow-50">
             <span>{game.src}</span>
             <span>Page dédiée</span>
@@ -129,7 +148,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             ref={iframeRef}
             src={game.src}
             title={game.name}
-            className="h-[30rem] w-full bg-white md:h-[42rem]"
+            className="h-[70vh] min-h-[28rem] w-full bg-white md:h-[42rem]"
             allow="fullscreen"
           />
         </div>
@@ -146,6 +165,12 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             >
               Plein ecran
             </button>
+            <a
+              href={game.src}
+              className="inline-flex min-h-10 items-center rounded-xl border border-cyan-300/25 bg-cyan-500/12 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-500/20"
+            >
+              Jeu seul
+            </a>
             <button
               type="button"
               onClick={reloadGame}
