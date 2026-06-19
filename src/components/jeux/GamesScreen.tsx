@@ -4,7 +4,7 @@ import { GamesGrid } from './GamesGrid';
 
 export function GamesScreen() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-sky-200 via-cyan-100 to-blue-200">
       {/* Background animated elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl" />
@@ -15,17 +15,17 @@ export function GamesScreen() {
       {/* Main content */}
       <div className="relative z-10">
         {/* Header/Navigation */}
-        <header className="sticky top-0 z-50 backdrop-blur-sm bg-slate-950/80 border-b border-sky-400/10">
+        <header className="sticky top-0 z-50 backdrop-blur-sm bg-sky-200/80 border-b border-sky-400/30">
           <div className="max-w-7xl mx-auto px-4 py-4 md:px-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sky-400 to-cyan-500 flex items-center justify-center">
-                <Sparkles size={20} className="text-white" />
+                <Sparkles size={20} className="text-yellow-300" />
               </div>
-              <h1 className="text-xl font-black text-white hidden sm:block">NOWIS Games</h1>
+              <h1 className="text-xl font-black text-yellow-500 hidden sm:block">NOWIS Games</h1>
             </div>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-white text-sm font-semibold transition"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-yellow-500 text-sm font-semibold transition"
             >
               <Home size={16} />
               Accueil
@@ -38,19 +38,19 @@ export function GamesScreen() {
           <div className="max-w-7xl mx-auto">
             <div className="space-y-6 mb-12">
               {/* Tag */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-400/30 bg-sky-500/10 text-white text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-400/40 bg-sky-500/10 text-yellow-500 text-xs font-bold uppercase tracking-wider">
                 <Zap size={12} />
                 Zone Jeux NOWIS
               </div>
 
               {/* Main Title */}
               <div className="space-y-4">
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
-                  <span className="bg-gradient-to-r from-sky-200 via-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-yellow-500 leading-tight">
+                  <span className="bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-500 bg-clip-text text-transparent">
                     Joue, écoute, découvre
                   </span>
                 </h2>
-                <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl">
+                <p className="text-base md:text-lg text-yellow-500 leading-relaxed max-w-2xl">
                   Amuse-toi avec des mini-jeux simples pendant que la musique NOWIS joue en arrière-plan. Une vraie salle d'arcade musicale pour passer un bon moment !
                 </p>
               </div>
@@ -65,10 +65,10 @@ export function GamesScreen() {
                 ].map((feature) => (
                   <div
                     key={feature.text}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-sky-400/30 hover:bg-sky-500/10 transition"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-400/30 hover:border-sky-500/50 hover:bg-sky-500/20 transition"
                   >
                     <span className="text-lg">{feature.icon}</span>
-                    <span className="text-sm font-semibold text-white">{feature.text}</span>
+                    <span className="text-sm font-semibold text-yellow-500">{feature.text}</span>
                   </div>
                 ))}
               </div>
@@ -84,10 +84,10 @@ export function GamesScreen() {
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-1 w-12 bg-gradient-to-r from-sky-400 to-cyan-400 rounded" />
-                <h3 className="text-sm font-bold text-sky-300 uppercase tracking-wider">Tous les jeux</h3>
+                <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-wider">Tous les jeux</h3>
               </div>
-              <h2 className="text-3xl md:text-4xl font-black text-white">Choisissez votre jeu</h2>
-              <p className="text-slate-400 mt-2">Cliquez sur une carte pour commencer à jouer</p>
+              <h2 className="text-3xl md:text-4xl font-black text-yellow-500">Choisissez votre jeu</h2>
+              <p className="text-yellow-500 mt-2">Cliquez sur une carte pour commencer à jouer</p>
             </div>
 
             {/* Games Grid */}
@@ -98,17 +98,17 @@ export function GamesScreen() {
         {/* Footer CTA */}
         <section className="px-4 md:px-6 py-12">
           <div className="max-w-7xl mx-auto">
-            <div className="rounded-2xl border border-sky-400/20 bg-gradient-to-r from-sky-500/10 via-cyan-500/10 to-blue-500/10 backdrop-blur-sm p-8 md:p-12 text-center space-y-6">
-              <h3 className="text-2xl md:text-3xl font-black text-white">
+            <div className="rounded-2xl border border-sky-400/30 bg-gradient-to-r from-sky-100/80 via-cyan-100/80 to-blue-100/80 backdrop-blur-sm p-8 md:p-12 text-center space-y-6">
+              <h3 className="text-2xl md:text-3xl font-black text-yellow-500">
                 Découvrez l'univers NOWIS
               </h3>
-              <p className="text-slate-300 max-w-2xl mx-auto">
+              <p className="text-yellow-500 max-w-2xl mx-auto">
                 NOWIS est un projet de musique, création avec IA, spectacles et divertissement. Explorez notre univers artistique et festif.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Link
                   href="/"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white text-slate-950 font-bold hover:bg-slate-100 transition"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-yellow-300 text-sky-900 font-bold hover:bg-yellow-200 transition"
                 >
                   <Home size={16} />
                   Retour à l'accueil
@@ -117,7 +117,7 @@ export function GamesScreen() {
                   href="https://nowis.store"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-sky-400/30 bg-sky-500/10 text-white font-bold hover:bg-sky-500/20 transition"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-sky-500/40 bg-sky-500/10 text-yellow-500 font-bold hover:bg-sky-500/20 transition"
                 >
                   <ExternalLink size={16} />
                   Visiter nowis.store

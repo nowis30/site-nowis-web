@@ -188,18 +188,18 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
   const playlistLabel = playlist.length > 1 ? 'titres' : 'titre';
 
   return (
-    <section className={`arcade-yellow-text rounded-3xl border border-sky-400/20 bg-[radial-gradient(circle_at_10%_0%,rgba(59,130,246,0.22),transparent_24%),radial-gradient(circle_at_92%_18%,rgba(34,211,238,0.18),transparent_18%),linear-gradient(180deg,rgba(10,18,40,0.98),rgba(8,32,64,0.96))] text-white shadow-[0_24px_60px_rgba(0,0,0,0.38)] ${compact ? 'p-4 md:p-5' : 'p-5 md:p-6'}`}>
+    <section className={`arcade-yellow-text rounded-3xl border border-sky-400/30 bg-[radial-gradient(circle_at_10%_0%,rgba(125,211,252,0.55),transparent_24%),radial-gradient(circle_at_92%_18%,rgba(103,232,249,0.40),transparent_18%),linear-gradient(180deg,rgba(224,242,254,0.96),rgba(186,230,253,0.92))] text-yellow-500 shadow-[0_20px_40px_rgba(56,189,248,0.25)] ${compact ? 'p-4 md:p-5' : 'p-5 md:p-6'}`}>
       <div className={`flex flex-col gap-4 ${compact ? '' : 'lg:flex-row lg:items-center lg:justify-between'}`}>
         <div className="max-w-2xl">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-yellow-50">
+          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-yellow-500">
             <Radio size={16} />
             Radio NOWIS
           </div>
-          <h2 className={`${compact ? 'mt-2 text-lg md:text-xl' : 'mt-3 text-2xl md:text-3xl'} font-black text-white`}>
+          <h2 className={`${compact ? 'mt-2 text-lg md:text-xl' : 'mt-3 text-2xl md:text-3xl'} font-black text-yellow-500`}>
             {compact ? 'Radio musicale' : 'Écoute les chansons en boucle pendant que tu joues'}
           </h2>
           {!compact ? (
-            <p className="mt-2 text-sm leading-6 text-white md:text-base">
+            <p className="mt-2 text-sm leading-6 text-yellow-500 md:text-base">
               La radio reste visible sur la page et passe automatiquement à la chanson suivante. Tu peux ajouter d’autres titres plus tard en modifiant seulement la playlist.
             </p>
           ) : null}
@@ -209,7 +209,7 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
           <button
             type="button"
             onClick={startRadio}
-            className={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-4 py-3 text-sm font-bold text-white transition hover:brightness-110 ${compact ? 'min-w-[9.5rem]' : ''}`}
+            className={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 px-4 py-3 text-sm font-bold text-sky-900 transition hover:brightness-110 ${compact ? 'min-w-[9.5rem]' : ''}`}
           >
             <Play size={16} />
             Démarrer la radio
@@ -217,7 +217,7 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
           <button
             type="button"
             onClick={togglePlayPause}
-            className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-sky-300/25 bg-sky-500/12 px-4 py-3 text-sm font-bold text-white transition hover:bg-sky-500/20"
+            className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-sky-400/35 bg-sky-500/12 px-4 py-3 text-sm font-bold text-yellow-500 transition hover:bg-sky-500/20"
           >
             {isPlaying ? <Pause size={16} /> : <Play size={16} />}
             {isPlaying ? 'Pause' : 'Lecture'}
@@ -225,7 +225,7 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
           <button
             type="button"
             onClick={goToNextTrack}
-            className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-indigo-300/25 bg-indigo-500/12 px-4 py-3 text-sm font-bold text-white transition hover:bg-indigo-500/20"
+            className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-indigo-400/35 bg-indigo-500/12 px-4 py-3 text-sm font-bold text-yellow-500 transition hover:bg-indigo-500/20"
           >
             <SkipForward size={16} />
             Chanson suivante
@@ -235,20 +235,20 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
 
       <div className={`mt-5 grid gap-4 ${compact ? 'md:grid-cols-[1fr_auto]' : 'md:grid-cols-[1fr_auto] md:items-center'}`}>
         <div className={`rounded-2xl border border-sky-300/20 bg-[rgba(255,255,255,0.07)] ${compact ? 'p-3' : 'p-4'}`}>
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-white">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-yellow-500">
             <Volume2 size={14} />
             Chanson en cours
           </p>
-          <p className={`${compact ? 'mt-1 text-sm' : 'mt-2 text-lg'} font-black text-white`}>{currentTrack.title}</p>
-          <p className="mt-1 text-sm text-white">
+          <p className={`${compact ? 'mt-1 text-sm' : 'mt-2 text-lg'} font-black text-yellow-500`}>{currentTrack.title}</p>
+          <p className="mt-1 text-sm text-yellow-500">
             {isStarted ? (isLoading ? 'Chargement...' : isPlaying ? 'Lecture en cours' : 'Lecture en pause') : 'La radio attend ton clic'}
           </p>
         </div>
 
         {!compact ? (
-          <div className="rounded-2xl border border-sky-300/20 bg-[rgba(255,255,255,0.06)] px-4 py-3 text-sm text-white">
+          <div className="rounded-2xl border border-sky-300/30 bg-[rgba(255,255,255,0.5)] px-4 py-3 text-sm text-yellow-500">
             Playlist: {playlist.length} {playlistLabel}
-            <div className="mt-1 text-xs text-white">Boucle automatique sur la dernière chanson</div>
+            <div className="mt-1 text-xs text-yellow-500">Boucle automatique sur la dernière chanson</div>
           </div>
         ) : null}
       </div>
@@ -271,7 +271,7 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
       </audio>
 
       {!compact ? (
-        <div className="mt-4 flex items-center gap-2 text-xs text-white">
+        <div className="mt-4 flex items-center gap-2 text-xs text-yellow-500">
           <ChevronRight size={14} />
           Le lecteur utilise un élément audio HTML5 et fonctionne sans intégration Spotify.
         </div>

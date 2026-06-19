@@ -36,21 +36,21 @@ export function GameCard({ index, slug, name, icon, description }: GameCardProps
 
         {/* Icon + Title section */}
         <div className="relative mb-4 flex items-start gap-4">
-          <div className={`flex items-center justify-center rounded-xl ${scheme.accent} p-3 text-white shadow-[0_4px_12px_rgba(0,0,0,0.2)]`}>
+          <div className={`flex items-center justify-center rounded-xl ${scheme.accent} p-3 text-yellow-500 shadow-[0_4px_12px_rgba(0,0,0,0.2)]`}>
             {icon}
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-black text-white md:text-xl leading-tight">{name}</h3>
+            <h3 className="text-lg font-black text-yellow-500 md:text-xl leading-tight">{name}</h3>
           </div>
         </div>
 
         {/* Description */}
-        <p className="text-sm text-slate-300 leading-relaxed mb-5 line-clamp-2 group-hover:text-slate-100 transition-colors">
+        <p className="text-sm text-yellow-500 leading-relaxed mb-5 line-clamp-2 group-hover:text-yellow-400 transition-colors">
           {description}
         </p>
 
         {/* Play button */}
-        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-white to-slate-50 px-4 py-2 text-xs font-black text-slate-950 transition-all duration-300 group-hover:from-slate-100 group-hover:to-white inline-flex">
+        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-300 to-amber-300 px-4 py-2 text-xs font-black text-sky-900 transition-all duration-300 group-hover:from-yellow-200 group-hover:to-amber-200 inline-flex">
           <PlayCircle size={14} />
           Jouer
         </div>
