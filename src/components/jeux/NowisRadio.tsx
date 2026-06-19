@@ -84,6 +84,8 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
   const [isStarted, setIsStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const playlistReadyRef = useRef(false);
   const currentTrack = playlist[currentIndex] ?? playlist[0];
 
   useEffect(() => {
@@ -108,6 +110,26 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
         if (isMounted && validPlaylist.length > 0) {
           setPlaylist(validPlaylist);
           setCurrentIndex(0);
+          playlistReadyRef.current = true;
+
+          // Tentative d'autoplay dès que la playlist est chargée.
+          const audio = audioRef.current;
+          if (audio) {
+            audio.src = validPlaylist[0].src;
+            audio.load();
+            audio.play().then(() => {
+              if (isMounted) {
+                setIsStarted(true);
+                setIsPlaying(true);
+                setAutoplayBlocked(false);
+              }
+            }).catch(() => {
+              // Navigateur bloque l'autoplay: on affiche la bannière.
+              if (isMounted) {
+                setAutoplayBlocked(true);
+              }
+            });
+          }
         }
       } catch {
         // On garde la playlist par défaut si le manifeste n'est pas encore disponible.
@@ -189,6 +211,19 @@ export function NowisRadioPanel({ compact = false }: NowisRadioPanelProps) {
 
   return (
     <section className={`arcade-yellow-text rounded-3xl border border-sky-400/30 bg-[radial-gradient(circle_at_10%_0%,rgba(125,211,252,0.55),transparent_24%),radial-gradient(circle_at_92%_18%,rgba(103,232,249,0.40),transparent_18%),linear-gradient(180deg,rgba(224,242,254,0.96),rgba(186,230,253,0.92))] text-yellow-500 shadow-[0_20px_40px_rgba(56,189,248,0.25)] ${compact ? 'p-4 md:p-5' : 'p-5 md:p-6'}`}>
+      {autoplayBlocked ? (
+        <button
+          type="button"
+          onClick={() => {
+            setAutoplayBlocked(false);
+            startRadio();
+          }}
+          className="mb-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-yellow-300 via-amber-300 to-yellow-400 px-4 py-3 text-sm font-black text-sky-900 transition hover:brightness-110 animate-pulse"
+        >
+          <Play size={18} />
+          Appuie ici pour démarrer la radio 🎵
+        </button>
+      ) : null}
       <div className={`flex flex-col gap-4 ${compact ? '' : 'lg:flex-row lg:items-center lg:justify-between'}`}>
         <div className="max-w-2xl">
           <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-yellow-500">
