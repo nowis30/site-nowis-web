@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Gamepad2, ShieldCheck } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
@@ -15,8 +15,41 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const gameShellRef = useRef<HTMLDivElement>(null);
   const gameExperienceRef = useRef<HTMLDivElement>(null);
   const [pressed, setPressed] = useState<Record<string, boolean>>({});
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const [isImmersiveMode, setIsImmersiveMode] = useState(false);
   const controls = useMemo(() => getMobileControlsForGame(game.slug), [game.slug]);
   const hangmanLetters = useMemo(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), []);
+  const isExpandedMode = isNativeFullscreen || isImmersiveMode;
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const fullscreenElement = document.fullscreenElement;
+      const inFullscreen = Boolean(fullscreenElement);
+      setIsNativeFullscreen(inFullscreen);
+
+      if (!inFullscreen) {
+        setIsImmersiveMode(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isImmersiveMode) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isImmersiveMode]);
 
   const dispatchKeyToGame = (button: MobileControlButton, type: 'keydown' | 'keyup') => {
     const iframeWindow = iframeRef.current?.contentWindow;
@@ -72,6 +105,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
     try {
       if (target.requestFullscreen) {
         await target.requestFullscreen();
+        setIsNativeFullscreen(true);
         return;
       }
 
@@ -81,14 +115,28 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
 
       if (anyTarget.webkitRequestFullscreen) {
         await anyTarget.webkitRequestFullscreen();
+        setIsNativeFullscreen(true);
         return;
       }
     } catch {
       // Fallback ci-dessous.
     }
 
-    // Fallback mobile: ouvre le jeu seul, occupant toute la fenêtre du navigateur.
-    window.location.href = game.src;
+    // Fallback mobile: mode immersif intégré pour garder les commandes visibles.
+    setIsImmersiveMode(true);
+  };
+
+  const exitExpandedMode = async () => {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      try {
+        await document.exitFullscreen();
+      } catch {
+        // Ignore, puis bascule en mode page normal.
+      }
+    }
+
+    setIsNativeFullscreen(false);
+    setIsImmersiveMode(false);
   };
 
   const reloadGame = () => {
@@ -132,7 +180,14 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         </div>
       </section>
 
-      <div ref={gameExperienceRef} className="mt-8 space-y-6">
+      <div
+        ref={gameExperienceRef}
+        className={`mt-8 space-y-6 ${
+          isImmersiveMode
+            ? 'fixed inset-0 z-[100] mt-0 overflow-auto bg-[linear-gradient(180deg,rgba(224,242,254,0.98),rgba(186,230,253,0.98))] p-3 sm:p-4'
+            : ''
+        }`}
+      >
       <section className="rounded-[2rem] border border-sky-400/30 bg-[linear-gradient(180deg,rgba(224,242,254,0.96),rgba(186,230,253,0.92))] p-4 md:p-6">
         <div className="flex items-center gap-3 border-b border-sky-300/15 pb-4">
           <Gamepad2 size={18} className="text-yellow-50" />
@@ -151,7 +206,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             ref={iframeRef}
             src={game.src}
             title={game.name}
-            className="h-[70vh] min-h-[28rem] w-full bg-white md:h-[42rem]"
+            className={`w-full bg-white ${isExpandedMode ? 'h-[52dvh] min-h-[14rem] md:h-[62vh]' : 'h-[70vh] min-h-[28rem] md:h-[42rem]'}`}
             allow="fullscreen"
           />
         </div>
@@ -168,6 +223,15 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             >
               Plein ecran + commandes
             </button>
+            {isExpandedMode ? (
+              <button
+                type="button"
+                onClick={exitExpandedMode}
+                className="inline-flex min-h-10 items-center rounded-xl border border-rose-400/35 bg-rose-500/12 px-3 py-2 text-xs font-semibold text-yellow-500 transition hover:bg-rose-500/20"
+              >
+                Quitter plein ecran
+              </button>
+            ) : null}
             <a
               href={game.src}
               className="inline-flex min-h-10 items-center rounded-xl border border-cyan-400/35 bg-cyan-500/12 px-3 py-2 text-xs font-semibold text-yellow-500 transition hover:bg-cyan-500/20"
