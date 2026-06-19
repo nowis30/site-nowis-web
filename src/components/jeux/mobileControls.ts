@@ -10,12 +10,14 @@ export type MobileControlsConfig = {
   move: MobileControlButton[];
   actions: MobileControlButton[];
   hint: string;
+  letterPad?: boolean;
 };
 
 const noControls: MobileControlsConfig = {
   move: [],
   actions: [],
   hint: 'Ce jeu se joue surtout au toucher directement dans la zone du jeu.',
+  letterPad: false,
 };
 
 const arrowsOnly: MobileControlsConfig = {
@@ -27,12 +29,14 @@ const arrowsOnly: MobileControlsConfig = {
   ],
   actions: [],
   hint: 'Utilise les flèches tactiles pour déplacer ton personnage.',
+  letterPad: false,
 };
 
 const arrowsWithAction: MobileControlsConfig = {
   move: arrowsOnly.move,
   actions: [{ id: 'action', label: 'Action', key: ' ', code: 'Space', mode: 'tap' }],
   hint: 'Flèches pour bouger, bouton Action pour sauter/lancer.',
+  letterPad: false,
 };
 
 const leftRightAction: MobileControlsConfig = {
@@ -42,6 +46,7 @@ const leftRightAction: MobileControlsConfig = {
   ],
   actions: [{ id: 'action', label: 'Action', key: ' ', code: 'Space', mode: 'tap' }],
   hint: 'Utilise gauche/droite et Action.',
+  letterPad: false,
 };
 
 const upDownOnly: MobileControlsConfig = {
@@ -51,12 +56,21 @@ const upDownOnly: MobileControlsConfig = {
   ],
   actions: [],
   hint: 'Utilise haut/bas pour contrôler le joueur.',
+  letterPad: false,
 };
 
 const tapOnly: MobileControlsConfig = {
   move: [],
   actions: [{ id: 'action', label: 'Tap', key: ' ', code: 'Space', mode: 'tap' }],
   hint: 'Appuie sur Tap pour lancer l\'action principale.',
+  letterPad: false,
+};
+
+const hangmanLetters: MobileControlsConfig = {
+  move: [],
+  actions: [],
+  hint: 'Choisis les lettres directement avec le clavier mobile ci-dessous.',
+  letterPad: true,
 };
 
 const bySlug: Record<string, MobileControlsConfig> = {
@@ -75,7 +89,7 @@ const bySlug: Record<string, MobileControlsConfig> = {
   'speed-typing': noControls,
   typing: noControls,
   'wordle': noControls,
-  'hangman': noControls,
+  'hangman': hangmanLetters,
   'speak-number-guessing': noControls,
 };
 

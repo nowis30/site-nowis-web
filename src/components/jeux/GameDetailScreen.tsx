@@ -13,8 +13,10 @@ type GameDetailScreenProps = {
 export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const gameShellRef = useRef<HTMLDivElement>(null);
+  const gameExperienceRef = useRef<HTMLDivElement>(null);
   const [pressed, setPressed] = useState<Record<string, boolean>>({});
   const controls = useMemo(() => getMobileControlsForGame(game.slug), [game.slug]);
+  const hangmanLetters = useMemo(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), []);
 
   const dispatchKeyToGame = (button: MobileControlButton, type: 'keydown' | 'keyup') => {
     const iframeWindow = iframeRef.current?.contentWindow;
@@ -59,7 +61,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
   };
 
   const requestGameFullscreen = async () => {
-    const shell = gameShellRef.current;
+    const shell = gameExperienceRef.current ?? gameShellRef.current;
     const iframe = iframeRef.current;
     const target = shell ?? iframe;
 
@@ -130,7 +132,8 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         </div>
       </section>
 
-      <section className="mt-8 rounded-[2rem] border border-sky-400/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-4 md:p-6">
+      <div ref={gameExperienceRef} className="mt-8 space-y-6">
+      <section className="rounded-[2rem] border border-sky-400/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-4 md:p-6">
         <div className="flex items-center gap-3 border-b border-sky-300/15 pb-4">
           <Gamepad2 size={18} className="text-yellow-50" />
           <div>
@@ -142,7 +145,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         <div ref={gameShellRef} className="mt-5 overflow-hidden rounded-[1.5rem] border border-sky-300/15 bg-slate-950">
           <div className="flex items-center justify-between gap-3 border-b border-sky-300/15 px-4 py-3 text-xs text-yellow-50">
             <span>{game.src}</span>
-            <span>Page dédiée</span>
+            <span>Zone de jeu</span>
           </div>
           <iframe
             ref={iframeRef}
@@ -154,7 +157,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         </div>
       </section>
 
-      <section className="mt-6 rounded-[1.75rem] border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-4 md:p-5">
+      <section className="rounded-[1.75rem] border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-4 md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white">Commandes mobiles</p>
           <div className="flex flex-wrap gap-2">
@@ -163,7 +166,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
               onClick={requestGameFullscreen}
               className="inline-flex min-h-10 items-center rounded-xl border border-sky-300/25 bg-sky-500/12 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500/20"
             >
-              Plein ecran
+              Plein ecran + commandes
             </button>
             <a
               href={game.src}
@@ -268,7 +271,36 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             ) : null}
           </div>
         ) : null}
+
+        {controls.letterPad ? (
+          <div className="mt-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">Lettres Hangman</p>
+            <div className="grid grid-cols-7 gap-2 sm:grid-cols-9 md:grid-cols-13">
+              {hangmanLetters.map((letter) => {
+                const letterButton: MobileControlButton = {
+                  id: `letter-${letter}`,
+                  label: letter,
+                  key: letter.toLowerCase(),
+                  code: `Key${letter}`,
+                  mode: 'tap',
+                };
+
+                return (
+                  <button
+                    key={letter}
+                    type="button"
+                    onPointerDown={() => onControlDown(letterButton)}
+                    className="min-h-10 rounded-lg border border-emerald-300/25 bg-emerald-500/12 text-sm font-black text-white transition hover:bg-emerald-500/20"
+                  >
+                    {letter}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </section>
+      </div>
 
       <section className="mt-8 rounded-3xl border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-5 text-xs leading-6 text-yellow-50 md:p-6">
         <div className="flex items-start gap-3">
