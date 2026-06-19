@@ -13,13 +13,21 @@ const audioBaseUrl = '/audio/nowis-radio';
 const playlistUrl = `${audioBaseUrl}/playlist.json`;
 
 function toProxyAudioSrc(src: string) {
-  const fileName = src.split('/').pop();
+  const rawFileName = src.split('/').pop();
 
-  if (!fileName) {
+  if (!rawFileName) {
     return src;
   }
 
-  return `${audioBaseUrl}/${encodeURIComponent(fileName)}`;
+  let decodedFileName = rawFileName;
+
+  try {
+    decodedFileName = decodeURIComponent(rawFileName);
+  } catch {
+    // Si le nom n'est pas encodé correctement, on conserve la valeur brute.
+  }
+
+  return `${audioBaseUrl}/${encodeURIComponent(decodedFileName)}`;
 }
 
 function titleCase(value: string) {
