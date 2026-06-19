@@ -21,6 +21,17 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const hangmanLetters = useMemo(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), []);
   const isExpandedMode = isNativeFullscreen || isImmersiveMode;
 
+  // Jeux qui ont besoin d'une iframe plus haute pour être entièrement visibles.
+  const tallGames = new Set([
+    'solitaire',
+    'chess',
+    'minesweeper',
+    'sudoku',
+    'memory-card',
+    'sliding-puzzle',
+  ]);
+  const isTallGame = tallGames.has(game.slug);
+
   useEffect(() => {
     const onFullscreenChange = () => {
       const fullscreenElement = document.fullscreenElement;
@@ -206,7 +217,15 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             ref={iframeRef}
             src={game.src}
             title={game.name}
-            className={`w-full bg-white ${isExpandedMode ? 'h-[52dvh] min-h-[14rem] md:h-[62vh]' : 'h-[70vh] min-h-[28rem] md:h-[42rem]'}`}
+            className={`w-full bg-white ${
+              isExpandedMode
+                ? isTallGame
+                  ? 'h-[72dvh] min-h-[28rem] md:h-[78vh]'
+                  : 'h-[52dvh] min-h-[14rem] md:h-[62vh]'
+                : isTallGame
+                  ? 'h-[90vh] min-h-[40rem] md:h-[60rem]'
+                  : 'h-[70vh] min-h-[28rem] md:h-[42rem]'
+            }`}
             allow="fullscreen"
           />
         </div>
