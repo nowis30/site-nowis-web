@@ -1,12 +1,84 @@
+"use client";
+
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Gamepad2, ShieldCheck } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
+import { getMobileControlsForGame, type MobileControlButton } from './mobileControls';
 
 type GameDetailScreenProps = {
   game: GameEntry;
 };
 
 export function GameDetailScreen({ game }: GameDetailScreenProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [pressed, setPressed] = useState<Record<string, boolean>>({});
+  const controls = useMemo(() => getMobileControlsForGame(game.slug), [game.slug]);
+
+  const dispatchKeyToGame = (button: MobileControlButton, type: 'keydown' | 'keyup') => {
+    const iframeWindow = iframeRef.current?.contentWindow;
+
+    if (!iframeWindow) {
+      return;
+    }
+
+    const eventInit: KeyboardEventInit = {
+      key: button.key,
+      code: button.code,
+      bubbles: true,
+      cancelable: true,
+    };
+
+    try {
+      iframeWindow.dispatchEvent(new KeyboardEvent(type, eventInit));
+      iframeWindow.document.dispatchEvent(new KeyboardEvent(type, eventInit));
+    } catch {
+      // Certains jeux n'exposent pas les mêmes listeners; on ignore silencieusement.
+    }
+  };
+
+  const onControlDown = (button: MobileControlButton) => {
+    if (button.mode === 'tap') {
+      dispatchKeyToGame(button, 'keydown');
+      dispatchKeyToGame(button, 'keyup');
+      return;
+    }
+
+    setPressed((prev) => ({ ...prev, [button.id]: true }));
+    dispatchKeyToGame(button, 'keydown');
+  };
+
+  const onControlUp = (button: MobileControlButton) => {
+    if (button.mode === 'tap') {
+      return;
+    }
+
+    setPressed((prev) => ({ ...prev, [button.id]: false }));
+    dispatchKeyToGame(button, 'keyup');
+  };
+
+  const requestGameFullscreen = async () => {
+    const iframe = iframeRef.current;
+    if (!iframe) {
+      return;
+    }
+
+    try {
+      await iframe.requestFullscreen();
+    } catch {
+      // Certains navigateurs bloquent fullscreen sans geste utilisateur valide.
+    }
+  };
+
+  const reloadGame = () => {
+    const iframe = iframeRef.current;
+    if (!iframe) {
+      return;
+    }
+
+    iframe.src = game.src;
+  };
+
   return (
     <div className="arcade-yellow-text mx-auto max-w-7xl px-4 pb-16 pt-6 md:px-6 md:pt-10">
       <section className="relative overflow-hidden rounded-[2.25rem] border border-sky-400/20 bg-[radial-gradient(circle_at_10%_10%,rgba(59,130,246,0.26),transparent_22%),radial-gradient(circle_at_92%_12%,rgba(34,211,238,0.20),transparent_18%),radial-gradient(circle_at_52%_0%,rgba(96,165,250,0.14),transparent_20%),linear-gradient(180deg,rgba(8,15,32,0.99),rgba(6,28,68,0.98))] px-5 py-7 shadow-[0_30px_80px_rgba(0,0,0,0.42)] md:px-8 md:py-10">
@@ -54,12 +126,123 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
             <span>Page dédiée</span>
           </div>
           <iframe
+            ref={iframeRef}
             src={game.src}
             title={game.name}
             className="h-[30rem] w-full bg-white md:h-[42rem]"
             allow="fullscreen"
           />
         </div>
+      </section>
+
+      <section className="mt-6 rounded-[1.75rem] border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-4 md:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white">Commandes mobiles</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={requestGameFullscreen}
+              className="inline-flex min-h-10 items-center rounded-xl border border-sky-300/25 bg-sky-500/12 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500/20"
+            >
+              Plein ecran
+            </button>
+            <button
+              type="button"
+              onClick={reloadGame}
+              className="inline-flex min-h-10 items-center rounded-xl border border-slate-300/25 bg-slate-500/12 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-500/20"
+            >
+              Recharger
+            </button>
+          </div>
+        </div>
+
+        <p className="mt-3 text-sm text-slate-300">{controls.hint}</p>
+
+        {controls.move.length > 0 || controls.actions.length > 0 ? (
+          <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+            <div className="grid grid-cols-3 gap-2 max-w-[15rem]">
+              <div />
+              {controls.move.find((b) => b.id === 'up') ? (
+                <button
+                  type="button"
+                  onPointerDown={() => onControlDown(controls.move.find((b) => b.id === 'up')!)}
+                  onPointerUp={() => onControlUp(controls.move.find((b) => b.id === 'up')!)}
+                  onPointerCancel={() => onControlUp(controls.move.find((b) => b.id === 'up')!)}
+                  onPointerLeave={() => onControlUp(controls.move.find((b) => b.id === 'up')!)}
+                  className={`min-h-12 rounded-xl border text-base font-black transition ${pressed.up ? 'border-cyan-300 bg-cyan-500/30 text-white' : 'border-sky-300/25 bg-sky-500/12 text-white hover:bg-sky-500/20'}`}
+                >
+                  ↑
+                </button>
+              ) : (
+                <div />
+              )}
+              <div />
+
+              {controls.move.find((b) => b.id === 'left') ? (
+                <button
+                  type="button"
+                  onPointerDown={() => onControlDown(controls.move.find((b) => b.id === 'left')!)}
+                  onPointerUp={() => onControlUp(controls.move.find((b) => b.id === 'left')!)}
+                  onPointerCancel={() => onControlUp(controls.move.find((b) => b.id === 'left')!)}
+                  onPointerLeave={() => onControlUp(controls.move.find((b) => b.id === 'left')!)}
+                  className={`min-h-12 rounded-xl border text-base font-black transition ${pressed.left ? 'border-cyan-300 bg-cyan-500/30 text-white' : 'border-sky-300/25 bg-sky-500/12 text-white hover:bg-sky-500/20'}`}
+                >
+                  ←
+                </button>
+              ) : (
+                <div />
+              )}
+
+              {controls.move.find((b) => b.id === 'down') ? (
+                <button
+                  type="button"
+                  onPointerDown={() => onControlDown(controls.move.find((b) => b.id === 'down')!)}
+                  onPointerUp={() => onControlUp(controls.move.find((b) => b.id === 'down')!)}
+                  onPointerCancel={() => onControlUp(controls.move.find((b) => b.id === 'down')!)}
+                  onPointerLeave={() => onControlUp(controls.move.find((b) => b.id === 'down')!)}
+                  className={`min-h-12 rounded-xl border text-base font-black transition ${pressed.down ? 'border-cyan-300 bg-cyan-500/30 text-white' : 'border-sky-300/25 bg-sky-500/12 text-white hover:bg-sky-500/20'}`}
+                >
+                  ↓
+                </button>
+              ) : (
+                <div />
+              )}
+
+              {controls.move.find((b) => b.id === 'right') ? (
+                <button
+                  type="button"
+                  onPointerDown={() => onControlDown(controls.move.find((b) => b.id === 'right')!)}
+                  onPointerUp={() => onControlUp(controls.move.find((b) => b.id === 'right')!)}
+                  onPointerCancel={() => onControlUp(controls.move.find((b) => b.id === 'right')!)}
+                  onPointerLeave={() => onControlUp(controls.move.find((b) => b.id === 'right')!)}
+                  className={`min-h-12 rounded-xl border text-base font-black transition ${pressed.right ? 'border-cyan-300 bg-cyan-500/30 text-white' : 'border-sky-300/25 bg-sky-500/12 text-white hover:bg-sky-500/20'}`}
+                >
+                  →
+                </button>
+              ) : (
+                <div />
+              )}
+            </div>
+
+            {controls.actions.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {controls.actions.map((button) => (
+                  <button
+                    key={button.id}
+                    type="button"
+                    onPointerDown={() => onControlDown(button)}
+                    onPointerUp={() => onControlUp(button)}
+                    onPointerCancel={() => onControlUp(button)}
+                    onPointerLeave={() => onControlUp(button)}
+                    className={`min-h-12 rounded-xl border px-4 py-2 text-sm font-black transition ${pressed[button.id] ? 'border-fuchsia-300 bg-fuchsia-500/30 text-white' : 'border-fuchsia-300/25 bg-fuchsia-500/12 text-white hover:bg-fuchsia-500/20'}`}
+                  >
+                    {button.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       <section className="mt-8 rounded-3xl border border-sky-300/15 bg-[linear-gradient(180deg,rgba(8,18,38,0.96),rgba(10,30,64,0.96))] p-5 text-xs leading-6 text-yellow-50 md:p-6">
