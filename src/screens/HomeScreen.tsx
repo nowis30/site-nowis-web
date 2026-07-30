@@ -1,3 +1,5 @@
+ 'use client';
+
 import Link from 'next/link';
 import { ArrowRight, Disc3, FolderOpen, Gamepad2, House, Music2, Sparkles, UsersRound, Video } from 'lucide-react';
 import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
