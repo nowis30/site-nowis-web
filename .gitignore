@@ -36,3 +36,9 @@ coverage/
 tsconfig.tsbuildinfo
 archive/housing-domain/
 cleanup-reports/
+lighthouse-report.json
+lighthouse-summary.json
+manifest-checksum.txt
+*.idsig
+*test.png
+store_icon.png
