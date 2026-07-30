@@ -4,10 +4,10 @@ export const LAUNCH_END_LABEL = '1er juillet 2026' as const;
 
 export const REGULAR_PRICES = {
   workshops: {
-    minutes60: 120,
-    minutes90: 180,
-    hours2: 240,
-    hours3: 360,
+    minutes60: 500,
+    minutes90: 500,
+    hours2: 500,
+    hours3: 500,
   },
   hourly: 60,
   songs: {
