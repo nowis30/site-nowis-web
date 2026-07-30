@@ -103,3 +103,19 @@ export function trackPhoneClick(phoneHref: string) {
 
   return true;
 }
+
+export function trackRentalSiteClick(location: 'header' | 'home_feature' | 'home_card' | 'footer', destination: string) {
+  const normalizedDestination = destination.trim();
+  if (!normalizedDestination) {
+    return false;
+  }
+
+  if (ga4MeasurementId) {
+    sendGoogleEvent('rental_site_click', {
+      location,
+      destination: normalizedDestination,
+    });
+  }
+
+  return true;
+}

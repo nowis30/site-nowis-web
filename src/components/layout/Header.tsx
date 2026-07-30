@@ -8,6 +8,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { House } from 'lucide-react';
+import { rentalsPublicUrl } from '@/lib/rentals-url';
+import { trackRentalSiteClick } from '@/lib/tracking/google';
 
 const navLinks = [
   { label: 'Accueil', href: '/' },
@@ -39,6 +42,14 @@ export const Header: React.FC = () => {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
+
+  function trackRentalClick(location: 'header' | 'footer' | 'home_feature' | 'home_card') {
+    try {
+      trackRentalSiteClick(location, rentalsPublicUrl);
+    } catch {
+      // Analytics must never block navigation.
+    }
+  }
 
   useEffect(() => {
     function handleResize() {
@@ -74,6 +85,17 @@ export const Header: React.FC = () => {
               {link.label}
             </Link>
           ))}
+          <a
+            href={rentalsPublicUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group ml-1 inline-flex items-center gap-2 rounded-xl border border-[rgba(131,97,67,0.2)] bg-[rgba(255,252,247,0.96)] px-4 py-2.5 text-sm font-semibold text-[color:var(--site-heading)] shadow-[0_10px_20px_rgba(110,78,53,0.09)] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(131,97,67,0.35)] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/45"
+            aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+            onClick={() => trackRentalClick('header')}
+          >
+            <House size={16} aria-hidden="true" className="text-[color:var(--site-accent-strong)]" />
+            Logements a louer
+          </a>
           <Link
             href="/connexion"
             className="cta-primary ml-2 px-5 py-2.5 text-sm"
@@ -124,6 +146,20 @@ export const Header: React.FC = () => {
                       {link.label}
                     </Link>
                   ))}
+                  <a
+                    href={rentalsPublicUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[rgba(131,97,67,0.2)] bg-[rgba(255,252,247,0.95)] px-5 py-4 text-base font-semibold text-[color:var(--site-heading)] shadow-[0_10px_20px_rgba(107,72,42,0.12)] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/45"
+                    aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+                    onClick={() => {
+                      trackRentalClick('header');
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <span aria-hidden="true">🏠</span>
+                    Voir les logements a louer
+                  </a>
                   <Link
                     href="/connexion"
                     className="cta-primary mt-2 px-6 py-4 text-center text-base"

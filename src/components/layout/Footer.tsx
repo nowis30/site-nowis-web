@@ -1,10 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
+import { House } from 'lucide-react';
 import { FaFacebookF, FaInstagram, FaSpotify, FaYoutube } from 'react-icons/fa';
 import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
+import { rentalsPublicUrl } from '@/lib/rentals-url';
+import { trackRentalSiteClick } from '@/lib/tracking/google';
 
 const footerPlatforms = [
   {
@@ -35,6 +38,14 @@ const footerPlatforms = [
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+
+  function trackRentalClick() {
+    try {
+      trackRentalSiteClick('footer', rentalsPublicUrl);
+    } catch {
+      // Analytics must never block navigation.
+    }
+  }
 
   return (
     <footer className="mt-20 border-t border-[rgba(131,97,67,0.12)] bg-[radial-gradient(circle_at_top_left,_rgba(184,111,61,0.18),_transparent_22%),radial-gradient(circle_at_82%_10%,_rgba(203,165,120,0.22),_transparent_18%),linear-gradient(180deg,#f6f1ea_0%,#efe3d2_100%)] text-[color:var(--site-text)]">
@@ -137,6 +148,19 @@ export const Footer: React.FC = () => {
                   Créer un compte
                 </Link>
               </li>
+              <li>
+                <a
+                  href={rentalsPublicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]"
+                  aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+                  onClick={trackRentalClick}
+                >
+                  <House size={14} aria-hidden="true" />
+                  Logements a louer
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -156,6 +180,18 @@ export const Footer: React.FC = () => {
                 <Link href="/connexion" className="cta-secondary gap-2 rounded-lg px-4 py-2 text-sm text-[color:var(--site-accent-strong)]">
                   Portail client →
                 </Link>
+              </li>
+              <li>
+                <a
+                  href={rentalsPublicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--site-accent-strong)] transition hover:brightness-110"
+                  aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+                  onClick={trackRentalClick}
+                >
+                  Voir les logements disponibles →
+                </a>
               </li>
             </ul>
           </div>

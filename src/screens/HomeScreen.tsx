@@ -1,7 +1,9 @@
 import Link from 'next/link';
-import { ArrowRight, Disc3, FolderOpen, Gamepad2, Music2, Sparkles, UsersRound, Video } from 'lucide-react';
+import { ArrowRight, Disc3, FolderOpen, Gamepad2, House, Music2, Sparkles, UsersRound, Video } from 'lucide-react';
 import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 import { HeroVideoPlaceholder } from '@/components/marketing/HeroVideoPlaceholder';
+import { rentalsPublicUrl } from '@/lib/rentals-url';
+import { trackRentalSiteClick } from '@/lib/tracking/google';
 
 const HOME_INTRO_VIDEO_URL = process.env.NEXT_PUBLIC_HOME_INTRO_VIDEO_URL?.trim() || '';
 
@@ -33,6 +35,14 @@ const primaryActions = [
     href: '/jeux',
     cta: 'Ouvrir la page Jeux',
     icon: Gamepad2,
+  },
+  {
+    title: 'Logements a louer',
+    description: 'Decouvrez les logements disponibles et envoyez votre demande de visite.',
+    href: rentalsPublicUrl,
+    cta: 'Voir les logements',
+    icon: House,
+    external: true,
   },
 ];
 
@@ -73,6 +83,14 @@ const captureBlocks = [
 ];
 
 export function HomeScreen() {
+  function trackRentalClick(location: 'home_feature' | 'home_card') {
+    try {
+      trackRentalSiteClick(location, rentalsPublicUrl);
+    } catch {
+      // Analytics must never block navigation.
+    }
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-6 pb-16 pt-12 text-[color:var(--site-text)] md:pt-16">
       <section className="mt-6 rounded-3xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] p-6 shadow-soft md:p-10">
@@ -88,16 +106,13 @@ export function HomeScreen() {
             </p>
 
             {/* Zone facile à capturer pour la vidéo de présentation */}
-            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
               {primaryActions.map((action) => {
                 const Icon = action.icon;
-
-                return (
-                  <Link
-                    key={action.title}
-                    href={action.href}
-                    className="group rounded-2xl border border-[color:var(--site-border)] bg-white/80 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[color:var(--site-accent)]/35 hover:shadow-lg"
-                  >
+                const isExternal = 'external' in action && Boolean(action.external);
+                const commonClasses = 'group rounded-2xl border border-[color:var(--site-border)] bg-white/80 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[color:var(--site-accent)]/35 hover:shadow-lg';
+                const cardContent = (
+                  <>
                     <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[color:var(--site-accent-soft)] text-[color:var(--site-accent-strong)]">
                       <Icon size={22} />
                     </span>
@@ -106,6 +121,32 @@ export function HomeScreen() {
                     <span className="mt-4 inline-flex items-center text-sm font-semibold text-[color:var(--site-accent-strong)] transition group-hover:brightness-110">
                       {action.cta}
                     </span>
+                  </>
+                );
+
+                if (isExternal) {
+                  return (
+                    <a
+                      key={action.title}
+                      href={action.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={commonClasses}
+                      aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+                      onClick={() => trackRentalClick('home_card')}
+                    >
+                      {cardContent}
+                    </a>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={action.title}
+                    href={action.href}
+                    className={commonClasses}
+                  >
+                    {cardContent}
                   </Link>
                 );
               })}
@@ -113,6 +154,47 @@ export function HomeScreen() {
           </div>
 
           <HeroVideoPlaceholder videoUrl={HOME_INTRO_VIDEO_URL} className="h-full" />
+        </div>
+      </section>
+
+      <section className="mt-8 rounded-[2rem] border border-[rgba(120,103,76,0.2)] bg-[linear-gradient(145deg,rgba(252,246,236,0.95),rgba(235,245,232,0.92))] p-6 shadow-[0_18px_35px_rgba(103,84,56,0.12)] md:p-8 lg:p-10">
+        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
+          <div>
+            <span className="inline-flex items-center rounded-full border border-[rgba(131,97,67,0.2)] bg-white/75 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--site-accent-strong)]">
+              Nouveau service
+            </span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-[color:var(--site-heading)] md:text-4xl">Vous cherchez un logement?</h2>
+            <p className="mt-3 max-w-3xl text-base leading-7 text-[color:var(--site-muted)] md:text-lg">
+              Consultez les logements disponibles a Drummondville et dans les environs. Regardez les photos, filtrez votre recherche et envoyez directement votre demande de visite en ligne.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a
+                href={rentalsPublicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#2e4f3b,#4e6f56)] px-5 py-3 text-base font-semibold text-white shadow-[0_12px_24px_rgba(41,68,51,0.25)] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/50 sm:w-auto"
+                aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+                onClick={() => trackRentalClick('home_feature')}
+              >
+                Voir les logements disponibles
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
+              <p className="text-sm text-[color:var(--site-muted)]">Service offert par Simon Morin — Agent de location</p>
+            </div>
+            <p className="mt-3 text-sm font-medium text-[color:var(--site-heading)]">Drummondville et les environs</p>
+          </div>
+
+          <div className="flex justify-start lg:justify-end">
+            <div className="inline-flex items-center gap-3 rounded-3xl border border-[rgba(131,97,67,0.2)] bg-white/80 px-5 py-4 shadow-[0_10px_24px_rgba(84,69,44,0.13)]">
+              <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--site-accent-soft)] text-[color:var(--site-accent-strong)]">
+                <House size={28} aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-[color:var(--site-heading)]">Logements a louer</p>
+                <p className="text-xs text-[color:var(--site-muted)]">Visites en ligne disponibles</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
