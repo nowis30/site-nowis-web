@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { verifyClientPortalToken } from '@/lib/client-portal';
 import { prisma } from '@/lib/prisma';
@@ -291,7 +292,9 @@ export default async function ClientPortalPage({ params }: PageProps) {
                             <div className="mb-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-950/60">
                               {isImage ? (
                                 // Apercu visuel image
-                                <img src={downloadUrl} alt={file.originalName} className="max-h-64 w-full object-cover" />
+                                <div className="relative h-64 w-full">
+                                  <Image src={downloadUrl} alt={file.originalName} fill className="object-cover" />
+                                </div>
                               ) : null}
                               {isVideo ? (
                                 // Lecteur visuel video
@@ -536,7 +539,11 @@ export default async function ClientPortalPage({ params }: PageProps) {
 
                           return (
                             <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                              {isImage ? <img src={downloadUrl} alt={file.originalName} className="mb-3 max-h-64 w-full rounded-xl border border-slate-800 object-cover" /> : null}
+                              {isImage ? (
+                                <div className="relative mb-3 h-64 w-full overflow-hidden rounded-xl border border-slate-800">
+                                  <Image src={downloadUrl} alt={file.originalName} fill className="object-cover" />
+                                </div>
+                              ) : null}
                               {isVideo ? <video controls preload="metadata" className="mb-3 max-h-64 w-full rounded-xl border border-slate-800" src={downloadUrl} /> : null}
                               {isAudio ? <audio controls preload="metadata" className="mb-3 w-full" src={downloadUrl} /> : null}
 
