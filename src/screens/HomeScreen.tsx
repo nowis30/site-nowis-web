@@ -156,7 +156,7 @@ export function HomeScreen() {
           </div>
 
           <div className="order-1 lg:order-2">
-            <HeroVideoPlaceholder videoUrl={HOME_INTRO_VIDEO_URL} className="h-full" autoPlay muted loop />
+            <HeroVideoPlaceholder videoUrl={HOME_INTRO_VIDEO_URL} className="h-full" autoPlay loop />
           </div>
         </div>
       </section>

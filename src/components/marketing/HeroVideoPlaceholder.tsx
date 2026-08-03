@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PlayCircle } from 'lucide-react';
 
 type HeroVideoPlaceholderProps = {
@@ -18,11 +18,40 @@ function isYouTubeUrl(url: string) {
 export function HeroVideoPlaceholder({ videoUrl, className, autoPlay = false, muted = false, loop = false }: HeroVideoPlaceholderProps) {
   const normalizedVideoUrl = videoUrl?.trim() || '';
   const hasVideo = normalizedVideoUrl.length > 0;
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [videoUnavailable, setVideoUnavailable] = useState(false);
+  const [playBlocked, setPlayBlocked] = useState(false);
 
   useEffect(() => {
     setVideoUnavailable(false);
+    setPlayBlocked(false);
   }, [normalizedVideoUrl]);
+
+  useEffect(() => {
+    if (!autoPlay || muted || !videoRef.current) {
+      return;
+    }
+
+    const attemptPlay = async () => {
+      try {
+        await videoRef.current?.play();
+      } catch {
+        setPlayBlocked(true);
+      }
+    };
+
+    void attemptPlay();
+  }, [autoPlay, muted, normalizedVideoUrl]);
+
+  async function handlePlayWithSound() {
+    try {
+      await videoRef.current?.play();
+      setPlayBlocked(false);
+    } catch {
+      setPlayBlocked(true);
+    }
+  }
+
   const sectionClassName = [
     'rounded-3xl border border-[color:var(--site-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(247,238,226,0.95))] p-4 shadow-sm md:p-5',
     className,
@@ -49,24 +78,40 @@ export function HeroVideoPlaceholder({ videoUrl, className, autoPlay = false, mu
               allowFullScreen
             />
           ) : (
-            <video
-              className="aspect-video w-full bg-black object-contain"
-              controls
-              preload="metadata"
-              playsInline
-              autoPlay={autoPlay}
-              muted={muted}
-              loop={loop}
-              controlsList="nodownload"
-              aria-label="Vidéo de présentation Création Nowis"
-              onError={() => setVideoUnavailable(true)}
-            >
-              <source
-                src={normalizedVideoUrl}
+            <div className="relative">
+              <video
+                ref={videoRef}
+                className="aspect-video w-full bg-black object-contain"
+                controls
+                preload="metadata"
+                playsInline
+                autoPlay={autoPlay}
+                muted={muted}
+                loop={loop}
+                controlsList="nodownload"
+                aria-label="Vidéo de présentation Création Nowis"
                 onError={() => setVideoUnavailable(true)}
-              />
-              Votre navigateur ne supporte pas la lecture vidéo.
-            </video>
+              >
+                <source
+                  src={normalizedVideoUrl}
+                  onError={() => setVideoUnavailable(true)}
+                />
+                Votre navigateur ne supporte pas la lecture vidéo.
+              </video>
+              {playBlocked ? (
+                <button
+                  type="button"
+                  className="absolute inset-0 flex items-center justify-center bg-[rgba(15,10,6,0.28)] px-4 text-center"
+                  onClick={handlePlayWithSound}
+                  aria-label="Lancer la vidéo avec le son"
+                >
+                  <span className="inline-flex items-center gap-3 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[color:var(--site-heading)] shadow-lg">
+                    <PlayCircle size={20} className="text-[color:var(--site-accent-strong)]" />
+                    Toucher pour lancer avec le son
+                  </span>
+                </button>
+              ) : null}
+            </div>
           )
         ) : (
           <div className="aspect-video w-full">
