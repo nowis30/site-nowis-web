@@ -7,7 +7,7 @@ import { HeroVideoPlaceholder } from '@/components/marketing/HeroVideoPlaceholde
 import { rentalsPublicUrl } from '@/lib/rentals-url';
 import { trackRentalSiteClick } from '@/lib/tracking/google';
 
-const HOME_INTRO_VIDEO_URL = process.env.NEXT_PUBLIC_HOME_INTRO_VIDEO_URL?.trim() || '';
+const HOME_INTRO_VIDEO_URL = '/videos/publicite-video-creation-nowis-avec-simon-morin.mp4';
 
 const primaryActions = [
   {
@@ -94,31 +94,31 @@ export function HomeScreen() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-16 pt-12 text-[color:var(--site-text)] md:pt-16">
-      <section className="mt-6 rounded-3xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] p-6 shadow-soft md:p-10">
+    <div className="mx-auto max-w-6xl px-4 pb-14 pt-10 text-[color:var(--site-text)] sm:px-6 md:pt-16">
+      <section className="mt-5 rounded-3xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] p-5 shadow-soft sm:mt-6 sm:p-6 md:p-10">
         <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
-          <div>
+          <div className="order-2 lg:order-1">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Accueil</p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight text-[color:var(--site-heading)] md:text-6xl">Création Nowis, de la guitare à l’IA</h1>
-            <p className="mt-3 text-lg font-medium text-[color:var(--site-accent)] md:text-xl">
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[color:var(--site-heading)] sm:text-4xl md:text-6xl">Création Nowis, de la guitare à l’IA</h1>
+            <p className="mt-3 text-base font-medium text-[color:var(--site-accent)] sm:text-lg md:text-xl">
               Chansons personnalisées, musique IA, vidéos, ateliers et portail client.
             </p>
-            <p className="mt-4 max-w-3xl text-base leading-7 text-[color:var(--site-muted)] md:text-lg">
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-[color:var(--site-muted)] sm:text-base md:text-lg">
               Tu arrives au bon endroit pour écouter, te connecter ou me parler de ton projet.
             </p>
 
             {/* Zone facile à capturer pour la vidéo de présentation */}
-            <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+            <div className="mt-7 grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
               {primaryActions.map((action) => {
                 const Icon = action.icon;
                 const isExternal = 'external' in action && Boolean(action.external);
-                const commonClasses = 'group rounded-2xl border border-[color:var(--site-border)] bg-white/80 p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[color:var(--site-accent)]/35 hover:shadow-lg';
+                const commonClasses = 'group rounded-2xl border border-[color:var(--site-border)] bg-white/80 p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[color:var(--site-accent)]/35 hover:shadow-lg sm:p-5';
                 const cardContent = (
                   <>
                     <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[color:var(--site-accent-soft)] text-[color:var(--site-accent-strong)]">
                       <Icon size={22} />
                     </span>
-                    <h2 className="mt-4 text-xl font-bold text-[color:var(--site-heading)]">{action.title}</h2>
+                    <h2 className="mt-4 text-lg font-bold text-[color:var(--site-heading)] sm:text-xl">{action.title}</h2>
                     <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">{action.description}</p>
                     <span className="mt-4 inline-flex items-center text-sm font-semibold text-[color:var(--site-accent-strong)] transition group-hover:brightness-110">
                       {action.cta}
@@ -155,7 +155,9 @@ export function HomeScreen() {
             </div>
           </div>
 
-          <HeroVideoPlaceholder videoUrl={HOME_INTRO_VIDEO_URL} className="h-full" />
+          <div className="order-1 lg:order-2">
+            <HeroVideoPlaceholder videoUrl={HOME_INTRO_VIDEO_URL} className="h-full" autoPlay muted loop />
+          </div>
         </div>
       </section>
 
@@ -252,7 +254,7 @@ export function HomeScreen() {
             <article
               key={block.href}
               data-capture-zone={block.title}
-              className="rounded-xl border border-[color:var(--site-border)] bg-white/80 p-4 shadow-sm"
+              className="rounded-xl border border-[color:var(--site-border)] bg-white/80 p-4 shadow-sm min-h-full"
             >
               <h3 className="text-base font-semibold text-[color:var(--site-heading)] md:text-lg">{block.title}</h3>
               <p className="mt-1 text-sm leading-6 text-[color:var(--site-muted)]">{block.description}</p>
@@ -278,7 +280,7 @@ export function HomeScreen() {
             <Link
               key={link.href}
               href={link.href}
-              className="inline-flex items-center justify-between rounded-xl border border-[color:var(--site-border)] bg-white/70 px-4 py-3 text-sm font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
+              className="inline-flex min-h-14 items-center justify-between rounded-xl border border-[color:var(--site-border)] bg-white/70 px-4 py-3 text-sm font-semibold text-[color:var(--site-heading)] transition hover:bg-white"
             >
               {link.label}
               <Video size={16} className="text-[color:var(--site-accent-strong)]" />

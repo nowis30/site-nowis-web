@@ -23,6 +23,7 @@
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
@@ -35,6 +36,7 @@
     color: var(--site-text);
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
   }
 
   p {
@@ -86,6 +88,17 @@ select:focus {
   @apply outline-none ring-2 ring-offset-2;
   --tw-ring-color: rgba(201, 117, 71, 0.45);
   --tw-ring-offset-color: #fcf7f1;
+}
+
+@media (max-width: 768px) {
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary {
+    touch-action: manipulation;
+  }
 }
 
 .crm-main-scroll .finance-form-surface {

@@ -24,7 +24,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="public-site site-background relative flex min-h-screen flex-col overflow-x-clip text-[color:var(--site-text)]">
+    <div className="public-site site-background relative flex min-h-screen flex-col overflow-x-clip pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] text-[color:var(--site-text)]">
       {/* Header - Navigation */}
       <div>
         <Header />
