@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
-import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
+import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 
 const workshopPrices = [
   { label: '60 minutes', regular: REGULAR_PRICES.workshops.minutes60 },
@@ -11,7 +11,6 @@ const workshopPrices = [
 ];
 
 const groupRegularPrice = REGULAR_PRICES.groupFromPerPerson;
-const groupLaunchPrice = getLaunchPrice(groupRegularPrice);
 
 export const metadata: Metadata = buildMetadata({
   title: 'Atelier de création musicale avec l\'IA | Nowis Morin',
@@ -578,11 +577,11 @@ export default function AtelierCreatifPage() {
                 le rythme du groupe, le cadre de l activite et le niveau d implication souhaite.
               </p>
               <p>
-                La meme logique tarifaire s applique partout : chaque duree affiche un prix regulier et un prix avec rabais {LAUNCH_DISCOUNT_PERCENT} %. Pour certains groupes, une formule lancement peut aussi etre offerte a {formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou {formatPrice(groupLaunchPrice, ' / personne')} avec rabais.
+                La meme logique tarifaire s applique partout : chaque duree affiche un prix regulier clair. Pour certains groupes, une formule groupe peut aussi etre offerte a partir de {formatPrice(groupRegularPrice, ' / personne')}.
               </p>
               <ul className="mt-2 space-y-3">
                 {[
-                  ...workshopPrices.map((item) => `${item.label} : prix régulier ${formatPrice(item.regular)} · rabais ${formatPrice(getLaunchPrice(item.regular))}`),
+                  ...workshopPrices.map((item) => `${item.label} : ${formatPrice(item.regular)}`),
                   'Adaptable selon la taille du groupe',
                   'Aucun équipement spécial requis de votre côté',
                   'En salle de classe, salle communautaire ou autre',
@@ -612,13 +611,12 @@ export default function AtelierCreatifPage() {
             {workshopPrices.map((item) => (
               <div key={item.label} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-4 text-sm font-semibold text-[color:var(--site-heading)]">
                 <p>{item.label}</p>
-                <p className="mt-1 text-xs text-[color:var(--site-soft)]">Prix régulier : {formatPrice(item.regular)}</p>
-                <p className="mt-1 text-sm text-emerald-300">Avec rabais {LAUNCH_DISCOUNT_PERCENT} % : {formatPrice(getLaunchPrice(item.regular))}</p>
+                <p className="mt-1 text-xs text-[color:var(--site-soft)]">Prix : {formatPrice(item.regular)}</p>
               </div>
             ))}
           </div>
           <p className="mt-6 text-sm leading-7 text-[color:var(--site-muted)]">
-            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a {formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou {formatPrice(groupLaunchPrice, ' / personne')} avec rabais {LAUNCH_DISCOUNT_PERCENT} % pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
+            Formule groupe disponible. Certaines activites peuvent aussi etre offertes a partir de {formatPrice(groupRegularPrice, ' / personne')} pour les ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
           </p>
         </div>
       </section>

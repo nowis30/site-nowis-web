@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { ArrowRight, Disc3, FolderOpen, Gamepad2, House, Music2, Sparkles, UsersRound, Video } from 'lucide-react';
-import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
 import { HeroVideoPlaceholder } from '@/components/marketing/HeroVideoPlaceholder';
 import { rentalsPublicUrl } from '@/lib/rentals-url';
 import { trackRentalSiteClick } from '@/lib/tracking/google';
@@ -288,8 +287,6 @@ export function HomeScreen() {
           ))}
         </div>
       </section>
-
-      <LaunchOfferBanner variant="hero" compact />
     </div>
   );
 }

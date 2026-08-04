@@ -81,9 +81,6 @@ export default async function AtelierBookingPage({ params }: { params: { token: 
             <div className="rounded-2xl bg-[color:var(--site-bg-soft)] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-soft)]">Prix</p>
               <p className="mt-1 text-2xl font-bold text-[color:var(--site-heading)]">{formatMoney(workshop.finalPrice ? Number(workshop.finalPrice) : null)}</p>
-              {workshop.discountPercent ? (
-                <p className="mt-1 text-sm font-semibold text-emerald-700">Rabais applique: {Number(workshop.discountPercent)} %</p>
-              ) : null}
             </div>
           </div>
 

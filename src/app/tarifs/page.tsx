@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
-import { LaunchOfferBanner } from '@/components/marketing/LaunchOfferBanner';
-import { formatPrice, getLaunchPrice, LAUNCH_DISCOUNT_PERCENT, REGULAR_PRICES } from '@/data/pricing';
+import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 
 export const metadata = buildMetadata({
   title: 'Tarifs — Création Nowis | Ateliers, chansons personnalisées et services créatifs',
@@ -45,19 +44,14 @@ const ateliers = [
 ];
 
 const hourlyRegularPrice = REGULAR_PRICES.hourly;
-const hourlyLaunchPrice = getLaunchPrice(hourlyRegularPrice);
 const groupRegularPrice = REGULAR_PRICES.groupFromPerPerson;
-const groupLaunchPrice = getLaunchPrice(groupRegularPrice);
 const memorySongRegularPrice = REGULAR_PRICES.songs.memorySong;
-const memorySongLaunchPrice = getLaunchPrice(memorySongRegularPrice);
 const songVideoRegularPrice = REGULAR_PRICES.songs.videoWithSong;
-const songVideoLaunchPrice = getLaunchPrice(songVideoRegularPrice);
 
 const servicesPersonnalises = [
   {
     name: 'Tarif de base universel',
     regularPrice: hourlyRegularPrice,
-    launchPrice: hourlyLaunchPrice,
     suffix: ' / h',
     conditions: 'Minimum 1 heure',
     desc: 'Pour l accompagnement creatif, les mandats ponctuels et les besoins personnalises qui suivent la meme base horaire.',
@@ -74,14 +68,12 @@ const produits = [
   {
     name: 'Chanson souvenir',
     regularPrice: memorySongRegularPrice,
-    launchPrice: memorySongLaunchPrice,
     format: 'Simple',
     desc: 'Creation d une chanson amusante ou souvenir a partir des informations fournies.',
   },
   {
     name: 'Vidéo IA avec chanson',
     regularPrice: songVideoRegularPrice,
-    launchPrice: songVideoLaunchPrice,
     format: 'Standard',
     desc: 'Video souvenir ou amusante avec chanson IA, en format simple.',
   },
@@ -102,24 +94,16 @@ const inclus = [
 ];
 
 const preferentiels = [
-  { clientele: 'Ecoles', note: `Formule groupe possible : prix regulier ${formatPrice(groupRegularPrice, ' / personne')}, avec rabais ${LAUNCH_DISCOUNT_PERCENT} % : ${formatPrice(groupLaunchPrice, ' / personne')}` },
+  { clientele: 'Ecoles', note: `Formule groupe possible a partir de ${formatPrice(groupRegularPrice, ' / personne')}` },
   { clientele: 'Maisons des jeunes', note: 'Option groupe disponible pour les activites collectives et les series d ateliers' },
   { clientele: 'Residences pour aines', note: 'Tarification adaptee possible selon le contexte et le nombre de participants' },
-  { clientele: 'Organismes et groupes prives', note: 'Formule lancement de groupe disponible pour certains mandats' },
+  { clientele: 'Organismes et groupes prives', note: 'Formule groupe disponible pour certains mandats' },
 ];
 
-function DiscountPrice({ regular, promo, suffix = '' }: { regular: number; promo: number; suffix?: string }) {
+function RegularPrice({ amount, suffix = '' }: { amount: number; suffix?: string }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-sm text-[color:var(--site-soft)]">
-        Prix régulier:{' '}
-        <span className="line-through decoration-2 decoration-rose-300/70">
-          {formatPrice(regular, suffix)}
-        </span>
-      </p>
-      <p className="text-base font-semibold text-emerald-200">
-        Avec rabais {LAUNCH_DISCOUNT_PERCENT} %: {formatPrice(promo, suffix)}
-      </p>
+      <p className="text-base font-semibold text-emerald-200">Prix : {formatPrice(amount, suffix)}</p>
     </div>
   );
 }
@@ -129,8 +113,6 @@ function DiscountPrice({ regular, promo, suffix = '' }: { regular: number; promo
 export default function TarifsPage() {
   return (
     <main className="text-[color:var(--site-text)]">
-      <LaunchOfferBanner />
-
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
         <div
@@ -148,10 +130,10 @@ export default function TarifsPage() {
             Tarifs — Création Nowis
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-            La grille officielle de Creation Nowis est maintenant simple et coherente partout sur le site. Le tarif horaire regulier est de {formatPrice(hourlyRegularPrice, ' / h')} et l offre de lancement applique {LAUNCH_DISCOUNT_PERCENT} % de rabais, soit {formatPrice(hourlyLaunchPrice, ' / h')}. La formule de groupe peut aussi etre offerte a {formatPrice(groupRegularPrice, ' / personne')} en prix regulier, ou {formatPrice(groupLaunchPrice, ' / personne')} avec rabais.
+            La grille officielle de Creation Nowis est maintenant simple et coherente partout sur le site. Le tarif horaire regulier est de {formatPrice(hourlyRegularPrice, ' / h')}. La formule de groupe peut aussi etre offerte a partir de {formatPrice(groupRegularPrice, ' / personne')}.
           </p>
           <div className="mt-4 inline-flex rounded-2xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-3">
-            <DiscountPrice regular={hourlyRegularPrice} promo={hourlyLaunchPrice} suffix=" / h" />
+            <RegularPrice amount={hourlyRegularPrice} suffix=" / h" />
           </div>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
@@ -181,7 +163,7 @@ export default function TarifsPage() {
             Formules d&apos;ateliers
           </h2>
           <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
-            Meme logique tarifaire partout : chaque formule d atelier affiche maintenant son prix regulier et son prix avec rabais {LAUNCH_DISCOUNT_PERCENT} %. Deplacement inclus jusqu a 100 km aller-retour depuis Drummondville.
+            Meme logique tarifaire partout : chaque formule d atelier affiche maintenant son prix regulier. Deplacement inclus jusqu a 100 km aller-retour depuis Drummondville.
           </p>
 
           <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -204,7 +186,7 @@ export default function TarifsPage() {
                 <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{a.desc}</p>
                 <div className="mt-5 border-t border-white/10 pt-4">
                   <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Tarif</span>
-                  <DiscountPrice regular={a.regularPrice} promo={getLaunchPrice(a.regularPrice)} />
+                  <RegularPrice amount={a.regularPrice} />
                 </div>
               </article>
             ))}
@@ -248,9 +230,9 @@ export default function TarifsPage() {
                   <div>
                     <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{s.name}</h3>
                   </div>
-                  {s.regularPrice !== undefined && s.launchPrice !== undefined ? (
+                  {s.regularPrice !== undefined ? (
                     <div className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-2 text-right">
-                      <DiscountPrice regular={s.regularPrice} promo={s.launchPrice} suffix={s.suffix} />
+                      <RegularPrice amount={s.regularPrice} suffix={s.suffix} />
                     </div>
                   ) : (
                     <span className="shrink-0 rounded-xl border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-sm font-bold text-primary-200">
@@ -280,8 +262,8 @@ export default function TarifsPage() {
               <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{p.desc}</p>
               <div className="mt-5 space-y-1">
                 <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Tarif</span>
-                {p.regularPrice !== undefined && p.launchPrice !== undefined ? (
-                  <DiscountPrice regular={p.regularPrice} promo={p.launchPrice} />
+                {p.regularPrice !== undefined ? (
+                  <RegularPrice amount={p.regularPrice} />
                 ) : (
                   <span className="block text-2xl font-bold text-amber-200">{p.tarif}</span>
                 )}
@@ -311,7 +293,7 @@ export default function TarifsPage() {
               ))}
             </div>
             <p className="mt-5 text-sm leading-7 text-[color:var(--site-muted)]">
-              Ideal pour : ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives. Avec rabais {LAUNCH_DISCOUNT_PERCENT} %, cette formule descend a {formatPrice(groupLaunchPrice, ' / personne')}.
+              Ideal pour : ecoles, maisons des jeunes, residences pour aines, organismes communautaires et groupes prives.
             </p>
           </div>
 
@@ -354,14 +336,14 @@ export default function TarifsPage() {
             </thead>
             <tbody className="divide-y divide-[rgba(131,97,67,0.08)]">
               {[
-                { service: 'Atelier 60 minutes', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.minutes60)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.minutes60))}` },
-                { service: 'Atelier 90 minutes', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.minutes90)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.minutes90))}` },
-                { service: 'Atelier 2 heures', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.hours2)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.hours2))}` },
-                { service: 'Atelier 3 heures', tarif: `Prix régulier: ${formatPrice(REGULAR_PRICES.workshops.hours3)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(getLaunchPrice(REGULAR_PRICES.workshops.hours3))}` },
-                { service: 'Tarif horaire', tarif: `Prix régulier: ${formatPrice(hourlyRegularPrice, ' / h')} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(hourlyLaunchPrice, ' / h')}` },
-                { service: 'Formule groupe', tarif: `Prix régulier: ${formatPrice(groupRegularPrice, ' / personne')} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(groupLaunchPrice, ' / personne')}` },
-                { service: 'Chanson souvenir', tarif: `Prix régulier: ${formatPrice(memorySongRegularPrice)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(memorySongLaunchPrice)}` },
-                { service: 'Video IA avec chanson', tarif: `Prix régulier: ${formatPrice(songVideoRegularPrice)} · Rabais ${LAUNCH_DISCOUNT_PERCENT} %: ${formatPrice(songVideoLaunchPrice)}` },
+                { service: 'Atelier 60 minutes', tarif: formatPrice(REGULAR_PRICES.workshops.minutes60) },
+                { service: 'Atelier 90 minutes', tarif: formatPrice(REGULAR_PRICES.workshops.minutes90) },
+                { service: 'Atelier 2 heures', tarif: formatPrice(REGULAR_PRICES.workshops.hours2) },
+                { service: 'Atelier 3 heures', tarif: formatPrice(REGULAR_PRICES.workshops.hours3) },
+                { service: 'Tarif horaire', tarif: formatPrice(hourlyRegularPrice, ' / h') },
+                { service: 'Formule groupe', tarif: `${formatPrice(groupRegularPrice, ' / personne')} (a partir de)` },
+                { service: 'Chanson souvenir', tarif: formatPrice(memorySongRegularPrice) },
+                { service: 'Video IA avec chanson', tarif: formatPrice(songVideoRegularPrice) },
                 { service: 'Projet special', tarif: 'Sur soumission' },
               ].map((row, i) => (
                 <tr key={row.service} className={i % 2 === 0 ? 'bg-transparent' : 'bg-[rgba(255,248,241,0.72)]'}>
