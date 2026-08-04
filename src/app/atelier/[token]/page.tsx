@@ -8,7 +8,7 @@ function formatMoney(value: number | null | undefined) {
 }
 
 function durationLabel(preset: string, customMinutes: number | null) {
-  if (preset === 'M60') return '60 minutes';
+  if (preset === 'M60') return '1 h 30 (minimum recommandé)';
   if (preset === 'M90') return '90 minutes';
   if (preset === 'M120') return '120 minutes';
   if (preset === 'PERSONNALISE' && customMinutes) return `${customMinutes} minutes`;

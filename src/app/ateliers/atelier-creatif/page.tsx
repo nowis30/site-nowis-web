@@ -4,10 +4,8 @@ import { buildMetadata } from '@/lib/seo';
 import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 
 const workshopPrices = [
-  { label: '60 minutes', regular: REGULAR_PRICES.workshops.minutes60 },
-  { label: '90 minutes', regular: REGULAR_PRICES.workshops.minutes90 },
+  { label: '1 h 30', regular: REGULAR_PRICES.workshops.minutes90 },
   { label: '2 heures', regular: REGULAR_PRICES.workshops.hours2 },
-  { label: '3 heures', regular: REGULAR_PRICES.workshops.hours3 },
 ];
 
 const groupRegularPrice = REGULAR_PRICES.groupFromPerPerson;
@@ -180,7 +178,7 @@ const faqs = [
   },
   {
     q: 'Combien de temps dure l\'activité ?',
-    a: 'L atelier peut etre propose en 60 minutes, 90 minutes, 2 heures ou 3 heures. La formule est choisie selon votre groupe et votre contexte, avec une grille simple et affichee clairement.',
+    a: 'La duree habituelle est de 1 h 30 a 2 heures. Selon la dynamique du groupe et la participation, l atelier peut depasser un peu.',
   },
 ];
 
@@ -573,7 +571,7 @@ export default function AtelierCreatifPage() {
             <div className="space-y-5 text-[1rem] leading-8 text-[color:var(--site-muted)]">
               <p>
                 L atelier est offert en{' '}
-                <strong className="text-[color:var(--site-heading)]">60 minutes, 90 minutes, 2 heures ou 3 heures</strong>, selon
+                <strong className="text-[color:var(--site-heading)]">1 h 30 ou 2 heures</strong>, selon
                 le rythme du groupe, le cadre de l activite et le niveau d implication souhaite.
               </p>
               <p>

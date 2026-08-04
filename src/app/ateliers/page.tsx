@@ -5,10 +5,8 @@ import { buildFaqSchema, buildServiceSchema } from '@/lib/structured-data';
 import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 
 const workshopPrices = [
-  { label: '60 minutes', regular: REGULAR_PRICES.workshops.minutes60 },
-  { label: '90 minutes', regular: REGULAR_PRICES.workshops.minutes90 },
+  { label: '1 h 30', regular: REGULAR_PRICES.workshops.minutes90 },
   { label: '2 heures', regular: REGULAR_PRICES.workshops.hours2 },
-  { label: '3 heures', regular: REGULAR_PRICES.workshops.hours3 },
 ];
 
 const groupRegularPrice = REGULAR_PRICES.groupFromPerPerson;
@@ -36,7 +34,7 @@ const faqItems = [
   },
   {
     q: 'Quelle est la durée habituelle ?',
-    a: 'Les formats affiches sont clairs : 60 minutes, 90 minutes, 2 heures ou 3 heures. Cela permet de choisir une formule adaptee a votre groupe sans ambiguite.',
+    a: 'La duree habituelle est de 1 h 30 a 2 heures. Selon la dynamique du groupe, l atelier peut depasser un peu pour bien conclure l experience.',
   },
   {
     q: 'Quel est le coût d\'un atelier ?',
@@ -235,7 +233,7 @@ export default function AteliersPage() {
               Comment se déroule un atelier
             </h2>
             <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
-              Un format au choix de 60 minutes, 90 minutes, 2 heures ou 3 heures, guide du debut a la fin par Nowis Morin.
+                Un format habituel de 1 h 30 a 2 heures, guide du debut a la fin par Nowis Morin. Selon le groupe, l atelier peut depasser legerement.
             </p>
           </div>
           <div className="mt-10 grid gap-3 md:grid-cols-2">
@@ -292,7 +290,7 @@ export default function AteliersPage() {
             <span className="text-3xl" role="img" aria-hidden="true">⏱️</span>
             <h3 className="mt-4 font-display text-2xl text-white">Durée adaptable</h3>
             <p className="mt-2 text-sm leading-7 text-slate-300">
-              Choisissez la formule qui convient a votre groupe : <strong className="text-white">60 minutes = {formatPrice(REGULAR_PRICES.workshops.minutes60)}</strong>, <strong className="text-white">90 minutes = {formatPrice(REGULAR_PRICES.workshops.minutes90)}</strong>, <strong className="text-white">2 heures = {formatPrice(REGULAR_PRICES.workshops.hours2)}</strong> ou <strong className="text-white">3 heures = {formatPrice(REGULAR_PRICES.workshops.hours3)}</strong>.
+              Choisissez la formule qui convient a votre groupe : <strong className="text-white">1 h 30 = {formatPrice(REGULAR_PRICES.workshops.minutes90)}</strong> ou <strong className="text-white">2 heures = {formatPrice(REGULAR_PRICES.workshops.hours2)}</strong>. Selon le contexte, l atelier peut depasser un peu.
             </p>
           </div>
           <div className="rounded-[2rem] border border-emerald-400/15 bg-emerald-500/[0.06] p-7">

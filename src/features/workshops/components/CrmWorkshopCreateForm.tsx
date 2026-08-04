@@ -299,19 +299,19 @@ export function CrmWorkshopCreateForm() {
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-200">Durée prévue</span>
             <select value={form.durationPreset} onChange={(event) => setForm((current) => ({ ...current, durationPreset: event.target.value }))} className={workshopSelectLgClassName}>
-              <option value="M60">60 minutes</option>
-              <option value="M90">90 minutes</option>
-              <option value="M120">120 minutes</option>
+              <option value="M90">1 h 30</option>
+              <option value="M120">2 heures</option>
               <option value="PERSONNALISE">Personnalisé</option>
             </select>
           </label>
           {form.durationPreset === 'PERSONNALISE' ? (
             <label>
               <span className="mb-1 block text-sm font-medium text-slate-200">Durée personnalisée (minutes)</span>
-              <input type="number" min={1} value={form.durationCustomMinutes} onChange={(event) => setForm((current) => ({ ...current, durationCustomMinutes: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white" />
+              <input type="number" min={90} value={form.durationCustomMinutes} onChange={(event) => setForm((current) => ({ ...current, durationCustomMinutes: event.target.value }))} className="min-h-[52px] w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 text-base text-white" />
             </label>
           ) : null}
         </div>
+        <p className="mt-3 text-xs text-slate-400">Durée habituelle : 1 h 30 à 2 heures. Selon le groupe, l’atelier peut dépasser légèrement.</p>
       </section>
 
       <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6">

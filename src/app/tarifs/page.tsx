@@ -14,15 +14,8 @@ export const metadata = buildMetadata({
 
 const ateliers = [
   {
-    name: 'Atelier 60 minutes',
-    duree: '60 minutes',
-    regularPrice: REGULAR_PRICES.workshops.minutes60,
-    desc: 'Format direct pour initier un groupe a la creation musicale avec l IA et produire un premier resultat concret.',
-    accent: false,
-  },
-  {
-    name: 'Atelier 90 minutes',
-    duree: '90 minutes',
+    name: 'Atelier 1 h 30',
+    duree: '1 h 30',
     regularPrice: REGULAR_PRICES.workshops.minutes90,
     desc: 'Formule la plus frequente pour aller plus loin dans les idees, les paroles et la mise en chanson.',
     accent: false,
@@ -33,13 +26,6 @@ const ateliers = [
     regularPrice: REGULAR_PRICES.workshops.hours2,
     desc: 'Atelier approfondi pour laisser plus de place a la participation, a l expression et au raffinement du resultat.',
     accent: true,
-  },
-  {
-    name: 'Atelier 3 heures',
-    duree: '3 heures',
-    regularPrice: REGULAR_PRICES.workshops.hours3,
-    desc: 'Experience immersive pour les groupes qui veulent une demarche plus complete ou un moment fort sur mesure.',
-    accent: false,
   },
 ];
 
@@ -163,10 +149,10 @@ export default function TarifsPage() {
             Formules d&apos;ateliers
           </h2>
           <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
-            Meme logique tarifaire partout : chaque formule d atelier affiche maintenant son prix regulier. Deplacement inclus jusqu a 100 km aller-retour depuis Drummondville.
+            Meme logique tarifaire partout : la duree habituelle des ateliers est de 1 h 30 a 2 heures, avec un leger depassement possible selon la dynamique du groupe. Deplacement inclus jusqu a 100 km aller-retour depuis Drummondville.
           </p>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
             {ateliers.map((a) => (
               <article
                 key={a.name}
@@ -336,10 +322,8 @@ export default function TarifsPage() {
             </thead>
             <tbody className="divide-y divide-[rgba(131,97,67,0.08)]">
               {[
-                { service: 'Atelier 60 minutes', tarif: formatPrice(REGULAR_PRICES.workshops.minutes60) },
-                { service: 'Atelier 90 minutes', tarif: formatPrice(REGULAR_PRICES.workshops.minutes90) },
+                { service: 'Atelier 1 h 30', tarif: formatPrice(REGULAR_PRICES.workshops.minutes90) },
                 { service: 'Atelier 2 heures', tarif: formatPrice(REGULAR_PRICES.workshops.hours2) },
-                { service: 'Atelier 3 heures', tarif: formatPrice(REGULAR_PRICES.workshops.hours3) },
                 { service: 'Tarif horaire', tarif: formatPrice(hourlyRegularPrice, ' / h') },
                 { service: 'Formule groupe', tarif: `${formatPrice(groupRegularPrice, ' / personne')} (a partir de)` },
                 { service: 'Chanson souvenir', tarif: formatPrice(memorySongRegularPrice) },

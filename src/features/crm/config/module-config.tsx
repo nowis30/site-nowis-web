@@ -540,9 +540,8 @@ export const workshopRequestsConfig: ModulePageConfig = {
       type: 'select',
       required: true,
       options: [
-        { value: 'M60', label: '60 min' },
-        { value: 'M90', label: '90 min' },
-        { value: 'M120', label: '120 min' },
+        { value: 'M90', label: '1 h 30' },
+        { value: 'M120', label: '2 h' },
         { value: 'PERSONNALISE', label: 'Personnalisée' },
       ],
     },
