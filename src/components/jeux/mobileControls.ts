@@ -35,7 +35,7 @@ const arrowsOnly: MobileControlsConfig = {
 const arrowsWithAction: MobileControlsConfig = {
   move: arrowsOnly.move,
   actions: [{ id: 'action', label: 'Action', key: ' ', code: 'Space', mode: 'tap' }],
-  hint: 'Flèches pour bouger, bouton Action pour sauter/lancer.',
+  hint: 'Flèches pour bouger, bouton Action pour l’action principale.',
   letterPad: false,
 };
 
@@ -49,22 +49,24 @@ const leftRightAction: MobileControlsConfig = {
   letterPad: false,
 };
 
-const upDownOnly: MobileControlsConfig = {
+const upDownAction: MobileControlsConfig = {
   move: [
     { id: 'up', label: '↑', key: 'ArrowUp', code: 'ArrowUp', mode: 'hold' },
     { id: 'down', label: '↓', key: 'ArrowDown', code: 'ArrowDown', mode: 'hold' },
   ],
-  actions: [],
-  hint: 'Utilise haut/bas pour contrôler le joueur.',
+  actions: [{ id: 'action', label: 'Démarrer', key: ' ', code: 'Space', mode: 'tap' }],
+  hint: 'Utilise haut/bas pour la raquette et Démarrer si la partie est en attente.',
   letterPad: false,
 };
 
-const tapOnly: MobileControlsConfig = {
-  move: [],
-  actions: [{ id: 'action', label: 'Tap', key: ' ', code: 'Space', mode: 'tap' }],
-  hint: 'Appuie sur Tap pour lancer l\'action principale.',
-  letterPad: false,
-};
+function tapControl(label: string): MobileControlsConfig {
+  return {
+    move: [],
+    actions: [{ id: 'action', label, key: ' ', code: 'Space', mode: 'tap' }],
+    hint: `Appuie sur ${label} pour lancer l’action principale.`,
+    letterPad: false,
+  };
+}
 
 const hangmanLetters: MobileControlsConfig = {
   move: [],
@@ -73,23 +75,57 @@ const hangmanLetters: MobileControlsConfig = {
   letterPad: true,
 };
 
+const sudokuDigits: MobileControlsConfig = {
+  move: [],
+  actions: [
+    ...Array.from({ length: 9 }, (_, index) => {
+      const digit = String(index + 1);
+      return {
+        id: `digit-${digit}`,
+        label: digit,
+        key: digit,
+        code: `Digit${digit}`,
+        mode: 'tap' as const,
+      };
+    }),
+    { id: 'erase', label: 'Effacer', key: 'Backspace', code: 'Backspace', mode: 'tap' },
+  ],
+  hint: 'Sélectionne une case puis touche un chiffre. Effacer envoie Backspace.',
+  letterPad: false,
+};
+
+const tetrisControls: MobileControlsConfig = {
+  move: arrowsOnly.move,
+  actions: [
+    { id: 'rotate', label: 'Rotation ↻', key: 'ArrowUp', code: 'ArrowUp', mode: 'tap' },
+    { id: 'drop', label: 'Chute', key: ' ', code: 'Space', mode: 'tap' },
+  ],
+  hint: 'Flèches pour déplacer, Rotation pour tourner, Chute pour accélérer.',
+  letterPad: false,
+};
+
 const bySlug: Record<string, MobileControlsConfig> = {
   'pac-man': arrowsOnly,
   'doodle-jump': leftRightAction,
+  sudoku: sudokuDigits,
   'crossy-road': arrowsOnly,
-  'flappy-bird': tapOnly,
+  'flappy-bird': tapControl('Battre des ailes'),
   '2048': arrowsOnly,
-  'tower-blocks': tapOnly,
-  'archery': tapOnly,
-  'breakout': leftRightAction,
-  'ping-pong': upDownOnly,
-  'tetris': arrowsWithAction,
+  'tower-blocks': tapControl('Poser le bloc'),
+  archery: tapControl('Tirer'),
+  breakout: {
+    ...leftRightAction,
+    actions: [{ id: 'action', label: 'Lancer', key: ' ', code: 'Space', mode: 'tap' }],
+  },
+  'ping-pong': upDownAction,
+  tetris: tetrisControls,
   'tilting-maze': arrowsOnly,
   snake: arrowsOnly,
   'speed-typing': noControls,
   typing: noControls,
-  'wordle': noControls,
-  'hangman': hangmanLetters,
+  'typing-challenge': noControls,
+  wordle: noControls,
+  hangman: hangmanLetters,
   'speak-number-guessing': noControls,
 };
 
