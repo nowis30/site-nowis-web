@@ -2,6 +2,7 @@ import type { GameExperienceProfile } from './gameExperience';
 
 const STYLE_ID = 'nowis-mobile-game-enhancer';
 const VIEWPORT_MARKER = 'nowis-mobile-viewport';
+const mouseBridgeSlugs = new Set(['candy-crush', 'solitaire', 'archery', 'fruit-slicer']);
 
 function dispatchKey(targetWindow: Window, key: string, code: string) {
   const init: KeyboardEventInit = {
@@ -13,19 +14,20 @@ function dispatchKey(targetWindow: Window, key: string, code: string) {
 
   const targets: EventTarget[] = [targetWindow];
   if (targetWindow.document) {
-    targets.push(targetWindow.document, targetWindow.document.body);
+    targets.push(targetWindow.document);
+    if (targetWindow.document.body) targets.push(targetWindow.document.body);
   }
 
   for (const target of targets) {
-    if (!target) continue;
     target.dispatchEvent(new KeyboardEvent('keydown', init));
     target.dispatchEvent(new KeyboardEvent('keyup', init));
   }
 }
 
 function gestureTargetShouldBeIgnored(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false;
-  return Boolean(target.closest('input, textarea, select, button, a, [contenteditable="true"]'));
+  const candidate = target as (EventTarget & { closest?: (selectors: string) => Element | null }) | null;
+  if (!candidate || typeof candidate.closest !== 'function') return false;
+  return Boolean(candidate.closest('input, textarea, select, button, a, [contenteditable="true"]'));
 }
 
 function installSwipeControls(doc: Document, win: Window) {
@@ -61,18 +63,101 @@ function installSwipeControls(doc: Document, win: Window) {
     if (distance < 24 || elapsed > 900) return;
 
     if (Math.abs(dx) > Math.abs(dy)) {
-      dispatchKey(win, dx > 0 ? 'ArrowRight' : 'ArrowLeft', dx > 0 ? 'ArrowRight' : 'ArrowLeft');
+      const key = dx > 0 ? 'ArrowRight' : 'ArrowLeft';
+      dispatchKey(win, key, key);
       return;
     }
 
-    dispatchKey(win, dy > 0 ? 'ArrowDown' : 'ArrowUp', dy > 0 ? 'ArrowDown' : 'ArrowUp');
+    const key = dy > 0 ? 'ArrowDown' : 'ArrowUp';
+    dispatchKey(win, key, key);
   };
 
   doc.addEventListener('pointerdown', onPointerDown, { passive: true });
   doc.addEventListener('pointerup', onPointerUp, { passive: true });
-  doc.addEventListener('pointercancel', () => {
-    tracking = false;
-  }, { passive: true });
+  doc.addEventListener(
+    'pointercancel',
+    () => {
+      tracking = false;
+    },
+    { passive: true },
+  );
+}
+
+function installTouchMouseBridge(doc: Document, win: Window) {
+  const root = doc.documentElement;
+  if (root.dataset.nowisMouseBridgeReady === 'true') return;
+  root.dataset.nowisMouseBridgeReady = 'true';
+
+  let activeTarget: Element | null = null;
+  let startX = 0;
+  let startY = 0;
+
+  const emitMouse = (type: string, touch: Touch, target: Element | null) => {
+    if (!target) return;
+    target.dispatchEvent(
+      new MouseEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        screenX: touch.screenX,
+        screenY: touch.screenY,
+        button: 0,
+        buttons: type === 'mouseup' || type === 'click' ? 0 : 1,
+        view: win,
+      }),
+    );
+  };
+
+  doc.addEventListener(
+    'touchstart',
+    (event) => {
+      if (event.touches.length !== 1 || gestureTargetShouldBeIgnored(event.target)) return;
+      const touch = event.touches[0];
+      activeTarget = doc.elementFromPoint(touch.clientX, touch.clientY);
+      startX = touch.clientX;
+      startY = touch.clientY;
+      event.preventDefault();
+      emitMouse('mousedown', touch, activeTarget);
+    },
+    { passive: false },
+  );
+
+  doc.addEventListener(
+    'touchmove',
+    (event) => {
+      if (!activeTarget || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      event.preventDefault();
+      emitMouse('mousemove', touch, activeTarget);
+    },
+    { passive: false },
+  );
+
+  doc.addEventListener(
+    'touchend',
+    (event) => {
+      if (!activeTarget || event.changedTouches.length === 0) return;
+      const touch = event.changedTouches[0];
+      event.preventDefault();
+      emitMouse('mouseup', touch, activeTarget);
+
+      if (Math.hypot(touch.clientX - startX, touch.clientY - startY) < 10) {
+        emitMouse('click', touch, activeTarget);
+      }
+
+      activeTarget = null;
+    },
+    { passive: false },
+  );
+
+  doc.addEventListener(
+    'touchcancel',
+    () => {
+      activeTarget = null;
+    },
+    { passive: true },
+  );
 }
 
 function ensureViewport(doc: Document) {
@@ -150,6 +235,14 @@ function installStyles(doc: Document) {
     .nowis-touch-none .game-container,
     .nowis-touch-none #game-container {
       touch-action: none !important;
+    }
+    .nowis-touch-none body {
+      user-select: none;
+    }
+    .nowis-touch-none input,
+    .nowis-touch-none textarea,
+    .nowis-touch-none select {
+      user-select: text;
     }
     .nowis-touch-manipulation body {
       touch-action: manipulation;
@@ -242,11 +335,15 @@ export function enhanceEmbeddedGame(
       installSwipeControls(doc, win);
     }
 
+    if (mouseBridgeSlugs.has(profile.slug)) {
+      installTouchMouseBridge(doc, win);
+    }
+
     win.focus();
     return true;
   } catch {
-    // The S3 games are normally proxied through /games and are same-origin.
-    // If a browser treats one as cross-origin, the game still remains playable.
+    // Les jeux S3 sont normalement servis par /games et restent same-origin.
+    // Si un navigateur isole exceptionnellement l'iframe, le jeu reste utilisable sans injection.
     return false;
   }
 }
