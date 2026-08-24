@@ -46,6 +46,15 @@ const htmlCssJavaScriptGameFolders = [
   '37-Sliding-Puzzle-Game',
 ] as const;
 
+type FolderName = (typeof htmlCssJavaScriptGameFolders)[number];
+
+const gameOverrides: Partial<Record<FolderName, Partial<Pick<GameEntry, 'slug' | 'name'>>>> = {
+  '30-Typing-Game': {
+    slug: 'typing-challenge',
+    name: 'Typing Challenge',
+  },
+};
+
 function formatGameTitle(folderName: string) {
   return folderName
     .replace(/^\d+-/, '')
@@ -64,11 +73,15 @@ function toSlug(folderName: string) {
     .toLowerCase();
 }
 
-export const gameCatalog: GameEntry[] = htmlCssJavaScriptGameFolders.map((folderName) => ({
-  slug: toSlug(folderName),
-  name: formatGameTitle(folderName),
-  src: `${gamesBaseUrl}/${folderName}/index.html`,
-}));
+export const gameCatalog: GameEntry[] = htmlCssJavaScriptGameFolders.map((folderName) => {
+  const override = gameOverrides[folderName];
+
+  return {
+    slug: override?.slug ?? toSlug(folderName),
+    name: override?.name ?? formatGameTitle(folderName),
+    src: `${gamesBaseUrl}/${folderName}/index.html`,
+  };
+});
 
 export function findGameBySlug(slug: string) {
   return gameCatalog.find((game) => game.slug === slug) ?? null;
