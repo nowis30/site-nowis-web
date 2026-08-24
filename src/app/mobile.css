@@ -48,33 +48,33 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  .public-site > header nav {
+  .public-site header nav {
     min-height: 4.5rem;
     padding: 0.65rem 1rem;
   }
 
-  .public-site > header nav > a {
+  .public-site header nav > a {
     min-width: 0;
     gap: 0.65rem;
   }
 
-  .public-site > header nav > a > span:first-child {
+  .public-site header nav > a > span:first-child {
     width: 2.6rem;
     height: 2.6rem;
     flex: 0 0 2.6rem;
   }
 
-  .public-site > header nav > a > span:last-child {
+  .public-site header nav > a > span:last-child {
     min-width: 0;
   }
 
-  .public-site > header nav > a > span:last-child > span:first-child {
+  .public-site header nav > a > span:last-child > span:first-child {
     font-size: 0.62rem;
     letter-spacing: 0.18em;
     white-space: nowrap;
   }
 
-  .public-site > header nav > a > span:last-child > span:last-child {
+  .public-site header nav > a > span:last-child > span:last-child {
     font-size: 1.05rem;
   }
 
@@ -82,7 +82,8 @@
     padding-top: 5rem;
   }
 
-  .public-site > main > :is(div, section, article) {
+  .public-site > main > :is(div, section, article),
+  .public-site > main :is(section, article) {
     min-width: 0;
   }
 
@@ -181,11 +182,11 @@
 }
 
 @media (max-width: 420px) {
-  .public-site > header nav > a > span:last-child > span:first-child {
+  .public-site header nav > a > span:last-child > span:first-child {
     display: none;
   }
 
-  .public-site > header nav > a > span:last-child > span:last-child {
+  .public-site header nav > a > span:last-child > span:last-child {
     font-size: 1rem;
   }
 
