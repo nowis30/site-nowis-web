@@ -148,6 +148,17 @@ export async function buildInvoicePdfBuffer(
     color: rgb(0.4, 0.45, 0.5),
   });
 
+  if (businessProfile.email) {
+    y -= 16;
+    page.drawText(`Paiement par virement Interac a : ${businessProfile.email}`, {
+      x: left,
+      y,
+      size: 10,
+      font: fontBold,
+      color: rgb(0.09, 0.11, 0.14),
+    });
+  }
+
   const bytes = await pdf.save();
   return Buffer.from(bytes);
 }

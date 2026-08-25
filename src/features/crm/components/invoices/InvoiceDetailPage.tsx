@@ -243,6 +243,50 @@ export function InvoiceDetailPage({
     emailSubject.trim().length >= 3 &&
     emailMessage.trim().length >= 5;
 
+  async function openInvoiceInOutlook() {
+    setSendingEmail(true);
+    setEmailFeedback(null);
+    setEmailFeedbackKind(null);
+    setEmailFallbackInvoiceUrl(null);
+    setEmailDiagnostic(null);
+
+    const outlookWindow = window.open('about:blank', '_blank');
+
+    try {
+      const response = await fetch(`/api/crm/invoices/${invoice.id}/outlook`, {
+        method: 'POST',
+      });
+      const data = (await response.json().catch(() => null)) as {
+        outlookUrl?: string;
+        invoiceUrl?: string;
+        error?: string;
+      } | null;
+
+      if (!response.ok || !data?.outlookUrl) {
+        outlookWindow?.close();
+        setEmailFeedback(data?.error || "Impossible d'ouvrir Outlook pour cette facture.");
+        setEmailFeedbackKind('error');
+        setEmailFallbackInvoiceUrl(data?.invoiceUrl || null);
+        return;
+      }
+
+      if (outlookWindow) {
+        outlookWindow.location.href = data.outlookUrl;
+      } else {
+        window.location.href = data.outlookUrl;
+      }
+
+      setEmailFeedback('Outlook est ouvert avec le destinataire, le montant, le lien de facture et les instructions de paiement déjà remplis.');
+      setEmailFeedbackKind('success');
+    } catch (error) {
+      outlookWindow?.close();
+      setEmailFeedback(error instanceof Error ? error.message : "Impossible d'ouvrir Outlook.");
+      setEmailFeedbackKind('error');
+    } finally {
+      setSendingEmail(false);
+    }
+  }
+
   async function sendInvoiceEmail() {
     setSendingEmail(true);
     setEmailFeedback(null);
@@ -328,12 +372,12 @@ export function InvoiceDetailPage({
           {allowEmailSend ? (
             <button
               type="button"
-              onClick={() => setIsComposerOpen(true)}
+              onClick={() => void openInvoiceInOutlook()}
               disabled={sendingEmail}
               className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-200 hover:border-primary-500/40 hover:text-white disabled:opacity-60"
             >
               <Mail size={16} />
-              {sendingEmail ? 'Envoi...' : 'Envoyer par email'}
+              {sendingEmail ? 'Ouverture...' : 'Ouvrir dans Outlook'}
             </button>
           ) : null}
           <button
@@ -645,6 +689,9 @@ export function InvoiceDetailPage({
             <div className="space-y-2 text-sm text-slate-600">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Conditions</p>
               <p>{businessProfile.paymentTerms}</p>
+              {businessProfile.email ? (
+                <p className="font-semibold text-slate-950">Paiement par virement Interac à : {businessProfile.email}</p>
+              ) : null}
               {businessProfile.footerNote ? <p>{businessProfile.footerNote}</p> : null}
             </div>
 
@@ -652,6 +699,9 @@ export function InvoiceDetailPage({
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Montant à payer</p>
               <p className="mt-2 text-3xl font-bold">{formatMoney(invoice.amount)}</p>
               <p className="mt-2 text-sm text-white/70">Paiement attendu avant le {formatDate(invoice.dueDate)}</p>
+              {businessProfile.email ? (
+                <p className="mt-2 text-sm font-semibold text-white">Virement Interac : {businessProfile.email}</p>
+              ) : null}
             </div>
           </div>
         </div>
