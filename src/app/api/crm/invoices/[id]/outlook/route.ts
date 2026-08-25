@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { buildPublicInvoiceUrl, signCompactPublicInvoiceToken } from '@/lib/public-links';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot } from '@/lib/billing-profile';
+import {
+  createInvoiceOutlookDraft,
+  getOutlookOAuthConfig,
+  OutlookConfigurationError,
+  OutlookNotConnectedError,
+} from '@/lib/outlook/service';
 
 function formatMoney(value: string | number) {
   return new Intl.NumberFormat('fr-CA', {
@@ -23,6 +29,11 @@ function encodeMailtoValue(value: string) {
   // encodeURIComponent utilise %20 pour les espaces. Certains clients Outlook Android
   // affichent littéralement les + produits par URLSearchParams dans les liens mailto.
   return encodeURIComponent(value);
+}
+
+function isMobileRequest(request: NextRequest) {
+  const userAgent = request.headers.get('user-agent') || '';
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
 }
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -84,6 +95,52 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     process.env.NEXT_PUBLIC_DOMAIN ||
     request.nextUrl.origin;
 
+  // Sur ordinateur, Outlook est connecté via Microsoft Graph : le brouillon est créé
+  // directement dans la boîte Outlook avec le PDF déjà joint.
+  if (!isMobileRequest(request)) {
+    try {
+      const draft = await createInvoiceOutlookDraft(invoice.id, appUrl);
+      return NextResponse.json({
+        ...draft,
+        mode: 'outlook-draft',
+        paymentEmail: draft.senderEmail,
+      });
+    } catch (error) {
+      if (error instanceof OutlookNotConnectedError) {
+        try {
+          getOutlookOAuthConfig(appUrl);
+          const connectUrl = `/api/crm/outlook/connect?invoiceId=${encodeURIComponent(invoice.id)}`;
+          return NextResponse.json({
+            outlookUrl: connectUrl,
+            connectUrl,
+            recipientEmail,
+            senderEmail,
+            paymentEmail: senderEmail,
+            setupRequired: true,
+            mode: 'outlook-connect',
+          });
+        } catch (configError) {
+          if (!(configError instanceof OutlookConfigurationError)) {
+            throw configError;
+          }
+          // Tant que l'application Microsoft n'est pas configurée côté serveur,
+          // on conserve le comportement courriel historique au lieu de casser le bouton.
+        }
+      } else if (error instanceof OutlookConfigurationError) {
+        // Même fallback : le CRM continue d'ouvrir le client courriel normalement.
+      } else {
+        return NextResponse.json(
+          {
+            error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
+          },
+          { status: 502 },
+        );
+      }
+    }
+  }
+
+  // Sur mobile, ou tant que Microsoft Graph n'est pas configuré sur le serveur,
+  // on conserve MAILTO pour ne jamais bloquer l'envoi d'une facture.
   const invoiceToken = signCompactPublicInvoiceToken({
     invoiceId: invoice.id,
     invoiceNumber: invoice.number,
@@ -116,7 +173,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const outlookWebUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeMailtoValue(recipientEmail)}&subject=${encodeMailtoValue(subject)}&body=${encodeMailtoValue(message)}`;
 
   return NextResponse.json({
-    // Le bouton CRM utilise MAILTO pour que Chrome Android remette la rédaction au client courriel configuré.
     outlookUrl: mailtoUrl,
     mailtoUrl,
     outlookMobileUrl,
@@ -125,5 +181,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     recipientEmail,
     senderEmail,
     paymentEmail: senderEmail,
+    mode: isMobileRequest(request) ? 'mailto-mobile' : 'mailto-fallback',
+    pdfAttached: false,
   });
 }
