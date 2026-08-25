@@ -2,16 +2,16 @@ import { notFound } from 'next/navigation';
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { InvoiceDetailPage } from '@/features/crm/components/invoices/InvoiceDetailPage';
+import { InvoiceEmailPanel } from '@/features/crm/components/invoices/InvoiceEmailPanel';
 import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
 import { getPayPalDiagnostics } from '@/lib/server/paypal';
 import { LinkedDocumentsPanel } from '@/features/crm/components/documents/LinkedDocumentsPanel';
 
 interface PageProps {
   params: { id: string };
-  searchParams?: { compose?: string };
 }
 
-export default async function CrmInvoiceDetailRoute({ params, searchParams }: PageProps) {
+export default async function CrmInvoiceDetailRoute({ params }: PageProps) {
   await requireCrmSession();
 
   const paypalConfigured = getPayPalDiagnostics().configured;
@@ -50,25 +50,45 @@ export default async function CrmInvoiceDetailRoute({ params, searchParams }: Pa
     return !isInvoicePlaceholder;
   });
 
+  const serializedInvoice = {
+    ...invoice,
+    issueDate: invoice.issueDate.toISOString(),
+    dueDate: invoice.dueDate.toISOString(),
+    amount: invoice.amount.toString(),
+    isTest: invoice.isTest,
+    paypalSentAt: invoice.paypalSentAt?.toISOString() || null,
+    paypalPaidAt: invoice.paypalPaidAt?.toISOString() || null,
+    paypalLastWebhookAt: invoice.paypalLastWebhookAt?.toISOString() || null,
+    paymentAmount: invoice.paymentAmount?.toString() || null,
+  };
+
   return (
     <>
-      <InvoiceDetailPage
+      <InvoiceEmailPanel
         invoice={{
-        ...invoice,
-        issueDate: invoice.issueDate.toISOString(),
-        dueDate: invoice.dueDate.toISOString(),
-        amount: invoice.amount.toString(),
-        isTest: invoice.isTest,
-        paypalSentAt: invoice.paypalSentAt?.toISOString() || null,
-        paypalPaidAt: invoice.paypalPaidAt?.toISOString() || null,
-        paypalLastWebhookAt: invoice.paypalLastWebhookAt?.toISOString() || null,
-        paymentAmount: invoice.paymentAmount?.toString() || null,
-      }}
-      businessProfile={businessProfile}
-      allowEmailSend
-      initialComposeOpen={searchParams?.compose === '1'}
-      allowPayPalActions
-      paypalConfigured={paypalConfigured}
+          id: invoice.id,
+          number: invoice.number,
+          issueDate: invoice.issueDate.toISOString(),
+          dueDate: invoice.dueDate.toISOString(),
+          amount: invoice.amount.toString(),
+          description: invoice.description,
+          contact: {
+            fullName: invoice.contact.fullName,
+            email: invoice.contact.email,
+            companyName: invoice.contact.companyName,
+          },
+        }}
+        businessName={businessProfile.displayName}
+        senderEmail={businessProfile.email || null}
+        website={businessProfile.website || null}
+      />
+
+      <InvoiceDetailPage
+        invoice={serializedInvoice}
+        businessProfile={businessProfile}
+        allowEmailSend={false}
+        allowPayPalActions
+        paypalConfigured={paypalConfigured}
         missingPayPalConfigMessage="PayPal n’est pas encore configuré. Ajoute les variables PayPal dans Vercel ou Render."
       />
 
