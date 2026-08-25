@@ -44,8 +44,12 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const actionsAreKeypad = controls.actions.length >= 8;
 
   const frameHeightClass = useMemo(() => {
-    if (isExpandedMode) {
+    if (isImmersiveMode) {
       return 'h-full min-h-0';
+    }
+
+    if (isNativeFullscreen) {
+      return 'h-[62dvh] min-h-[20rem] md:h-[72dvh]';
     }
 
     switch (profile.layout) {
@@ -59,7 +63,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
       default:
         return 'h-[78dvh] min-h-[32rem] max-h-[52rem] md:h-[50rem]';
     }
-  }, [isExpandedMode, profile.layout]);
+  }, [isImmersiveMode, isNativeFullscreen, profile.layout]);
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -128,6 +132,13 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
     const target = gameExperienceRef.current;
     if (!target) return;
 
+    // Sur téléphone et tablette, notre mode immersif conserve les commandes à l'écran
+    // et évite les différences de comportement du Fullscreen API entre iOS et Android.
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      setIsImmersiveMode(true);
+      return;
+    }
+
     try {
       if (target.requestFullscreen) {
         await target.requestFullscreen();
@@ -145,7 +156,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         return;
       }
     } catch {
-      // Le fallback immersif ci-dessous couvre iOS et les navigateurs restrictifs.
+      // Le fallback immersif ci-dessous couvre les navigateurs restrictifs.
     }
 
     setIsImmersiveMode(true);
@@ -247,7 +258,9 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         className={
           isImmersiveMode
             ? 'fixed inset-0 z-[160] flex min-h-0 flex-col gap-2 overflow-hidden bg-slate-950 p-2 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))]'
-            : 'mt-5 space-y-4 md:mt-6'
+            : isNativeFullscreen
+              ? 'flex min-h-screen flex-col gap-3 overflow-auto bg-slate-950 p-3'
+              : 'mt-5 space-y-4 md:mt-6'
         }
       >
         <section
