@@ -91,20 +91,22 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     businessProfile.displayName,
   ].join('\n');
 
-  const query = new URLSearchParams({
+  const outlookQuery = new URLSearchParams({
     to: recipientEmail,
     subject,
     body: message,
   });
-
   const mailtoQuery = new URLSearchParams({ subject, body: message });
+  const mailtoUrl = `mailto:${recipientEmail}?${mailtoQuery.toString()}`;
 
   return NextResponse.json({
-    // Ouvre directement l'écran de composition de l'application Outlook mobile.
-    outlookUrl: `ms-outlook://compose?${query.toString()}`,
-    // Solutions de repli utiles si Outlook mobile n'est pas installé ou si le navigateur bloque le schéma personnalisé.
-    outlookWebUrl: `https://outlook.office.com/mail/deeplink/compose?${query.toString()}`,
-    mailtoUrl: `mailto:${encodeURIComponent(recipientEmail)}?${mailtoQuery.toString()}`,
+    // Le bouton CRM utilise volontairement MAILTO : Android/Chrome le traite comme une action courriel standard
+    // et peut alors ouvrir Outlook directement (ou demander de choisir Outlook si aucune app par défaut n'est définie).
+    outlookUrl: mailtoUrl,
+    mailtoUrl,
+    // Conservés comme solutions de repli / diagnostic.
+    outlookMobileUrl: `ms-outlook://compose?${outlookQuery.toString()}`,
+    outlookWebUrl: `https://outlook.office.com/mail/deeplink/compose?${outlookQuery.toString()}`,
     invoiceUrl,
     recipientEmail,
     paymentEmail,
