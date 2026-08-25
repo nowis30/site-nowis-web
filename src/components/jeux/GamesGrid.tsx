@@ -2,15 +2,15 @@
 
 import { GameCard } from './GameCard';
 import { gameCatalog } from './gameCatalog';
+import { getGameExperience } from './gameExperience';
 import {
   Dice5, Ghost, Crown, Gamepad2, Shuffle, Lightbulb, Wind, Scissors,
   Bird, Square, BookOpen, User, Layers, Target, Grid3x3, Pickaxe,
   Zap, Flame, RotateCw, Settings, Compass, CreditCard, Dice6, Power,
   Activity, Bug, Keyboard, Dices, Circle, FastForward, Mic,
-  Sword, Brain, Smile, Hand, Puzzle, Sparkles, Award
+  Sword, Brain, Smile, Hand, Puzzle, Award
 } from 'lucide-react';
 
-// Game descriptions
 const gameDetails = [
   { icon: <Dice5 size={24} />, description: 'Élimine les bonbons alignés' },
   { icon: <Ghost size={24} />, description: 'Récupère les pastilles' },
@@ -27,7 +27,7 @@ const gameDetails = [
   { icon: <Layers size={24} />, description: 'Empile les blocs' },
   { icon: <Target size={24} />, description: 'Tire sur les cibles' },
   { icon: <Grid3x3 size={24} />, description: 'Stratégie avec pions' },
-  { icon: <Pickaxe size={24} />, description: 'Dégages les mines' },
+  { icon: <Pickaxe size={24} />, description: 'Dégage les mines' },
   { icon: <Zap size={24} />, description: 'Course de vitesse' },
   { icon: <Flame size={24} />, description: 'Casse les briques' },
   { icon: <RotateCw size={24} />, description: 'Joue au Pong' },
@@ -41,7 +41,7 @@ const gameDetails = [
   { icon: <Keyboard size={24} />, description: 'Tape rapidement' },
   { icon: <Dices size={24} />, description: 'Lance les dés' },
   { icon: <Circle size={24} />, description: 'Clique sur les formes' },
-  { icon: <FastForward size={24} />, description: 'Tape encore plus vite' },
+  { icon: <FastForward size={24} />, description: 'Nouveau défi de frappe' },
   { icon: <Mic size={24} />, description: 'Devine le nombre en parlant' },
   { icon: <Sword size={24} />, description: 'Coupe les fruits' },
   { icon: <Brain size={24} />, description: 'Teste tes connaissances' },
@@ -53,16 +53,21 @@ const gameDetails = [
 
 export function GamesGrid() {
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {gameCatalog.map((game, index) => (
-        <GameCard
-          key={game.slug}
-          {...game}
-          index={index}
-          icon={gameDetails[index]?.icon || <Gamepad2 size={24} />}
-          description={gameDetails[index]?.description || 'Mini-jeu amusant'}
-        />
-      ))}
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {gameCatalog.map((game, index) => {
+        const profile = getGameExperience(game.slug);
+
+        return (
+          <GameCard
+            key={game.slug}
+            {...game}
+            index={index}
+            icon={gameDetails[index]?.icon || <Gamepad2 size={24} />}
+            description={gameDetails[index]?.description || 'Mini-jeu amusant'}
+            interaction={profile.interaction}
+          />
+        );
+      })}
     </div>
   );
 }

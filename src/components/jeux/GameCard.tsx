@@ -1,62 +1,61 @@
 'use client';
 
 import Link from 'next/link';
-import { PlayCircle } from 'lucide-react';
+import { Play, Smartphone } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
 
 type GameCardProps = GameEntry & {
   index: number;
   icon: React.ReactNode;
   description: string;
+  interaction: string;
 };
 
-const colorSchemes = [
-  { bg: 'bg-sky-500/14', border: 'border-sky-300/35', hover: 'bg-sky-500/20', accent: 'bg-sky-200', text: 'text-sky-100' },
-  { bg: 'bg-cyan-500/14', border: 'border-cyan-300/35', hover: 'bg-cyan-500/20', accent: 'bg-cyan-200', text: 'text-cyan-100' },
-  { bg: 'bg-blue-500/14', border: 'border-blue-300/35', hover: 'bg-blue-500/20', accent: 'bg-blue-200', text: 'text-blue-100' },
-  { bg: 'bg-indigo-500/14', border: 'border-indigo-300/35', hover: 'bg-indigo-500/20', accent: 'bg-indigo-200', text: 'text-indigo-100' },
-];
+const accents = [
+  'from-cyan-400/20 via-sky-400/5 to-transparent',
+  'from-violet-400/20 via-fuchsia-400/5 to-transparent',
+  'from-emerald-400/20 via-teal-400/5 to-transparent',
+  'from-amber-300/20 via-orange-400/5 to-transparent',
+] as const;
 
-const glowColors = [
-  'group-hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]',
-  'group-hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]',
-  'group-hover:shadow-[0_0_20px_rgba(96,165,250,0.4)]',
-  'group-hover:shadow-[0_0_20px_rgba(79,70,229,0.4)]',
-];
+const iconAccents = [
+  'border-cyan-400/30 bg-cyan-400/10 text-cyan-200',
+  'border-violet-400/30 bg-violet-400/10 text-violet-200',
+  'border-emerald-400/30 bg-emerald-400/10 text-emerald-200',
+  'border-amber-300/30 bg-amber-300/10 text-amber-200',
+] as const;
 
-export function GameCard({ index, slug, name, icon, description }: GameCardProps) {
-  const scheme = colorSchemes[index % 4];
-  const glow = glowColors[index % 4];
+export function GameCard({ index, slug, name, icon, description, interaction }: GameCardProps) {
+  const accent = accents[index % accents.length];
+  const iconAccent = iconAccents[index % iconAccents.length];
 
   return (
-    <Link href={`/jeux/${slug}`}>
-      <article className={`group relative h-full overflow-hidden rounded-[1.5rem] border ${scheme.border} ${scheme.bg} backdrop-blur-sm p-5 shadow-[0_8px_24px_rgba(0,0,0,0.3)] transition-all duration-300 hover:scale-[1.02] hover:${scheme.hover} cursor-pointer ${glow}`}>
-        {/* Gradient overlay on hover */}
-        <div className={`absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-20 bg-gradient-to-br from-white/0 via-white/0 to-white/5`} />
+    <Link
+      href={`/jeux/${slug}`}
+      className="group block h-full touch-manipulation rounded-[1.6rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2"
+    >
+      <article className="relative flex h-full min-h-[13rem] flex-col overflow-hidden rounded-[1.6rem] border border-slate-700/80 bg-slate-950 p-5 shadow-[0_18px_40px_rgba(2,6,23,0.22)] transition duration-200 group-hover:-translate-y-1 group-hover:border-slate-500 group-hover:shadow-[0_24px_55px_rgba(2,6,23,0.32)] group-active:scale-[0.985]">
+        <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent}`} />
 
-        {/* Icon + Title section */}
-        <div className="relative mb-4 flex items-start gap-4">
-          <div className={`flex items-center justify-center rounded-xl ${scheme.accent} p-3 text-yellow-500 shadow-[0_4px_12px_rgba(0,0,0,0.2)]`}>
+        <div className="relative flex items-start justify-between gap-3">
+          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${iconAccent}`}>
             {icon}
           </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-black text-yellow-500 md:text-xl leading-tight">{name}</h3>
-          </div>
+          <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[11px] font-bold text-slate-300">
+            <Smartphone size={12} />
+            {interaction}
+          </span>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-yellow-500 leading-relaxed mb-5 line-clamp-2 group-hover:text-yellow-400 transition-colors">
-          {description}
-        </p>
-
-        {/* Play button */}
-        <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-300 to-amber-300 px-4 py-2 text-xs font-black text-sky-900 transition-all duration-300 group-hover:from-yellow-200 group-hover:to-amber-200 inline-flex">
-          <PlayCircle size={14} />
-          Jouer
+        <div className="relative mt-4 flex-1">
+          <h3 className="text-xl font-black leading-tight text-white">{name}</h3>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">{description}</p>
         </div>
 
-        {/* Accent line */}
-        <div className={`absolute bottom-0 left-0 right-0 h-1 ${scheme.accent} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left`} />
+        <div className="relative mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-black text-slate-950 transition group-hover:bg-cyan-200">
+          <Play size={16} fill="currentColor" />
+          Jouer maintenant
+        </div>
       </article>
     </Link>
   );

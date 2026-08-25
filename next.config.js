@@ -104,10 +104,10 @@ const nextConfig = {
         key: 'Referrer-Policy',
         value: 'strict-origin-when-cross-origin',
       },
-      // Restrict browser feature APIs
+      // Restrict browser feature APIs. The voice-number mini game may use the microphone on this origin.
       {
         key: 'Permissions-Policy',
-        value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+        value: 'camera=(), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()',
       },
       {
         key: 'X-DNS-Prefetch-Control',
