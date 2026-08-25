@@ -92,8 +92,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_DOMAIN ||
     request.nextUrl.origin;
+  const mobile = isMobileRequest(request);
+  const crmComposerUrl = `/crm/invoices/${encodeURIComponent(invoice.id)}?compose=1`;
 
-  if (!isMobileRequest(request)) {
+  if (!mobile) {
     try {
       const draft = await createInvoiceOutlookDraftWithFullInvoice(invoice.id, appUrl);
       return NextResponse.json({
@@ -119,20 +121,43 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           if (!(configError instanceof OutlookConfigurationError)) {
             throw configError;
           }
+          // Sans application Microsoft configurée, le composeur du CRM est plus fiable
+          // qu'un mailto: il peut réellement joindre le PDF au moment de l'envoi.
+          return NextResponse.json({
+            outlookUrl: crmComposerUrl,
+            composerUrl: crmComposerUrl,
+            recipientEmail,
+            senderEmail,
+            paymentEmail: senderEmail,
+            mode: 'crm-email-pdf',
+            pdfAttachedOnSend: true,
+          });
         }
-      } else if (!(error instanceof OutlookConfigurationError)) {
-        return NextResponse.json(
-          {
-            error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
-          },
-          { status: 502 },
-        );
       }
+
+      if (error instanceof OutlookConfigurationError) {
+        return NextResponse.json({
+          outlookUrl: crmComposerUrl,
+          composerUrl: crmComposerUrl,
+          recipientEmail,
+          senderEmail,
+          paymentEmail: senderEmail,
+          mode: 'crm-email-pdf',
+          pdfAttachedOnSend: true,
+        });
+      }
+
+      return NextResponse.json(
+        {
+          error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
+        },
+        { status: 502 },
+      );
     }
   }
 
-  // Fallback sans lien : la facture est écrite directement dans le message.
-  // Un lien mailto ne peut pas joindre un fichier; le PDF automatique est réservé au vrai brouillon Outlook Graph.
+  // Sur mobile, un lien mailto ne peut pas ajouter une pièce jointe. On écrit donc
+  // la facture complète dans le message et on retire totalement le lien public.
   const lines = parseInvoiceDescriptionLines(invoice.description, invoice.amount.toString());
   const detailLines = lines.map((line) =>
     `- ${line.description}${line.amount !== null ? ` : ${formatMoney(line.amount)}` : ''}`,
@@ -185,7 +210,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     recipientEmail,
     senderEmail,
     paymentEmail: senderEmail,
-    mode: isMobileRequest(request) ? 'mailto-mobile' : 'mailto-fallback',
+    mode: 'mailto-mobile',
     pdfAttached: false,
   });
 }
