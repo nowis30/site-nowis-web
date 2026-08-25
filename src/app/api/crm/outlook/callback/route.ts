@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { connectOutlookFromAuthorizationCode, createInvoiceOutlookDraft } from '@/lib/outlook/service';
+import { createInvoiceOutlookDraftWithFullInvoice } from '@/lib/outlook/invoice-draft';
+import { connectOutlookFromAuthorizationCode } from '@/lib/outlook/service';
 
 const COOKIE_NAME = 'crm_outlook_oauth_state';
 
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
     await connectOutlookFromAuthorizationCode(request.nextUrl.origin, code, guard.session.sub);
 
     if (stateCookie.invoiceId) {
-      const draft = await createInvoiceOutlookDraft(stateCookie.invoiceId, request.nextUrl.origin);
+      const draft = await createInvoiceOutlookDraftWithFullInvoice(stateCookie.invoiceId, request.nextUrl.origin);
       return clearStateCookie(NextResponse.redirect(draft.outlookUrl));
     }
 
