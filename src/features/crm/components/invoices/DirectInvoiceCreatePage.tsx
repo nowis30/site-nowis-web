@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { ArrowLeft, FilePlus2, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Building2, FilePlus2, Plus, Trash2, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { buildRentalInvoiceDescription } from '@/lib/invoice-lines';
 
@@ -10,6 +10,12 @@ type ContactOption = {
   id: string;
   fullName: string;
   companyName?: string | null;
+};
+
+type OrganizationOption = {
+  id: string;
+  name: string;
+  city?: string | null;
 };
 
 type DraftLine = {
@@ -21,7 +27,9 @@ type DraftLine = {
 
 interface DirectInvoiceCreatePageProps {
   contacts: ContactOption[];
+  organizations: OrganizationOption[];
   initialForm?: {
+    organizationId?: string;
     contactId?: string;
     description?: string;
     amount?: string;
@@ -47,11 +55,16 @@ function money(value: number) {
   return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(value);
 }
 
-export function DirectInvoiceCreatePage({ contacts, initialForm }: DirectInvoiceCreatePageProps) {
+export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }: DirectInvoiceCreatePageProps) {
   const router = useRouter();
-  const suggestedGestionIsr = contacts.find((contact) => /gestion\s*isr/i.test(`${contact.fullName} ${contact.companyName || ''}`));
+  const suggestedGestionIsrOrganization = organizations.find((organization) => /gestion\s*isr/i.test(organization.name));
+  const suggestedGestionIsrContact = contacts.find((contact) => /gestion\s*isr/i.test(`${contact.fullName} ${contact.companyName || ''}`));
+  const initialRecipientType: 'organization' | 'contact' =
+    initialForm?.contactId && !initialForm?.organizationId ? 'contact' : organizations.length > 0 ? 'organization' : 'contact';
   const initialAmount = Number(initialForm?.amount || 500);
-  const [contactId, setContactId] = useState(initialForm?.contactId || suggestedGestionIsr?.id || '');
+  const [recipientType, setRecipientType] = useState<'organization' | 'contact'>(initialRecipientType);
+  const [organizationId, setOrganizationId] = useState(initialForm?.organizationId || suggestedGestionIsrOrganization?.id || '');
+  const [contactId, setContactId] = useState(initialForm?.contactId || suggestedGestionIsrContact?.id || '');
   const [dueDate, setDueDate] = useState(defaultDueDate);
   const [lines, setLines] = useState<DraftLine[]>([
     {
@@ -92,8 +105,12 @@ export function DirectInvoiceCreatePage({ contacts, initialForm }: DirectInvoice
   async function createInvoice() {
     setError('');
 
-    if (!contactId) {
-      setError('Choisis le client à facturer, par exemple Gestion ISR.');
+    if (recipientType === 'organization' && !organizationId) {
+      setError("Choisis l'organisation à facturer, par exemple Gestion ISR.");
+      return;
+    }
+    if (recipientType === 'contact' && !contactId) {
+      setError('Choisis le contact à facturer.');
       return;
     }
     if (!dueDate) {
@@ -119,7 +136,7 @@ export function DirectInvoiceCreatePage({ contacts, initialForm }: DirectInvoice
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contactId,
+          ...(recipientType === 'organization' ? { organizationId } : { contactId }),
           dueDate: new Date(`${dueDate}T12:00:00`).toISOString(),
           amount: total,
           status: 'DRAFT',
@@ -161,7 +178,7 @@ export function DirectInvoiceCreatePage({ contacts, initialForm }: DirectInvoice
             <h2 className="flex items-center gap-2 text-2xl font-bold text-white">
               <FilePlus2 size={22} /> Nouvelle facture
             </h2>
-            <p className="mt-0.5 text-sm text-slate-400">Crée une facture directement, sans passer par une soumission.</p>
+            <p className="mt-0.5 text-sm text-slate-400">Facture une organisation ou un contact directement, sans soumission.</p>
           </div>
         </div>
         <div className="rounded-xl border border-primary-500/30 bg-primary-950/20 px-4 py-3 text-right">
@@ -177,23 +194,61 @@ export function DirectInvoiceCreatePage({ contacts, initialForm }: DirectInvoice
       <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
         <div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-900/70 p-4 sm:p-5">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Facturé à</label>
-            <select
-              value={contactId}
-              onChange={(event) => setContactId(event.target.value)}
-              className="w-full rounded-xl border border-slate-600 bg-slate-950 px-3 py-3 text-sm text-white"
-            >
-              <option value="">Choisir un contact</option>
-              {contacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.companyName ? `${contact.companyName} — ${contact.fullName}` : contact.fullName}
-                </option>
-              ))}
-            </select>
-            <p className="mt-2 text-xs text-slate-500">
-              Si Gestion ISR n'est pas dans la liste, ajoute-le d'abord dans <Link href="/crm/contacts" className="text-primary-300 underline">Contacts</Link>.
-            </p>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Facturé à</label>
+            <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-700 bg-slate-950/60 p-1.5">
+              <button
+                type="button"
+                onClick={() => setRecipientType('organization')}
+                className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${recipientType === 'organization' ? 'bg-primary-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
+              >
+                <Building2 size={15} /> Organisation
+              </button>
+              <button
+                type="button"
+                onClick={() => setRecipientType('contact')}
+                className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${recipientType === 'contact' ? 'bg-primary-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
+              >
+                <UserRound size={15} /> Contact
+              </button>
+            </div>
           </div>
+
+          {recipientType === 'organization' ? (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Organisation</label>
+              <select
+                value={organizationId}
+                onChange={(event) => setOrganizationId(event.target.value)}
+                className="w-full rounded-xl border border-slate-600 bg-slate-950 px-3 py-3 text-sm text-white"
+              >
+                <option value="">Choisir une organisation</option>
+                {organizations.map((organization) => (
+                  <option key={organization.id} value={organization.id}>
+                    {organization.city ? `${organization.name} — ${organization.city}` : organization.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-xs text-emerald-300/80">
+                Le CRM utilisera les coordonnées de facturation de l'organisation. Aucun contact manuel n'est requis.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Contact</label>
+              <select
+                value={contactId}
+                onChange={(event) => setContactId(event.target.value)}
+                className="w-full rounded-xl border border-slate-600 bg-slate-950 px-3 py-3 text-sm text-white"
+              >
+                <option value="">Choisir un contact</option>
+                {contacts.map((contact) => (
+                  <option key={contact.id} value={contact.id}>
+                    {contact.companyName ? `${contact.companyName} — ${contact.fullName}` : contact.fullName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Échéance</label>

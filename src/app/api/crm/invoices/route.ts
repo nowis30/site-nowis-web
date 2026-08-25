@@ -6,10 +6,112 @@ import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/serv
 import { createWithSequentialDocumentNumber } from '@/features/crm/server/document-numbers';
 import { findExistingInvoiceForSongRequest } from '@/features/crm/server/song-request-quote-guards';
 import { z } from 'zod';
-import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
+import {
+  buildCustomerSnapshotFromContact,
+  buildCustomerSnapshotFromOrganization,
+  getBillingIssuerSnapshot,
+} from '@/lib/billing-profile';
 import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']);
+
+const organizationBillingSelect = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  address: true,
+  city: true,
+  billingCompanyName: true,
+  billingLegalName: true,
+  billingEmail: true,
+  billingPhone: true,
+  billingAddressLine1: true,
+  billingAddressLine2: true,
+  billingCity: true,
+  billingState: true,
+  billingPostalCode: true,
+  billingCountry: true,
+  billingTaxId: true,
+  billingNotes: true,
+  contacts: {
+    select: { id: true, contactId: true, role: true },
+    orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }],
+  },
+} satisfies Prisma.OrganizationSelect;
+
+async function resolveOrganizationInvoiceRecipient(organizationId: string) {
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: organizationBillingSelect,
+  });
+
+  if (!organization) return null;
+
+  const existingBillingLink = organization.contacts.find(
+    (link) => link.role?.trim().toLowerCase() === 'facturation',
+  );
+
+  let contactId = existingBillingLink?.contactId || null;
+
+  if (!contactId) {
+    contactId = await prisma.$transaction(async (tx) => {
+      const billingName = organization.billingLegalName || organization.billingCompanyName || organization.name;
+      const billingEmail = organization.billingEmail || organization.email;
+      const billingPhone = organization.billingPhone || organization.phone;
+
+      const contact = await tx.contact.create({
+        data: {
+          type: 'ORGANIZATION',
+          fullName: billingName,
+          companyName: organization.name,
+          email: billingEmail,
+          phone: billingPhone,
+          billingCompanyName: organization.billingCompanyName || organization.name,
+          billingLegalName: organization.billingLegalName,
+          billingEmail,
+          billingPhone,
+          billingAddressLine1: organization.billingAddressLine1 || organization.address,
+          billingAddressLine2: organization.billingAddressLine2,
+          billingCity: organization.billingCity || organization.city,
+          billingState: organization.billingState,
+          billingPostalCode: organization.billingPostalCode,
+          billingCountry: organization.billingCountry,
+          billingTaxId: organization.billingTaxId,
+          billingNotes: organization.billingNotes,
+          source: 'Organisation CRM - facturation automatique',
+          tags: ['facturation-organisation'],
+        },
+      });
+
+      if (existingBillingLink) {
+        await tx.organizationContact.update({
+          where: { id: existingBillingLink.id },
+          data: { contactId: contact.id },
+        });
+      } else {
+        await tx.organizationContact.create({
+          data: {
+            organizationId: organization.id,
+            contactId: contact.id,
+            fullName: billingName,
+            role: 'Facturation',
+            email: billingEmail,
+            phone: billingPhone,
+            isPrimary: organization.contacts.length === 0,
+          },
+        });
+      }
+
+      return contact.id;
+    });
+  }
+
+  return {
+    contactId,
+    customerSnapshot: buildCustomerSnapshotFromOrganization(organization),
+  };
+}
 
 export async function GET(request: NextRequest) {
   const guard = requireApiPermission(request, 'invoices', 'read');
@@ -39,7 +141,29 @@ export async function POST(request: NextRequest) {
     const rawPayload = await request.json();
     const sourceWorkshopRequestId = typeof rawPayload?.sourceWorkshopRequestId === 'string' ? rawPayload.sourceWorkshopRequestId : null;
     const sourceSongRequestId = typeof rawPayload?.sourceSongRequestId === 'string' ? rawPayload.sourceSongRequestId : null;
-    const payload = invoiceInputSchema.parse(rawPayload);
+    const organizationId = typeof rawPayload?.organizationId === 'string' && rawPayload.organizationId.trim()
+      ? rawPayload.organizationId.trim()
+      : null;
+
+    let resolvedContactId = typeof rawPayload?.contactId === 'string' && rawPayload.contactId.trim()
+      ? rawPayload.contactId.trim()
+      : null;
+    let customerSnapshot: ReturnType<typeof buildCustomerSnapshotFromContact> | ReturnType<typeof buildCustomerSnapshotFromOrganization> | null = null;
+
+    if (organizationId) {
+      const organizationRecipient = await resolveOrganizationInvoiceRecipient(organizationId);
+      if (!organizationRecipient) {
+        return NextResponse.json({ error: 'Organisation de facturation introuvable.' }, { status: 404 });
+      }
+      resolvedContactId = organizationRecipient.contactId;
+      customerSnapshot = organizationRecipient.customerSnapshot;
+    }
+
+    if (!resolvedContactId) {
+      return NextResponse.json({ error: 'Choisis une organisation ou un contact à facturer.' }, { status: 400 });
+    }
+
+    const payload = invoiceInputSchema.parse({ ...rawPayload, contactId: resolvedContactId });
 
     if (sourceSongRequestId) {
       const existingInvoice = await findExistingInvoiceForSongRequest(sourceSongRequestId);
@@ -55,33 +179,37 @@ export async function POST(request: NextRequest) {
     }
 
     const issuerSnapshot = await getBillingIssuerSnapshot();
-    const contact = await prisma.contact.findUnique({
-      where: { id: payload.contactId },
-      select: {
-        fullName: true,
-        companyName: true,
-        email: true,
-        phone: true,
-        billingCompanyName: true,
-        billingLegalName: true,
-        billingEmail: true,
-        billingPhone: true,
-        billingAddressLine1: true,
-        billingAddressLine2: true,
-        billingCity: true,
-        billingState: true,
-        billingPostalCode: true,
-        billingCountry: true,
-        billingTaxId: true,
-        billingNotes: true,
-      },
-    });
 
-    if (!contact) {
-      return NextResponse.json({ error: 'Contact de facturation introuvable.' }, { status: 404 });
+    if (!customerSnapshot) {
+      const contact = await prisma.contact.findUnique({
+        where: { id: payload.contactId },
+        select: {
+          fullName: true,
+          companyName: true,
+          email: true,
+          phone: true,
+          billingCompanyName: true,
+          billingLegalName: true,
+          billingEmail: true,
+          billingPhone: true,
+          billingAddressLine1: true,
+          billingAddressLine2: true,
+          billingCity: true,
+          billingState: true,
+          billingPostalCode: true,
+          billingCountry: true,
+          billingTaxId: true,
+          billingNotes: true,
+        },
+      });
+
+      if (!contact) {
+        return NextResponse.json({ error: 'Contact de facturation introuvable.' }, { status: 404 });
+      }
+
+      customerSnapshot = buildCustomerSnapshotFromContact(contact);
     }
 
-    const customerSnapshot = buildCustomerSnapshotFromContact(contact);
     const createInvoiceWithNumber = (invoiceNumber: string) => prisma.$transaction(async (tx) => {
       const created = await tx.invoice.create({
         data: {

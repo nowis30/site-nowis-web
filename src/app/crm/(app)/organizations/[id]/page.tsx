@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { Prisma } from '@prisma/client';
 import { notFound } from 'next/navigation';
 import { requireCrmSession } from '@/features/crm/auth/session';
@@ -117,9 +117,10 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
         ]}
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <a href={item.email ? buildOutlookHref(item.email) : '#'} target="_blank" rel="noreferrer" className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Envoyer un courriel</a>
         <a href={item.phone ? buildTelHref(item.phone) : '#'} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Appeler</a>
+        <Link href={`/crm/invoices/new?organizationId=${item.id}`} className="rounded-2xl border border-emerald-500/40 bg-emerald-950/20 px-4 py-4 text-sm font-semibold text-emerald-200 hover:border-emerald-400 hover:text-white">Créer une facture</Link>
         <Link href={`/crm/commercial-quotes/new?organizationId=${item.id}`} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer une soumission</Link>
         <Link href={`/crm/workshop-requests/create?organizationId=${item.id}`} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Créer un atelier</Link>
         <Link href={`/crm/calendar?organizationId=${item.id}`} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4 text-sm text-slate-200 hover:border-primary-500/40 hover:text-white">Planifier un rendez-vous</Link>
@@ -218,8 +219,8 @@ export default async function OrganizationDetailPage({ params }: { params: { id:
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-700/50 bg-slate-900/40 px-5 py-4 text-sm text-slate-400">
-        Les factures et soumissions commerciales ne sont pas encore reliées directement au modèle organisation. Pour l’instant, elles passent par les contacts liés.
+      <div className="rounded-2xl border border-emerald-700/30 bg-emerald-950/20 px-5 py-4 text-sm text-emerald-200">
+        Les soumissions commerciales utilisent déjà l’organisation directement. Pour une facture, clique <strong>Créer une facture</strong> : le CRM utilise les coordonnées de facturation de l’organisation et crée automatiquement le lien technique nécessaire si elle n’a aucun contact de facturation.
       </div>
     </section>
   );
