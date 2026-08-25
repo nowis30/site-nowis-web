@@ -1,4 +1,5 @@
 import { upgradeCandyCrush } from './candyCrushUpgrade';
+import { upgradeChess } from './chessUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
 
 type UpgradeFn = (doc: Document, win: Window) => void;
@@ -6,6 +7,7 @@ type UpgradeFn = (doc: Document, win: Window) => void;
 const upgrades: Record<string, UpgradeFn> = {
   'candy-crush': upgradeCandyCrush,
   'pac-man': upgradePacMan,
+  chess: upgradeChess,
 };
 
 export function upgradeEmbeddedGame(doc: Document, win: Window, slug: string) {
