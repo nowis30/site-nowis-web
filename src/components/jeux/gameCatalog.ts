@@ -1,3 +1,5 @@
+import { getFrenchGameName } from './gameLocalization';
+
 export type GameEntry = {
   slug: string;
   name: string;
@@ -48,10 +50,9 @@ const htmlCssJavaScriptGameFolders = [
 
 type FolderName = (typeof htmlCssJavaScriptGameFolders)[number];
 
-const gameOverrides: Partial<Record<FolderName, Partial<Pick<GameEntry, 'slug' | 'name'>>>> = {
+const gameOverrides: Partial<Record<FolderName, Partial<Pick<GameEntry, 'slug'>>>> = {
   '30-Typing-Game': {
     slug: 'typing-challenge',
-    name: 'Typing Challenge',
   },
 };
 
@@ -75,10 +76,12 @@ function toSlug(folderName: string) {
 
 export const gameCatalog: GameEntry[] = htmlCssJavaScriptGameFolders.map((folderName) => {
   const override = gameOverrides[folderName];
+  const slug = override?.slug ?? toSlug(folderName);
+  const fallbackName = formatGameTitle(folderName);
 
   return {
-    slug: override?.slug ?? toSlug(folderName),
-    name: override?.name ?? formatGameTitle(folderName),
+    slug,
+    name: getFrenchGameName(slug, fallbackName),
     src: `${gamesBaseUrl}/${folderName}/index.html`,
   };
 });

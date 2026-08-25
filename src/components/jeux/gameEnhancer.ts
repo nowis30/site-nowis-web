@@ -1,4 +1,6 @@
 import type { GameExperienceProfile } from './gameExperience';
+import { localizeEmbeddedGame } from './gameLocalization';
+import { localizeGameRuntime } from './gameRuntimeLocalization';
 
 const STYLE_ID = 'nowis-mobile-game-enhancer';
 const VIEWPORT_MARKER = 'nowis-mobile-viewport';
@@ -307,6 +309,8 @@ export function enhanceEmbeddedGame(
 
     ensureViewport(doc);
     installStyles(doc);
+    localizeEmbeddedGame(doc, profile.slug);
+    localizeGameRuntime(win);
 
     const root = doc.documentElement;
     root.dataset.nowisEnhanced = 'true';
