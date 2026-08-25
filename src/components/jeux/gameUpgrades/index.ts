@@ -1,5 +1,6 @@
 import { upgradeCandyCrush } from './candyCrushUpgrade';
 import { upgradeChess } from './chessUpgrade';
+import { upgradeCrossyRoad } from './crossyRoadUpgrade';
 import { upgradeDoodleJump } from './doodleJumpUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
@@ -14,6 +15,7 @@ const upgrades: Record<string, UpgradeFn> = {
   'doodle-jump': upgradeDoodleJump,
   solitaire: upgradeSolitaire,
   sudoku: upgradeSudoku,
+  'crossy-road': upgradeCrossyRoad,
 };
 
 export function upgradeEmbeddedGame(doc: Document, win: Window, slug: string) {
