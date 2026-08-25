@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FileText, TrendingUp, ExternalLink } from 'lucide-react';
+import { FilePlus2, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -278,22 +278,19 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
           <p className="text-sm text-slate-400 mt-0.5">Suivi de facturation</p>
         </div>
         <Link
-          href="/crm/commercial-quotes/new"
+          href="/crm/invoices/new"
           className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 transition-colors"
         >
-          <ExternalLink size={16} /> Créer une soumission
+          <FilePlus2 size={16} /> Créer une facture
         </Link>
       </div>
 
-      {/* Règle métier */}
-      <div className="rounded-xl border border-amber-600/30 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
-        <TrendingUp size={14} className="inline mr-2 mb-0.5" />
-        Les factures sont générées automatiquement depuis une{' '}
-        <Link href="/crm/commercial-quotes" className="underline hover:text-amber-100">soumission acceptée</Link>.
-        Allez dans <strong>Soumissions</strong> → acceptez la soumission → cliquez <strong>Convertir en facture</strong>.
+      <div className="rounded-xl border border-emerald-600/30 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
+        <FilePlus2 size={14} className="inline mr-2 mb-0.5" />
+        Tu peux créer une facture directement pour une location, sans passer par une chanson, un atelier ou une soumission.
+        Les <Link href="/crm/commercial-quotes" className="ml-1 underline hover:text-emerald-100">soumissions commerciales</Link> restent disponibles quand tu en as réellement besoin.
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
           <p className="text-xs text-slate-400 mb-1">Encaissé</p>
@@ -309,7 +306,6 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
         </div>
       </div>
 
-      {/* Search */}
       <div className="grid gap-3 md:grid-cols-3">
         <input
           type="search"
@@ -340,7 +336,6 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
         )}
       </div>
 
-      {/* Table */}
       <div className="hidden overflow-x-auto rounded-xl border border-slate-700 md:block">
         <table className="w-full min-w-[700px]">
           <thead className="bg-slate-800/80">

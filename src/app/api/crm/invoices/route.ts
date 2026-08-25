@@ -31,20 +31,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ items });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function POST(_request: NextRequest) {
-  return NextResponse.json(
-    {
-      error:
-        'Les factures doivent être créées à partir d\'une soumission acceptée. Utilisez : POST /api/crm/commercial-quotes/:id/convert-to-invoice',
-      code: 'INVOICE_DIRECT_CREATION_DISABLED',
-    },
-    { status: 405 },
-  );
-}
-
-// Kept for reference — replaced by POST above which enforces the business rule.
-async function _disabledDirectInvoiceCreate(request: NextRequest) {
+export async function POST(request: NextRequest) {
   const guard = requireApiPermission(request, 'invoices', 'create');
   if (guard.error) return guard.error;
 
@@ -89,7 +76,12 @@ async function _disabledDirectInvoiceCreate(request: NextRequest) {
         billingNotes: true,
       },
     });
-    const customerSnapshot = contact ? buildCustomerSnapshotFromContact(contact) : null;
+
+    if (!contact) {
+      return NextResponse.json({ error: 'Contact de facturation introuvable.' }, { status: 404 });
+    }
+
+    const customerSnapshot = buildCustomerSnapshotFromContact(contact);
     const createInvoiceWithNumber = (invoiceNumber: string) => prisma.$transaction(async (tx) => {
       const created = await tx.invoice.create({
         data: {
@@ -102,9 +94,7 @@ async function _disabledDirectInvoiceCreate(request: NextRequest) {
           taxAmount: 0,
           totalAmount: payload.amount,
           issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
-          customerSnapshot: customerSnapshot
-            ? (customerSnapshot as Prisma.InputJsonValue)
-            : Prisma.JsonNull,
+          customerSnapshot: customerSnapshot as Prisma.InputJsonValue,
           taxesEnabled: issuerSnapshot.taxesEnabled,
           taxRateGst: issuerSnapshot.taxRateGst,
           taxRateQst: issuerSnapshot.taxRateQst,
@@ -199,7 +189,10 @@ async function _disabledDirectInvoiceCreate(request: NextRequest) {
     }
 
     return NextResponse.json({ item }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Données de facture invalides', details: error.issues }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Création de facture impossible.' }, { status: 400 });
   }
 }

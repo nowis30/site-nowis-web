@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { InvoiceBusinessProfile } from '@/lib/invoice-profile';
+import { parseInvoiceDescriptionLines } from '@/lib/invoice-lines';
 
 interface InvoicePdfInput {
   number: string;
@@ -121,16 +122,12 @@ export async function buildInvoicePdfBuffer(
   page.drawText('Montant', { x: left + 420, y: y - 15, size: 10, font: fontBold });
 
   y -= 38;
-  const lines = (invoice.description || 'Prestation professionnelle')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .slice(0, 10);
+  const lines = parseInvoiceDescriptionLines(invoice.description, invoice.amount).slice(0, 10);
 
-  for (const [index, line] of lines.entries()) {
-    page.drawText(line.slice(0, 86), { x: left + 8, y, size: 10, font, color: rgb(0.09, 0.11, 0.14) });
-    if (index === 0) {
-      page.drawText(formatMoney(invoice.amount), { x: left + 420, y, size: 10, font });
+  for (const line of lines) {
+    page.drawText(line.description.slice(0, 86), { x: left + 8, y, size: 10, font, color: rgb(0.09, 0.11, 0.14) });
+    if (line.amount !== null) {
+      page.drawText(formatMoney(line.amount), { x: left + 420, y, size: 10, font });
     }
     y -= 16;
   }
