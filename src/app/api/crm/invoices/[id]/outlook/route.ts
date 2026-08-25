@@ -5,6 +5,7 @@ import { buildPublicInvoiceUrl, signCompactPublicInvoiceToken } from '@/lib/publ
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot } from '@/lib/billing-profile';
 import {
   createInvoiceOutlookDraft,
+  getOutlookOAuthConfig,
   OutlookConfigurationError,
   OutlookNotConnectedError,
 } from '@/lib/outlook/service';
@@ -106,39 +107,40 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       });
     } catch (error) {
       if (error instanceof OutlookNotConnectedError) {
-        const connectUrl = `/api/crm/outlook/connect?invoiceId=${encodeURIComponent(invoice.id)}`;
-        return NextResponse.json({
-          outlookUrl: connectUrl,
-          connectUrl,
-          recipientEmail,
-          senderEmail,
-          paymentEmail: senderEmail,
-          setupRequired: true,
-          mode: 'outlook-connect',
-        });
-      }
-
-      if (error instanceof OutlookConfigurationError) {
+        try {
+          getOutlookOAuthConfig(appUrl);
+          const connectUrl = `/api/crm/outlook/connect?invoiceId=${encodeURIComponent(invoice.id)}`;
+          return NextResponse.json({
+            outlookUrl: connectUrl,
+            connectUrl,
+            recipientEmail,
+            senderEmail,
+            paymentEmail: senderEmail,
+            setupRequired: true,
+            mode: 'outlook-connect',
+          });
+        } catch (configError) {
+          if (!(configError instanceof OutlookConfigurationError)) {
+            throw configError;
+          }
+          // Tant que l'application Microsoft n'est pas configurée côté serveur,
+          // on conserve le comportement courriel historique au lieu de casser le bouton.
+        }
+      } else if (error instanceof OutlookConfigurationError) {
+        // Même fallback : le CRM continue d'ouvrir le client courriel normalement.
+      } else {
         return NextResponse.json(
           {
-            error: error.message,
-            code: 'OUTLOOK_CONFIG_MISSING',
+            error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
           },
-          { status: 503 },
+          { status: 502 },
         );
       }
-
-      return NextResponse.json(
-        {
-          error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
-        },
-        { status: 502 },
-      );
     }
   }
 
-  // Sur mobile, on conserve MAILTO : c'est le chemin le plus fiable pour ouvrir
-  // directement l'application de courriel configurée sur Android/iOS.
+  // Sur mobile, ou tant que Microsoft Graph n'est pas configuré sur le serveur,
+  // on conserve MAILTO pour ne jamais bloquer l'envoi d'une facture.
   const invoiceToken = signCompactPublicInvoiceToken({
     invoiceId: invoice.id,
     invoiceNumber: invoice.number,
@@ -179,7 +181,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     recipientEmail,
     senderEmail,
     paymentEmail: senderEmail,
-    mode: 'mailto-mobile',
+    mode: isMobileRequest(request) ? 'mailto-mobile' : 'mailto-fallback',
     pdfAttached: false,
   });
 }
