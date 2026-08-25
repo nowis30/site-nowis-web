@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { buildPublicInvoiceUrl, signCompactPublicInvoiceToken } from '@/lib/public-links';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot } from '@/lib/billing-profile';
+import { parseInvoiceDescriptionLines } from '@/lib/invoice-lines';
+import { createInvoiceOutlookDraftWithFullInvoice } from '@/lib/outlook/invoice-draft';
 import {
-  createInvoiceOutlookDraft,
   getOutlookOAuthConfig,
   OutlookConfigurationError,
   OutlookNotConnectedError,
@@ -26,8 +26,6 @@ function formatDate(value: Date) {
 }
 
 function encodeMailtoValue(value: string) {
-  // encodeURIComponent utilise %20 pour les espaces. Certains clients Outlook Android
-  // affichent littéralement les + produits par URLSearchParams dans les liens mailto.
   return encodeURIComponent(value);
 }
 
@@ -95,11 +93,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     process.env.NEXT_PUBLIC_DOMAIN ||
     request.nextUrl.origin;
 
-  // Sur ordinateur, Outlook est connecté via Microsoft Graph : le brouillon est créé
-  // directement dans la boîte Outlook avec le PDF déjà joint.
   if (!isMobileRequest(request)) {
     try {
-      const draft = await createInvoiceOutlookDraft(invoice.id, appUrl);
+      const draft = await createInvoiceOutlookDraftWithFullInvoice(invoice.id, appUrl);
       return NextResponse.json({
         ...draft,
         mode: 'outlook-draft',
@@ -123,12 +119,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           if (!(configError instanceof OutlookConfigurationError)) {
             throw configError;
           }
-          // Tant que l'application Microsoft n'est pas configurée côté serveur,
-          // on conserve le comportement courriel historique au lieu de casser le bouton.
         }
-      } else if (error instanceof OutlookConfigurationError) {
-        // Même fallback : le CRM continue d'ouvrir le client courriel normalement.
-      } else {
+      } else if (!(error instanceof OutlookConfigurationError)) {
         return NextResponse.json(
           {
             error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
@@ -139,25 +131,38 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
   }
 
-  // Sur mobile, ou tant que Microsoft Graph n'est pas configuré sur le serveur,
-  // on conserve MAILTO pour ne jamais bloquer l'envoi d'une facture.
-  const invoiceToken = signCompactPublicInvoiceToken({
-    invoiceId: invoice.id,
-    invoiceNumber: invoice.number,
-    contactId: invoice.contact.id,
-  });
-  const invoiceUrl = buildPublicInvoiceUrl(invoiceToken, appUrl);
+  // Fallback sans lien : la facture est écrite directement dans le message.
+  // Un lien mailto ne peut pas joindre un fichier; le PDF automatique est réservé au vrai brouillon Outlook Graph.
+  const lines = parseInvoiceDescriptionLines(invoice.description, invoice.amount.toString());
+  const detailLines = lines.map((line) =>
+    `- ${line.description}${line.amount !== null ? ` : ${formatMoney(line.amount)}` : ''}`,
+  );
+  const billedTo = [
+    customerProfile.companyName,
+    customerProfile.fullName,
+    customerProfile.addressLine1,
+    customerProfile.addressLine2,
+    [customerProfile.city, customerProfile.state, customerProfile.postalCode].filter(Boolean).join(', '),
+    customerProfile.country,
+  ].filter(Boolean) as string[];
+
   const subject = `Facture ${invoice.number} | ${businessProfile.displayName}`;
   const message = [
     `Bonjour ${customerProfile.fullName},`,
     '',
-    `Veuillez trouver ci-dessous la facture ${invoice.number}.`,
+    `Voici le détail de la facture ${invoice.number}.`,
     '',
-    `Montant dû : ${formatMoney(invoice.amount.toString())}`,
-    `Date d'échéance : ${formatDate(invoice.dueDate)}`,
+    `FACTURE ${invoice.number}`,
+    `Date : ${formatDate(invoice.issueDate)}`,
+    `Échéance : ${formatDate(invoice.dueDate)}`,
     '',
-    'CONSULTER LA FACTURE',
-    invoiceUrl,
+    'FACTURÉ À',
+    ...billedTo,
+    '',
+    'DÉTAIL',
+    ...detailLines,
+    '',
+    `TOTAL : ${formatMoney(invoice.amount.toString())}`,
     '',
     'MODE DE PAIEMENT',
     `Virement Interac : ${senderEmail}`,
@@ -177,7 +182,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     mailtoUrl,
     outlookMobileUrl,
     outlookWebUrl,
-    invoiceUrl,
     recipientEmail,
     senderEmail,
     paymentEmail: senderEmail,
