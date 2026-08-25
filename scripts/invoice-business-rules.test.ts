@@ -1,11 +1,11 @@
-﻿/**
- * Tests des règles métier : factures uniquement depuis soumission.
- * Teste directement la logique serveur sans HTTP.
+/**
+ * Tests des règles métier de facturation.
+ * Les factures peuvent être créées directement dans le CRM ou depuis une soumission acceptée.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-
-// ─── Helpers mock ───────────────────────────────────────────────────────────
+import { invoiceInputSchema } from '../src/features/crm/server/validators';
+import { buildRentalInvoiceDescription, parseInvoiceDescriptionLines } from '../src/lib/invoice-lines';
 
 type MockInvoice = { id: string; number: string; status: string };
 type MockQuote = {
@@ -36,24 +36,33 @@ function createMockPrisma(opts?: {
   };
 }
 
-// ─── Règle : POST /api/crm/invoices est bloqué ───────────────────────────────
+void createMockPrisma;
 
-test('POST /api/crm/invoices: route désactivée retourne 405', async () => {
-  // Simuler le comportement de la route modifiée
-  const DISABLED_RESPONSE = {
-    status: 405,
-    body: {
-      error: "Les factures doivent être créées à partir d'une soumission acceptée.",
-      code: 'INVOICE_DIRECT_CREATION_DISABLED',
-    },
-  };
+test('Création directe: une facture CRM valide est autorisée', () => {
+  const parsed = invoiceInputSchema.safeParse({
+    contactId: '11111111-1111-4111-8111-111111111111',
+    dueDate: '2026-09-09T12:00:00.000Z',
+    amount: 1100,
+    status: 'DRAFT',
+    description: 'Services de location immobilière',
+  });
 
-  assert.equal(DISABLED_RESPONSE.status, 405);
-  assert.equal(DISABLED_RESPONSE.body.code, 'INVOICE_DIRECT_CREATION_DISABLED');
-  assert.ok(DISABLED_RESPONSE.body.error.includes('soumission acceptée'));
+  assert.equal(parsed.success, true);
 });
 
-// ─── Règle : conversion depuis soumission ────────────────────────────────────
+test('Création directe: plusieurs logements conservent leur montant par ligne', () => {
+  const description = buildRentalInvoiceDescription([
+    { tenantName: 'Locataire A', rentalLabel: '101 rue Exemple', amount: 500 },
+    { tenantName: 'Locataire B', rentalLabel: '202 rue Exemple', amount: 600 },
+  ]);
+  const lines = parseInvoiceDescriptionLines(description, 1100);
+
+  assert.equal(lines.length, 2);
+  assert.equal(lines[0].amount, 500);
+  assert.equal(lines[1].amount, 600);
+  assert.ok(lines[0].description.includes('Locataire A'));
+  assert.ok(lines[1].description.includes('Locataire B'));
+});
 
 test('Conversion: soumission ACCEPTED avec contactId => conversion autorisée', async () => {
   const quote: MockQuote = {
@@ -65,7 +74,6 @@ test('Conversion: soumission ACCEPTED avec contactId => conversion autorisée', 
     songRequestId: null,
   };
 
-  // Logique de la route convert-to-invoice
   if (quote.status !== 'ACCEPTED') {
     assert.fail('Devrait être accepté');
   }
@@ -87,7 +95,6 @@ test('Conversion: soumission DRAFT => refus (status 422)', async () => {
     songRequestId: null,
   };
 
-  // La route convert-to-invoice vérifie: if (quote.status !== 'ACCEPTED')
   const shouldBlock = quote.status !== 'ACCEPTED';
   assert.ok(shouldBlock, 'Une soumission DRAFT doit être bloquée');
 });
@@ -117,8 +124,6 @@ test('Conversion: soumission déjà convertie => renvoie invoice existante sans 
     songRequestId: null,
   };
 
-  // La route convert-to-invoice appelle resolveExistingInvoiceForQuoteConversion
-  // et retourne { ok: true, invoiceId, existingInvoice } sans créer de doublon
   const alreadyConverted = quote.convertedToInvoiceId !== null;
   assert.ok(alreadyConverted, 'convertedToInvoiceId doit être non null');
   assert.equal(quote.convertedToInvoiceId, existingInvoiceId);
@@ -134,17 +139,12 @@ test('Conversion: soumission sans contactId => refus (status 409)', async () => 
     songRequestId: null,
   };
 
-  // La route vérifie: if (!quote.contactId)
   const shouldBlock = !quote.contactId;
   assert.ok(shouldBlock, 'Une soumission sans contact doit être bloquée');
 });
 
-// ─── Règle : portail client ───────────────────────────────────────────────────
-
 test('Portail client: pas de route POST pour créer une facture depuis le client', () => {
-  // Le portail client n'a pas de route /api/client/invoices POST.
-  // Routes client disponibles: /api/client/facturation (GET uniquement pour le statut).
-  const clientInvoiceCreateRoute = false; // pas implémenté
+  const clientInvoiceCreateRoute = false;
   assert.equal(clientInvoiceCreateRoute, false, 'Le client ne peut pas créer de facture directement');
 });
 
