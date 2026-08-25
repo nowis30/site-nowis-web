@@ -97,8 +97,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     body: message,
   });
 
+  const mailtoQuery = new URLSearchParams({ subject, body: message });
+
   return NextResponse.json({
-    outlookUrl: `https://outlook.office.com/mail/deeplink/compose?${query.toString()}`,
+    // Ouvre directement l'écran de composition de l'application Outlook mobile.
+    outlookUrl: `ms-outlook://compose?${query.toString()}`,
+    // Solutions de repli utiles si Outlook mobile n'est pas installé ou si le navigateur bloque le schéma personnalisé.
+    outlookWebUrl: `https://outlook.office.com/mail/deeplink/compose?${query.toString()}`,
+    mailtoUrl: `mailto:${encodeURIComponent(recipientEmail)}?${mailtoQuery.toString()}`,
     invoiceUrl,
     recipientEmail,
     paymentEmail,
