@@ -52,8 +52,8 @@ async function parseMicrosoftError(response: Response) {
 }
 
 export async function createInvoiceOutlookDraftWithFullInvoice(invoiceId: string, origin: string) {
-  // Le service existant crée le brouillon, rafraîchit le jeton Microsoft au besoin
-  // et joint déjà le PDF. On remplace ensuite le corps du brouillon par la facture complète.
+  // Crée le brouillon et le PDF avec le service Microsoft existant, puis remplace
+  // le corps par une vraie facture complète sans aucun lien public.
   const baseDraft = await createInvoiceOutlookDraft(invoiceId, origin);
 
   const invoice = await prisma.invoice.findUnique({
@@ -165,7 +165,8 @@ export async function createInvoiceOutlookDraftWithFullInvoice(invoiceId: string
     throw new Error('La connexion Outlook n’est plus disponible. Reconnecte Outlook et réessaie.');
   }
 
-  const response = await fetch(`https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(baseDraft.draftId)}`, {
+  const messageUrl = `https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(baseDraft.draftId)}`;
+  const response = await fetch(messageUrl, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -181,7 +182,7 @@ export async function createInvoiceOutlookDraftWithFullInvoice(invoiceId: string
 
   if (!response.ok) {
     const message = await parseMicrosoftError(response);
-    await fetch(`https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(baseDraft.draftId)}`, {
+    await fetch(messageUrl, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: 'no-store',
@@ -189,8 +190,21 @@ export async function createInvoiceOutlookDraftWithFullInvoice(invoiceId: string
     throw new Error(`Impossible de finaliser le brouillon Outlook : ${message}`);
   }
 
+  // Le webLink retourné par Microsoft ouvre le vrai brouillon enregistré dans Outlook.
+  // On n'utilise plus un compose URL reconstruit, qui pouvait ouvrir un nouveau message
+  // et faire disparaître la pièce jointe.
+  let outlookUrl = baseDraft.outlookUrl;
+  const draftLookup = await fetch(`${messageUrl}?$select=id,webLink`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store',
+  });
+  if (draftLookup.ok) {
+    const savedDraft = await draftLookup.json() as { webLink?: string };
+    if (savedDraft.webLink) outlookUrl = savedDraft.webLink;
+  }
+
   return {
-    outlookUrl: baseDraft.outlookUrl,
+    outlookUrl,
     draftId: baseDraft.draftId,
     recipientEmail,
     senderEmail,
