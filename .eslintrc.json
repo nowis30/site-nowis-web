@@ -10,7 +10,7 @@
   "overrides": [
     {
       "files": [
-        "src/components/jeux/gameUpgrades/pacManUpgrade.ts"
+        "src/components/jeux/gameUpgrades/**/*.{ts,js}"
       ],
       "rules": {
         "prefer-const": "off"
