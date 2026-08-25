@@ -6,5 +6,15 @@
   "rules": {
     "react/no-unescaped-entities": "off",
     "@typescript-eslint/no-unused-vars": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/components/jeux/gameUpgrades/pacManUpgrade.ts"
+      ],
+      "rules": {
+        "prefer-const": "off"
+      }
+    }
+  ]
 }
