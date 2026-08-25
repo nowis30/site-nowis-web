@@ -4,10 +4,11 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
-import { buildPublicBillingUrl, buildPublicInvoiceUrl, signPublicBillingToken, signPublicInvoiceToken } from '@/lib/public-links';
+import { buildPublicBillingUrl, signPublicBillingToken } from '@/lib/public-links';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
 import { getClientBillingMissingLabels } from '@/lib/client-billing';
+import { parseInvoiceDescriptionLines } from '@/lib/invoice-lines';
 
 const sendInvoiceSchema = z.object({
   subject: z.string().trim().min(3).max(180).optional(),
@@ -47,6 +48,14 @@ function formatMoney(value: string | number) {
     style: 'currency',
     currency: 'CAD',
   }).format(Number(value));
+}
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat('fr-CA', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(value);
 }
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -121,27 +130,19 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       { status: 409 },
     );
   }
+
   const subject = payload.subject || `Facture ${invoice.number} - ${businessProfile.displayName}`;
   const appUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_DOMAIN ||
     request.nextUrl.origin;
-
-  const invoiceToken = signPublicInvoiceToken({
-    invoiceId: invoice.id,
-    contactId: invoice.contact.id,
-  });
-
-  const invoiceUrl = buildPublicInvoiceUrl(invoiceToken, appUrl);
   const trackingToken = randomUUID();
   const trackingUrl = `${appUrl}/api/email/track/open?token=${encodeURIComponent(trackingToken)}`;
 
   const defaultMessage = [
     `Bonjour ${invoice.contact.fullName},`,
     '',
-    `Veuillez trouver ci-joint la facture ${invoice.number}.`,
-    `Montant: ${formatMoney(invoice.amount.toString())}`,
-    `Échéance: ${invoice.dueDate.toLocaleDateString('fr-CA')}`,
+    `Voici la facture ${invoice.number}. Le PDF officiel est joint à ce courriel.`,
     '',
     'Merci,',
     businessProfile.displayName,
@@ -184,18 +185,65 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     businessProfile,
   );
 
+  const lines = parseInvoiceDescriptionLines(invoice.description, invoice.amount.toString());
+  const rows = lines.map((line) => `
+    <tr>
+      <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;vertical-align:top">${escapeHtml(line.description)}</td>
+      <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap">${line.amount !== null ? escapeHtml(formatMoney(line.amount)) : '—'}</td>
+    </tr>
+  `).join('');
+  const billedTo = [
+    customerProfile.companyName,
+    customerProfile.fullName,
+    customerProfile.addressLine1,
+    customerProfile.addressLine2,
+    [customerProfile.city, customerProfile.state, customerProfile.postalCode].filter(Boolean).join(', '),
+    customerProfile.country,
+  ].filter(Boolean) as string[];
+
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #0f172a;">
-      <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b;">Facturation</p>
-      <h2 style="margin: 0 0 12px;">Facture ${escapeHtml(invoice.number)}</h2>
-      <div style="white-space: pre-wrap; line-height: 1.7; color: #334155;">${escapeHtml(finalMessage)}</div>
-      <p style="margin-top: 16px;">
-        <a href="${invoiceUrl}" style="display: inline-block; background: #0f766e; color: white; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: 600;">
-          Ouvrir la facture
-        </a>
-      </p>
-      <p style="margin-top: 12px; color: #64748b; font-size: 12px;">La facture est aussi jointe en PDF a ce courriel.</p>
-      <img src="${trackingUrl}" alt="" width="1" height="1" style="display:block;border:0;" />
+    <div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto;color:#0f172a;line-height:1.55">
+      <div style="white-space:pre-wrap;margin-bottom:22px;color:#334155">${escapeHtml(finalMessage)}</div>
+
+      <div style="margin:24px 0;padding:20px;border:1px solid #cbd5e1;border-radius:10px;background:#ffffff">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
+          <tr>
+            <td style="vertical-align:top">
+              <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#64748b">Facture</div>
+              <div style="font-size:24px;font-weight:700;margin-top:3px">${escapeHtml(invoice.number)}</div>
+            </td>
+            <td style="vertical-align:top;text-align:right;font-size:13px">
+              <div><strong>Date :</strong> ${escapeHtml(formatDate(invoice.issueDate))}</div>
+              <div><strong>Échéance :</strong> ${escapeHtml(formatDate(invoice.dueDate))}</div>
+            </td>
+          </tr>
+        </table>
+
+        <div style="margin-bottom:18px">
+          <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:4px">Facturé à</div>
+          ${billedTo.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead>
+            <tr>
+              <th style="padding:9px 8px;text-align:left;border-bottom:2px solid #94a3b8">Description</th>
+              <th style="padding:9px 8px;text-align:right;border-bottom:2px solid #94a3b8">Montant</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td style="padding:14px 8px 4px;text-align:right;font-weight:700">TOTAL</td>
+              <td style="padding:14px 8px 4px;text-align:right;font-size:18px;font-weight:700;white-space:nowrap">${escapeHtml(formatMoney(invoice.amount.toString()))}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p><strong>Mode de paiement</strong><br/>Virement Interac : ${escapeHtml(businessProfile.email || '')}</p>
+      <p style="margin-top:12px;color:#64748b;font-size:12px">Pièce jointe : facture-${escapeHtml(invoice.number)}.pdf</p>
+      <img src="${trackingUrl}" alt="" width="1" height="1" style="display:block;border:0" />
     </div>
   `;
 
@@ -223,7 +271,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         error: notConfigured
           ? 'Email non configuré. Ajoute RESEND_API_KEY côté serveur pour activer l envoi.'
           : (sendResult.error || 'L envoi email a échoué.'),
-        invoiceUrl,
       },
       { status: notConfigured ? 503 : 502 },
     );
@@ -270,7 +317,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   return NextResponse.json({
     ok: true,
     emailSent: true,
-    invoiceUrl,
     status: invoice.status === 'DRAFT' ? 'SENT' : invoice.status,
   });
 }

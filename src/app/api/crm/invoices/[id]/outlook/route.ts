@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { buildPublicInvoiceUrl, signCompactPublicInvoiceToken } from '@/lib/public-links';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot } from '@/lib/billing-profile';
+import { parseInvoiceDescriptionLines } from '@/lib/invoice-lines';
+import { createInvoiceOutlookDraftWithFullInvoice } from '@/lib/outlook/invoice-draft';
 import {
-  createInvoiceOutlookDraft,
   getOutlookOAuthConfig,
   OutlookConfigurationError,
   OutlookNotConnectedError,
@@ -26,8 +26,6 @@ function formatDate(value: Date) {
 }
 
 function encodeMailtoValue(value: string) {
-  // encodeURIComponent utilise %20 pour les espaces. Certains clients Outlook Android
-  // affichent littéralement les + produits par URLSearchParams dans les liens mailto.
   return encodeURIComponent(value);
 }
 
@@ -94,12 +92,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_DOMAIN ||
     request.nextUrl.origin;
+  const mobile = isMobileRequest(request);
+  const crmComposerUrl = `/crm/invoices/${encodeURIComponent(invoice.id)}?compose=1`;
 
-  // Sur ordinateur, Outlook est connecté via Microsoft Graph : le brouillon est créé
-  // directement dans la boîte Outlook avec le PDF déjà joint.
-  if (!isMobileRequest(request)) {
+  if (!mobile) {
     try {
-      const draft = await createInvoiceOutlookDraft(invoice.id, appUrl);
+      const draft = await createInvoiceOutlookDraftWithFullInvoice(invoice.id, appUrl);
       return NextResponse.json({
         ...draft,
         mode: 'outlook-draft',
@@ -123,41 +121,73 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           if (!(configError instanceof OutlookConfigurationError)) {
             throw configError;
           }
-          // Tant que l'application Microsoft n'est pas configurée côté serveur,
-          // on conserve le comportement courriel historique au lieu de casser le bouton.
+          // Sans application Microsoft configurée, le composeur du CRM est plus fiable
+          // qu'un mailto: il peut réellement joindre le PDF au moment de l'envoi.
+          return NextResponse.json({
+            outlookUrl: crmComposerUrl,
+            composerUrl: crmComposerUrl,
+            recipientEmail,
+            senderEmail,
+            paymentEmail: senderEmail,
+            mode: 'crm-email-pdf',
+            pdfAttachedOnSend: true,
+          });
         }
-      } else if (error instanceof OutlookConfigurationError) {
-        // Même fallback : le CRM continue d'ouvrir le client courriel normalement.
-      } else {
-        return NextResponse.json(
-          {
-            error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
-          },
-          { status: 502 },
-        );
       }
+
+      if (error instanceof OutlookConfigurationError) {
+        return NextResponse.json({
+          outlookUrl: crmComposerUrl,
+          composerUrl: crmComposerUrl,
+          recipientEmail,
+          senderEmail,
+          paymentEmail: senderEmail,
+          mode: 'crm-email-pdf',
+          pdfAttachedOnSend: true,
+        });
+      }
+
+      return NextResponse.json(
+        {
+          error: error instanceof Error ? error.message : 'Impossible de préparer le brouillon Outlook avec le PDF.',
+        },
+        { status: 502 },
+      );
     }
   }
 
-  // Sur mobile, ou tant que Microsoft Graph n'est pas configuré sur le serveur,
-  // on conserve MAILTO pour ne jamais bloquer l'envoi d'une facture.
-  const invoiceToken = signCompactPublicInvoiceToken({
-    invoiceId: invoice.id,
-    invoiceNumber: invoice.number,
-    contactId: invoice.contact.id,
-  });
-  const invoiceUrl = buildPublicInvoiceUrl(invoiceToken, appUrl);
+  // Sur mobile, un lien mailto ne peut pas ajouter une pièce jointe. On écrit donc
+  // la facture complète dans le message et on retire totalement le lien public.
+  const lines = parseInvoiceDescriptionLines(invoice.description, invoice.amount.toString());
+  const detailLines = lines.map((line) =>
+    `- ${line.description}${line.amount !== null ? ` : ${formatMoney(line.amount)}` : ''}`,
+  );
+  const billedTo = [
+    customerProfile.companyName,
+    customerProfile.fullName,
+    customerProfile.addressLine1,
+    customerProfile.addressLine2,
+    [customerProfile.city, customerProfile.state, customerProfile.postalCode].filter(Boolean).join(', '),
+    customerProfile.country,
+  ].filter(Boolean) as string[];
+
   const subject = `Facture ${invoice.number} | ${businessProfile.displayName}`;
   const message = [
     `Bonjour ${customerProfile.fullName},`,
     '',
-    `Veuillez trouver ci-dessous la facture ${invoice.number}.`,
+    `Voici le détail de la facture ${invoice.number}.`,
     '',
-    `Montant dû : ${formatMoney(invoice.amount.toString())}`,
-    `Date d'échéance : ${formatDate(invoice.dueDate)}`,
+    `FACTURE ${invoice.number}`,
+    `Date : ${formatDate(invoice.issueDate)}`,
+    `Échéance : ${formatDate(invoice.dueDate)}`,
     '',
-    'CONSULTER LA FACTURE',
-    invoiceUrl,
+    'FACTURÉ À',
+    ...billedTo,
+    '',
+    'DÉTAIL',
+    ...detailLines,
+    '',
+    `TOTAL : ${formatMoney(invoice.amount.toString())}`,
     '',
     'MODE DE PAIEMENT',
     `Virement Interac : ${senderEmail}`,
@@ -177,11 +207,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     mailtoUrl,
     outlookMobileUrl,
     outlookWebUrl,
-    invoiceUrl,
     recipientEmail,
     senderEmail,
     paymentEmail: senderEmail,
-    mode: isMobileRequest(request) ? 'mailto-mobile' : 'mailto-fallback',
+    mode: 'mailto-mobile',
     pdfAttached: false,
   });
 }
