@@ -38,51 +38,44 @@ function formatDate(value: string) {
   });
 }
 
-function buildInvoiceMessage(
+function buildCoverMessage(
   invoice: InvoiceEmailPanelProps['invoice'],
   businessName: string,
-  senderEmail: string | null,
-  website: string | null,
 ) {
-  const lines = parseInvoiceDescriptionLines(invoice.description, invoice.amount);
-  const detail = lines.map((line) =>
-    `- ${line.description}${line.amount !== null ? ` : ${formatMoney(line.amount)}` : ''}`,
-  );
-
   return [
     `Bonjour ${invoice.contact.fullName},`,
     '',
-    `Voici le détail de la facture ${invoice.number}. Le PDF officiel est joint à ce courriel.`,
-    '',
-    `FACTURE ${invoice.number}`,
-    `Date : ${formatDate(invoice.issueDate)}`,
-    `Échéance : ${formatDate(invoice.dueDate)}`,
-    '',
-    'FACTURÉ À',
-    invoice.contact.companyName || null,
-    invoice.contact.fullName,
-    invoice.contact.email || null,
-    '',
-    'DÉTAIL',
-    ...detail,
-    '',
-    `TOTAL : ${formatMoney(invoice.amount)}`,
-    '',
-    'MODE DE PAIEMENT',
-    senderEmail ? `Virement Interac : ${senderEmail}` : 'Voir les modalités sur la facture PDF.',
+    `Veuillez trouver ci-dessous le détail de la facture ${invoice.number}. Le document officiel est également joint en PDF à ce courriel.`,
     '',
     'Merci,',
     businessName,
-    senderEmail || null,
-    website || 'nowis.store',
-  ].filter((line): line is string => line !== null).join('\n');
+  ].join('\n');
 }
+
+const editableFieldStyle = {
+  backgroundColor: '#020617',
+  color: '#f8fafc',
+  WebkitTextFillColor: '#f8fafc',
+  caretColor: '#f8fafc',
+  colorScheme: 'dark' as const,
+};
+
+const readOnlyFieldStyle = {
+  backgroundColor: '#020617',
+  color: '#cbd5e1',
+  WebkitTextFillColor: '#cbd5e1',
+  colorScheme: 'dark' as const,
+};
 
 export function InvoiceEmailPanel({ invoice, businessName, senderEmail, website }: InvoiceEmailPanelProps) {
   const defaultSubject = `Facture ${invoice.number} | ${businessName}`;
   const defaultMessage = useMemo(
-    () => buildInvoiceMessage(invoice, businessName, senderEmail, website),
-    [invoice, businessName, senderEmail, website],
+    () => buildCoverMessage(invoice, businessName),
+    [invoice, businessName],
+  );
+  const invoiceLines = useMemo(
+    () => parseInvoiceDescriptionLines(invoice.description, invoice.amount),
+    [invoice.description, invoice.amount],
   );
 
   const [busy, setBusy] = useState(false);
@@ -117,7 +110,7 @@ export function InvoiceEmailPanel({ invoice, businessName, senderEmail, website 
         setSubject(defaultSubject);
         setMessage(defaultMessage);
         setComposerOpen(true);
-        setFeedback('Le courriel est prêt ici. La facture est écrite dans le message et le PDF sera joint automatiquement à l’envoi.');
+        setFeedback('Le courriel est prêt. La facture professionnelle sera intégrée dans le message et le PDF sera joint automatiquement à l’envoi.');
         setFeedbackKind('success');
         return;
       }
@@ -126,7 +119,7 @@ export function InvoiceEmailPanel({ invoice, businessName, senderEmail, website 
         const target = data.connectUrl || data.outlookUrl;
         if (!target) throw new Error('Lien de connexion Microsoft manquant.');
         window.open(target, '_blank', 'noopener,noreferrer');
-        setFeedback('La connexion Microsoft s’ouvre dans un nouvel onglet. La page de facture reste ouverte ici. Après la connexion, Outlook ouvrira le brouillon avec le PDF joint.');
+        setFeedback('La connexion Microsoft s’ouvre dans un nouvel onglet. Cette page reste ouverte. Après la connexion, Outlook pourra créer le brouillon avec le PDF joint.');
         setFeedbackKind('success');
         return;
       }
@@ -135,15 +128,15 @@ export function InvoiceEmailPanel({ invoice, businessName, senderEmail, website 
         if (!data.outlookUrl) throw new Error('Brouillon Outlook introuvable.');
         window.open(data.outlookUrl, '_blank', 'noopener,noreferrer');
         setFeedback(data.pdfAttached
-          ? 'Brouillon Outlook créé : facture complète dans le courriel et PDF déjà joint.'
+          ? 'Brouillon Outlook créé avec la facture dans le courriel et le PDF déjà joint.'
           : 'Brouillon Outlook créé.');
         setFeedbackKind('success');
         return;
       }
 
       if (data.outlookUrl) {
-        window.location.href = data.outlookUrl;
-        setFeedback('Le courriel contient maintenant la facture complète, sans lien public.');
+        window.open(data.outlookUrl, '_blank', 'noopener,noreferrer');
+        setFeedback('Le courriel contient la facture complète, sans lien public.');
         setFeedbackKind('success');
         return;
       }
@@ -179,7 +172,7 @@ export function InvoiceEmailPanel({ invoice, businessName, senderEmail, website 
       }
 
       setComposerOpen(false);
-      setFeedback('Courriel envoyé avec la facture écrite dans le message et le PDF joint.');
+      setFeedback('Courriel envoyé avec la facture professionnelle intégrée et le PDF joint.');
       setFeedbackKind('success');
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Envoi impossible.');
@@ -194,7 +187,7 @@ export function InvoiceEmailPanel({ invoice, businessName, senderEmail, website 
       <div className="print:hidden mb-4 flex flex-col gap-3 rounded-2xl border border-slate-700 bg-slate-900/80 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="font-semibold text-white">Courriel de facture</p>
-          <p className="text-sm text-slate-400">Aucun lien public : détail de la facture dans le courriel + PDF joint.</p>
+          <p className="text-sm text-slate-400">Facture intégrée dans le courriel + PDF joint. Aucun long lien public.</p>
         </div>
         <button
           type="button"
@@ -214,40 +207,124 @@ export function InvoiceEmailPanel({ invoice, businessName, senderEmail, website 
       ) : null}
 
       {composerOpen ? (
-        <div className="print:hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-4">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+        <div className="print:hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-3 sm:p-5">
+          <div className="max-h-[94vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xl font-semibold text-white">Facture par courriel</h3>
-                <p className="mt-1 flex items-center gap-2 text-sm text-emerald-300"><Paperclip size={15} /> facture-{invoice.number}.pdf sera jointe automatiquement</p>
+                <h3 className="text-xl font-semibold text-white">Préparer la facture par courriel</h3>
+                <p className="mt-1 flex items-center gap-2 text-sm text-emerald-300">
+                  <Paperclip size={15} /> facture-{invoice.number}.pdf sera jointe automatiquement
+                </p>
               </div>
               <button type="button" onClick={() => setComposerOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="Fermer">
                 <X size={18} />
               </button>
             </div>
 
-            <div className="mt-5 space-y-4">
-              <div>
-                <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">À</label>
-                <input value={invoice.contact.email || ''} readOnly className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-300" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">Sujet</label>
-                <input value={subject} onChange={(event) => setSubject(event.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white" />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.95fr]">
+              <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">CC</label>
-                  <input value={cc} onChange={(event) => setCc(event.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white" />
+                  <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">À</label>
+                  <input
+                    value={invoice.contact.email || ''}
+                    readOnly
+                    style={readOnlyFieldStyle}
+                    className="w-full rounded-xl border border-slate-700 px-3 py-2.5 text-sm outline-none"
+                  />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">BCC</label>
-                  <input value={bcc} onChange={(event) => setBcc(event.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white" />
+                  <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">Sujet</label>
+                  <input
+                    value={subject}
+                    onChange={(event) => setSubject(event.target.value)}
+                    style={editableFieldStyle}
+                    className="w-full rounded-xl border border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500"
+                  />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">CC</label>
+                    <input value={cc} onChange={(event) => setCc(event.target.value)} style={editableFieldStyle} className="w-full rounded-xl border border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">BCC</label>
+                    <input value={bcc} onChange={(event) => setBcc(event.target.value)} style={editableFieldStyle} className="w-full rounded-xl border border-slate-700 px-3 py-2.5 text-sm outline-none focus:border-primary-500" />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">Petit mot d’accompagnement</label>
+                  <textarea
+                    rows={10}
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
+                    style={editableFieldStyle}
+                    className="w-full resize-y rounded-xl border border-slate-700 px-3 py-3 text-sm leading-6 outline-none focus:border-primary-500"
+                  />
+                  <p className="mt-2 text-xs text-slate-500">La facture ci-contre est ajoutée automatiquement sous ce texte dans le courriel.</p>
                 </div>
               </div>
+
               <div>
-                <label className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-500">Message</label>
-                <textarea rows={18} value={message} onChange={(event) => setMessage(event.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 font-mono text-sm leading-6 text-white" />
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Aperçu du courriel</p>
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-xl">
+                  <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Facture</p>
+                    <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                      <h4 className="text-2xl font-bold text-slate-950">{invoice.number}</h4>
+                      <div className="text-xs text-slate-500 sm:text-right">
+                        <p>Date : {formatDate(invoice.issueDate)}</p>
+                        <p>Échéance : {formatDate(invoice.dueDate)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-5 py-5 sm:px-6">
+                    <div className="mb-5 whitespace-pre-line text-sm leading-6 text-slate-700">{message}</div>
+
+                    <div className="mb-5 rounded-xl bg-slate-50 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Facturé à</p>
+                      {invoice.contact.companyName ? <p className="mt-1 font-semibold text-slate-950">{invoice.contact.companyName}</p> : null}
+                      <p className="text-sm text-slate-700">{invoice.contact.fullName}</p>
+                      {invoice.contact.email ? <p className="text-sm text-slate-600">{invoice.contact.email}</p> : null}
+                    </div>
+
+                    <div className="overflow-hidden rounded-xl border border-slate-200">
+                      <table className="w-full border-collapse text-sm">
+                        <thead className="bg-slate-100 text-slate-600">
+                          <tr>
+                            <th className="px-3 py-2.5 text-left font-semibold">Description</th>
+                            <th className="px-3 py-2.5 text-right font-semibold">Montant</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {invoiceLines.map((line, index) => (
+                            <tr key={`${invoice.id}-email-${index}`} className="border-t border-slate-200">
+                              <td className="px-3 py-3 text-slate-700">{line.description}</td>
+                              <td className="px-3 py-3 text-right font-medium text-slate-900">{line.amount !== null ? formatMoney(line.amount) : '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="border-t-2 border-slate-300 bg-slate-50">
+                          <tr>
+                            <td className="px-3 py-3 text-right font-bold text-slate-700">TOTAL</td>
+                            <td className="px-3 py-3 text-right text-lg font-bold text-slate-950">{formatMoney(invoice.amount)}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+
+                    <div className="mt-5 rounded-xl bg-slate-950 p-4 text-white">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">Mode de paiement</p>
+                      <p className="mt-1 font-semibold">Virement Interac</p>
+                      <p className="text-sm text-white/80">{senderEmail || 'Adresse de paiement à configurer'}</p>
+                    </div>
+
+                    <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                      <Paperclip size={14} /> facture-{invoice.number}.pdf
+                    </div>
+                    <p className="mt-4 text-xs text-slate-400">{businessName} · {senderEmail || ''} · {website || 'nowis.store'}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
