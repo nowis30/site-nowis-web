@@ -10,6 +10,7 @@ function getResendClient() {
 }
 
 export interface EmailPayload {
+  from?: string;
   to: string;
   cc?: string[];
   bcc?: string[];
@@ -31,7 +32,7 @@ export async function sendEmail(payload: EmailPayload) {
     }
 
     const response = await resend.emails.send({
-      from: 'CRM NOWIS <noreply@nowis.store>',
+      from: payload.from || 'CRM NOWIS <noreply@nowis.store>',
       to: payload.to,
       cc: payload.cc,
       bcc: payload.bcc,
