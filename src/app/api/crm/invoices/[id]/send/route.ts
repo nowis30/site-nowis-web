@@ -6,8 +6,12 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { sendEmail as sendEmailService } from '@/lib/email-service';
 import { buildPublicBillingUrl, signPublicBillingToken } from '@/lib/public-links';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
-import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot, validateIssuerSnapshot } from '@/lib/billing-profile';
-import { getClientBillingMissingLabels } from '@/lib/client-billing';
+import {
+  buildCustomerSnapshotFromContact,
+  getBillingIssuerSnapshot,
+  toCustomerSnapshot,
+  toIssuerSnapshot,
+} from '@/lib/billing-profile';
 import { parseInvoiceDescriptionLines } from '@/lib/invoice-lines';
 
 const sendInvoiceSchema = z.object({
@@ -58,6 +62,10 @@ function formatDate(value: Date) {
   }).format(value);
 }
 
+function sanitizeFromName(value: string) {
+  return value.replace(/[<>\r\n]/g, ' ').replace(/\s+/g, ' ').trim() || 'NOWIS';
+}
+
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const guard = requireApiPermission(request, 'invoices', 'update');
   if (guard.error) return guard.error;
@@ -102,33 +110,25 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
   }
 
-  if (!invoice.contact.email) {
-    return NextResponse.json({ error: 'Le contact de cette facture n\'a pas d\'email.' }, { status: 400 });
-  }
-
   const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
   const customerProfile = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
-  const missingIssuer = validateIssuerSnapshot(businessProfile);
-  const missingCustomer = getClientBillingMissingLabels(invoice.contact);
-  if (missingIssuer.length > 0 || missingCustomer.length > 0) {
-    const appUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_DOMAIN ||
-      request.nextUrl.origin;
-    const billingUpdateUrl = buildPublicBillingUrl(
-      signPublicBillingToken({ contactId: invoice.contact.id, invoiceId: invoice.id }),
-      appUrl,
-    );
-    return NextResponse.json(
-      {
-        error: 'Facturation incomplete. Complete le profil emetteur et les informations de facturation client avant envoi.',
-        missingIssuer,
-        missingCustomer,
-        billingUpdateUrl,
-        editCustomerUrl: `/crm/contacts/${invoice.contact.id}`,
-      },
-      { status: 409 },
-    );
+  const recipientEmail = customerProfile.email || invoice.contact.email;
+  const senderEmail = businessProfile.email?.trim() || '';
+
+  if (!recipientEmail) {
+    return NextResponse.json({ error: 'Aucune adresse courriel n est configurée pour le destinataire de cette facture.' }, { status: 400 });
+  }
+
+  if (!senderEmail) {
+    return NextResponse.json({ error: 'Configure ton adresse courriel d envoi dans les paramètres de facturation du CRM.' }, { status: 409 });
+  }
+
+  const emailSchema = z.string().email();
+  if (!emailSchema.safeParse(recipientEmail).success) {
+    return NextResponse.json({ error: `Adresse courriel du destinataire invalide: ${recipientEmail}` }, { status: 400 });
+  }
+  if (!emailSchema.safeParse(senderEmail).success) {
+    return NextResponse.json({ error: `Adresse courriel d envoi invalide: ${senderEmail}` }, { status: 409 });
   }
 
   const subject = payload.subject || `Facture ${invoice.number} - ${businessProfile.displayName}`;
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const trackingUrl = `${appUrl}/api/email/track/open?token=${encodeURIComponent(trackingToken)}`;
 
   const defaultMessage = [
-    `Bonjour ${invoice.contact.fullName},`,
+    `Bonjour ${customerProfile.fullName},`,
     '',
     `Voici la facture ${invoice.number}. Le PDF officiel est joint à ce courriel.`,
     '',
@@ -241,14 +241,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         </table>
       </div>
 
-      <p><strong>Mode de paiement</strong><br/>Virement Interac : ${escapeHtml(businessProfile.email || '')}</p>
+      <p><strong>Mode de paiement</strong><br/>Virement Interac : ${escapeHtml(senderEmail)}</p>
       <p style="margin-top:12px;color:#64748b;font-size:12px">Pièce jointe : facture-${escapeHtml(invoice.number)}.pdf</p>
       <img src="${trackingUrl}" alt="" width="1" height="1" style="display:block;border:0" />
     </div>
   `;
 
   const sendResult = await sendEmailService({
-    to: invoice.contact.email,
+    from: `${sanitizeFromName(businessProfile.displayName)} <${senderEmail}>`,
+    to: recipientEmail,
     cc: ccList,
     bcc: bccList,
     subject,
@@ -269,8 +270,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         ok: false,
         emailSent: false,
         error: notConfigured
-          ? 'Email non configuré. Ajoute RESEND_API_KEY côté serveur pour activer l envoi.'
-          : (sendResult.error || 'L envoi email a échoué.'),
+          ? 'Le service d envoi courriel n est pas configuré sur le serveur.'
+          : (sendResult.error || 'L envoi du courriel a échoué.'),
       },
       { status: notConfigured ? 503 : 502 },
     );
@@ -287,7 +288,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         trackingToken,
         contactId: invoice.contact.id,
         createdById: author?.id ?? null,
-        recipientEmail: invoice.contact.email!,
+        recipientEmail,
         subject,
         messagePreview: `Facture ${invoice.number} envoyée (${formatMoney(invoice.amount.toString())})`,
         provider: 'resend',
@@ -299,7 +300,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       data: {
         type: 'EMAIL',
         title: `Facture envoyée par email : ${invoice.number}`,
-        description: `Envoi facture à ${invoice.contact.email}${ccList.length ? `\nCC: ${ccList.join(', ')}` : ''}${bccList.length ? `\nBCC: ${bccList.join(', ')}` : ''}`,
+        description: `Envoi facture à ${recipientEmail}${ccList.length ? `\nCC: ${ccList.join(', ')}` : ''}${bccList.length ? `\nBCC: ${bccList.join(', ')}` : ''}`,
         contactId: invoice.contact.id,
         invoiceId: invoice.id,
         userId: author?.id ?? null,
@@ -318,5 +319,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     ok: true,
     emailSent: true,
     status: invoice.status === 'DRAFT' ? 'SENT' : invoice.status,
+    recipientEmail,
+    senderEmail,
   });
 }
