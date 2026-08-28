@@ -1,3 +1,4 @@
+import { upgrade2048 } from './game2048Upgrade';
 import { upgradeCandyCrush } from './candyCrushUpgrade';
 import { upgradeChess } from './chessUpgrade';
 import { upgradeCrossyRoad } from './crossyRoadUpgrade';
@@ -20,6 +21,7 @@ const upgrades: Record<string, UpgradeFn> = {
   'crossy-road': upgradeCrossyRoad,
   'rock-paper-scissors': upgradeRockPaperScissors,
   'flappy-bird': upgradeFlappyBird,
+  '2048': upgrade2048,
 };
 
 export function upgradeEmbeddedGame(doc: Document, win: Window, slug: string) {
