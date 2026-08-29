@@ -14,6 +14,7 @@ import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
 import { upgradeSpeedTyping } from './speedTypingUpgrade';
 import { upgradeSudoku } from './sudokuUpgrade';
+import { upgradeTetris } from './tetrisUpgrade';
 import { upgradeTicTacToe } from './ticTacToeUpgrade';
 import { upgradeTowerBlocks } from './towerBlocksUpgrade';
 import { upgradeWordle } from './wordleUpgrade';
@@ -40,6 +41,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'speed-typing': upgradeSpeedTyping,
   breakout: upgradeBreakout,
   'ping-pong': upgradePingPong,
+  tetris: upgradeTetris,
 };
 
 export function hasSourceGame(slug: string) {
