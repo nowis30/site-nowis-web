@@ -1,4 +1,5 @@
 import { upgrade2048 } from './game2048Upgrade';
+import { upgradeArchery } from './archeryUpgrade';
 import { upgradeCandyCrush } from './candyCrushUpgrade';
 import { upgradeChess } from './chessUpgrade';
 import { upgradeCrossyRoad } from './crossyRoadUpgrade';
@@ -28,6 +29,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   wordle: upgradeWordle,
   hangman: upgradeHangman,
   'tower-blocks': upgradeTowerBlocks,
+  archery: upgradeArchery,
 };
 
 export function hasSourceGame(slug: string) {
