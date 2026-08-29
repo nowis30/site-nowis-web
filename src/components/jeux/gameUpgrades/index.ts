@@ -4,6 +4,7 @@ import { upgradeChess } from './chessUpgrade';
 import { upgradeCrossyRoad } from './crossyRoadUpgrade';
 import { upgradeDoodleJump } from './doodleJumpUpgrade';
 import { upgradeFlappyBird } from './flappyBirdUpgrade';
+import { upgradeHangman } from './hangmanUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
 import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
@@ -24,6 +25,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'flappy-bird': upgradeFlappyBird,
   '2048': upgrade2048,
   wordle: upgradeWordle,
+  hangman: upgradeHangman,
 };
 
 export function hasSourceGame(slug: string) {
