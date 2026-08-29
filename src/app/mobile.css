@@ -1,0 +1,196 @@
+/* Mobile-first safety layer for the public NOWIS site.
+ * Keeps desktop styles intact while making shared public content comfortable
+ * on narrow phones and small tablets.
+ */
+
+.public-site,
+.public-site * {
+  box-sizing: border-box;
+}
+
+.public-site img,
+.public-site video,
+.public-site iframe,
+.public-site canvas,
+.public-site svg {
+  max-width: 100%;
+}
+
+.public-site img,
+.public-site video {
+  height: auto;
+}
+
+.public-site iframe {
+  width: 100%;
+}
+
+.public-site table {
+  max-width: 100%;
+}
+
+.public-site :is(h1, h2, h3, h4, p, li, a, button, label, span) {
+  overflow-wrap: anywhere;
+}
+
+.public-site :is(input, textarea, select, button) {
+  max-width: 100%;
+}
+
+.public-site input,
+.public-site textarea,
+.public-site select {
+  font-size: 16px;
+}
+
+@media (max-width: 767px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .public-site header nav {
+    min-height: 4.5rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .public-site header nav > a {
+    min-width: 0;
+    gap: 0.65rem;
+  }
+
+  .public-site header nav > a > span:first-child {
+    width: 2.6rem;
+    height: 2.6rem;
+    flex: 0 0 2.6rem;
+  }
+
+  .public-site header nav > a > span:last-child {
+    min-width: 0;
+  }
+
+  .public-site header nav > a > span:last-child > span:first-child {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+  }
+
+  .public-site header nav > a > span:last-child > span:last-child {
+    font-size: 1.05rem;
+  }
+
+  .public-site > main {
+    padding-top: 5rem;
+  }
+
+  .public-site > main > :is(div, section, article),
+  .public-site > main :is(section, article) {
+    min-width: 0;
+  }
+
+  .public-site :is(section, article, div)[class*="rounded-[2rem]"],
+  .public-site :is(section, article, div).rounded-3xl,
+  .public-site :is(section, article, div).rounded-2xl {
+    border-radius: 1.25rem;
+  }
+
+  .public-site .brand-panel,
+  .public-site .brand-panel-dark,
+  .public-site .brand-card,
+  .public-site .glass-panel-soft,
+  .public-site .glass-panel-strong,
+  .public-site .warm-cta-panel,
+  .public-site .warm-spotlight-panel {
+    border-radius: 1.25rem;
+  }
+
+  .public-site :is(h1).text-4xl,
+  .public-site :is(h1).text-5xl,
+  .public-site :is(h1).text-6xl,
+  .public-site :is(h1).text-7xl {
+    font-size: clamp(2rem, 9vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .public-site :is(h2, h3).text-4xl,
+  .public-site :is(h2, h3).text-5xl {
+    font-size: clamp(1.65rem, 7.5vw, 2.15rem);
+    line-height: 1.12;
+  }
+
+  .public-site .brand-chip,
+  .public-site [class*="tracking-[0.24em]"],
+  .public-site [class*="tracking-[0.28em]"],
+  .public-site [class*="tracking-[0.32em]"] {
+    letter-spacing: 0.14em;
+  }
+
+  .public-site .cta-primary,
+  .public-site .cta-secondary {
+    min-height: 2.9rem;
+  }
+
+  .public-site form :is(button, input, select) {
+    min-height: 3rem;
+  }
+
+  .public-site form textarea {
+    min-height: 7rem;
+  }
+
+  .public-site table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .public-site pre,
+  .public-site code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .public-site footer {
+    margin-top: 3.5rem;
+  }
+
+  .public-site footer > div {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .public-site footer .warm-cta-panel {
+    padding: 1.25rem;
+    gap: 1.5rem;
+  }
+
+  .public-site footer .warm-cta-panel h3 {
+    font-size: clamp(2rem, 9vw, 2.6rem);
+    line-height: 1.06;
+  }
+
+  .public-site footer .warm-cta-panel :is(a, button) {
+    width: 100%;
+  }
+
+  .public-site footer ul.grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .public-site header nav > a > span:last-child > span:first-child {
+    display: none;
+  }
+
+  .public-site header nav > a > span:last-child > span:last-child {
+    font-size: 1rem;
+  }
+
+  .public-site > main {
+    padding-top: 4.75rem;
+  }
+}
