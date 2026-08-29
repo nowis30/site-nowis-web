@@ -1,6 +1,7 @@
 import type { GameExperienceProfile } from './gameExperience';
 import { localizeEmbeddedGame } from './gameLocalization';
 import { localizeGameRuntime } from './gameRuntimeLocalization';
+import { upgradeEmbeddedGame } from './gameUpgrades';
 
 const STYLE_ID = 'nowis-mobile-game-enhancer';
 const VIEWPORT_MARKER = 'nowis-mobile-viewport';
@@ -308,6 +309,15 @@ export function enhanceEmbeddedGame(
     if (!doc || !win || !doc.documentElement) return false;
 
     ensureViewport(doc);
+
+    // Full remakes take precedence over the generic compatibility layer.
+    // This lets us rebuild one game at a time while keeping the untouched games stable.
+    if (upgradeEmbeddedGame(doc, win, profile.slug)) {
+      localizeGameRuntime(win);
+      win.focus();
+      return true;
+    }
+
     installStyles(doc);
     localizeEmbeddedGame(doc, profile.slug);
     localizeGameRuntime(win);
