@@ -8,6 +8,7 @@ import { upgradePacMan } from './pacManUpgrade';
 import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
 import { upgradeSudoku } from './sudokuUpgrade';
+import { upgradeWordle } from './wordleUpgrade';
 
 type UpgradeFn = (doc: Document, win: Window) => void;
 
@@ -22,6 +23,7 @@ const upgrades: Record<string, UpgradeFn> = {
   'rock-paper-scissors': upgradeRockPaperScissors,
   'flappy-bird': upgradeFlappyBird,
   '2048': upgrade2048,
+  wordle: upgradeWordle,
 };
 
 export function upgradeEmbeddedGame(doc: Document, win: Window, slug: string) {
