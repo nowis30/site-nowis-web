@@ -9,6 +9,7 @@ import { upgradePacMan } from './pacManUpgrade';
 import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
 import { upgradeSudoku } from './sudokuUpgrade';
+import { upgradeTowerBlocks } from './towerBlocksUpgrade';
 import { upgradeWordle } from './wordleUpgrade';
 
 type UpgradeFn = (doc: Document, win: Window) => void;
@@ -26,6 +27,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   '2048': upgrade2048,
   wordle: upgradeWordle,
   hangman: upgradeHangman,
+  'tower-blocks': upgradeTowerBlocks,
 };
 
 export function hasSourceGame(slug: string) {
