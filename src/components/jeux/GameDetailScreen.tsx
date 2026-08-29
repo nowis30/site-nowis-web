@@ -6,15 +6,19 @@ import { ArrowLeft } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
 import { enhanceEmbeddedGame } from './gameEnhancer';
 import { getGameExperience } from './gameExperience';
+import { hasSourceGame } from './gameUpgrades';
 
 type GameDetailScreenProps = {
   game: GameEntry;
 };
 
+const SOURCE_GAME_SHELL = '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"></head><body></body></html>';
+
 export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
   const profile = useMemo(() => getGameExperience(game.slug), [game.slug]);
+  const isSourceGame = useMemo(() => hasSourceGame(game.slug), [game.slug]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -45,7 +49,8 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
     <main className="fixed inset-0 z-[1000] h-[100dvh] w-screen overflow-hidden bg-black text-white">
       <iframe
         ref={iframeRef}
-        src={game.src}
+        src={isSourceGame ? undefined : game.src}
+        srcDoc={isSourceGame ? SOURCE_GAME_SHELL : undefined}
         title={game.name}
         className="absolute inset-0 h-full w-full border-0 bg-black"
         allow={profile.allowMicrophone ? 'fullscreen; microphone' : 'fullscreen'}
