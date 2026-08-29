@@ -18,24 +18,25 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const pathname = usePathname();
   const isAppRoute = pathname.startsWith('/crm') || pathname.startsWith('/client');
+  const isGamesHub = pathname === '/jeux';
+  const isStandaloneMiniGame = pathname.startsWith('/jeux/') && pathname !== '/jeux/heritier-millionnaire';
 
-  if (isAppRoute) {
+  // Le monde des mini-jeux est volontairement autonome : aucun header/footer du site,
+  // aucune marge imposée par le layout public. Héritier Millionnaire conserve son layout actuel.
+  if (isAppRoute || isGamesHub || isStandaloneMiniGame) {
     return <>{children}</>;
   }
 
   return (
     <div className="public-site site-background relative flex min-h-screen flex-col overflow-x-clip pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] text-[color:var(--site-text)]">
-      {/* Header - Navigation */}
       <div>
         <Header />
       </div>
 
-      {/* Main Content */}
       <main className="relative z-0 flex-grow pt-24 md:pt-28">
         {children}
       </main>
 
-      {/* Footer */}
       <div className="relative z-0">
         <Footer />
       </div>
