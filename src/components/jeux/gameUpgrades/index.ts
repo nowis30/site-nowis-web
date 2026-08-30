@@ -7,6 +7,7 @@ import { upgradeCrossyRoad } from './crossyRoadUpgrade';
 import { upgradeDoodleJump } from './doodleJumpUpgrade';
 import { upgradeFlappyBird } from './flappyBirdUpgrade';
 import { upgradeHangman } from './hangmanUpgrade';
+import { upgradeMemoryCard } from './memoryCardUpgrade';
 import { upgradeMinesweeper } from './minesweeperUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
 import { upgradePingPong } from './pingPongUpgrade';
@@ -44,6 +45,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'ping-pong': upgradePingPong,
   tetris: upgradeTetris,
   'tilting-maze': upgradeTiltingMaze,
+  'memory-card': upgradeMemoryCard,
 };
 
 export function hasSourceGame(slug: string) {
