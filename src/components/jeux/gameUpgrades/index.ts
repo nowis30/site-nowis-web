@@ -15,7 +15,7 @@ import { upgradeMinesweeper } from './minesweeperUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
 import { upgradePingPong } from './pingPongUpgrade';
 import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
-import { upgradeShapeClicker } from './shapeClickerUpgrade';
+import { upgradeShapeClicker } from './shapeClickerSafeUpgrade';
 import { upgradeSnake } from './snakeUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
 import { upgradeSpeedTyping } from './speedTypingUpgrade';
