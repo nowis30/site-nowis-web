@@ -10,6 +10,7 @@ import React, { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { SiteAssistant } from '@/components/assistant/SiteAssistant';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -40,6 +41,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <div className="relative z-0">
         <Footer />
       </div>
+
+      <SiteAssistant />
     </div>
   );
 };
