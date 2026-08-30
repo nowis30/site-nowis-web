@@ -11,7 +11,6 @@ const WORDS = [
   ['intelligence','coordination','accessibilité','performance','imagination','concentration','expérience','navigation','interaction','technologie','organisation','amélioration','communauté','responsable','créativité','stratégie','développement','adaptation','communication','architecture','personnalisation','environnement','enthousiasme','mécanique','trajectoire','synchronisation','transformation','collaboration','extraordinaire','inspiration'],
 ];
 
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const fold = (value) => String(value || '').toLocaleLowerCase('fr-CA').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const levelFor = (caught) => 1 + Math.floor(caught / 10);
 const spawnFor = (mode, level) => Math.max(mode === 'expert' ? 390 : mode === 'classic' ? 480 : 620, MODES[mode].spawn - (level - 1) * (mode === 'expert' ? 54 : 62));
@@ -45,8 +44,8 @@ function sound(win) {
   return {
     hit(combo) { tone(390 + Math.min(320, combo * 17), 0.05); tone(590 + Math.min(300, combo * 12), 0.06, 'sine', 0.014, 0.028); },
     miss() { tone(145, 0.13, 'sawtooth', 0.026); },
-    level() { [440, 554, 659].forEach((f, i) => tone(f, 0.08, 'triangle', 0.024, i * 0.05)); },
-    end() { [523, 659, 784].forEach((f, i) => tone(f, 0.1, 'triangle', 0.025, i * 0.065)); },
+    level() { [440, 554, 659].forEach((frequency, index) => tone(frequency, 0.08, 'triangle', 0.024, index * 0.05)); },
+    end() { [523, 659, 784].forEach((frequency, index) => tone(frequency, 0.1, 'triangle', 0.025, index * 0.065)); },
     set(value) { enabled = value; },
   };
 }
@@ -343,11 +342,13 @@ export function upgradeTyping(doc, win) {
     overlay.classList.remove('hide');
     modal.innerHTML = `<div class="ey">Aide</div><h2>Imprime les mots avant la ligne rouge</h2><p>Commence à taper : le jeu cible automatiquement le mot correspondant le plus proche du bas. Le mot disparaît dès qu’il est écrit au complet.</p><ul><li><b>Les accents sont tolérés</b> : « ecole » valide « école ».</li><li>Une longue série augmente le multiplicateur de score.</li><li>Tous les 10 mots, le niveau monte : chute plus rapide et davantage de mots.</li><li>Un mot qui atteint le bas coûte une vie. La série revient à zéro.</li><li>Sur mobile, touche le champ de saisie; le clavier reste le contrôle principal.</li></ul><p><b>Clavier :</b> tape directement · Échap/P = pause.</p><div class="acts"><button id="helpMenu">Modes</button><button class="primary" id="closeHelp">${wasPlaying ? 'Reprendre' : 'Compris'}</button></div>`;
     $('#closeHelp').onclick = () => {
+      if (!wasPlaying) { showMenu(); return; }
       overlay.classList.add('hide');
-      if (wasPlaying) { paused = false; last = 0; }
-      input.disabled = !running;
+      paused = false;
+      last = 0;
+      input.disabled = false;
       hud();
-      if (running) input.focus({ preventScroll: true });
+      input.focus({ preventScroll: true });
     };
     $('#helpMenu').onclick = () => { running = false; paused = false; win.cancelAnimationFrame(raf); clearWords(); showMenu(); };
   }
@@ -397,8 +398,11 @@ export function upgradeTyping(doc, win) {
       togglePause();
       return;
     }
-    if (running && !paused && !event.metaKey && !event.ctrlKey && !event.altKey && doc.activeElement !== input && event.key.length === 1) {
+    if (running && !paused && !event.metaKey && !event.ctrlKey && !event.altKey && doc.activeElement !== input && /^[A-Za-zÀ-ÿ]$/.test(event.key)) {
+      event.preventDefault();
       input.focus({ preventScroll: true });
+      input.value += event.key;
+      refreshMatch();
     }
   });
   doc.addEventListener('visibilitychange', () => { if (doc.hidden && running && !paused) togglePause(true); });
