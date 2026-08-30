@@ -569,7 +569,8 @@ export function upgradeSnake(doc, win) {
   function roundRect(context, x, y, w, h, r) {
     const radius = Math.min(r, w / 2, h / 2);
     context.beginPath();
-    context.roundRect ? context.roundRect(x, y, w, h, radius) : context.rect(x, y, w, h);
+    if (typeof context.roundRect === 'function') context.roundRect(x, y, w, h, radius);
+    else context.rect(x, y, w, h);
   }
 
   function draw() {
@@ -765,7 +766,10 @@ export function upgradeSnake(doc, win) {
       setDirection(map[event.key]);
     } else if (event.key === 'p' || event.key === 'P') {
       event.preventDefault();
-      if (state.running) state.paused ? resume() : pause(true);
+      if (state.running) {
+        if (state.paused) resume();
+        else pause(true);
+      }
     } else if ((event.key === ' ' || event.key === 'Enter') && !overlay.classList.contains('hide')) {
       event.preventDefault();
       primaryBtn.click();
