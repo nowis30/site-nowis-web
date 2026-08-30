@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
 import { enhanceEmbeddedGame } from './gameEnhancer';
 import { getGameExperience } from './gameExperience';
-import { hasSourceGame } from './gameUpgrades';
+import { hasSourceGame, upgradeEmbeddedGame } from './gameUpgrades';
 
 type GameDetailScreenProps = {
   game: GameEntry;
@@ -41,8 +41,24 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const onGameLoad = () => {
     const iframe = iframeRef.current;
     if (!iframe) return;
-    enhanceEmbeddedGame(iframe, profile);
-    setIsReady(true);
+
+    if (isSourceGame) {
+      try {
+        const doc = iframe.contentDocument;
+        const win = iframe.contentWindow;
+        if (!doc || !win || !doc.documentElement) return;
+        if (!upgradeEmbeddedGame(doc, win, game.slug)) return;
+        win.focus();
+        setIsReady(true);
+      } catch {
+        return;
+      }
+      return;
+    }
+
+    if (enhanceEmbeddedGame(iframe, profile)) {
+      setIsReady(true);
+    }
   };
 
   return (

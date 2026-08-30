@@ -1,167 +1,9 @@
 import type { GameExperienceProfile } from './gameExperience';
 import { localizeEmbeddedGame } from './gameLocalization';
 import { localizeGameRuntime } from './gameRuntimeLocalization';
-import { upgradeEmbeddedGame } from './gameUpgrades';
 
 const STYLE_ID = 'nowis-mobile-game-enhancer';
 const VIEWPORT_MARKER = 'nowis-mobile-viewport';
-const mouseBridgeSlugs = new Set(['candy-crush', 'solitaire', 'archery', 'fruit-slicer']);
-
-function dispatchKey(targetWindow: Window, key: string, code: string) {
-  const init: KeyboardEventInit = {
-    key,
-    code,
-    bubbles: true,
-    cancelable: true,
-  };
-
-  const targets: EventTarget[] = [targetWindow];
-  if (targetWindow.document) {
-    targets.push(targetWindow.document);
-    if (targetWindow.document.body) targets.push(targetWindow.document.body);
-  }
-
-  for (const target of targets) {
-    target.dispatchEvent(new KeyboardEvent('keydown', init));
-    target.dispatchEvent(new KeyboardEvent('keyup', init));
-  }
-}
-
-function gestureTargetShouldBeIgnored(target: EventTarget | null) {
-  const candidate = target as (EventTarget & { closest?: (selectors: string) => Element | null }) | null;
-  if (!candidate || typeof candidate.closest !== 'function') return false;
-  return Boolean(candidate.closest('input, textarea, select, button, a, [contenteditable="true"]'));
-}
-
-function installSwipeControls(doc: Document, win: Window) {
-  const root = doc.documentElement;
-  if (root.dataset.nowisSwipeReady === 'true') return;
-  root.dataset.nowisSwipeReady = 'true';
-
-  let startX = 0;
-  let startY = 0;
-  let startAt = 0;
-  let tracking = false;
-
-  const onPointerDown = (event: PointerEvent) => {
-    if (event.pointerType === 'mouse' || gestureTargetShouldBeIgnored(event.target)) return;
-    startX = event.clientX;
-    startY = event.clientY;
-    startAt = Date.now();
-    tracking = true;
-  };
-
-  const onPointerUp = (event: PointerEvent) => {
-    if (!tracking || event.pointerType === 'mouse' || gestureTargetShouldBeIgnored(event.target)) {
-      tracking = false;
-      return;
-    }
-
-    tracking = false;
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-    const distance = Math.hypot(dx, dy);
-    const elapsed = Date.now() - startAt;
-
-    if (distance < 24 || elapsed > 900) return;
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-      const key = dx > 0 ? 'ArrowRight' : 'ArrowLeft';
-      dispatchKey(win, key, key);
-      return;
-    }
-
-    const key = dy > 0 ? 'ArrowDown' : 'ArrowUp';
-    dispatchKey(win, key, key);
-  };
-
-  doc.addEventListener('pointerdown', onPointerDown, { passive: true });
-  doc.addEventListener('pointerup', onPointerUp, { passive: true });
-  doc.addEventListener(
-    'pointercancel',
-    () => {
-      tracking = false;
-    },
-    { passive: true },
-  );
-}
-
-function installTouchMouseBridge(doc: Document, win: Window) {
-  const root = doc.documentElement;
-  if (root.dataset.nowisMouseBridgeReady === 'true') return;
-  root.dataset.nowisMouseBridgeReady = 'true';
-
-  let activeTarget: Element | null = null;
-  let startX = 0;
-  let startY = 0;
-
-  const emitMouse = (type: string, touch: Touch, target: Element | null) => {
-    if (!target) return;
-    target.dispatchEvent(
-      new MouseEvent(type, {
-        bubbles: true,
-        cancelable: true,
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        screenX: touch.screenX,
-        screenY: touch.screenY,
-        button: 0,
-        buttons: type === 'mouseup' || type === 'click' ? 0 : 1,
-        view: win,
-      }),
-    );
-  };
-
-  doc.addEventListener(
-    'touchstart',
-    (event) => {
-      if (event.touches.length !== 1 || gestureTargetShouldBeIgnored(event.target)) return;
-      const touch = event.touches[0];
-      activeTarget = doc.elementFromPoint(touch.clientX, touch.clientY);
-      startX = touch.clientX;
-      startY = touch.clientY;
-      event.preventDefault();
-      emitMouse('mousedown', touch, activeTarget);
-    },
-    { passive: false },
-  );
-
-  doc.addEventListener(
-    'touchmove',
-    (event) => {
-      if (!activeTarget || event.touches.length !== 1) return;
-      const touch = event.touches[0];
-      event.preventDefault();
-      emitMouse('mousemove', touch, activeTarget);
-    },
-    { passive: false },
-  );
-
-  doc.addEventListener(
-    'touchend',
-    (event) => {
-      if (!activeTarget || event.changedTouches.length === 0) return;
-      const touch = event.changedTouches[0];
-      event.preventDefault();
-      emitMouse('mouseup', touch, activeTarget);
-
-      if (Math.hypot(touch.clientX - startX, touch.clientY - startY) < 10) {
-        emitMouse('click', touch, activeTarget);
-      }
-
-      activeTarget = null;
-    },
-    { passive: false },
-  );
-
-  doc.addEventListener(
-    'touchcancel',
-    () => {
-      activeTarget = null;
-    },
-    { passive: true },
-  );
-}
 
 function ensureViewport(doc: Document) {
   let viewport = doc.querySelector<HTMLMetaElement>('meta[name="viewport"]');
@@ -299,6 +141,10 @@ function installStyles(doc: Document) {
   doc.head?.appendChild(style);
 }
 
+/**
+ * Compatibility layer for the four legacy games that have not yet been rebuilt.
+ * Source remakes are mounted directly by GameDetailScreen and never pass here.
+ */
 export function enhanceEmbeddedGame(
   iframe: HTMLIFrameElement,
   profile: GameExperienceProfile,
@@ -309,15 +155,6 @@ export function enhanceEmbeddedGame(
     if (!doc || !win || !doc.documentElement) return false;
 
     ensureViewport(doc);
-
-    // Full remakes take precedence over the generic compatibility layer.
-    // This lets us rebuild one game at a time while keeping the untouched games stable.
-    if (upgradeEmbeddedGame(doc, win, profile.slug)) {
-      localizeGameRuntime(win);
-      win.focus();
-      return true;
-    }
-
     installStyles(doc);
     localizeEmbeddedGame(doc, profile.slug);
     localizeGameRuntime(win);
@@ -340,24 +177,11 @@ export function enhanceEmbeddedGame(
       root.classList.add('nowis-touch-manipulation');
     }
 
-    if (profile.preventContextMenu && root.dataset.nowisContextMenuReady !== 'true') {
-      root.dataset.nowisContextMenuReady = 'true';
-      doc.addEventListener('contextmenu', (event) => event.preventDefault());
-    }
-
-    if (profile.swipeToKeys) {
-      installSwipeControls(doc, win);
-    }
-
-    if (mouseBridgeSlugs.has(profile.slug)) {
-      installTouchMouseBridge(doc, win);
-    }
-
     win.focus();
     return true;
   } catch {
-    // Les jeux S3 sont normalement servis par /games et restent same-origin.
-    // Si un navigateur isole exceptionnellement l'iframe, le jeu reste utilisable sans injection.
+    // Legacy /games content is expected to stay same-origin. If a browser isolates
+    // the frame anyway, leave the original game intact rather than partially patching it.
     return false;
   }
 }
