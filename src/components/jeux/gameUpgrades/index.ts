@@ -8,6 +8,7 @@ import { upgradeCrossyRoad } from './crossyRoadUpgrade';
 import { upgradeDoodleJump } from './doodleJumpUpgrade';
 import { upgradeFlappyBird } from './flappyBirdUpgrade';
 import { upgradeHangman } from './hangmanUpgrade';
+import { upgradeInsectCatch } from './insectCatchUpgrade';
 import { upgradeMemoryCard } from './memoryCardUpgrade';
 import { upgradeMinesweeper } from './minesweeperUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
@@ -52,6 +53,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'type-number-guessing': upgradeTypeNumberGuessing,
   snake: upgradeSnake,
   'connect-four': upgradeConnectFour,
+  'insect-catch': upgradeInsectCatch,
 };
 
 export function hasSourceGame(slug: string) {
