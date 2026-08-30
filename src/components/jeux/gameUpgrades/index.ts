@@ -18,6 +18,7 @@ import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
 import { upgradeShapeClicker } from './shapeClickerSafeUpgrade';
 import { upgradeSnake } from './snakeUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
+import { upgradeSpeakNumberGuessing } from './speakNumberGuessingUpgrade';
 import { upgradeSpeedTyping } from './speedTypingUpgrade';
 import { upgradeSudoku } from './sudokuUpgrade';
 import { upgradeTetris } from './tetrisUpgrade';
@@ -62,6 +63,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'dice-roll-simulator': upgradeDiceRollSimulator,
   'shape-clicker': upgradeShapeClicker,
   'typing-challenge': upgradeTypingChallenge,
+  'speak-number-guessing': upgradeSpeakNumberGuessing,
 };
 
 export function hasSourceGame(slug: string) {
