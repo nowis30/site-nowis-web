@@ -26,6 +26,7 @@ import { upgradeTiltingMaze } from './tiltingMazeUpgrade';
 import { upgradeTowerBlocks } from './towerBlocksUpgrade';
 import { upgradeTypeNumberGuessing } from './typeNumberGuessingUpgrade';
 import { upgradeTyping } from './typingUpgrade';
+import { upgradeTypingChallenge } from './typingChallengeUpgrade';
 import { upgradeWordle } from './wordleUpgrade';
 
 type UpgradeFn = (doc: Document, win: Window) => void;
@@ -60,6 +61,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   typing: upgradeTyping,
   'dice-roll-simulator': upgradeDiceRollSimulator,
   'shape-clicker': upgradeShapeClicker,
+  'typing-challenge': upgradeTypingChallenge,
 };
 
 export function hasSourceGame(slug: string) {
