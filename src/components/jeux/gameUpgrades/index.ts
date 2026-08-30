@@ -15,6 +15,7 @@ import { upgradeMinesweeper } from './minesweeperUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
 import { upgradePingPong } from './pingPongUpgrade';
 import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
+import { upgradeShapeClicker } from './shapeClickerUpgrade';
 import { upgradeSnake } from './snakeUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
 import { upgradeSpeedTyping } from './speedTypingUpgrade';
@@ -58,6 +59,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'insect-catch': upgradeInsectCatch,
   typing: upgradeTyping,
   'dice-roll-simulator': upgradeDiceRollSimulator,
+  'shape-clicker': upgradeShapeClicker,
 };
 
 export function hasSourceGame(slug: string) {
