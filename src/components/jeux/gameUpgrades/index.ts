@@ -12,6 +12,7 @@ import { upgradeMinesweeper } from './minesweeperUpgrade';
 import { upgradePacMan } from './pacManUpgrade';
 import { upgradePingPong } from './pingPongUpgrade';
 import { upgradeRockPaperScissors } from './rockPaperScissorsUpgrade';
+import { upgradeSnake } from './snakeUpgrade';
 import { upgradeSolitaire } from './solitaireUpgrade';
 import { upgradeSpeedTyping } from './speedTypingUpgrade';
 import { upgradeSudoku } from './sudokuUpgrade';
@@ -48,6 +49,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'tilting-maze': upgradeTiltingMaze,
   'memory-card': upgradeMemoryCard,
   'type-number-guessing': upgradeTypeNumberGuessing,
+  snake: upgradeSnake,
 };
 
 export function hasSourceGame(slug: string) {
