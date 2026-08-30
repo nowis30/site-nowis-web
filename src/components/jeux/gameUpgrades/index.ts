@@ -31,6 +31,7 @@ import { upgradeTowerBlocks } from './towerBlocksUpgrade';
 import { upgradeTypeNumberGuessing } from './typeNumberGuessingUpgrade';
 import { upgradeTyping } from './typingUpgrade';
 import { upgradeTypingChallenge } from './typingChallengeUpgrade';
+import { upgradeWhackAMole } from './whackAMoleUpgrade';
 import { upgradeWordle } from './wordleUpgrade';
 
 type UpgradeFn = (doc: Document, win: Window) => void;
@@ -70,6 +71,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'fruit-slicer': upgradeFruitSlicer,
   quiz: upgradeQuiz,
   'emoji-catcher': upgradeEmojiCatcher,
+  'whack-a-mole': upgradeWhackAMole,
 };
 
 export function hasSourceGame(slug: string) {

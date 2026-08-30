@@ -142,7 +142,7 @@ function installStyles(doc: Document) {
 }
 
 /**
- * Compatibility layer for the four legacy games that have not yet been rebuilt.
+ * Compatibility layer for the two legacy games that have not yet been rebuilt.
  * Source remakes are mounted directly by GameDetailScreen and never pass here.
  */
 export function enhanceEmbeddedGame(

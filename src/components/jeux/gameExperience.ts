@@ -11,11 +11,6 @@ export type GameExperienceProfile = {
 // engines and bypass this compatibility profile entirely.
 const profiles: GameExperienceProfile[] = [
   {
-    slug: 'whack-a-mole',
-    layout: 'square',
-    touchAction: 'manipulation',
-  },
-  {
     slug: 'simon-says',
     layout: 'square',
     touchAction: 'manipulation',
