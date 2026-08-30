@@ -8,6 +8,7 @@ import { upgradeCrossyRoad } from './crossyRoadUpgrade';
 import { upgradeDiceRollSimulator } from './diceRollUpgrade';
 import { upgradeDoodleJump } from './doodleJumpUpgrade';
 import { upgradeFlappyBird } from './flappyBirdUpgrade';
+import { upgradeFruitSlicer } from './fruitSlicerUpgrade';
 import { upgradeHangman } from './hangmanUpgrade';
 import { upgradeInsectCatch } from './insectCatchUpgrade';
 import { upgradeMemoryCard } from './memoryCardUpgrade';
@@ -64,6 +65,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'shape-clicker': upgradeShapeClicker,
   'typing-challenge': upgradeTypingChallenge,
   'speak-number-guessing': upgradeSpeakNumberGuessing,
+  'fruit-slicer': upgradeFruitSlicer,
 };
 
 export function hasSourceGame(slug: string) {
