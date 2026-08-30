@@ -23,6 +23,7 @@ import { upgradeTicTacToe } from './ticTacToeUpgrade';
 import { upgradeTiltingMaze } from './tiltingMazeUpgrade';
 import { upgradeTowerBlocks } from './towerBlocksUpgrade';
 import { upgradeTypeNumberGuessing } from './typeNumberGuessingUpgrade';
+import { upgradeTyping } from './typingUpgrade';
 import { upgradeWordle } from './wordleUpgrade';
 
 type UpgradeFn = (doc: Document, win: Window) => void;
@@ -54,6 +55,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   snake: upgradeSnake,
   'connect-four': upgradeConnectFour,
   'insect-catch': upgradeInsectCatch,
+  typing: upgradeTyping,
 };
 
 export function hasSourceGame(slug: string) {
