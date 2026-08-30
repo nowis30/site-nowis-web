@@ -5,6 +5,7 @@ import { upgradeCandyCrush } from './candyCrushUpgrade';
 import { upgradeChess } from './chessUpgrade';
 import { upgradeConnectFour } from './connectFourUpgrade';
 import { upgradeCrossyRoad } from './crossyRoadUpgrade';
+import { upgradeDiceRollSimulator } from './diceRollUpgrade';
 import { upgradeDoodleJump } from './doodleJumpUpgrade';
 import { upgradeFlappyBird } from './flappyBirdUpgrade';
 import { upgradeHangman } from './hangmanUpgrade';
@@ -56,6 +57,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'connect-four': upgradeConnectFour,
   'insect-catch': upgradeInsectCatch,
   typing: upgradeTyping,
+  'dice-roll-simulator': upgradeDiceRollSimulator,
 };
 
 export function hasSourceGame(slug: string) {
