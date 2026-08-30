@@ -19,6 +19,7 @@ import { upgradeTetris } from './tetrisUpgrade';
 import { upgradeTicTacToe } from './ticTacToeUpgrade';
 import { upgradeTiltingMaze } from './tiltingMazeUpgrade';
 import { upgradeTowerBlocks } from './towerBlocksUpgrade';
+import { upgradeTypeNumberGuessing } from './typeNumberGuessingUpgrade';
 import { upgradeWordle } from './wordleUpgrade';
 
 type UpgradeFn = (doc: Document, win: Window) => void;
@@ -46,6 +47,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   tetris: upgradeTetris,
   'tilting-maze': upgradeTiltingMaze,
   'memory-card': upgradeMemoryCard,
+  'type-number-guessing': upgradeTypeNumberGuessing,
 };
 
 export function hasSourceGame(slug: string) {
