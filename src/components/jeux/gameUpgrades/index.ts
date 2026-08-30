@@ -7,6 +7,7 @@ import { upgradeConnectFour } from './connectFourUpgrade';
 import { upgradeCrossyRoad } from './crossyRoadUpgrade';
 import { upgradeDiceRollSimulator } from './diceRollUpgrade';
 import { upgradeDoodleJump } from './doodleJumpUpgrade';
+import { upgradeEmojiCatcher } from './emojiCatcherUpgrade';
 import { upgradeFlappyBird } from './flappyBirdUpgrade';
 import { upgradeFruitSlicer } from './fruitSlicerUpgrade';
 import { upgradeHangman } from './hangmanUpgrade';
@@ -68,6 +69,7 @@ const sourceGames: Record<string, UpgradeFn> = {
   'speak-number-guessing': upgradeSpeakNumberGuessing,
   'fruit-slicer': upgradeFruitSlicer,
   quiz: upgradeQuiz,
+  'emoji-catcher': upgradeEmojiCatcher,
 };
 
 export function hasSourceGame(slug: string) {

@@ -17,8 +17,12 @@ const SOURCE_GAME_SHELL = '<!doctype html><html lang="fr"><head><meta charset="u
 export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
-  const profile = useMemo(() => getGameExperience(game.slug), [game.slug]);
   const isSourceGame = useMemo(() => hasSourceGame(game.slug), [game.slug]);
+  const legacyProfile = useMemo(
+    () => (isSourceGame ? null : getGameExperience(game.slug)),
+    [game.slug, isSourceGame],
+  );
+  const allowMicrophone = game.slug === 'speak-number-guessing';
 
   useEffect(() => {
     const html = document.documentElement;
@@ -56,7 +60,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
       return;
     }
 
-    if (enhanceEmbeddedGame(iframe, profile)) {
+    if (legacyProfile && enhanceEmbeddedGame(iframe, legacyProfile)) {
       setIsReady(true);
     }
   };
@@ -69,7 +73,7 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         srcDoc={isSourceGame ? SOURCE_GAME_SHELL : undefined}
         title={game.name}
         className="absolute inset-0 h-full w-full border-0 bg-black"
-        allow={profile.allowMicrophone ? 'fullscreen; microphone' : 'fullscreen'}
+        allow={allowMicrophone ? 'fullscreen; microphone' : 'fullscreen'}
         onLoad={onGameLoad}
       />
 
