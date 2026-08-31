@@ -1,0 +1,222 @@
+/*
+ * Public-site visual polish.
+ * Loaded after globals.css and scoped to .public-site so CRM/client surfaces
+ * and the standalone NOWIS arcade keep their own visual systems.
+ */
+
+.public-site {
+  --public-accent-ink: #8f5128;
+  --public-secondary-ink: #6b3f7a;
+  --public-warm-ink: #8a5a18;
+  --public-positive-ink: #275f49;
+  --public-focus: rgba(143, 81, 40, 0.5);
+}
+
+/*
+ * The public theme uses pale cream surfaces. Legacy accent utilities below
+ * were designed for a dark theme and can fall under WCAG AA on these panels.
+ * These darker semantic inks all exceed 4.5:1 against the public backgrounds.
+ */
+.public-site :is(
+  .text-primary-100,
+  .text-primary-200,
+  .text-primary-300,
+  .text-primary-400,
+  .text-primary-500
+) {
+  color: var(--public-accent-ink) !important;
+}
+
+.public-site :is(
+  .text-secondary-100,
+  .text-secondary-200,
+  .text-secondary-300,
+  .text-secondary-400,
+  .text-secondary-500
+) {
+  color: var(--public-secondary-ink) !important;
+}
+
+.public-site :is(
+  .text-amber-100,
+  .text-amber-200,
+  .text-amber-300,
+  .text-amber-400,
+  .text-amber-500
+) {
+  color: var(--public-warm-ink) !important;
+}
+
+.public-site :is(
+  .text-emerald-100,
+  .text-emerald-200,
+  .text-emerald-300,
+  .text-emerald-400,
+  .text-emerald-500
+) {
+  color: var(--public-positive-ink) !important;
+}
+
+/* Keep primary NOWIS calls-to-action readable on the warm dark gradient. */
+.public-site .cta-primary {
+  min-height: 44px;
+  color: #ffffff !important;
+}
+
+.public-site .cta-secondary {
+  min-height: 44px;
+}
+
+/*
+ * Legacy public screens still contain intentional dark cards/CTAs. The broad
+ * light-theme compatibility rules in globals.css must not darken text inside
+ * those surfaces.
+ */
+.public-site :is(
+  .bg-gray-800,
+  .bg-gray-900,
+  .bg-slate-800,
+  .bg-slate-900,
+  .bg-steel-800,
+  .bg-steel-900,
+  .bg-steel-950,
+  .bg-coal-900,
+  .bg-coal-950,
+  .bg-primary-600,
+  .bg-primary-700,
+  .bg-primary-800,
+  .bg-secondary-600,
+  .bg-secondary-700,
+  .bg-secondary-800
+).text-white {
+  color: #ffffff !important;
+}
+
+.public-site :is(
+  .from-gray-800,
+  .from-gray-900,
+  .from-slate-800,
+  .from-slate-900,
+  .from-steel-800,
+  .from-steel-900,
+  .from-steel-950,
+  .from-coal-900,
+  .from-coal-950,
+  .from-primary-600,
+  .from-primary-700,
+  .from-primary-800,
+  .from-secondary-600,
+  .from-secondary-700,
+  .from-secondary-800,
+  .bg-gray-800,
+  .bg-gray-900,
+  .bg-slate-800,
+  .bg-slate-900,
+  .bg-steel-800,
+  .bg-steel-900,
+  .bg-steel-950,
+  .bg-coal-900,
+  .bg-coal-950
+) :is(.text-white, .text-slate-100, .text-slate-200) {
+  color: #f8fafc !important;
+}
+
+.public-site :is(
+  .from-gray-800,
+  .from-gray-900,
+  .from-slate-800,
+  .from-slate-900,
+  .from-steel-800,
+  .from-steel-900,
+  .from-steel-950,
+  .from-coal-900,
+  .from-coal-950
+) .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+/* Restore bright semantic accents when those utilities intentionally sit on dark panels. */
+.public-site :is(
+  .from-gray-800,
+  .from-gray-900,
+  .from-slate-800,
+  .from-slate-900,
+  .from-steel-800,
+  .from-steel-900,
+  .from-steel-950,
+  .from-coal-900,
+  .from-coal-950
+) :is(.text-primary-100, .text-primary-200, .text-primary-300, .text-primary-400, .text-primary-500) {
+  color: #bfdbfe !important;
+}
+
+.public-site :is(
+  .from-gray-800,
+  .from-gray-900,
+  .from-slate-800,
+  .from-slate-900,
+  .from-steel-800,
+  .from-steel-900,
+  .from-steel-950,
+  .from-coal-900,
+  .from-coal-950
+) :is(.text-secondary-100, .text-secondary-200, .text-secondary-300, .text-secondary-400, .text-secondary-500) {
+  color: #ddd6fe !important;
+}
+
+.public-site :is(
+  .from-gray-800,
+  .from-gray-900,
+  .from-slate-800,
+  .from-slate-900,
+  .from-steel-800,
+  .from-steel-900,
+  .from-steel-950,
+  .from-coal-900,
+  .from-coal-950
+) :is(.text-amber-100, .text-amber-200, .text-amber-300, .text-amber-400, .text-amber-500) {
+  color: #fde68a !important;
+}
+
+.public-site :is(
+  .from-gray-800,
+  .from-gray-900,
+  .from-slate-800,
+  .from-slate-900,
+  .from-steel-800,
+  .from-steel-900,
+  .from-steel-950,
+  .from-coal-900,
+  .from-coal-950
+) :is(.text-emerald-100, .text-emerald-200, .text-emerald-300, .text-emerald-400, .text-emerald-500) {
+  color: #a7f3d0 !important;
+}
+
+/* Lighter, warmer depth for cards inherited from the previous dark visual system. */
+.public-site :is(.brand-card, .brand-panel, .brand-panel-dark, .glass-panel-soft) {
+  box-shadow: 0 16px 42px rgba(96, 65, 43, 0.1) !important;
+}
+
+.public-site :is(.glass-panel-strong, .warm-cta-panel, .warm-spotlight-panel) {
+  box-shadow: 0 22px 58px rgba(96, 65, 43, 0.13) !important;
+}
+
+/* Keyboard focus remains obvious without depending on hover or color alone. */
+.public-site :is(a, button, input, textarea, select, summary):focus-visible {
+  outline: 3px solid var(--public-focus) !important;
+  outline-offset: 3px;
+}
+
+/* Motion stays optional for users who request a quieter interface. */
+@media (prefers-reduced-motion: reduce) {
+  .public-site,
+  .public-site *,
+  .public-site *::before,
+  .public-site *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}

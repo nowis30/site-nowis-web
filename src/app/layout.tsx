@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Alfa_Slab_One, Inter } from 'next/font/google';
 import './globals.css';
+import './public-polish.css';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
