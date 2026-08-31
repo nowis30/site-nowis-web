@@ -78,10 +78,6 @@ const sourceGames: Record<string, UpgradeFn> = {
   'sliding-puzzle': upgradeSlidingPuzzle,
 };
 
-export function hasSourceGame(slug: string) {
-  return Boolean(sourceGames[slug]);
-}
-
 export function upgradeEmbeddedGame(doc: Document, win: Window, slug: string) {
   const upgrade = sourceGames[slug];
   if (!upgrade) return false;

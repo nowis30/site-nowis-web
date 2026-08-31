@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
-import { enhanceEmbeddedGame } from './gameEnhancer';
-import { getGameExperience } from './gameExperience';
-import { hasSourceGame, upgradeEmbeddedGame } from './gameUpgrades';
+import { upgradeEmbeddedGame } from './gameUpgrades';
 
 type GameDetailScreenProps = {
   game: GameEntry;
@@ -17,11 +15,7 @@ const SOURCE_GAME_SHELL = '<!doctype html><html lang="fr"><head><meta charset="u
 export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
-  const isSourceGame = useMemo(() => hasSourceGame(game.slug), [game.slug]);
-  const legacyProfile = useMemo(
-    () => (isSourceGame ? null : getGameExperience(game.slug)),
-    [game.slug, isSourceGame],
-  );
+  const [loadError, setLoadError] = useState(false);
   const allowMicrophone = game.slug === 'speak-number-guessing';
 
   useEffect(() => {
@@ -46,22 +40,25 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    if (isSourceGame) {
-      try {
-        const doc = iframe.contentDocument;
-        const win = iframe.contentWindow;
-        if (!doc || !win || !doc.documentElement) return;
-        if (!upgradeEmbeddedGame(doc, win, game.slug)) return;
-        win.focus();
-        setIsReady(true);
-      } catch {
+    setLoadError(false);
+
+    try {
+      const doc = iframe.contentDocument;
+      const win = iframe.contentWindow;
+      if (!doc || !win || !doc.documentElement) {
+        setLoadError(true);
         return;
       }
-      return;
-    }
 
-    if (legacyProfile && enhanceEmbeddedGame(iframe, legacyProfile)) {
+      if (!upgradeEmbeddedGame(doc, win, game.slug)) {
+        setLoadError(true);
+        return;
+      }
+
+      win.focus();
       setIsReady(true);
+    } catch {
+      setLoadError(true);
     }
   };
 
@@ -69,17 +66,22 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
     <main className="fixed inset-0 z-[1000] h-[100dvh] w-screen overflow-hidden bg-black text-white">
       <iframe
         ref={iframeRef}
-        src={isSourceGame ? undefined : game.src}
-        srcDoc={isSourceGame ? SOURCE_GAME_SHELL : undefined}
+        srcDoc={SOURCE_GAME_SHELL}
         title={game.name}
         className="absolute inset-0 h-full w-full border-0 bg-black"
-        allow={allowMicrophone ? 'fullscreen; microphone' : 'fullscreen'}
+        allow={allowMicrophone ? 'microphone' : undefined}
         onLoad={onGameLoad}
       />
 
       {!isReady ? (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black">
-          <div className="h-9 w-9 animate-spin rounded-full border-4 border-white/20 border-t-white" aria-label="Chargement du jeu" />
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black px-6 text-center">
+          {loadError ? (
+            <p className="max-w-sm text-sm font-medium text-white/80" role="alert">
+              Ce jeu NOWIS n’a pas pu démarrer. Revenez à l’arcade et réessayez.
+            </p>
+          ) : (
+            <div className="h-9 w-9 animate-spin rounded-full border-4 border-white/20 border-t-white" aria-label="Chargement du jeu" />
+          )}
         </div>
       ) : null}
 

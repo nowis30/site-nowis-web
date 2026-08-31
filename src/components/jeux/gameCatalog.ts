@@ -1,90 +1,49 @@
-import { getFrenchGameName } from './gameLocalization';
-
 export type GameEntry = {
   slug: string;
   name: string;
-  src: string;
 };
 
-const gamesBaseUrl = '/games/html-css-javascript-games-main';
-
-const htmlCssJavaScriptGameFolders = [
-  '01-Candy-Crush-Game',
-  '02-Pac-Man-Game',
-  '03-Chess-Game',
-  '04-Doodle-Jump-Game',
-  '05-Solitaire-Game',
-  '06-Sudoku-Game',
-  '07-Crossy-Road-Game',
-  '08-Rock-Paper-Scissors',
-  '09-Flappy-Bird-Game',
-  '10-2048-Game',
-  '11-Wordle-Game',
-  '12-Hangman-Game',
-  '13-Tower-Blocks',
-  '14-Archery-Game',
-  '15-Tic-Tac-Toe',
-  '16-Minesweeper-Game',
-  '17-Speed-Typing-Game',
-  '18-Breakout-Game',
-  '19-Ping-Pong-Game',
-  '20-Tetris-Game',
-  '21-Tilting-Maze-Game',
-  '22-Memory-Card-Game',
-  '23-Type-Number-Guessing-Game',
-  '24-Snake-Game',
-  '25-Connect-Four-Game',
-  '26-Insect-Catch-Game',
-  '27-Typing-Game',
-  '28-Dice-Roll-Simulator',
-  '29-Shape-Clicker-Game',
-  '30-Typing-Game',
-  '31-Speak-Number-Guessing-Game',
-  '32-Fruit-Slicer-Game',
-  '33-Quiz-Game',
-  '34-Emoji-Catcher-Game',
-  '35-Whack-A-Mole-Game',
-  '36-Simon-Says-Game',
-  '37-Sliding-Puzzle-Game',
-] as const;
-
-type FolderName = (typeof htmlCssJavaScriptGameFolders)[number];
-
-const gameOverrides: Partial<Record<FolderName, Partial<Pick<GameEntry, 'slug'>>>> = {
-  '30-Typing-Game': {
-    slug: 'typing-challenge',
-  },
-};
-
-function formatGameTitle(folderName: string) {
-  return folderName
-    .replace(/^\d+-/, '')
-    .replace(/-Game$/i, '')
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-    .trim();
-}
-
-function toSlug(folderName: string) {
-  return folderName
-    .replace(/^\d+-/, '')
-    .replace(/-Game$/i, '')
-    .replace(/[^a-zA-Z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase();
-}
-
-export const gameCatalog: GameEntry[] = htmlCssJavaScriptGameFolders.map((folderName) => {
-  const override = gameOverrides[folderName];
-  const slug = override?.slug ?? toSlug(folderName);
-  const fallbackName = formatGameTitle(folderName);
-
-  return {
-    slug,
-    name: getFrenchGameName(slug, fallbackName),
-    src: `${gamesBaseUrl}/${folderName}/index.html`,
-  };
-});
+// Canonical NOWIS catalog. Every entry below is backed by a source engine in
+// gameUpgrades/index.ts; no legacy HTML/S3 URL is retained in the public model.
+export const gameCatalog: GameEntry[] = [
+  { slug: 'candy-crush', name: 'Candy Crush' },
+  { slug: 'pac-man', name: 'Pac-Man' },
+  { slug: 'chess', name: 'Échecs' },
+  { slug: 'doodle-jump', name: 'Doodle Jump' },
+  { slug: 'solitaire', name: 'Solitaire' },
+  { slug: 'sudoku', name: 'Sudoku' },
+  { slug: 'crossy-road', name: 'Crossy Road' },
+  { slug: 'rock-paper-scissors', name: 'Pierre, papier, ciseaux' },
+  { slug: 'flappy-bird', name: 'Flappy Bird' },
+  { slug: '2048', name: '2048' },
+  { slug: 'wordle', name: 'Wordle' },
+  { slug: 'hangman', name: 'Le pendu' },
+  { slug: 'tower-blocks', name: 'Tour de blocs' },
+  { slug: 'archery', name: 'Tir à l’arc' },
+  { slug: 'tic-tac-toe', name: 'Morpion' },
+  { slug: 'minesweeper', name: 'Démineur' },
+  { slug: 'speed-typing', name: 'Frappe rapide' },
+  { slug: 'breakout', name: 'Casse-briques' },
+  { slug: 'ping-pong', name: 'Ping-pong' },
+  { slug: 'tetris', name: 'Tetris' },
+  { slug: 'tilting-maze', name: 'Labyrinthe inclinable' },
+  { slug: 'memory-card', name: 'Jeu de mémoire' },
+  { slug: 'type-number-guessing', name: 'Devine le nombre' },
+  { slug: 'snake', name: 'Serpent' },
+  { slug: 'connect-four', name: 'Puissance 4' },
+  { slug: 'insect-catch', name: 'Attrape-insectes' },
+  { slug: 'typing', name: 'Jeu de frappe' },
+  { slug: 'dice-roll-simulator', name: 'Simulateur de dés' },
+  { slug: 'shape-clicker', name: 'Clique-formes' },
+  { slug: 'typing-challenge', name: 'Défi de frappe' },
+  { slug: 'speak-number-guessing', name: 'Devine le nombre à voix haute' },
+  { slug: 'fruit-slicer', name: 'Coupe-fruits' },
+  { slug: 'quiz', name: 'Quiz' },
+  { slug: 'emoji-catcher', name: 'Attrape-émojis' },
+  { slug: 'whack-a-mole', name: 'Tape-taupe' },
+  { slug: 'simon-says', name: 'Jacques a dit' },
+  { slug: 'sliding-puzzle', name: 'Puzzle coulissant' },
+];
 
 export function findGameBySlug(slug: string) {
   return gameCatalog.find((game) => game.slug === slug) ?? null;
