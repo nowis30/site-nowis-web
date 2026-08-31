@@ -1,6 +1,116 @@
 import Link from 'next/link';
-import { ArrowLeft, Gamepad2, Sparkles, Zap } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Crown,
+  ExternalLink,
+  Gamepad2,
+  Spade,
+  Sparkles,
+  Users,
+  Zap,
+} from 'lucide-react';
 import { GamesGrid } from './GamesGrid';
+
+const featuredGames = [
+  {
+    name: 'Village IA',
+    eyebrow: 'Univers social',
+    description:
+      'Explore ton village, développe ta maison, retrouve d’autres joueurs et découvre l’univers social NOWIS.',
+    href: 'https://village-ia.vercel.app',
+    cta: 'Entrer dans le village',
+    icon: <Users size={28} />,
+    external: true,
+    border: 'border-emerald-300/25 hover:border-emerald-200/55',
+    glow: 'from-emerald-400/20 via-cyan-400/10 to-transparent',
+    iconStyle: 'border-emerald-200/30 bg-emerald-300/15 text-emerald-100',
+    badgeStyle: 'border-emerald-200/20 bg-emerald-300/10 text-emerald-100',
+    buttonStyle: 'bg-emerald-300 text-emerald-950 hover:bg-emerald-200',
+  },
+  {
+    name: 'Poker Menteur',
+    eyebrow: 'Jeu multijoueur',
+    description:
+      'Bluffe, lis les autres joueurs et tente de survivre aux manches dans le jeu de cartes social de NOWIS.',
+    href: 'https://poker-menteur-self.vercel.app',
+    cta: 'Jouer à Poker Menteur',
+    icon: <Spade size={28} />,
+    external: true,
+    border: 'border-fuchsia-300/25 hover:border-fuchsia-200/55',
+    glow: 'from-fuchsia-400/20 via-violet-400/10 to-transparent',
+    iconStyle: 'border-fuchsia-200/30 bg-fuchsia-300/15 text-fuchsia-100',
+    badgeStyle: 'border-fuchsia-200/20 bg-fuchsia-300/10 text-fuchsia-100',
+    buttonStyle: 'bg-fuchsia-300 text-fuchsia-950 hover:bg-fuchsia-200',
+  },
+  {
+    name: 'Héritier Millionnaire',
+    eyebrow: 'Grande aventure',
+    description:
+      'Construis ta progression et relève les défis de l’expérience Héritier Millionnaire directement dans NOWIS.',
+    href: '/jeux/heritier-millionnaire',
+    cta: 'Jouer à Héritier Millionnaire',
+    icon: <Crown size={28} />,
+    external: false,
+    border: 'border-amber-300/25 hover:border-amber-200/55',
+    glow: 'from-amber-400/20 via-orange-400/10 to-transparent',
+    iconStyle: 'border-amber-200/30 bg-amber-300/15 text-amber-100',
+    badgeStyle: 'border-amber-200/20 bg-amber-300/10 text-amber-100',
+    buttonStyle: 'bg-amber-300 text-amber-950 hover:bg-amber-200',
+  },
+];
+
+function FeaturedGameCard({ game }: { game: (typeof featuredGames)[number] }) {
+  const content = (
+    <>
+      <div
+        className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${game.glow} opacity-80 transition duration-300 group-hover:opacity-100`}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent"
+        aria-hidden="true"
+      />
+
+      <div className="relative flex h-full flex-col p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-lg ${game.iconStyle}`}>
+            {game.icon}
+          </div>
+          <span className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.15em] ${game.badgeStyle}`}>
+            {game.eyebrow}
+          </span>
+        </div>
+
+        <div className="mt-7 flex-1">
+          <h3 className="text-2xl font-black tracking-tight text-white sm:text-3xl">{game.name}</h3>
+          <p className="mt-3 max-w-md text-sm leading-6 text-slate-300">{game.description}</p>
+        </div>
+
+        <div className={`mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-black shadow-lg transition ${game.buttonStyle}`}>
+          <span>{game.cta}</span>
+          {game.external ? <ExternalLink size={16} /> : <ArrowRight size={16} />}
+        </div>
+      </div>
+    </>
+  );
+
+  const className = `group relative min-h-[300px] overflow-hidden rounded-[1.7rem] border bg-slate-950/75 shadow-[0_22px_70px_rgba(0,0,0,0.38)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_85px_rgba(0,0,0,0.48)] ${game.border}`;
+
+  if (game.external) {
+    return (
+      <a href={game.href} target="_blank" rel="noopener noreferrer" className={className}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={game.href} className={className}>
+      {content}
+    </Link>
+  );
+}
 
 export function GamesScreen() {
   return (
@@ -36,21 +146,40 @@ export function GamesScreen() {
           </div>
 
           <h1 className="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.055em] text-white sm:text-5xl md:text-7xl">
-            Choisis ton jeu.
+            Choisis ton univers.
             <span className="mt-2 block bg-[linear-gradient(90deg,#67e8f9,#a78bfa,#f0abfc)] bg-clip-text text-transparent">
               Joue tout de suite.
             </span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-            Des jeux rapides, colorés et pensés pour le téléphone. Appuie sur une carte et le jeu s’ouvre directement en plein écran.
+            Trois grandes expériences NOWIS et 37 mini-jeux rapides, colorés et pensés pour le téléphone.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-xs font-bold text-slate-200">
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 37 jeux</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 40 expériences</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⭐ 3 univers vedettes</span>
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">📱 Téléphone d’abord</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⚡ Sans inscription</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🌌 Plein écran</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⚡ 37 mini-jeux instantanés</span>
+          </div>
+        </section>
+
+        <section className="relative mb-14 sm:mb-16">
+          <div className="mb-6 flex items-end justify-between gap-4 border-b border-white/10 pb-4 sm:mb-8">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-violet-200">
+                <Sparkles size={14} />
+                Expériences NOWIS
+              </div>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Les grands univers à découvrir</h2>
+            </div>
+            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Trois expériences, trois styles de jeu</span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
+            {featuredGames.map((game) => (
+              <FeaturedGameCard key={game.name} game={game} />
+            ))}
           </div>
         </section>
 
@@ -59,11 +188,11 @@ export function GamesScreen() {
             <div>
               <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-cyan-200">
                 <Zap size={14} />
-                Tous les jeux
+                37 mini-jeux
               </div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">À quoi veux-tu jouer?</h2>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">À quoi veux-tu jouer maintenant?</h2>
             </div>
-            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Touchez une carte pour commencer</span>
+            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Touche une carte pour commencer</span>
           </div>
 
           <GamesGrid />
