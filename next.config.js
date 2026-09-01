@@ -1,4 +1,19 @@
 /** @type {import('next').NextConfig} */
+const retiredServiceRedirects = [
+  '/services/annonce-evenement',
+  '/services/campagnes-reseaux-sociaux',
+  '/services/clip-video',
+  '/services/exemples-projets',
+  '/services/hymne-entreprise',
+  '/services/site-web-interactif',
+  '/services/story-instagram',
+  '/services/theme-podcast',
+].map((source) => ({
+  source,
+  destination: '/services',
+  permanent: true,
+}));
+
 const nextConfig = {
   // Output config for Vercel
   output: 'standalone',
@@ -31,6 +46,8 @@ const nextConfig = {
   // Host and path redirects
   redirects: async () => {
     return [
+      // Les anciennes sous-pages de services sont consolidées dans le nouveau hub.
+      ...retiredServiceRedirects,
       // Harmoniser ancienne URL de politique vers la nouvelle
       {
         source: '/privacy',
