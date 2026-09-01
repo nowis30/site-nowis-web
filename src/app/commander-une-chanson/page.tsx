@@ -17,30 +17,30 @@ import { portfolioDisclosure, songPackages, songProcessSteps, songSalesCtas } fr
 import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { buildMetadata } from '@/lib/seo';
 import { buildServiceSchema } from '@/lib/structured-data';
-import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
+import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection } from '@/lib/admin-runtime';
 
 const DEFAULT_SONG_PAGE_CONTENT = {
   hero: {
-    eyebrow: 'Chanson personnalisee',
-    title: 'Une chanson sur mesure a partir de votre histoire',
-    description: 'Je cree des chansons personnalisees a partir de vos paroles, de vos souvenirs ou d un moment important de votre vie.',
+    eyebrow: 'Chanson personnalisée',
+    title: 'Une chanson sur mesure à partir de votre histoire',
+    description: 'Je crée des chansons personnalisées à partir de vos paroles, de vos souvenirs ou d’un moment important de votre vie.',
     primaryCta: { label: songSalesCtas.order.label, href: SONG_REQUEST_GOOGLE_AUTH_URL },
     secondaryCta: { label: songSalesCtas.listen.label, href: songSalesCtas.listen.href },
   },
   how: {
-    title: 'Une commande simple, claire et guidee du debut a la fin',
-    description: 'Le processus reste volontairement direct pour que l offre soit facile a comprendre et rapide a lancer.',
+    title: 'Une commande simple, claire et guidée du début à la fin',
+    description: 'Le processus reste volontairement direct pour que l’offre soit facile à comprendre et rapide à lancer.',
   },
   packages: {
-    eyebrow: 'Niveaux d accompagnement',
-    title: 'Trois facons d aborder votre chanson sur mesure',
+    eyebrow: 'Niveaux d’accompagnement',
+    title: 'Trois façons d’aborder votre chanson sur mesure',
     description:
-      'Selon votre point de depart, je peux mettre un texte en chanson, construire une chanson complete a partir d une histoire ou accompagner une demande plus personnelle avec plus de delicatesse.',
+      'Selon votre point de départ, je peux mettre un texte en chanson, construire une chanson complète à partir d’une histoire ou accompagner une demande plus personnelle avec plus de délicatesse.',
   },
   final: {
-    title: 'Un projet musical simple a lancer, sans complication',
+    title: 'Un projet musical simple à lancer, sans complication',
     description:
-      'Si tu veux passer a l action, tu peux lancer directement la demande ou commencer par m expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.',
+      'Si tu veux passer à l’action, tu peux lancer directement la demande ou commencer par m’expliquer le contexte. Le but est de garder une prise de contact simple, rassurante et humaine.',
     primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL },
     secondaryCta: { label: songSalesCtas.talk.label, href: songSalesCtas.talk.href },
   },
@@ -74,7 +74,7 @@ export default async function CommanderUneChansonPage() {
   const serviceSchema = buildServiceSchema({
     name: 'Chansons personnalisées sur mesure',
     description:
-      'Création Nowis conçoit des chansons personnalisées à partir d histoires, de souvenirs et d émotions, avec accompagnement humain et options vidéo IA.',
+      'Création Nowis conçoit des chansons personnalisées à partir d’histoires, de souvenirs et d’émotions, avec accompagnement humain et options vidéo IA.',
     path: '/commander-une-chanson',
     serviceType: 'Chanson personnalisée',
     audience: ['Familles', 'Couples', 'Événements', 'Projets personnels'],
@@ -119,8 +119,8 @@ export default async function CommanderUneChansonPage() {
     const fallback = songProcessSteps[index - 1];
     return {
       step: howEnabled
-        ? pickText(getAdminBlockValue(howSection, `step${index}.label`), fallback?.step || `Etape ${index}`)
-        : fallback?.step || `Etape ${index}`,
+        ? pickText(getAdminBlockValue(howSection, `step${index}.label`), fallback?.step || `Étape ${index}`)
+        : fallback?.step || `Étape ${index}`,
       title: howEnabled
         ? pickText(getAdminBlockValue(howSection, `step${index}.title`), fallback?.title || '')
         : fallback?.title || '',
@@ -177,7 +177,7 @@ export default async function CommanderUneChansonPage() {
     : DEFAULT_SONG_PAGE_CONTENT.final.secondaryCta.href;
 
   return (
-    <div className="site-background text-slate-900">
+    <main className="site-background text-[color:var(--site-text)]">
       <Script id="song-service-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
       <PageHero
         eyebrow={heroEyebrow}
@@ -212,16 +212,16 @@ export default async function CommanderUneChansonPage() {
 
       <SongVideoExtrasSection theme="light" />
 
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
         <WhyNowisSection />
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-6 py-16 md:py-20 lg:grid-cols-2">
+      <section className="mx-auto grid max-w-7xl gap-6 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-2 lg:gap-8">
         <SongGuaranteeBlock />
         <SongPortfolioBlock />
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
+      <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 md:pb-20">
         <SongFinalCtaSectionWithData
           data={{
             title: finalTitle,
@@ -238,93 +238,116 @@ export default async function CommanderUneChansonPage() {
         />
       </section>
 
-      <section id="acces-portail" className="mx-auto grid max-w-7xl gap-10 px-6 pb-16 lg:grid-cols-[1.05fr_0.95fr] md:pb-20">
+      <section
+        id="acces-portail"
+        aria-labelledby="song-request-portal-title"
+        className="mx-auto grid max-w-7xl scroll-mt-24 gap-8 px-4 pb-14 sm:px-6 md:pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10"
+      >
         <div>
-          <div className="glass-panel-soft p-8 md:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Commande</p>
-            <h2 className="mt-4 text-3xl font-bold text-slate-950">Envoyer une demande claire et complète</h2>
-            <p className="mt-4 text-lg leading-relaxed text-slate-600">
+          <div className="brand-card rounded-[1.75rem] p-6 sm:p-8 md:p-10">
+            <span className="brand-chip inline-flex">Commande</span>
+            <h2 id="song-request-portal-title" className="mt-5 font-display text-3xl leading-tight text-[color:var(--site-heading)] sm:text-4xl">
+              Envoyer une demande claire et complète
+            </h2>
+            <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
               Décris l’histoire, l’émotion recherchée et le type d’accompagnement souhaité. Si tu hésites encore, tu peux simplement raconter le contexte avec tes mots.
             </p>
-            <p className="mt-4 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-[rgba(255,247,238,0.7)] px-4 py-3 text-sm leading-6 text-slate-700">
-              Chaque chanson est évaluée sur demande. L objectif est de bien comprendre le contexte avant de confirmer une soumission ou une direction créative.
+            <p className="mt-5 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-[rgba(255,247,238,0.72)] px-4 py-3 text-sm leading-6 text-[color:var(--site-muted)]">
+              Chaque chanson est évaluée sur demande. L’objectif est de bien comprendre le contexte avant de confirmer une soumission ou une direction créative.
             </p>
-            <div className="mt-8 rounded-2xl border border-[rgba(131,97,67,0.12)] bg-[rgba(255,250,244,0.8)] p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">Consentement portfolio</p>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{portfolioDisclosure.text}</p>
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+
+            <div className="mt-7 rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/68 p-5 sm:p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[color:var(--site-accent-strong)]">Consentement portfolio</p>
+              <p className="mt-3 text-sm leading-6 text-[color:var(--site-muted)]">{portfolioDisclosure.text}</p>
+              <ul className="mt-4 space-y-3 text-sm leading-6 text-[color:var(--site-text)]">
                 {portfolioDisclosure.options.map((option) => (
                   <li key={option} className="flex gap-3">
-                    <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xs font-bold text-white">•</span>
+                    <span
+                      aria-hidden="true"
+                      className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(201,117,71,0.14)] text-sm font-bold text-[color:var(--site-accent-strong)]"
+                    >
+                      ✓
+                    </span>
                     <span>{option}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-[rgba(201,117,71,0.16)] bg-[rgba(255,247,238,0.86)] p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">Nouveau processus</p>
-              <p className="mt-3 text-sm leading-6 text-slate-700">
-                Les demandes ne se font plus sur le site public. Pour envoyer une demande de chanson, vous devez passer par le portail client sécurisé.
+            <div className="mt-7 warm-spotlight-panel p-5 sm:p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[color:var(--site-accent-strong)]">Portail sécurisé</p>
+              <p className="mt-3 text-sm leading-6 text-[color:var(--site-muted)]">
+                Les demandes ne se font plus dans un formulaire public. Pour envoyer une demande de chanson et suivre son avancement, passez par le portail client sécurisé.
               </p>
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                <Link href={legalLinks.terms} className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-100">
-                  Voir les conditions de vente
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href={legalLinks.terms}
+                  className="cta-secondary min-h-11 w-full justify-center px-5 py-3 text-center text-sm sm:w-auto"
+                >
+                  Conditions de vente
                 </Link>
-                <Link href={legalLinks.privacy} className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-100">
-                  Voir la politique de confidentialité
+                <Link
+                  href={legalLinks.privacy}
+                  className="cta-secondary min-h-11 w-full justify-center px-5 py-3 text-center text-sm sm:w-auto"
+                >
+                  Politique de confidentialité
                 </Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
-              href="/api/client-auth/google/start?next=/client/song-requests/nouveau"
-              className="inline-flex w-full items-center justify-center rounded-xl bg-[linear-gradient(180deg,#d48b5d_0%,#bb6b43_100%)] px-6 py-3 font-semibold text-white transition hover:brightness-105 sm:w-auto"
+              href={SONG_REQUEST_GOOGLE_AUTH_URL}
+              className="cta-primary min-h-12 w-full justify-center px-6 py-3 text-center sm:w-auto"
             >
               Demander une chanson
             </Link>
             <Link
               href={songSalesCtas.talk.href}
-              className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 font-semibold text-slate-900 transition hover:bg-slate-100 sm:w-auto"
+              className="cta-secondary min-h-12 w-full justify-center px-6 py-3 text-center sm:w-auto"
             >
               {songSalesCtas.talk.label}
             </Link>
           </div>
         </div>
 
-        <div id="acces-portail" className="rounded-2xl border border-[rgba(131,97,67,0.12)] bg-white/70 p-4 md:p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--site-accent-strong)]">Autre methode</p>
-          <p className="mt-2 text-sm text-[color:var(--site-muted)]">Vous pouvez aussi passer par le portail client classique (inscription ou connexion manuelle).</p>
-          <div className="mt-4">
+        <div className="brand-card rounded-[1.75rem] p-4 sm:p-6">
+          <span className="brand-chip inline-flex">Autre méthode</span>
+          <p className="mt-3 text-sm leading-6 text-[color:var(--site-muted)]">
+            Vous pouvez aussi passer par le portail client classique avec une inscription ou une connexion manuelle.
+          </p>
+          <div className="mt-5">
             <ClientPortalRequestGate nextPath="/client/song-requests/nouveau" showBackToPortal />
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
-        <div className="glass-panel-soft p-8 md:p-10">
-          <h2 className="text-2xl font-bold text-slate-950">Besoin d’un peu d’aide avant d’envoyer la demande?</h2>
-          <p className="mt-4 max-w-3xl leading-relaxed text-slate-600">
+      <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 md:pb-20" aria-labelledby="song-request-help-title">
+        <div className="brand-card rounded-[1.75rem] p-6 sm:p-8 md:p-10">
+          <span className="brand-chip inline-flex">Préparer sa demande</span>
+          <h2 id="song-request-help-title" className="mt-5 font-display text-3xl leading-tight text-[color:var(--site-heading)] sm:text-4xl">
+            Besoin d’un peu d’aide avant d’envoyer la demande?
+          </h2>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-[color:var(--site-muted)]">
             Si tu veux mieux préparer ton message avant de commander, la page de préparation peut t’aider à clarifier le ton, les détails importants et les attentes du projet.
           </p>
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/avant-de-mecrire"
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-6 py-3 font-semibold text-slate-900 transition hover:bg-slate-100"
+              className="cta-secondary min-h-11 w-full justify-center px-6 py-3 text-center sm:w-auto"
             >
               Bien préparer ma demande
             </Link>
             <Link
               href={songSalesCtas.listen.href}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-6 py-3 font-semibold text-slate-900 transition hover:bg-slate-100"
+              className="cta-secondary min-h-11 w-full justify-center px-6 py-3 text-center sm:w-auto"
             >
               {songSalesCtas.listen.label}
             </Link>
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }
