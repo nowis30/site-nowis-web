@@ -1,61 +1,52 @@
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 
 const hourlyRegularPrice = REGULAR_PRICES.hourly;
 
 export const metadata = buildMetadata({
-  title: 'Autres services créatifs — Création Nowis | Vidéos IA, jeux et accompagnement artistique',
+  title: 'Expertises complémentaires — Création Nowis | Jeux IA, accompagnement et projets spéciaux',
   description:
-    'Découvrez les autres services créatifs de Création Nowis : vidéos IA, jeux interactifs, accompagnement d artistes et projets sur mesure à Drummondville et partout au Québec.',
+    'Découvrez les expertises complémentaires de Création Nowis : jeux interactifs, accompagnement artistique, expériences IA et projets spéciaux à Drummondville et partout au Québec.',
   path: '/autres-services',
-  keywords: ['autres services Création Nowis', 'vidéos IA Québec', 'accompagnement artistes Drummondville', 'jeux IA'],
+  keywords: ['expertises Création Nowis', 'jeux IA Québec', 'accompagnement artistes Drummondville', 'projets créatifs IA'],
 });
 
-const services = [
+const complementaryServices = [
   {
     icon: '🎮',
-    chip: 'Jeux et interactions',
-    title: 'Jeux interactifs avec l\'IA',
-    desc: 'Expériences ludiques et éducatives construites autour de l\'intelligence artificielle. Jeux de création, de découverte ou d\'exploration conçus pour impliquer, étonner et divertir.',
+    eyebrow: 'Jeux et interactions',
+    title: 'Expériences interactives avec l’IA',
+    description:
+      'Conception d’expériences ludiques, éducatives ou événementielles qui utilisent l’IA comme outil de création plutôt que comme gadget.',
     items: [
       'Jeux de création musicale interactive',
-      'Expériences éducatives autour de l\'IA',
+      'Expériences éducatives autour de l’IA',
       'Animations participatives pour événements',
     ],
   },
   {
     icon: '🎤',
-    chip: 'Accompagnement artistique',
-    title: 'Accompagnement d\'artistes',
-    desc: 'Soutien créatif et technique pour les artistes qui veulent explorer l\'IA dans leur pratique. Direction artistique, exploration de nouvelles directions créatives et production assistée.',
+    eyebrow: 'Accompagnement artistique',
+    title: 'Direction créative pour artistes',
+    description:
+      'Accompagnement humain pour explorer l’IA sans perdre votre identité : idées, direction artistique, cohérence et développement de projets.',
     items: [
-      'Exploration créative avec les outils IA',
+      'Exploration de nouveaux outils créatifs',
       'Direction et cohérence artistique',
-      'Co-création et développement de projets',
+      'Co-création et développement de concepts',
     ],
   },
   {
-    icon: '🎬',
-    chip: 'Vidéo et visuel',
-    title: 'Vidéos créatives et contenus visuels',
-    desc: 'Vidéos musicales, clips artistiques, contenus visuels adaptés à vos projets. Nowis Morin crée des visuels cohérents avec l\'univers sonore et émotionnel de votre projet.',
-    items: [
-      'Vidéos souvenir et clips musicaux',
-      'Animations et visuels artistiques',
-      'Contenu pour réseaux sociaux et événements',
-    ],
-  },
-  {
-    icon: '💡',
-    chip: 'Projets particuliers',
-    title: 'Projets créatifs sur mesure',
-    desc: 'Vous avez un projet hors des sentiers battus ? Création Nowis peut l\'explorer avec vous. Concepts originaux, projets hybrides, commandes spéciales et collaborations créatives.',
+    icon: '🧩',
+    eyebrow: 'Projets atypiques',
+    title: 'Mandats qui ne rentrent pas dans une case',
+    description:
+      'Pour les projets hybrides qui mélangent musique, vidéo, jeu, contenu, événement ou expérimentation numérique dans un même mandat.',
     items: [
       'Concepts originaux et hybrides',
       'Collaborations avec organismes ou entreprises',
-      'Commandes spéciales et projets ponctuels',
+      'Projets ponctuels et prototypes créatifs',
     ],
   },
 ];
@@ -63,8 +54,6 @@ const services = [
 export default function AutresServicesPage() {
   return (
     <main className="text-[color:var(--site-text)]">
-
-      {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
         <div
           aria-hidden="true"
@@ -75,57 +64,64 @@ export default function AutresServicesPage() {
               'radial-gradient(circle at 85% 8%, rgba(203,165,120,0.16), transparent 22%)',
           }}
         />
-        <div className="mx-auto max-w-5xl">
-          <span className="brand-chip inline-block">Autres services</span>
-          <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
-            Des créations au-delà des ateliers
+
+        <div className="relative mx-auto max-w-5xl">
+          <span className="brand-chip inline-block">Expertises complémentaires</span>
+          <h1 className="brand-metal-text mt-5 max-w-4xl font-display text-5xl leading-[0.95] md:text-7xl">
+            Pour les projets créatifs qui vont plus loin que l’offre classique
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-            En dehors des ateliers et des chansons personnalisées, Nowis Morin propose un univers plus large :
-            jeux interactifs, accompagnement d&apos;artistes, vidéos créatives et projets sur mesure. Tout ce qui croise musique, IA et création humaine.
+            Cette page regroupe les mandats plus atypiques : jeux interactifs, accompagnement artistique et projets hybrides. Pour les chansons, vidéos, visuels et concepts créatifs plus standards, le hub Services reste la meilleure porte d’entrée.
           </p>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--site-soft)]">
-            Tarif horaire regulier : {formatPrice(hourlyRegularPrice, ' / h')}. Tarification sur demande pour les projets speciaux, les mandats creatifs personnalises, les videos IA, les reels, les shorts et le contenu promotionnel.
-          </p>
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Link
-              href="/contact"
-              className="cta-primary w-full justify-center px-7 py-4 sm:w-auto"
-            >
-              Discuter d&apos;un projet
+
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+            <Link href="/contact" className="cta-primary min-h-11 w-full justify-center px-7 py-4 sm:w-auto">
+              Discuter d’un projet spécial
             </Link>
-            <Link
-              href="/ateliers"
-              className="cta-secondary w-full justify-center px-7 py-4 sm:w-auto"
-            >
-              Voir les ateliers
+            <Link href="/services" className="cta-secondary min-h-11 w-full justify-center px-7 py-4 sm:w-auto">
+              Voir les services principaux
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── SERVICES ── */}
       <section className="section-soft px-6 py-16 md:py-20">
         <div className="mx-auto max-w-6xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Les services secondaires</p>
-          <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
-            Ce que Création Nowis peut aussi faire
-          </h2>
-          <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            {services.map((svc) => (
-              <article
-                key={svc.title}
-                className="brand-card p-7 transition"
-              >
-                <span className="text-3xl" role="img" aria-hidden="true">{svc.icon}</span>
-                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary-300">{svc.chip}</p>
-                <h3 className="mt-3 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">{svc.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">{svc.desc}</p>
-                <ul className="mt-4 space-y-2">
-                  {svc.items.map((item) => (
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Ce que je peux aussi bâtir avec vous</p>
+              <h2 className="mt-4 max-w-3xl font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
+                Trois types de mandats vraiment complémentaires
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
+              L’objectif est de garder les choses simples : une page pour les services réguliers, et ici uniquement les projets qui demandent une approche plus expérimentale ou sur mesure.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {complementaryServices.map((service) => (
+              <article key={service.title} className="brand-card flex h-full flex-col p-7 md:p-8">
+                <span
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[color:var(--site-border)] bg-white/70 text-2xl shadow-sm"
+                  role="img"
+                  aria-hidden="true"
+                >
+                  {service.icon}
+                </span>
+                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.22em] text-primary-400">{service.eyebrow}</p>
+                <h3 className="mt-3 font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">{service.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">{service.description}</p>
+                <ul className="mt-6 space-y-3">
+                  {service.items.map((item) => (
                     <li key={item} className="flex items-start gap-3 text-sm leading-6 text-[color:var(--site-muted)]">
-                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary-500/20 text-[10px] font-bold text-primary-300">✓</span>
-                      {item}
+                      <span
+                        className="mt-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary-500/15 text-[10px] font-black text-primary-400"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -135,89 +131,71 @@ export default function AutresServicesPage() {
         </div>
       </section>
 
-      {/* ── TARIFICATION ── */}
-      <section className="mx-auto max-w-4xl px-6 py-12 md:py-16">
-        <div className="glass-panel-soft p-8 text-center md:p-10">
-          <span className="text-3xl" role="img" aria-hidden="true">💬</span>
-          <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Tarification claire selon le type de mandat</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[color:var(--site-muted)]">
-            Le tarif horaire regulier est de {formatPrice(hourlyRegularPrice, ' / h')} pour l accompagnement et les mandats qui suivent une logique horaire. Les projets speciaux et les productions plus complexes sont etablis sur soumission, selon les livrables et le contexte.
-          </p>
-          <Link
-            href="/contact"
-            className="cta-primary mt-6 w-full justify-center px-7 py-3.5 sm:w-auto"
-          >
-            Discuter de votre projet
-          </Link>
-        </div>
-      </section>
-
-      {/* ── OFFRE PRINCIPALE ── */}
-      <section className="section-warm px-6 py-12 md:py-16">
-        <div className="mx-auto max-w-5xl">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="glass-panel-strong p-7">
-              <span className="text-3xl" role="img" aria-hidden="true">🎵</span>
-              <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">Ateliers de création musicale</h3>
-              <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">
-                Notre offre principale. Des ateliers animés en personne, pour tous les âges, avec une chanson et une vidéo souvenir téléchargeable à la clé.
-              </p>
-              <Link
-                href="/ateliers"
-                className="cta-secondary mt-5 px-6 py-3 text-sm"
-              >
-                Voir les ateliers →
-              </Link>
+      <section className="mx-auto max-w-5xl px-6 py-14 md:py-20">
+        <div className="warm-spotlight-panel p-8 md:p-10">
+          <div className="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:items-center">
+            <div>
+              <span className="text-4xl" role="img" aria-hidden="true">🧭</span>
+              <h2 className="mt-4 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
+                Vous ne savez pas dans quelle catégorie votre idée entre?
+              </h2>
             </div>
-            <div className="warm-spotlight-panel p-7">
-              <span className="text-3xl" role="img" aria-hidden="true">🎼</span>
-              <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">Chansons personnalisées</h3>
-              <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">
-                Des chansons créées sur mesure pour les occasions qui comptent — anniversaires, mariages, hommages et projets personnels.
+            <div>
+              <p className="leading-8 text-[color:var(--site-muted)]">
+                Aucun problème. Les mandats d’accompagnement suivent un tarif horaire régulier de {formatPrice(hourlyRegularPrice, ' / h')}. Les productions spéciales sont plutôt établies sur soumission, selon les livrables, la complexité et le contexte.
               </p>
-              <Link
-                href={SONG_REQUEST_GOOGLE_AUTH_URL}
-                className="cta-secondary mt-5 px-6 py-3 text-sm"
-              >
-                Commander une chanson →
+              <Link href="/contact" className="cta-primary mt-6 min-h-11 w-full justify-center px-7 py-3.5 sm:w-auto">
+                Clarifier mon projet
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      <section className="section-warm px-6 py-14 md:py-18">
+        <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
+          <div className="glass-panel-strong p-7">
+            <span className="text-3xl" role="img" aria-hidden="true">🎵</span>
+            <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">Vous cherchez une offre plus simple?</h3>
+            <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">
+              Chanson personnalisée, vidéo IA, visuel ou concept créatif : ces offres sont maintenant regroupées clairement dans le hub Services.
+            </p>
+            <Link href="/services" className="cta-secondary mt-5 min-h-11 w-full justify-center px-6 py-3 text-sm sm:w-auto">
+              Aller aux services
+            </Link>
+          </div>
+
+          <div className="warm-spotlight-panel p-7">
+            <span className="text-3xl" role="img" aria-hidden="true">✨</span>
+            <h3 className="mt-4 font-display text-2xl text-[color:var(--site-heading)] md:text-3xl">Vous voulez voir ce que je crée?</h3>
+            <p className="mt-3 text-sm leading-7 text-[color:var(--site-muted)]">
+              Musique, vidéos, projets et créations visuelles sont regroupés dans l’espace Créations et le Portfolio.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Link href="/creations" className="cta-secondary min-h-11 w-full justify-center px-6 py-3 text-sm sm:w-auto">
+                Voir les créations
+              </Link>
+              <Link href="/portfolio" className="cta-secondary min-h-11 w-full justify-center px-6 py-3 text-sm sm:w-auto">
+                Explorer le portfolio
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="px-6 py-16 md:py-24">
         <div className="warm-cta-panel mx-auto max-w-4xl p-10 text-center md:p-16">
           <h2 className="font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
-            Vous avez un projet en tête&nbsp;?
+            Votre projet est un peu étrange? C’est probablement ici qu’il faut commencer.
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-[color:var(--site-muted)]">
-            Peu importe la forme, si ça croise musique, création et intelligence artificielle — on peut en parler. Nowis Morin aime les projets qui sortent des sentiers battus.
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
+            Si votre idée mélange plusieurs formats ou ne ressemble à rien de standard, décrivez-la simplement. On pourra ensuite choisir une approche claire sans lui ajouter des morceaux inutiles.
           </p>
-          <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link
-              href="/contact"
-              className="cta-primary w-full justify-center px-9 py-4 sm:w-auto"
-            >
-              Parler de mon projet
-            </Link>
-            <Link
-              href="/a-propos"
-              className="cta-secondary w-full justify-center px-9 py-4 sm:w-auto"
-            >
-              En savoir plus sur Nowis
-            </Link>
-            <Link
-              href="/videos"
-              className="cta-secondary w-full justify-center px-9 py-4 sm:w-auto"
-            >
-              Voir les vidéos IA
-            </Link>
-          </div>
+          <Link href="/contact" className="cta-primary mt-8 min-h-11 w-full justify-center px-9 py-4 sm:w-auto">
+            Parler de mon projet
+          </Link>
         </div>
       </section>
-
     </main>
   );
 }
