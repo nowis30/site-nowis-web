@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import type { FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { workshopSelectClassName } from '@/components/forms/select-styles';
 import { trackWorkshopRequestSubmitted } from '@/lib/tracking/google';
 import { mapWorkshopGroupTypeToOrganizationType, workshopRequestFormSchema, type WorkshopRequestFormInput } from '@/features/workshops/schemas';
 
@@ -16,9 +16,13 @@ interface WorkshopRequestFormProps {
   initialGroupType?: WorkshopRequestFormInput['groupType'];
 }
 
-function inputClass() {
-  return 'w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white';
-}
+const fieldClassName =
+  'min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-base text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/40 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none';
+const readOnlyClassName =
+  'min-h-12 w-full rounded-xl border border-slate-700/70 bg-slate-900/60 px-4 py-3 text-base text-slate-300 outline-none';
+const labelClassName = 'mb-1.5 block text-sm font-medium text-slate-200';
+const errorClassName = 'mt-1.5 text-xs font-medium text-red-300';
+const panelClassName = 'space-y-4 rounded-2xl border border-primary-500/15 bg-slate-950/45 p-4 sm:p-5';
 
 export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhone = '', initialGroupType = 'ECOLE' }: WorkshopRequestFormProps) {
   const router = useRouter();
@@ -31,6 +35,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
     handleSubmit,
     watch,
     setValue,
+    setFocus,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<WorkshopRequestFormInput>({
@@ -57,169 +62,210 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
   }, [groupType, setValue]);
 
   const organizationLabel = useMemo(() => {
-    if (groupType === 'AINES_RESIDENCE') return 'Nom de la residence';
+    if (groupType === 'AINES_RESIDENCE') return 'Nom de la résidence';
     if (groupType === 'PRIVE') return 'Nom du groupe / famille';
-    if (groupType === 'ENTREPRISE') return 'Nom de l entreprise';
-    return 'Nom de l ecole ou organisme';
+    if (groupType === 'ENTREPRISE') return 'Nom de l’entreprise';
+    return 'Nom de l’école ou organisme';
   }, [groupType]);
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
-    const normalizedGroupType = values.groupType || initialGroupType;
-    const response = await fetch('/api/workshop-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...values,
+    setSubmitted(false);
+
+    try {
+      const normalizedGroupType = values.groupType || initialGroupType;
+      const response = await fetch('/api/workshop-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...values,
+          groupType: normalizedGroupType,
+          organizationType: mapWorkshopGroupTypeToOrganizationType(normalizedGroupType),
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+        loginUrl?: string;
+        redirectTo?: string;
+        item?: { id?: string };
+      } | null;
+
+      if (response.status === 401 && typeof data?.loginUrl === 'string') {
+        window.location.href = data.loginUrl;
+        return;
+      }
+      if (!response.ok) {
+        setServerError(data?.error || 'Impossible d’envoyer la demande. Merci de réessayer.');
+        return;
+      }
+
+      const requestId = typeof data?.item?.id === 'string' ? data.item.id : null;
+      const redirectTo = typeof data?.redirectTo === 'string'
+        ? data.redirectTo
+        : requestId
+          ? `/client/workshops/${requestId}`
+          : null;
+
+      if (redirectTo) {
+        router.push(redirectTo);
+        return;
+      }
+
+      if (requestId && lastTrackedRequestIdRef.current !== requestId) {
+        trackWorkshopRequestSubmitted(requestId);
+        lastTrackedRequestIdRef.current = requestId;
+      }
+
+      reset({
         groupType: normalizedGroupType,
+        contactName: accountFullName,
+        email: accountEmail,
+        phone: accountPhone,
         organizationType: mapWorkshopGroupTypeToOrganizationType(normalizedGroupType),
-      }),
-    });
-
-    const data = await response.json().catch(() => null);
-    if (response.status === 401 && typeof data?.loginUrl === 'string') {
-      window.location.href = data.loginUrl;
-      return;
+        audienceType: normalizedGroupType === 'AINES_RESIDENCE' ? 'MIXED' : 'ELEMENTARY',
+        format: 'IN_PERSON',
+        preferredDays: ['TUESDAY'],
+      });
+      setSubmitted(true);
+    } catch {
+      setServerError('Connexion impossible au serveur. Vérifiez votre réseau puis réessayez.');
     }
-    if (!response.ok) {
-      setServerError(data?.error || 'Impossible d envoyer la demande.');
-      return;
-    }
+  }, (invalid: FieldErrors<WorkshopRequestFormInput>) => {
+    const firstKey = Object.keys(invalid)[0] as keyof WorkshopRequestFormInput | undefined;
+    const firstError = firstKey ? invalid[firstKey] : undefined;
+    const message = firstError && typeof firstError === 'object' && 'message' in firstError && typeof firstError.message === 'string'
+      ? firstError.message
+      : 'Certains champs obligatoires sont incomplets.';
 
-    const requestId = typeof data?.item?.id === 'string' ? data.item.id : null;
-    const redirectTo = typeof data?.redirectTo === 'string'
-      ? data.redirectTo
-      : requestId
-        ? `/client/workshops/${requestId}`
-        : null;
-
-    if (redirectTo) {
-      router.push(redirectTo);
-      return;
-    }
-
-    if (requestId && lastTrackedRequestIdRef.current !== requestId) {
-      trackWorkshopRequestSubmitted(requestId);
-      lastTrackedRequestIdRef.current = requestId;
-    }
-
-    reset({
-      groupType: normalizedGroupType,
-      contactName: accountFullName,
-      email: accountEmail,
-      phone: accountPhone,
-      organizationType: mapWorkshopGroupTypeToOrganizationType(normalizedGroupType),
-      audienceType: normalizedGroupType === 'AINES_RESIDENCE' ? 'MIXED' : 'ELEMENTARY',
-      format: 'IN_PERSON',
-      preferredDays: ['TUESDAY'],
-    });
-    setSubmitted(true);
+    setServerError(`Formulaire incomplet : ${message}`);
+    if (firstKey) setFocus(firstKey);
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    window.scrollTo({ top: 0, behavior });
   });
 
   if (submitted) {
     return (
-      <div className="rounded-[2rem] border border-emerald-400/20 bg-emerald-500/10 p-8 text-white">
-        <h2 className="text-2xl font-semibold">Demande envoyee</h2>
-        <p className="mt-3 text-sm leading-7 text-emerald-50">Votre demande d atelier a bien ete transmise. Vous pouvez suivre la suite dans votre portail client.</p>
+      <div role="status" aria-live="polite" className="crm-surface rounded-3xl border border-emerald-400/25 bg-emerald-500/10 p-6 text-white shadow-[0_12px_34px_rgba(2,6,23,0.24)] sm:p-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-200">Demande reçue</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">Demande envoyée</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-emerald-50">Votre demande d’atelier a bien été transmise. Vous pouvez suivre la suite dans votre portail client.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.05] p-6 backdrop-blur-sm md:p-8">
+    <form
+      onSubmit={onSubmit}
+      noValidate
+      aria-busy={isSubmitting}
+      className="crm-surface space-y-6 rounded-3xl border border-primary-500/15 p-5 shadow-[0_12px_34px_rgba(2,6,23,0.26)] sm:p-6 md:p-8"
+    >
       <input type="hidden" {...register('organizationType')} />
 
-      <section className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/35 p-4">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-200">Essentiel</h3>
+      <div className="max-w-3xl">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary-300">Atelier personnalisé</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">Parlez-nous de votre groupe</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-300">Les informations essentielles suffisent pour démarrer. Vous pouvez préciser le contexte dans les options avancées.</p>
+      </div>
+
+      {serverError ? (
+        <div role="alert" aria-live="assertive" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+          {serverError}
+        </div>
+      ) : null}
+
+      <section className={panelClassName} aria-labelledby="workshop-essential-heading">
+        <h3 id="workshop-essential-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">Essentiel</h3>
 
         <label>
-          <span className="mb-2 block text-sm font-medium text-white">Type de groupe</span>
-          <select {...register('groupType')} className={workshopSelectClassName}>
-            <option value="AINES_RESIDENCE">Aines / residence</option>
-            <option value="ECOLE">Ecole</option>
+          <span className={labelClassName}>Type de groupe</span>
+          <select {...register('groupType')} className={fieldClassName}>
+            <option value="AINES_RESIDENCE">Aînés / résidence</option>
+            <option value="ECOLE">École</option>
             <option value="ENTREPRISE">Entreprise</option>
             <option value="COMMUNAUTAIRE">Communautaire</option>
-            <option value="PRIVE">Prive</option>
+            <option value="PRIVE">Privé</option>
             <option value="AUTRE">Autre</option>
           </select>
         </label>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">{organizationLabel}</span>
-            <input {...register('organizationName')} className={inputClass()} />
-            {errors.organizationName ? <p className="mt-2 text-xs text-red-300">{errors.organizationName.message}</p> : null}
+            <span className={labelClassName}>{organizationLabel}</span>
+            <input {...register('organizationName')} className={fieldClassName} aria-invalid={Boolean(errors.organizationName)} />
+            {errors.organizationName ? <p className={errorClassName}>{errors.organizationName.message}</p> : null}
           </label>
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Personne contact</span>
-            <input {...register('contactName')} className={inputClass()} />
-            {errors.contactName ? <p className="mt-2 text-xs text-red-300">{errors.contactName.message}</p> : null}
-          </label>
-
-          <label>
-            <span className="mb-2 block text-sm font-medium text-white">Telephone</span>
-            <input {...register('phone')} className={inputClass()} />
-            {errors.phone ? <p className="mt-2 text-xs text-red-300">{errors.phone.message}</p> : null}
-          </label>
-          <label>
-            <span className="mb-2 block text-sm font-medium text-white">Ville</span>
-            <input {...register('city')} className={inputClass()} />
-            {errors.city ? <p className="mt-2 text-xs text-red-300">{errors.city.message}</p> : null}
+            <span className={labelClassName}>Personne contact</span>
+            <input {...register('contactName')} autoComplete="name" className={fieldClassName} aria-invalid={Boolean(errors.contactName)} />
+            {errors.contactName ? <p className={errorClassName}>{errors.contactName.message}</p> : null}
           </label>
 
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Theme de l atelier</span>
-            <input {...register('workshopTheme')} className={inputClass()} placeholder="Ecriture, rythme, creation..." />
-            {errors.workshopTheme ? <p className="mt-2 text-xs text-red-300">{errors.workshopTheme.message}</p> : null}
+            <span className={labelClassName}>Téléphone</span>
+            <input {...register('phone')} type="tel" autoComplete="tel" inputMode="tel" className={fieldClassName} aria-invalid={Boolean(errors.phone)} />
+            {errors.phone ? <p className={errorClassName}>{errors.phone.message}</p> : null}
           </label>
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Date souhaitee</span>
-            <input type="date" {...register('requestedDate')} className={inputClass()} />
+            <span className={labelClassName}>Ville</span>
+            <input {...register('city')} autoComplete="address-level2" className={fieldClassName} aria-invalid={Boolean(errors.city)} />
+            {errors.city ? <p className={errorClassName}>{errors.city.message}</p> : null}
           </label>
 
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Tranche d age</span>
-            <input {...register('ageRange')} className={inputClass()} placeholder="Ex: 8 a 12 ans" />
-            {errors.ageRange ? <p className="mt-2 text-xs text-red-300">{errors.ageRange.message}</p> : null}
+            <span className={labelClassName}>Thème de l’atelier</span>
+            <input {...register('workshopTheme')} className={fieldClassName} placeholder="Écriture, rythme, création…" aria-invalid={Boolean(errors.workshopTheme)} />
+            {errors.workshopTheme ? <p className={errorClassName}>{errors.workshopTheme.message}</p> : null}
           </label>
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Nombre de participants</span>
-            <input type="number" {...register('estimatedParticipants')} className={inputClass()} />
-            {errors.estimatedParticipants ? <p className="mt-2 text-xs text-red-300">{errors.estimatedParticipants.message}</p> : null}
+            <span className={labelClassName}>Date souhaitée</span>
+            <input type="date" {...register('requestedDate')} className={fieldClassName} />
+          </label>
+
+          <label>
+            <span className={labelClassName}>Tranche d’âge</span>
+            <input {...register('ageRange')} className={fieldClassName} placeholder="Ex. : 8 à 12 ans" aria-invalid={Boolean(errors.ageRange)} />
+            {errors.ageRange ? <p className={errorClassName}>{errors.ageRange.message}</p> : null}
+          </label>
+          <label>
+            <span className={labelClassName}>Nombre de participants</span>
+            <input type="number" min="1" inputMode="numeric" {...register('estimatedParticipants')} className={fieldClassName} aria-invalid={Boolean(errors.estimatedParticipants)} />
+            {errors.estimatedParticipants ? <p className={errorClassName}>{errors.estimatedParticipants.message}</p> : null}
           </label>
         </div>
 
         <label>
-          <span className="mb-2 block text-sm font-medium text-white">Objectifs de l atelier</span>
-          <textarea {...register('objectives')} rows={5} className={inputClass()} />
-          {errors.objectives ? <p className="mt-2 text-xs text-red-300">{errors.objectives.message}</p> : null}
+          <span className={labelClassName}>Objectifs de l’atelier</span>
+          <textarea {...register('objectives')} rows={5} className={fieldClassName} aria-invalid={Boolean(errors.objectives)} />
+          {errors.objectives ? <p className={errorClassName}>{errors.objectives.message}</p> : null}
         </label>
       </section>
 
-      <details className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
-        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.14em] text-slate-200">Options avancees</summary>
+      <details className="rounded-2xl border border-primary-500/15 bg-slate-950/45 p-4 sm:p-5">
+        <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold uppercase tracking-[0.14em] text-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Options avancées</summary>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Poste ou fonction</span>
-            <input {...register('role')} className={inputClass()} />
+            <span className={labelClassName}>Poste ou fonction</span>
+            <input {...register('role')} className={fieldClassName} />
           </label>
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Email</span>
-            <input type="email" {...register('email')} readOnly className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-sm text-slate-200" />
+            <span className={labelClassName}>Courriel du compte</span>
+            <input type="email" {...register('email')} readOnly autoComplete="email" className={readOnlyClassName} />
           </label>
 
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Format</span>
-            <select {...register('format')} className={workshopSelectClassName}>
+            <span className={labelClassName}>Format</span>
+            <select {...register('format')} className={fieldClassName}>
               <option value="IN_PERSON">Sur place</option>
               <option value="VIRTUAL">Virtuel</option>
               <option value="HYBRID">Hybride</option>
             </select>
           </label>
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Public vise</span>
-            <select {...register('audienceType')} className={workshopSelectClassName}>
-              <option value="PRESCHOOL">Prescolaire</option>
+            <span className={labelClassName}>Public visé</span>
+            <select {...register('audienceType')} className={fieldClassName}>
+              <option value="PRESCHOOL">Préscolaire</option>
               <option value="ELEMENTARY">Primaire</option>
               <option value="TEENS">Adolescents</option>
               <option value="MIXED">Groupe mixte</option>
@@ -227,67 +273,72 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
           </label>
 
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Plage preferee</span>
-            <input {...register('preferredTime')} className={inputClass()} placeholder="Mardi 9h a 11h" />
+            <span className={labelClassName}>Plage préférée</span>
+            <input {...register('preferredTime')} className={fieldClassName} placeholder="Mardi, 9 h à 11 h" />
           </label>
           <fieldset>
-            <legend className="mb-2 block text-sm font-medium text-white">Jours preferes</legend>
-            <div className="flex flex-wrap gap-4 text-sm text-slate-200">
-              <label className="inline-flex items-center gap-2"><input type="checkbox" value="TUESDAY" {...register('preferredDays')} /> Mardi</label>
-              <label className="inline-flex items-center gap-2"><input type="checkbox" value="THURSDAY" {...register('preferredDays')} /> Jeudi</label>
+            <legend className={labelClassName}>Jours préférés</legend>
+            <div className="flex flex-wrap gap-3 text-sm text-slate-200">
+              <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 transition hover:border-primary-500/40 motion-reduce:transition-none">
+                <input type="checkbox" value="TUESDAY" className="h-5 w-5 accent-sky-500" {...register('preferredDays')} /> Mardi
+              </label>
+              <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 transition hover:border-primary-500/40 motion-reduce:transition-none">
+                <input type="checkbox" value="THURSDAY" className="h-5 w-5 accent-sky-500" {...register('preferredDays')} /> Jeudi
+              </label>
             </div>
+            {errors.preferredDays ? <p className={errorClassName}>{errors.preferredDays.message}</p> : null}
           </fieldset>
 
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Lieu ou contexte</span>
-            <input {...register('location')} className={inputClass()} />
+            <span className={labelClassName}>Lieu ou contexte</span>
+            <input {...register('location')} className={fieldClassName} />
           </label>
           <label>
-            <span className="mb-2 block text-sm font-medium text-white">Autres informations</span>
-            <textarea {...register('notes')} rows={3} className={inputClass()} />
+            <span className={labelClassName}>Autres informations</span>
+            <textarea {...register('notes')} rows={3} className={fieldClassName} />
           </label>
 
           {groupType === 'AINES_RESIDENCE' ? (
             <>
               <label>
-                <span className="mb-2 block text-sm font-medium text-white">Nom de la residence</span>
-                <input {...register('residenceName')} className={inputClass()} />
-                {errors.residenceName ? <p className="mt-2 text-xs text-red-300">{errors.residenceName.message}</p> : null}
+                <span className={labelClassName}>Nom de la résidence</span>
+                <input {...register('residenceName')} className={fieldClassName} aria-invalid={Boolean(errors.residenceName)} />
+                {errors.residenceName ? <p className={errorClassName}>{errors.residenceName.message}</p> : null}
               </label>
               <label>
-                <span className="mb-2 block text-sm font-medium text-white">Unite / secteur</span>
-                <input {...register('residenceUnit')} className={inputClass()} />
+                <span className={labelClassName}>Unité / secteur</span>
+                <input {...register('residenceUnit')} className={fieldClassName} />
               </label>
               <label>
-                <span className="mb-2 block text-sm font-medium text-white">Coordonnateur(trice)</span>
-                <input {...register('coordinatorName')} className={inputClass()} />
-                {errors.coordinatorName ? <p className="mt-2 text-xs text-red-300">{errors.coordinatorName.message}</p> : null}
+                <span className={labelClassName}>Coordonnateur(trice)</span>
+                <input {...register('coordinatorName')} autoComplete="name" className={fieldClassName} aria-invalid={Boolean(errors.coordinatorName)} />
+                {errors.coordinatorName ? <p className={errorClassName}>{errors.coordinatorName.message}</p> : null}
               </label>
               <label>
-                <span className="mb-2 block text-sm font-medium text-white">Role de coordination</span>
-                <input {...register('coordinatorRole')} className={inputClass()} />
+                <span className={labelClassName}>Rôle de coordination</span>
+                <input {...register('coordinatorRole')} className={fieldClassName} />
               </label>
               <label>
-                <span className="mb-2 block text-sm font-medium text-white">Email coordination</span>
-                <input type="email" {...register('coordinatorEmail')} className={inputClass()} />
+                <span className={labelClassName}>Courriel de coordination</span>
+                <input type="email" {...register('coordinatorEmail')} autoComplete="email" inputMode="email" className={fieldClassName} aria-invalid={Boolean(errors.coordinatorEmail)} />
+                {errors.coordinatorEmail ? <p className={errorClassName}>{errors.coordinatorEmail.message}</p> : null}
               </label>
               <label>
-                <span className="mb-2 block text-sm font-medium text-white">Telephone coordination</span>
-                <input {...register('coordinatorPhone')} className={inputClass()} />
+                <span className={labelClassName}>Téléphone de coordination</span>
+                <input type="tel" {...register('coordinatorPhone')} autoComplete="tel" inputMode="tel" className={fieldClassName} aria-invalid={Boolean(errors.coordinatorPhone)} />
+                {errors.coordinatorPhone ? <p className={errorClassName}>{errors.coordinatorPhone.message}</p> : null}
               </label>
               <label className="md:col-span-2">
-                <span className="mb-2 block text-sm font-medium text-white">Profil des participants</span>
-                <textarea {...register('seniorsProfile')} rows={3} className={inputClass()} />
+                <span className={labelClassName}>Profil des participants</span>
+                <textarea {...register('seniorsProfile')} rows={3} className={fieldClassName} />
               </label>
             </>
           ) : null}
         </div>
       </details>
 
-      {serverError ? <p className="rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-200">{serverError}</p> : null}
-
-      <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande d atelier'}
+      <Button type="submit" disabled={isSubmitting} className="min-h-12 w-full text-base">
+        {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande d’atelier'}
       </Button>
     </form>
   );
