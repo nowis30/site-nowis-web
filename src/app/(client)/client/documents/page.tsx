@@ -6,13 +6,21 @@ import { prisma } from '@/lib/prisma';
 import { UploadFileForm } from '@/components/files/UploadFileForm';
 import { ClientDocumentsList } from '@/features/client-portal/components/ClientDocumentsList';
 import { getClientDocumentSection, getDefaultCategoryForUpload } from '@/features/documents/document-categories';
+
 export default async function ClientDocumentsPage() {
   const session = await requireClientPortalSession();
 
   const contact = await prisma.contact.findUnique({ where: { id: session.contactId }, select: { id: true } });
 
   if (!contact) {
-    return <div className="crm-surface p-8 text-sm text-slate-300">Aucun dossier client disponible.</div>;
+    return (
+      <section aria-labelledby="client-documents-missing-title">
+        <div className="crm-surface rounded-3xl border border-slate-800 p-6 sm:p-8" role="status">
+          <h2 id="client-documents-missing-title" className="text-lg font-semibold text-white">Dossier client indisponible</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300">Vos documents ne sont pas disponibles pour le moment.</p>
+        </div>
+      </section>
+    );
   }
 
   type DocumentItem = Prisma.FileDocumentGetPayload<{
@@ -64,7 +72,11 @@ export default async function ClientDocumentsPage() {
     category: document.category,
     visibility: document.visibility,
     createdAt: document.createdAt.toISOString(),
-    origin: document.uploadedByUserId ? 'admin' as const : 'client' as const,
+    origin: document.uploadedByUserId
+      ? 'admin' as const
+      : document.storageKey?.startsWith(`client-files/${contact.id}/`)
+        ? 'client' as const
+        : 'system' as const,
     songRequest: document.songRequest ? { id: document.songRequest.id, title: document.songRequest.title } : null,
     workshopRequest: document.workshopRequest ? { id: document.workshopRequest.id, title: document.workshopRequest.title } : null,
     songRequestId: document.songRequestId,
@@ -118,21 +130,25 @@ export default async function ClientDocumentsPage() {
     <section className="space-y-6">
       <PageHeader
         title="Documents"
-        subtitle="Consultez et téléchargez les pièces liées à votre dossier client."
+        subtitle="Consultez, téléchargez et déposez les pièces liées à votre dossier client."
       />
 
-      <SectionCard title="Actions" subtitle="Ajout d'un document dans votre dossier CRM.">
+      <SectionCard title="Ajouter un document" subtitle="Déposez un fichier dans votre dossier sécurisé.">
         <UploadFileForm
           endpoint="/api/client-portal/file-documents"
-          title="Deposer un document"
-          description="Vous pouvez transmettre des textes, paroles, poemes, notes, audios de demo et documents de projet."
+          title="Déposer un document"
+          description="Vous pouvez transmettre des textes, paroles, poèmes, notes, audios de démo et documents de projet."
+          submitLabel="Choisir un fichier"
           defaultCategory={getDefaultCategoryForUpload({ context: 'general' })}
         />
       </SectionCard>
 
-      <SectionCard title="Bibliothèque" subtitle="Historique des documents disponibles avec téléchargement rapide.">
+      <SectionCard
+        title="Bibliothèque"
+        subtitle={`${cleanedDocuments.length} document${cleanedDocuments.length > 1 ? 's' : ''} disponible${cleanedDocuments.length > 1 ? 's' : ''} dans votre dossier.`}
+      >
         {cleanedDocuments.length === 0 ? (
-          <EmptyState icon={<FileText size={18} />} title="Aucun document" description="Aucun document ne correspond à ce filtre pour le moment." />
+          <EmptyState icon={<FileText size={18} />} title="Aucun document" description="Vos prochains documents apparaîtront ici." />
         ) : (
           <div className="space-y-4">
             <SectionCard title="Soumissions">
@@ -143,8 +159,8 @@ export default async function ClientDocumentsPage() {
               <ClientDocumentsList items={grouped.invoices} emptyLabel="Aucune facture" />
             </SectionCard>
 
-            <SectionCard title="Documents partages">
-              <ClientDocumentsList items={grouped.shared} emptyLabel="Aucun document partage" />
+            <SectionCard title="Documents partagés">
+              <ClientDocumentsList items={grouped.shared} emptyLabel="Aucun document partagé" />
             </SectionCard>
 
             <SectionCard title="Livrables chanson">

@@ -5,6 +5,7 @@ import {
   canClientAccessInvoice,
   canClientAccessSongRequest,
   canClientAccessWorkshopRequest,
+  canClientDeleteFileDocument,
   isOwnedByContact,
 } from '@/features/client-portal/documents/security';
 import { CLIENT_PORTAL_FILE_DOCUMENTS_PREFIX } from '@/features/client-portal/documents/paths';
@@ -15,7 +16,6 @@ function createMockDb() {
     { id: 'song-a', contactId: 'contact-a' },
     { id: 'song-b', contactId: 'contact-b' },
   ];
-
   const workshops = [
     { id: 'workshop-a', contactId: 'contact-a', clientId: null },
     { id: 'workshop-b', contactId: 'contact-b', clientId: 'contact-b' },
@@ -157,4 +157,53 @@ test('J12. un MP4 est classé video pour le lecteur client', () => {
 test('J13. un PDF est non supporté par le lecteur media HTML5', () => {
   const kind = resolveClientMediaKind({ mimeType: 'application/pdf', originalName: 'doc.pdf' });
   assert.equal(kind, 'unsupported');
+});
+
+test('J14. un client peut supprimer uniquement un fichier qu il a déposé dans son espace', () => {
+  const allowed = canClientDeleteFileDocument({
+    sessionContactId: 'contact-a',
+    visibility: 'CLIENT_VISIBLE',
+    category: 'client-shared',
+    contactId: 'contact-a',
+    uploadedByUserId: null,
+    storageKey: 'client-files/contact-a/2026/demo.pdf',
+  });
+
+  assert.equal(allowed, true);
+});
+
+test('J15. un client ne peut pas supprimer un document déposé par un administrateur', () => {
+  const allowed = canClientDeleteFileDocument({
+    sessionContactId: 'contact-a',
+    visibility: 'CLIENT_VISIBLE',
+    category: 'client-shared',
+    contactId: 'contact-a',
+    uploadedByUserId: 'admin-user',
+    storageKey: 'client-files/contact-a/2026/admin.pdf',
+  });
+
+  assert.equal(allowed, false);
+});
+
+test('J16. un client ne peut pas supprimer un document système ou un fichier d un autre dossier', () => {
+  const systemDocument = canClientDeleteFileDocument({
+    sessionContactId: 'contact-a',
+    visibility: 'CLIENT_VISIBLE',
+    category: 'invoice',
+    contactId: 'contact-a',
+    uploadedByUserId: null,
+    storageKey: 'invoices/invoice-a.pdf',
+    invoiceContactId: 'contact-a',
+  });
+  const otherClientPrefix = canClientDeleteFileDocument({
+    sessionContactId: 'contact-a',
+    visibility: 'CLIENT_VISIBLE',
+    category: 'client-shared',
+    contactId: 'contact-a',
+    uploadedByUserId: null,
+    storageKey: 'client-files/contact-b/2026/other.pdf',
+  });
+
+  assert.equal(systemDocument, false);
+  assert.equal(otherClientPrefix, false);
 });

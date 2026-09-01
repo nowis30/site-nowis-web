@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
-import { canClientAccessFileDocument } from '@/features/client-portal/documents/security';
+import {
+  canClientAccessFileDocument,
+  canClientDeleteFileDocument,
+} from '@/features/client-portal/documents/security';
 import { deleteFileFromPersistentStorage } from '@/lib/file-storage';
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
@@ -20,6 +23,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       songRequestId: true,
       originalName: true,
       storageKey: true,
+      uploadedByUserId: true,
       songRequest: { select: { contactId: true } },
       workshopRequest: { select: { contactId: true, clientId: true } },
       invoice: { select: { contactId: true } },
@@ -27,7 +31,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     },
   });
 
-  if (!item || !canClientAccessFileDocument({
+  const accessInput = item ? {
     sessionContactId: session.contactId,
     visibility: item.visibility,
     category: item.category,
@@ -37,8 +41,21 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     workshopRequestClientId: item.workshopRequest?.clientId,
     invoiceContactId: item.invoice?.contactId,
     commercialQuoteContactId: item.commercialQuote?.contactId,
-  })) {
+  } : null;
+
+  if (!item || !accessInput || !canClientAccessFileDocument(accessInput)) {
     return NextResponse.json({ error: 'Fichier introuvable' }, { status: 404 });
+  }
+
+  if (!canClientDeleteFileDocument({
+    ...accessInput,
+    uploadedByUserId: item.uploadedByUserId,
+    storageKey: item.storageKey,
+  })) {
+    return NextResponse.json(
+      { error: 'Seuls les fichiers déposés depuis votre portail peuvent être supprimés.' },
+      { status: 403 },
+    );
   }
 
   await prisma.fileDocument.delete({ where: { id: item.id } });
@@ -47,8 +64,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   await prisma.activity.create({
     data: {
       type: 'FILE',
-      title: 'Fichier supprime',
-      description: `Nom: ${item.originalName}\nSuppression par le client.`,
+      title: 'Fichier supprimé',
+      description: `Nom : ${item.originalName}\nSuppression par le client.`,
       contactId: item.contactId,
       songRequestId: item.songRequestId,
     },

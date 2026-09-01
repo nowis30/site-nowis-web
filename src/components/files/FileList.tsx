@@ -51,8 +51,11 @@ interface FileListProps {
   readerBasePath?: string;
 }
 
+const actionClassName = 'inline-flex min-h-11 w-full items-center justify-center rounded-xl border px-3 py-2 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 motion-reduce:transition-none sm:w-auto';
+
 export function FileList({ items, emptyLabel, canDelete = false, onDelete, downloadPrefix = '/api/crm/file-documents', readerBasePath }: FileListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
     if (!onDelete) return;
@@ -60,21 +63,30 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
     if (!ok) return;
 
     setDeletingId(id);
+    setDeleteError(null);
     try {
       await onDelete(id);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Suppression impossible.');
     } finally {
       setDeletingId(null);
     }
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-slate-400">{emptyLabel}</p>;
+    return <p className="text-sm text-slate-400" role="status">{emptyLabel}</p>;
   }
 
   return (
     <div className="space-y-3">
+      {deleteError ? (
+        <p className="rounded-xl border border-red-500/35 bg-red-500/10 px-4 py-3 text-sm text-red-200" role="alert">
+          {deleteError}
+        </p>
+      ) : null}
+
       {items.map((item) => (
-        <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-3.5">
+        <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-950/45 px-4 py-4 shadow-sm shadow-black/10">
           {(() => {
             const hasQuoteLink = Boolean(item.commercialQuoteId);
             const hasInvoiceLink = Boolean(item.invoiceId);
@@ -97,7 +109,7 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
             });
             const viewLabel = readerBasePath
               ? mediaKind === 'audio'
-                ? 'Ecouter'
+                ? 'Écouter'
                 : mediaKind === 'video'
                   ? 'Lire'
                   : 'Ouvrir'
@@ -113,31 +125,34 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
               uploadedByUserId: item.uploadedByUserId ?? (item.origin === 'admin' ? 'admin' : null),
               visibility: item.visibility,
             });
+            const canDeleteItem = canDelete
+              && origin === 'client'
+              && (item.storageKey?.startsWith('client-files/') ?? false);
 
             return (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="break-words text-sm font-semibold text-white">{item.originalName}</p>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
                     {getDocumentCategoryLabel(resolvedCategory.category)} · {item.mimeType} · {formatBytes(item.size)} · {formatDate(item.createdAt)}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">{getDocumentCategoryDescription(resolvedCategory.category)}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">{getDocumentCategoryDescription(resolvedCategory.category)}</p>
                   {(item.songRequest || item.workshopRequest) ? (
                     <p className="mt-1 text-xs text-slate-400">
-                      {item.songRequest ? `Chanson: ${item.songRequest.title || item.songRequest.id}` : null}
+                      {item.songRequest ? `Chanson : ${item.songRequest.title || item.songRequest.id}` : null}
                       {item.songRequest && item.workshopRequest ? ' · ' : null}
-                      {item.workshopRequest ? `Atelier: ${item.workshopRequest.title || item.workshopRequest.id}` : null}
+                      {item.workshopRequest ? `Atelier : ${item.workshopRequest.title || item.workshopRequest.id}` : null}
                     </p>
                   ) : null}
                   <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                    {item.visibility === 'CLIENT_VISIBLE' ? 'Visible client' : 'Admin only'}
+                    {item.visibility === 'CLIENT_VISIBLE' ? 'Visible client' : 'Administrateur seulement'}
                   </p>
                   <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-slate-500">
-                    Origine: {getDocumentOriginLabel(origin)}
+                    Origine : {getDocumentOriginLabel(origin)}
                   </p>
                   {resolvedCategory.source === 'fallback' ? (
                     <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-amber-300">
-                      Categorie deduite (fallback)
+                      Catégorie déduite
                     </p>
                   ) : null}
                   {item.mimeType?.startsWith('audio/') ? (
@@ -151,35 +166,54 @@ export function FileList({ items, emptyLabel, canDelete = false, onDelete, downl
                     </audio>
                   ) : null}
                 </div>
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                   {hasQuoteLink ? (
-                    <a href={`/client/soumissions/${item.commercialQuoteId}`} className="inline-flex w-full items-center justify-center rounded-xl border border-primary-500/40 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-500/15 sm:w-auto sm:py-1.5">
-                      <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir la soumission</span>
+                    <a
+                      href={`/client/soumissions/${item.commercialQuoteId}`}
+                      className={`${actionClassName} border-primary-500/40 text-primary-100 hover:bg-primary-500/15`}
+                    >
+                      <span className="inline-flex items-center gap-1.5"><Eye size={14} aria-hidden="true" />Voir la soumission</span>
                     </a>
                   ) : null}
                   {isInvoicePlaceholder && item.invoiceId ? (
-                    <a href={`${invoiceViewBasePath}/${item.invoiceId}`} className="inline-flex w-full items-center justify-center rounded-xl border border-primary-500/40 px-3 py-2 text-xs font-medium text-primary-100 transition hover:bg-primary-500/15 sm:w-auto sm:py-1.5">
-                      <span className="inline-flex items-center gap-1.5"><Eye size={13} />Voir la facture</span>
+                    <a
+                      href={`${invoiceViewBasePath}/${item.invoiceId}`}
+                      className={`${actionClassName} border-primary-500/40 text-primary-100 hover:bg-primary-500/15`}
+                    >
+                      <span className="inline-flex items-center gap-1.5"><Eye size={14} aria-hidden="true" />Voir la facture</span>
                     </a>
                   ) : null}
                   {canDownload ? (
-                    <a href={readerHref} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                      <span className="inline-flex items-center gap-1.5"><Eye size={13} />{viewLabel}</span>
+                    <a
+                      href={readerHref}
+                      className={`${actionClassName} border-slate-700 text-slate-200 hover:border-primary-500/40 hover:text-white`}
+                    >
+                      <span className="inline-flex items-center gap-1.5"><Eye size={14} aria-hidden="true" />{viewLabel}</span>
                     </a>
                   ) : null}
                   {canDownload ? (
-                    <a href={`${downloadPrefix}/${item.id}/download`} download={item.originalName} className="inline-flex w-full items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-primary-500/40 hover:text-white sm:w-auto sm:py-1.5">
-                      <span className="inline-flex items-center gap-1.5"><Download size={13} />Telecharger</span>
+                    <a
+                      href={`${downloadPrefix}/${item.id}/download`}
+                      download={item.originalName}
+                      aria-label={`Télécharger ${item.originalName}`}
+                      className={`${actionClassName} border-slate-700 text-slate-200 hover:border-primary-500/40 hover:text-white`}
+                    >
+                      <span className="inline-flex items-center gap-1.5"><Download size={14} aria-hidden="true" />Télécharger</span>
                     </a>
                   ) : null}
-                  {canDelete ? (
+                  {canDeleteItem ? (
                     <button
                       type="button"
                       disabled={deletingId === item.id}
+                      aria-busy={deletingId === item.id}
+                      aria-label={`Supprimer ${item.originalName}`}
                       onClick={() => handleDelete(item.id)}
-                      className="inline-flex w-full items-center justify-center rounded-xl border border-red-700/40 px-3 py-2 text-xs font-medium text-red-300 transition hover:border-red-500/60 hover:text-red-200 disabled:opacity-60 sm:w-auto sm:py-1.5"
+                      className={`${actionClassName} border-red-700/40 text-red-300 hover:border-red-500/60 hover:text-red-200 disabled:cursor-wait disabled:opacity-60`}
                     >
-                      <span className="inline-flex items-center gap-1.5"><Trash2 size={13} />Supprimer</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Trash2 size={14} aria-hidden="true" />
+                        {deletingId === item.id ? 'Suppression…' : 'Supprimer'}
+                      </span>
                     </button>
                   ) : null}
                 </div>

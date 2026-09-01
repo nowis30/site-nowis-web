@@ -94,3 +94,16 @@ export function canClientAccessFileDocument(input: ClientFileDocumentAccessInput
 
   return ownerIds.some((id) => id === input.sessionContactId);
 }
+
+export function canClientDeleteFileDocument(
+  input: ClientFileDocumentAccessInput & {
+    uploadedByUserId?: string | null;
+    storageKey?: string | null;
+  },
+) {
+  if (!canClientAccessFileDocument(input)) return false;
+  if (!isOwnedByContact(input.contactId, input.sessionContactId)) return false;
+  if (input.uploadedByUserId) return false;
+
+  return Boolean(input.storageKey?.startsWith(`client-files/${input.sessionContactId}/`));
+}
