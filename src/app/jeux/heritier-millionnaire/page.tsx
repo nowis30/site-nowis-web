@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function Page() {
-  redirect('/videos');
+  redirect('https://client-jeux-millionnaire.vercel.app/');
 }

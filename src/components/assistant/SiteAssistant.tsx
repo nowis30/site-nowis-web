@@ -20,7 +20,7 @@ const quickLinks = [
 const initialMessage: ChatMessage = {
   role: 'assistant',
   content:
-    'Bonjour! Je suis l’assistant NOWIS. Je peux vous aider à trouver une page, découvrir les services, les ateliers ou les jeux, et recueillir une idée pour améliorer le site.',
+    'Bonjour! Je suis l’assistant NOWIS. Je peux vous guider vers les services, les ateliers ou les jeux, ou transmettre une idée pour améliorer le site.',
 };
 
 export function SiteAssistant() {
@@ -118,7 +118,7 @@ export function SiteAssistant() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-[150] inline-flex min-h-12 items-center gap-2 rounded-full border border-[rgba(124,78,46,0.18)] bg-[color:var(--site-heading)] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_48px_rgba(72,43,24,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(72,43,24,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-[150] inline-flex min-h-12 items-center gap-2 rounded-full border border-[rgba(124,78,46,0.18)] bg-[color:var(--site-heading)] px-4 py-3 text-sm font-semibold text-[#fffdf9] shadow-[0_18px_48px_rgba(72,43,24,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(72,43,24,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
         aria-expanded={open}
         aria-controls="nowis-site-assistant"
       >
@@ -130,22 +130,22 @@ export function SiteAssistant() {
         <section
           id="nowis-site-assistant"
           aria-label="Assistant de navigation NOWIS"
-          className="fixed inset-x-3 bottom-[calc(max(1rem,env(safe-area-inset-bottom))+4.25rem)] z-[149] mx-auto flex max-h-[min(72dvh,680px)] w-auto max-w-[420px] flex-col overflow-hidden rounded-[1.75rem] border border-[rgba(124,78,46,0.16)] bg-[rgba(255,252,247,0.98)] shadow-[0_28px_80px_rgba(72,43,24,0.3)] backdrop-blur-xl sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:mx-0 sm:w-[400px]"
+          className="fixed inset-x-3 bottom-[calc(max(1rem,env(safe-area-inset-bottom))+4.25rem)] z-[149] mx-auto flex max-h-[min(78dvh,700px)] w-auto max-w-[420px] flex-col overflow-hidden rounded-[1.75rem] border border-[rgba(124,78,46,0.2)] bg-[#fffdfa] shadow-[0_28px_80px_rgba(72,43,24,0.3)] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:mx-0 sm:w-[400px]"
         >
-          <header className="flex items-center justify-between border-b border-[rgba(124,78,46,0.1)] bg-[linear-gradient(135deg,#32261f,#5c3d2d)] px-4 py-3 text-white">
+          <header className="flex items-center justify-between border-b border-[rgba(124,78,46,0.1)] bg-[linear-gradient(135deg,#2b1e18,#4a2f22)] px-4 py-3 text-[#fffdf9]">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-white/12" aria-hidden="true">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.12)]" aria-hidden="true">
                 <Bot size={22} />
               </span>
               <div>
-                <p className="font-semibold">Assistant NOWIS</p>
-                <p className="text-xs text-white/70">Navigation & idées</p>
+                <p className="text-base font-bold leading-5 text-[#fffdf9]">Assistant NOWIS</p>
+                <p className="text-sm font-medium text-[#f3e8df]">Navigation & idées</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="grid min-h-11 min-w-11 place-items-center rounded-xl text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+              className="grid min-h-11 min-w-11 place-items-center rounded-xl text-[#fffdf9] transition hover:bg-[rgba(255,255,255,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fffdf9]"
               aria-label="Fermer l’assistant"
             >
               <X size={20} />
@@ -158,7 +158,7 @@ export function SiteAssistant() {
               role="tab"
               aria-selected={!ideaMode}
               onClick={() => setIdeaMode(false)}
-              className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${!ideaMode ? 'bg-white text-[color:var(--site-heading)] shadow-sm' : 'text-[color:var(--site-muted)] hover:bg-white/60'}`}
+              className={`flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-base font-semibold transition ${!ideaMode ? 'bg-white text-[color:var(--site-heading)] shadow-sm' : 'text-[color:var(--site-muted)] hover:bg-white/60'}`}
             >
               <Compass size={17} aria-hidden="true" /> Aide
             </button>
@@ -170,7 +170,7 @@ export function SiteAssistant() {
                 setIdeaMode(true);
                 setIdeaStatus('idle');
               }}
-              className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${ideaMode ? 'bg-white text-[color:var(--site-heading)] shadow-sm' : 'text-[color:var(--site-muted)] hover:bg-white/60'}`}
+              className={`flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-base font-semibold transition ${ideaMode ? 'bg-white text-[color:var(--site-heading)] shadow-sm' : 'text-[color:var(--site-muted)] hover:bg-white/60'}`}
             >
               <Lightbulb size={17} aria-hidden="true" /> Mon idée
             </button>
@@ -197,7 +197,7 @@ export function SiteAssistant() {
                 required
                 rows={5}
                 placeholder="Ex. : J’aimerais trouver les ateliers plus rapidement depuis l’accueil…"
-                className="mt-2 w-full resize-none rounded-2xl border border-[rgba(124,78,46,0.18)] bg-white px-4 py-3 text-base text-[color:var(--site-heading)] outline-none transition placeholder:text-[#9b8b7e] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20"
+                className="mt-2 w-full resize-none rounded-2xl border border-[rgba(124,78,46,0.24)] bg-white px-4 py-3 text-base text-[color:var(--site-heading)] outline-none transition placeholder:text-[#76675b] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20"
               />
 
               <label className="mt-3 block text-sm font-semibold text-[color:var(--site-heading)]" htmlFor="nowis-idea-email">
@@ -211,7 +211,7 @@ export function SiteAssistant() {
                 maxLength={160}
                 autoComplete="email"
                 placeholder="Pour pouvoir vous répondre"
-                className="mt-2 min-h-12 w-full rounded-2xl border border-[rgba(124,78,46,0.18)] bg-white px-4 text-base text-[color:var(--site-heading)] outline-none transition placeholder:text-[#9b8b7e] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20"
+                className="mt-2 min-h-12 w-full rounded-2xl border border-[rgba(124,78,46,0.24)] bg-white px-4 text-base text-[color:var(--site-heading)] outline-none transition placeholder:text-[#76675b] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20"
               />
 
               <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
@@ -230,7 +230,7 @@ export function SiteAssistant() {
               <button
                 type="submit"
                 disabled={idea.trim().length < 10 || ideaStatus === 'sending'}
-                className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[color:var(--site-heading)] px-4 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
+                className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[color:var(--site-heading)] px-4 font-semibold text-[#fffdf9] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
               >
                 <Send size={18} aria-hidden="true" />
                 {ideaStatus === 'sending' ? 'Envoi…' : 'Envoyer mon idée'}
@@ -245,7 +245,7 @@ export function SiteAssistant() {
                 {messages.map((message, index) => (
                   <div
                     key={`${message.role}-${index}`}
-                    className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-5 ${message.role === 'assistant' ? 'bg-[#f1e4d6] text-[color:var(--site-heading)]' : 'ml-auto bg-[color:var(--site-heading)] text-white'}`}
+                    className={`max-w-[92%] rounded-2xl px-4 py-3 text-base leading-6 ${message.role === 'assistant' ? 'bg-[#f1e4d6] text-[color:var(--site-heading)]' : 'ml-auto bg-[color:var(--site-heading)] text-[#fffdf9]'}`}
                   >
                     {message.content}
                   </div>
@@ -258,15 +258,16 @@ export function SiteAssistant() {
               </div>
 
               <div className="border-t border-[rgba(124,78,46,0.1)] bg-[#fffaf5] p-3">
-                <div className="mb-3 flex gap-2 overflow-x-auto pb-1" aria-label="Raccourcis de navigation">
+                <div className="mb-3 grid grid-cols-2 gap-2" aria-label="Raccourcis de navigation">
                   {quickLinks.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full border border-[rgba(124,78,46,0.14)] bg-white px-3 text-xs font-semibold text-[color:var(--site-heading)] transition hover:border-[rgba(194,119,73,0.35)] hover:bg-[#fff5e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40"
+                      className="inline-flex min-h-12 w-full items-center justify-between gap-2 rounded-2xl border border-[rgba(124,78,46,0.2)] bg-white px-3 py-2 text-left text-sm font-semibold leading-4 text-[color:var(--site-heading)] transition last:col-span-2 hover:border-[rgba(194,119,73,0.4)] hover:bg-[#fff5e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40"
                       onClick={() => setOpen(false)}
                     >
-                      {link.label} <ArrowRight size={14} aria-hidden="true" />
+                      <span>{link.label}</span>
+                      <ArrowRight className="shrink-0" size={15} aria-hidden="true" />
                     </Link>
                   ))}
                 </div>
@@ -287,12 +288,12 @@ export function SiteAssistant() {
                     rows={1}
                     maxLength={1000}
                     placeholder="Où puis-je trouver…?"
-                    className="min-h-12 max-h-28 flex-1 resize-none rounded-2xl border border-[rgba(124,78,46,0.18)] bg-white px-4 py-3 text-base text-[color:var(--site-heading)] outline-none placeholder:text-[#9b8b7e] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20"
+                    className="min-h-12 max-h-28 flex-1 resize-none rounded-2xl border border-[rgba(124,78,46,0.24)] bg-white px-4 py-3 text-base text-[color:var(--site-heading)] outline-none placeholder:text-[#76675b] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20"
                   />
                   <button
                     type="submit"
                     disabled={!input.trim() || loading}
-                    className="grid min-h-12 min-w-12 place-items-center rounded-2xl bg-[color:var(--site-heading)] text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
+                    className="grid min-h-12 min-w-12 place-items-center rounded-2xl bg-[color:var(--site-heading)] text-[#fffdf9] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
                     aria-label="Envoyer la question"
                   >
                     <Send size={19} />

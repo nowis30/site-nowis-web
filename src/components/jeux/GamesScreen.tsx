@@ -48,10 +48,10 @@ const featuredGames = [
     eyebrow: 'Grande aventure',
     description:
       'Construis ta progression et relève les défis de l’expérience Héritier Millionnaire directement dans NOWIS.',
-    href: '/jeux/heritier-millionnaire',
+    href: 'https://client-jeux-millionnaire.vercel.app/',
     cta: 'Jouer à Héritier Millionnaire',
     icon: <Crown size={28} />,
-    external: false,
+    external: true,
     border: 'border-amber-300/25 hover:border-amber-200/55',
     glow: 'from-amber-400/20 via-orange-400/10 to-transparent',
     iconStyle: 'border-amber-200/30 bg-amber-300/15 text-amber-100',
