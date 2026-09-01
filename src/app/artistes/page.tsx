@@ -36,44 +36,57 @@ const customProjectExamples = ['Mariage', 'Naissance', 'Hommage', 'Décès', 'Hi
 
 export default function ArtistesPage() {
   const artists = getAllArtists();
+  const artistContactHref = `/contact?projectType=chanson&message=${encodeURIComponent(
+    'Bonjour, je veux discuter d’un projet musical ou d’une chanson personnalisée.',
+  )}`;
+  const creativeContactHref = `/contact?projectType=autre&message=${encodeURIComponent(
+    'Bonjour, je veux parler d’un projet créatif avec Création Nowis.',
+  )}`;
 
   return (
-    <div className="site-background">
+    <div className="section-soft text-[color:var(--site-text)]">
       <PageHero
         eyebrow="Artistes"
         title="Des artistes réunis sous une même bannière créative, humaine et moderne"
         description="Le volet Artistes de Création Nowis met en avant Nowis Morin comme artiste principal, présente Yemme & SX comme artistes associés et montre comment la musique, les visuels, les vidéos et l’IA peuvent travailler ensemble au service de l’émotion."
-        primaryCta={{ label: 'Parler de mon projet', href: '/contact?projectType=chanson&message=Bonjour, je veux discuter d’un projet musical ou d’une chanson personnalisée.' }}
+        primaryCta={{ label: 'Parler de mon projet', href: artistContactHref }}
         secondaryCta={{ label: 'Découvrir la musique', href: '/musique' }}
       />
 
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <section aria-labelledby="artist-vision-title" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
         <div className="max-w-3xl">
-          <h2 className="text-3xl font-bold text-slate-950 md:text-4xl">Création Nowis, une bannière pour rassembler plusieurs couleurs artistiques</h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Direction artistique</p>
+          <h2 id="artist-vision-title" className="mt-3 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">
+            Création Nowis, une bannière pour rassembler plusieurs couleurs artistiques
+          </h2>
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
             Cette section a été pensée pour rendre le projet plus lisible : un artiste principal, des artistes associés, une identité plus claire et une place assumée pour les créations personnalisées. Le tout reste centré sur l’humain, la mémoire, le vécu et la qualité émotionnelle du résultat.
           </p>
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {creativePillars.map((pillar) => (
-            <article key={pillar.title} className="rounded-[2rem] bg-white p-8 shadow-sm">
-              <h3 className="text-2xl font-bold text-slate-950">{pillar.title}</h3>
-              <p className="mt-4 leading-relaxed text-slate-600">{pillar.description}</p>
+            <article key={pillar.title} className="brand-card rounded-[1.75rem] p-6 sm:p-8">
+              <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{pillar.title}</h3>
+              <p className="mt-4 leading-7 text-[color:var(--site-muted)]">{pillar.description}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <section aria-labelledby="featured-artists-title" className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 md:pb-20">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-bold text-slate-950 md:text-4xl">Les artistes mis en avant</h2>
-            <p className="mt-4 text-lg leading-relaxed text-slate-600">
-              Deux pages dédiées permettent maintenant de mieux comprendre les rôles, les approches et les univers qui composent Création Nowis.
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Profils</p>
+            <h2 id="featured-artists-title" className="mt-3 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Les artistes mis en avant</h2>
+            <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
+              Deux pages dédiées permettent de mieux comprendre les rôles, les approches et les univers qui composent Création Nowis.
             </p>
           </div>
-          <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’un projet avec Création Nowis." className="inline-flex rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
+          <ContactPrefillLink
+            href={artistContactHref}
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-5 py-3 text-center font-semibold text-white motion-safe:transition motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+          >
             Contacter Création Nowis
           </ContactPrefillLink>
         </div>
@@ -85,33 +98,39 @@ export default function ArtistesPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-20">
+      <section aria-labelledby="custom-song-title" className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 md:pb-20">
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <article className="warm-cta-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+          <article className="warm-cta-panel rounded-[2rem] p-6 shadow-sm sm:p-8 md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Chansons personnalisées</p>
-            <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">Une création pensée pour un moment important</h2>
-            <p className="mt-5 text-lg leading-relaxed text-[color:var(--site-text)]">
+            <h2 id="custom-song-title" className="mt-4 font-display text-3xl text-[color:var(--site-heading)]">Une création pensée pour un moment important</h2>
+            <p className="mt-5 text-base leading-8 text-[color:var(--site-text)] sm:text-lg">
               Création Nowis peut aussi accompagner des clients qui veulent une chanson personnalisée à partir d’une histoire réelle, d’un souvenir ou d’un événement marquant. L’approche reste sobre, crédible et émotionnelle, avec la possibilité d’ajouter ensuite un visuel, une vidéo ou une petite vitrine de présentation.
             </p>
-            <p className="mt-6 rounded-2xl border border-[color:var(--site-accent)]/15 bg-white/70 px-5 py-4 text-sm leading-relaxed text-[color:var(--site-text)]">
+            <p className="mt-6 rounded-2xl border border-[color:var(--site-accent)]/15 bg-white/70 px-5 py-4 text-sm leading-7 text-[color:var(--site-text)]">
               Chaque demande est évaluée selon le projet. L’idée est de garder une approche claire, humaine et facile à discuter avant de lancer la création.
             </p>
           </article>
 
-          <article className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
-            <h3 className="text-2xl font-bold text-slate-950">Exemples de demandes</h3>
+          <article className="brand-card rounded-[2rem] p-6 sm:p-8 md:p-10">
+            <h3 className="font-display text-2xl text-[color:var(--site-heading)]">Exemples de demandes</h3>
             <div className="mt-6 flex flex-wrap gap-3">
               {customProjectExamples.map((item) => (
-                <span key={item} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">
+                <span key={item} className="rounded-full border border-[color:var(--site-border)] bg-[color:var(--site-soft)] px-4 py-2 text-sm font-medium text-[color:var(--site-text)]">
                   {item}
                 </span>
               ))}
             </div>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
+              <Link
+                href={SONG_REQUEST_GOOGLE_AUTH_URL}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-5 py-3 text-center font-semibold text-white motion-safe:transition motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+              >
                 Demander une chanson personnalisée
               </Link>
-              <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-50">
+              <ContactPrefillLink
+                href={creativeContactHref}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-[color:var(--site-panel)] px-5 py-3 text-center font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+              >
                 Parler de mon projet
               </ContactPrefillLink>
             </div>
