@@ -15,7 +15,6 @@ export const metadata = buildMetadata({
 export default function AProposPage() {
   return (
     <main className="text-[color:var(--site-text)]">
-
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
         <div
@@ -33,7 +32,7 @@ export default function AProposPage() {
               <div className="relative aspect-[16/9] sm:aspect-[3/2] md:aspect-[5/3]">
                 <Image
                   src="/hero.jpg"
-                  alt="Portrait de Nowis Morin, créateur de Création Nowis et animateur d ateliers IA"
+                  alt="Portrait de Nowis Morin, créateur de Création Nowis et animateur d’ateliers IA"
                   fill
                   className="brightness-[0.78] contrast-[1.04]"
                   style={{ objectFit: 'cover', objectPosition: '50% 28%' }}
@@ -45,31 +44,25 @@ export default function AProposPage() {
           </div>
 
           <div className="mx-auto max-w-4xl">
-          <div>
-            <span className="brand-chip inline-block">À propos</span>
-            <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
-              Nowis Morin — Créateur, animateur, artiste
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--site-muted)]">
-              Je suis Nowis Morin, créateur derrière Création Nowis. J&apos;anime des ateliers de création musicale
-              avec l&apos;IA, je crée des chansons personnalisées et j&apos;explore les territoires où la sensibilité
-              humaine et la technologie se rencontrent vraiment.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/ateliers"
-                className="cta-primary px-7 py-4"
-              >
-                Découvrir les ateliers
-              </Link>
-              <Link
-                href="/contact"
-                className="cta-secondary px-7 py-4"
-              >
-                Me contacter
-              </Link>
+            <div>
+              <span className="brand-chip inline-block">À propos</span>
+              <h1 className="brand-metal-text mt-5 font-display text-5xl leading-[0.95] md:text-7xl">
+                Nowis Morin — créateur, animateur et artiste
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--site-muted)]">
+                Je suis Nowis Morin, créateur derrière Création Nowis. J&apos;anime des ateliers de création musicale
+                avec l&apos;IA, je crée des chansons personnalisées et j&apos;explore les territoires où la sensibilité
+                humaine et la technologie se rencontrent vraiment.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link href="/ateliers" className="cta-primary w-full px-7 py-4 sm:w-auto">
+                  Découvrir les ateliers
+                </Link>
+                <Link href="/contact" className="cta-secondary w-full px-7 py-4 sm:w-auto">
+                  Me contacter
+                </Link>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </section>
@@ -79,7 +72,7 @@ export default function AProposPage() {
         <div className="mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Mon histoire</p>
           <h2 className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
-            Qui je suis, et ce qui me drive
+            Qui je suis, et ce qui me guide
           </h2>
           <div className="mt-8 grid gap-6 text-base leading-8 text-[color:var(--site-muted)] lg:grid-cols-2">
             <div className="space-y-5">
@@ -87,7 +80,7 @@ export default function AProposPage() {
                 Je m&apos;appelle Nowis Morin. Je suis artiste, musicien et passionné de création sous toutes ses formes. Mon univers, c&apos;est la musique — mais pas seulement. C&apos;est aussi l&apos;expression, la transmission, l&apos;idée que la création peut <strong className="text-[color:var(--site-heading)]">vraiment toucher les gens</strong>.
               </p>
               <p>
-                Ce qui m&apos;a amené à créer Création Nowis, c&apos;est un désir simple : rendre la création musicale <strong className="text-[color:var(--site-heading)]">accessible, vivante et signifiante</strong> — pas juste pour les artistes professionals, mais pour chaque personne qui a quelque chose à exprimer ou à vivre collectivement.
+                Ce qui m&apos;a amené à créer Création Nowis, c&apos;est un désir simple : rendre la création musicale <strong className="text-[color:var(--site-heading)]">accessible, vivante et signifiante</strong> — pas seulement pour les artistes professionnels, mais pour chaque personne qui a quelque chose à exprimer ou à vivre collectivement.
               </p>
             </div>
             <div className="space-y-5">
@@ -168,19 +161,17 @@ export default function AProposPage() {
               },
               {
                 icon: '🎬',
-                title: 'Contenus artistiques',
-                desc: 'Vidéos musicales, créations visuelles, jeux interactifs et contenu artistique selon vos besoins créatifs.',
-                href: '/autres-services',
-                cta: 'Autres services',
+                title: 'Créations et contenus artistiques',
+                desc: 'Musique, vidéos, créations visuelles et projets numériques réunis dans un même univers créatif.',
+                href: '/creations',
+                cta: 'Explorer les créations',
                 featured: false,
               },
             ].map((item) => (
               <article
                 key={item.title}
-                className={`flex flex-col p-7 transition hover:-translate-y-1 ${
-                  item.featured
-                    ? 'glass-panel-strong shadow-fire'
-                    : 'brand-card'
+                className={`flex flex-col p-7 transition motion-safe:hover:-translate-y-1 ${
+                  item.featured ? 'glass-panel-strong shadow-fire' : 'brand-card'
                 }`}
               >
                 <span className="text-3xl" role="img" aria-hidden="true">{item.icon}</span>
@@ -188,10 +179,8 @@ export default function AProposPage() {
                 <p className="mt-3 flex-1 text-sm leading-6 text-[color:var(--site-muted)]">{item.desc}</p>
                 <Link
                   href={item.href}
-                  className={`mt-5 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${
-                    item.featured
-                      ? 'cta-primary'
-                      : 'cta-secondary'
+                  className={`mt-5 inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition ${
+                    item.featured ? 'cta-primary' : 'cta-secondary'
                   }`}
                 >
                   {item.cta}
@@ -236,22 +225,15 @@ export default function AProposPage() {
             Pour un atelier, une chanson personnalisée ou simplement pour discuter d&apos;un projet, je suis disponible et j&apos;aime les échanges directs.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/ateliers"
-              className="cta-primary px-9 py-4"
-            >
+            <Link href="/ateliers" className="cta-primary w-full px-9 py-4 sm:w-auto">
               Découvrir les ateliers
             </Link>
-            <Link
-              href="/contact"
-              className="cta-secondary px-9 py-4"
-            >
+            <Link href="/contact" className="cta-secondary w-full px-9 py-4 sm:w-auto">
               Me contacter
             </Link>
           </div>
         </div>
       </section>
-
     </main>
   );
 }
