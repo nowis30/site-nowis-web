@@ -79,20 +79,25 @@ const privacySections = [
 
 function SectionBlock({ title, content, bullets }: { title: string; content?: string[]; bullets?: string[] }) {
   return (
-    <section className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
-      <h2 className="text-2xl font-bold text-slate-950">{title}</h2>
+    <section className="brand-card p-7 sm:p-8 md:p-10">
+      <h2 className="font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">{title}</h2>
       {content?.length ? (
-        <div className="mt-4 space-y-4 leading-7 text-slate-700">
+        <div className="mt-5 space-y-4 text-base leading-8 text-[color:var(--site-muted)]">
           {content.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
       ) : null}
       {bullets?.length ? (
-        <ul className="mt-5 space-y-3 leading-7 text-slate-700">
+        <ul className="mt-6 space-y-4 text-base leading-7 text-[color:var(--site-muted)]">
           {bullets.map((item) => (
             <li key={item} className="flex gap-3">
-              <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xs font-bold text-white">•</span>
+              <span
+                aria-hidden="true"
+                className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[color:var(--site-heading)] text-xs font-bold text-white"
+              >
+                •
+              </span>
               <span>{item}</span>
             </li>
           ))}
@@ -104,46 +109,57 @@ function SectionBlock({ title, content, bullets }: { title: string; content?: st
 
 export default function ConfidentialitePage() {
   return (
-    <div className="bg-slate-50">
+    <main className="text-[color:var(--site-text)]">
       <PageHero
         eyebrow="Protection des renseignements personnels"
-        title="Une politique de confidentialité rédigée de façon plus claire et plus lisible"
+        title="Une politique de confidentialité claire, lisible et accessible"
         description="Cette page explique comment Création Nowis recueille, utilise, conserve et traite les renseignements personnels transmis par le site public."
         primaryCta={{ label: 'Conditions de vente', href: legalLinks.terms }}
         secondaryCta={{ label: 'Contacter Création Nowis', href: legalLinks.contact }}
       />
 
-      <section className="mx-auto max-w-5xl space-y-8 px-6 py-16 md:py-20">
-        <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-          <h1 className="text-3xl font-bold text-slate-950 md:text-4xl">Politique de confidentialité</h1>
-          <p className="mt-4 text-base leading-7 text-slate-600">
+      <section className="mx-auto max-w-5xl space-y-6 px-6 py-14 md:space-y-8 md:py-20">
+        <article className="warm-cta-panel p-7 sm:p-8 md:p-10">
+          <span className="brand-chip inline-flex">En bref</span>
+          <h2 className="mt-5 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
+            Politique de confidentialité
+          </h2>
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
             Cette politique vise à mieux expliquer les pratiques de Création Nowis en matière de protection des renseignements personnels, sans donner un faux sentiment de sécurité ni faire de promesse absolue.
           </p>
-          <p className="mt-4 text-sm text-slate-500">Dernière mise à jour : {legalConfig.legalLastUpdated}</p>
+          <p className="mt-5 text-sm font-medium text-[color:var(--site-soft)]">
+            Dernière mise à jour : {legalConfig.legalLastUpdated}
+          </p>
         </article>
 
-        <article className="rounded-3xl border border-emerald-200 bg-emerald-50 p-8 shadow-sm md:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">{legalConfig.responsiblePrivacyTitle}</p>
-          <h2 className="mt-4 text-2xl font-bold text-slate-950">Coordonnées du responsable</h2>
-          <p className="mt-4 leading-7 text-slate-700">
+        <article className="warm-spotlight-panel p-7 sm:p-8 md:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+            {legalConfig.responsiblePrivacyTitle}
+          </p>
+          <h2 className="mt-4 font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">
+            Coordonnées du responsable
+          </h2>
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
             Le responsable de la protection des renseignements personnels de {legalConfig.companyName} est :
           </p>
-          <div className="mt-5 rounded-2xl border border-emerald-200 bg-white p-5 text-sm leading-7 text-slate-700">
-            <p className="font-semibold text-slate-950">{legalConfig.responsiblePrivacyName}</p>
-            <p>
-              Courriel :{' '}
-              <a href={`mailto:${legalConfig.privacyEmail}`} className="font-medium text-emerald-700 hover:underline">
+          <div className="mt-6 rounded-2xl border border-black/10 bg-white/75 p-5 text-sm leading-7 text-[color:var(--site-muted)] sm:p-6">
+            <p className="font-semibold text-[color:var(--site-heading)]">{legalConfig.responsiblePrivacyName}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <a
+                href={`mailto:${legalConfig.privacyEmail}`}
+                className="cta-secondary inline-flex min-h-11 items-center justify-center px-4 py-3 text-center text-sm font-semibold"
+              >
                 {legalConfig.privacyEmail}
               </a>
-            </p>
-            <p>
-              Téléphone :{' '}
-              <TrackedPhoneLink href={legalConfig.privacyPhoneHref} className="font-medium text-emerald-700 hover:underline">
+              <TrackedPhoneLink
+                href={legalConfig.privacyPhoneHref}
+                className="cta-secondary inline-flex min-h-11 items-center justify-center px-4 py-3 text-center text-sm font-semibold"
+              >
                 {legalConfig.privacyPhone}
               </TrackedPhoneLink>
-            </p>
+            </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-slate-600">
+          <p className="mt-5 text-sm leading-7 text-[color:var(--site-muted)]">
             Pour toute question concernant la collecte, l’utilisation, la conservation ou la suppression de vos renseignements personnels, vous pouvez communiquer avec cette personne.
           </p>
         </article>
@@ -152,36 +168,44 @@ export default function ConfidentialitePage() {
           <SectionBlock key={section.title} title={section.title} content={section.content} bullets={section.bullets} />
         ))}
 
-        <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
-          <h2 className="text-2xl font-bold text-slate-950">Cookies essentiels actuellement déclarés</h2>
-          <div className="mt-6 space-y-4">
+        <article className="brand-card p-7 sm:p-8 md:p-10">
+          <h2 className="font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">
+            Cookies essentiels actuellement déclarés
+          </h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {essentialCookies.map((cookie) => (
-              <div key={cookie.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-700">
-                <p className="font-semibold text-slate-950">{cookie.name}</p>
+              <div
+                key={cookie.name}
+                className="rounded-2xl border border-black/10 bg-white/70 p-5 text-sm leading-7 text-[color:var(--site-muted)]"
+              >
+                <p className="font-semibold text-[color:var(--site-heading)]">{cookie.name}</p>
                 <p className="mt-2">Finalité : {cookie.purpose}</p>
                 <p>Durée maximale : {cookie.duration}</p>
                 <p>Essentiel : {cookie.required ? 'oui' : 'non'}</p>
               </div>
             ))}
           </div>
-          <p className="mt-4 text-sm leading-6 text-slate-600">{complianceNotes.legalReview}</p>
+          <p className="mt-5 text-sm leading-7 text-[color:var(--site-soft)]">{complianceNotes.legalReview}</p>
         </article>
 
-        <article className="rounded-3xl bg-white p-8 shadow-sm md:p-10">
-          <h2 className="text-2xl font-bold text-slate-950">Liens utiles</h2>
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-            <Link href={legalLinks.legal} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
-              Voir les mentions légales
+        <article className="warm-cta-panel p-7 sm:p-8 md:p-10">
+          <span className="brand-chip inline-flex">Navigation légale</span>
+          <h2 className="mt-5 font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">
+            Consulter les autres informations utiles
+          </h2>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <Link href={legalLinks.legal} className="cta-secondary inline-flex min-h-11 items-center justify-center px-5 py-3 text-center font-semibold">
+              Mentions légales
             </Link>
-            <Link href={legalLinks.terms} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
-              Voir les conditions de vente
+            <Link href={legalLinks.terms} className="cta-secondary inline-flex min-h-11 items-center justify-center px-5 py-3 text-center font-semibold">
+              Conditions de vente
             </Link>
-            <Link href={legalLinks.contact} className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 font-semibold text-slate-900 transition hover:bg-slate-100">
+            <Link href={legalLinks.contact} className="cta-primary inline-flex min-h-11 items-center justify-center px-5 py-3 text-center font-semibold">
               Contacter Création Nowis
             </Link>
           </div>
         </article>
       </section>
-    </div>
+    </main>
   );
 }
