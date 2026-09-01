@@ -4,18 +4,12 @@ import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import type { ArtistProfile } from '@/data/artists';
 import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 
-const platformStyles: Record<string, string> = {
-  Spotify: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
-  YouTube: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
-  'YouTube Music': 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
-};
-
 function sectionLink(id: string, label: string) {
   return (
     <a
       key={id}
       href={`#${id}`}
-      className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
+      className="inline-flex min-h-11 items-center rounded-full border border-[color:var(--site-border)] bg-[color:var(--site-panel)] px-4 py-2 text-sm font-medium text-[color:var(--site-text)] motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
     >
       {label}
     </a>
@@ -24,12 +18,18 @@ function sectionLink(id: string, label: string) {
 
 export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
   const embedPlatform = artist.platforms.find((platform) => platform.embedUrl);
+  const creativeContactHref = `/contact?projectType=autre&message=${encodeURIComponent(
+    'Bonjour, je veux parler d’un projet créatif avec Création Nowis.',
+  )}`;
 
   return (
-    <div className="site-background">
+    <div className="section-soft text-[color:var(--site-text)]">
       <section className="section-warm relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-          <Link href="/artistes" className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--site-muted)] transition hover:text-[color:var(--site-heading)]">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-24">
+          <Link
+            href="/artistes"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg px-1 text-sm font-medium text-[color:var(--site-muted)] motion-safe:transition motion-safe:hover:text-[color:var(--site-heading)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
+          >
             <span aria-hidden="true">←</span>
             Retour aux artistes
           </Link>
@@ -37,11 +37,11 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
           <div className="mt-8 grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">{artist.role}</p>
-              <h1 className="mt-5 text-4xl font-bold leading-tight text-[color:var(--site-heading)] md:text-6xl">{artist.pageTitle}</h1>
+              <h1 className="mt-5 font-display text-4xl leading-tight text-[color:var(--site-heading)] md:text-6xl">{artist.pageTitle}</h1>
               <p className="mt-5 max-w-3xl text-xl leading-relaxed text-[color:var(--site-text)]">{artist.hook}</p>
-              <p className="mt-6 max-w-3xl text-lg leading-relaxed text-[color:var(--site-text)]">{artist.shortBio}</p>
+              <p className="mt-6 max-w-3xl text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">{artist.shortBio}</p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-3" aria-label={`Repères artistiques de ${artist.name}`}>
                 {artist.heroHighlights.map((highlight) => (
                   <span key={highlight} className="rounded-full border border-[color:var(--site-accent)]/15 bg-white/70 px-4 py-2 text-sm font-medium text-[color:var(--site-text)]">
                     {highlight}
@@ -50,23 +50,35 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
               </div>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+                <Link
+                  href={SONG_REQUEST_GOOGLE_AUTH_URL}
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white motion-safe:transition motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+                >
                   Demander une chanson personnalisée
                 </Link>
-                <ContactPrefillLink href="/contact?projectType=autre&message=Bonjour, je veux parler d’un projet créatif avec Création Nowis." className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
+                <ContactPrefillLink
+                  href={creativeContactHref}
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 text-center font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+                >
                   Parler de mon projet
                 </ContactPrefillLink>
               </div>
             </div>
 
-            <div className="glass-panel-soft relative overflow-hidden rounded-[2rem] border border-[var(--site-border)] shadow-2xl">
+            <div className="brand-card relative overflow-hidden rounded-[2rem] shadow-xl">
               {artist.image?.src ? (
-                <div className="relative min-h-[360px]">
-                  <Image src={artist.image.src} alt={artist.image.alt} fill className="object-cover brightness-[0.92] contrast-[1.02]" />
+                <div className="relative min-h-[360px] sm:min-h-[440px]">
+                  <Image
+                    src={artist.image.src}
+                    alt={artist.image.alt}
+                    fill
+                    sizes="(min-width: 1024px) 42vw, 100vw"
+                    className="object-cover brightness-[0.92] contrast-[1.02]"
+                  />
                   <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(251,244,234,0.02)_0%,rgba(140,102,67,0.18)_42%,rgba(53,35,23,0.48)_100%)]" />
                 </div>
               ) : (
-                <div className="flex min-h-[360px] flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(183,141,92,0.22),_transparent_30%),linear-gradient(180deg,#fbf4ea_0%,#f2e2cb_100%)] p-8 text-[color:var(--site-heading)]">
+                <div className="flex min-h-[360px] flex-col justify-between bg-[radial-gradient(circle_at_top_left,_rgba(183,141,92,0.22),_transparent_30%),linear-gradient(180deg,#fbf4ea_0%,#f2e2cb_100%)] p-8 text-[color:var(--site-heading)] sm:min-h-[440px]">
                   <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-[color:var(--site-accent)]/20 bg-white/70 text-3xl font-bold text-[color:var(--site-accent-strong)]">
                     {artist.name
                       .split(' ')
@@ -76,9 +88,9 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                   </div>
                   <div>
                     <p className="text-sm uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Création Nowis</p>
-                    <p className="mt-3 text-3xl font-semibold">{artist.name}</p>
+                    <p className="mt-3 font-display text-3xl">{artist.name}</p>
                     <p className="mt-2 text-lg text-[color:var(--site-text)]">{artist.role}</p>
-                    <p className="mt-3 max-w-md text-[color:var(--site-text)]">
+                    <p className="mt-3 max-w-md leading-7 text-[color:var(--site-muted)]">
                       Un univers présenté avec une direction sobre, humaine et cohérente avec le reste du site, même sans visuel dédié.
                     </p>
                   </div>
@@ -89,31 +101,31 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl flex-wrap gap-3 px-6 py-5">
+      <nav aria-label="Navigation dans le profil de l’artiste" className="border-b border-[color:var(--site-border)] bg-[color:var(--site-panel)]">
+        <div className="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 py-5 sm:px-6">
           {sectionLink('bio', artist.overviewLabel)}
           {sectionLink('parcours', artist.journeyLabel)}
           {sectionLink('sur-mesure', artist.customCreationsLabel)}
           {sectionLink('ecouter', 'Écouter')}
           {sectionLink('creation-nowis', artist.associationLabel)}
         </div>
-      </section>
+      </nav>
 
-      <section className="mx-auto max-w-7xl space-y-12 px-6 py-16 md:space-y-16 md:py-20">
-        <section id="bio" className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <article className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
-            <h2 className="text-3xl font-bold text-slate-950">{artist.overviewTitle}</h2>
-            <div className="mt-6 space-y-5 text-lg leading-relaxed text-slate-600">
+      <div className="mx-auto max-w-7xl space-y-12 px-4 py-14 sm:px-6 md:space-y-16 md:py-20">
+        <section id="bio" aria-labelledby="artist-bio-title" className="scroll-mt-28 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <article className="brand-card rounded-[2rem] p-6 sm:p-8 md:p-10">
+            <h2 id="artist-bio-title" className="font-display text-3xl text-[color:var(--site-heading)]">{artist.overviewTitle}</h2>
+            <div className="mt-6 space-y-5 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
               {artist.longBio.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
           </article>
 
-          <aside className="warm-spotlight-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+          <aside className="warm-spotlight-panel rounded-[2rem] p-6 shadow-sm sm:p-8 md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Repère créatif</p>
-            <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">Une démarche qui part de l’humain</h2>
-            <p className="mt-5 leading-relaxed text-[color:var(--site-text)]">
+            <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)]">Une démarche qui part de l’humain</h2>
+            <p className="mt-5 leading-7 text-[color:var(--site-text)]">
               Ici, l’intelligence artificielle n’est pas une finalité. Elle sert à conserver une émotion, structurer une idée, prolonger une chanson et rendre un projet plus concret, sans effacer la sensibilité de départ.
             </p>
             <div className="mt-8 grid gap-3">
@@ -126,10 +138,10 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
           </aside>
         </section>
 
-        <section id="parcours" className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
+        <section id="parcours" aria-labelledby="artist-journey-title" className="brand-card scroll-mt-28 rounded-[2rem] p-6 sm:p-8 md:p-10">
           <div className="max-w-4xl">
-            <h2 className="text-3xl font-bold text-slate-950">{artist.journeyTitle}</h2>
-            <div className="mt-6 space-y-5 text-lg leading-relaxed text-slate-600">
+            <h2 id="artist-journey-title" className="font-display text-3xl text-[color:var(--site-heading)]">{artist.journeyTitle}</h2>
+            <div className="mt-6 space-y-5 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
               {artist.journey.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
@@ -139,81 +151,83 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
           {artist.members?.length ? (
             <div className="mt-10 grid gap-6 lg:grid-cols-2">
               {artist.members.map((member) => (
-                <article key={member.name} className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-600">{member.subtitle}</p>
-                  <h3 className="mt-3 text-2xl font-bold text-slate-950">{member.name}</h3>
-                  <p className="mt-4 leading-relaxed text-slate-600">{member.description}</p>
+                <article key={member.name} className="rounded-[1.75rem] border border-[color:var(--site-border)] bg-[color:var(--site-soft)] p-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">{member.subtitle}</p>
+                  <h3 className="mt-3 font-display text-2xl text-[color:var(--site-heading)]">{member.name}</h3>
+                  <p className="mt-4 leading-7 text-[color:var(--site-muted)]">{member.description}</p>
                 </article>
               ))}
             </div>
           ) : null}
         </section>
 
-        <section id="sur-mesure" className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <article className="warm-cta-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+        <section id="sur-mesure" aria-labelledby="custom-creations-title" className="scroll-mt-28 grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+          <article className="warm-cta-panel rounded-[2rem] p-6 shadow-sm sm:p-8 md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Sur mesure</p>
-            <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">{artist.customCreationsTitle}</h2>
-            <div className="mt-6 space-y-5 leading-relaxed text-[color:var(--site-text)]">
+            <h2 id="custom-creations-title" className="mt-4 font-display text-3xl text-[color:var(--site-heading)]">{artist.customCreationsTitle}</h2>
+            <div className="mt-6 space-y-5 leading-7 text-[color:var(--site-text)]">
               {artist.customCreationsIntro.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
-            <p className="mt-6 rounded-2xl border border-[color:var(--site-accent)]/15 bg-white/70 px-5 py-4 text-sm leading-relaxed text-[color:var(--site-text)]">
+            <p className="mt-6 rounded-2xl border border-[color:var(--site-accent)]/15 bg-white/70 px-5 py-4 text-sm leading-7 text-[color:var(--site-text)]">
               {artist.pricingNote}
             </p>
           </article>
 
-          <article className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
-            <h3 className="text-2xl font-bold text-slate-950">Exemples de demandes</h3>
+          <article className="brand-card rounded-[2rem] p-6 sm:p-8 md:p-10">
+            <h3 className="font-display text-2xl text-[color:var(--site-heading)]">Exemples de demandes</h3>
             <div className="mt-6 flex flex-wrap gap-3">
               {artist.customCreationsExamples.map((item) => (
-                <span key={item} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700">
+                <span key={item} className="rounded-full border border-[color:var(--site-border)] bg-[color:var(--site-soft)] px-4 py-2 text-sm font-medium text-[color:var(--site-text)]">
                   {item}
                 </span>
               ))}
             </div>
-            <div className="mt-8 rounded-[1.75rem] border border-emerald-100 bg-emerald-50 p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">Approche</p>
-              <p className="mt-3 leading-relaxed text-emerald-900">
+            <div className="warm-spotlight-panel mt-8 rounded-[1.75rem] p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">Approche</p>
+              <p className="mt-3 leading-7 text-[color:var(--site-text)]">
                 Chaque projet part d’un échange humain : votre histoire, l’émotion à transmettre, le ton recherché et la meilleure forme pour lui donner de la portée.
               </p>
             </div>
-            <ContactPrefillLink href={artist.contactHref} className="mt-8 inline-flex rounded-xl bg-brand-warm px-5 py-3 font-semibold text-white transition hover:brightness-110">
+            <ContactPrefillLink
+              href={artist.contactHref}
+              className="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-5 py-3 text-center font-semibold text-white motion-safe:transition motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+            >
               Contacter Création Nowis
             </ContactPrefillLink>
           </article>
         </section>
 
-        <section id="ecouter" className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <article className="rounded-[2rem] bg-white p-8 shadow-sm md:p-10">
-            <h2 className="text-3xl font-bold text-slate-950">{artist.listeningTitle}</h2>
-            <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-600">
+        <section id="ecouter" aria-labelledby="artist-listening-title" className="scroll-mt-28 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <article className="brand-card rounded-[2rem] p-6 sm:p-8 md:p-10">
+            <h2 id="artist-listening-title" className="font-display text-3xl text-[color:var(--site-heading)]">{artist.listeningTitle}</h2>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
               Retrouve ici les plateformes disponibles et une sélection de chansons en vedette pour mieux ressentir l’univers de l’artiste.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {artist.platforms.map((platform) => {
-                const style = platformStyles[platform.label] || 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
-
-                return platform.url ? (
+              {artist.platforms.map((platform) =>
+                platform.url ? (
                   <a
                     key={platform.label}
                     href={platform.url}
                     target="_blank"
                     rel="noreferrer"
-                    className={`rounded-[1.5rem] border px-5 py-5 transition ${style}`}
+                    aria-label={`${platform.ctaLabel} — ${platform.label} (nouvel onglet)`}
+                    className="brand-card min-h-24 rounded-[1.5rem] border px-5 py-5 text-[color:var(--site-text)] motion-safe:transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:border-[color:var(--site-accent)]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
                   >
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em]">{platform.label}</p>
-                    <p className="mt-3 text-base font-semibold">{platform.ctaLabel}</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">{platform.label}</p>
+                    <p className="mt-3 text-base font-semibold text-[color:var(--site-heading)]">{platform.ctaLabel}</p>
                   </a>
                 ) : (
-                  <div key={platform.label} className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-5 py-5 text-slate-600">
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em]">{platform.label}</p>
-                    <p className="mt-3 text-base font-semibold">{platform.ctaLabel}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-500">{platform.placeholder}</p>
+                  <div key={platform.label} className="min-h-24 rounded-[1.5rem] border border-dashed border-[color:var(--site-border)] bg-[color:var(--site-soft)] px-5 py-5 text-[color:var(--site-muted)]">
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">{platform.label}</p>
+                    <p className="mt-3 text-base font-semibold text-[color:var(--site-heading)]">{platform.ctaLabel}</p>
+                    <p className="mt-2 text-sm leading-6">{platform.placeholder}</p>
                   </div>
-                );
-              })}
+                ),
+              )}
             </div>
 
             <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -227,19 +241,20 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                   <Component
                     key={song.title}
                     {...componentProps}
-                    className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 transition hover:border-slate-300 hover:bg-white"
+                    className="rounded-[1.5rem] border border-[color:var(--site-border)] bg-[color:var(--site-soft)] p-5 motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
                   >
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-700">{song.platform}</p>
-                    <h3 className="mt-3 text-xl font-bold text-slate-950">{song.title}</h3>
-                    <p className="mt-3 leading-relaxed text-slate-600">{song.description}</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">{song.platform}</p>
+                    <h3 className="mt-3 font-display text-xl text-[color:var(--site-heading)]">{song.title}</h3>
+                    <p className="mt-3 leading-7 text-[color:var(--site-muted)]">{song.description}</p>
+                    {song.external ? <span className="sr-only"> (nouvel onglet)</span> : null}
                   </Component>
                 );
               })}
             </div>
           </article>
 
-          <aside className="warm-spotlight-panel rounded-[2rem] p-8 shadow-sm md:p-10">
-            <h2 className="text-3xl font-bold text-[color:var(--site-heading)]">Écoute directe</h2>
+          <aside className="warm-spotlight-panel rounded-[2rem] p-6 shadow-sm sm:p-8 md:p-10">
+            <h2 className="font-display text-3xl text-[color:var(--site-heading)]">Écoute directe</h2>
             <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-[color:var(--site-accent)]/15 bg-white/75">
               {embedPlatform?.embedUrl ? (
                 <iframe
@@ -249,39 +264,46 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
                   height="352"
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   className="w-full"
                 />
               ) : (
-                <div className="flex min-h-[352px] items-center justify-center px-6 text-center text-[color:var(--site-muted)]">
-                  Aucun embed disponible pour le moment. Les liens externes restent accessibles ci-contre.
+                <div className="flex min-h-[352px] items-center justify-center px-6 text-center leading-7 text-[color:var(--site-muted)]">
+                  Aucun lecteur intégré disponible pour le moment. Les liens externes restent accessibles ci-contre.
                 </div>
               )}
             </div>
-            <p className="mt-5 text-sm leading-relaxed text-[color:var(--site-text)]">
-              Les embeds sont affichés quand une source officielle est disponible. Les autres plateformes restent préparées dans la structure de données pour être complétées facilement.
+            <p className="mt-5 text-sm leading-7 text-[color:var(--site-text)]">
+              Les lecteurs intégrés sont affichés quand une source officielle est disponible. Les autres plateformes restent préparées dans la structure de données pour être complétées facilement.
             </p>
           </aside>
         </section>
 
-        <section id="creation-nowis" className="warm-cta-panel rounded-[2rem] p-8 shadow-sm md:p-10">
+        <section id="creation-nowis" aria-labelledby="association-title" className="warm-cta-panel scroll-mt-28 rounded-[2rem] p-6 shadow-sm sm:p-8 md:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Création Nowis</p>
-          <h2 className="mt-4 text-3xl font-bold text-[color:var(--site-heading)]">{artist.associationTitle}</h2>
+          <h2 id="association-title" className="mt-4 font-display text-3xl text-[color:var(--site-heading)]">{artist.associationTitle}</h2>
           <div className="mt-6 grid gap-5 lg:grid-cols-2">
             {artist.associationText.map((paragraph) => (
-              <p key={paragraph} className="leading-relaxed text-[color:var(--site-text)]">{paragraph}</p>
+              <p key={paragraph} className="leading-7 text-[color:var(--site-text)]">{paragraph}</p>
             ))}
           </div>
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+            <Link
+              href={SONG_REQUEST_GOOGLE_AUTH_URL}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white motion-safe:transition motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+            >
               Demander une chanson personnalisée
             </Link>
-            <Link href="/artistes" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
+            <Link
+              href="/artistes"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 text-center font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
+            >
               Voir les autres artistes
             </Link>
           </div>
         </section>
-      </section>
+      </div>
     </div>
   );
 }
