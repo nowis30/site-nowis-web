@@ -27,8 +27,14 @@ type SongRequestCreateResponse = {
 };
 
 const styleOptions = ['Pop', 'Acoustique', 'Rap / Hip-hop', 'R&B', 'Rock', 'Country', 'Ballade', 'Autre'];
-const moodOptions = ['Heureux', 'Triste', 'Motivant', 'Emotive', 'Festive', 'Inspirante', 'Douce', 'Energique', 'Sincere', 'Autre'];
-const languageOptions = ['Francais', 'Anglais', 'Espagnol', 'Bilingue', 'Autre'];
+const moodOptions = ['Heureux', 'Triste', 'Motivant', 'Émotive', 'Festive', 'Inspirante', 'Douce', 'Énergique', 'Sincère', 'Autre'];
+const languageOptions = [
+  { value: 'Francais', label: 'Français' },
+  { value: 'Anglais', label: 'Anglais' },
+  { value: 'Espagnol', label: 'Espagnol' },
+  { value: 'Bilingue', label: 'Bilingue' },
+  { value: 'Autre', label: 'Autre' },
+];
 const tempoOptions = [
   { value: 'LENT', label: 'Lent' },
   { value: 'MOYEN', label: 'Moyen' },
@@ -41,9 +47,11 @@ interface SongRequestFormProps {
   defaultPhone?: string;
 }
 
-function inputClass() {
-  return 'w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500';
-}
+const fieldClassName =
+  'min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-base text-white shadow-sm outline-none transition placeholder:text-slate-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/40 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none';
+const labelClassName = 'mb-1.5 block text-sm font-medium text-slate-200';
+const errorClassName = 'mt-1.5 text-xs font-medium text-red-300';
+const panelClassName = 'space-y-4 rounded-2xl border border-primary-500/15 bg-slate-950/45 p-4 sm:p-5';
 
 export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }: SongRequestFormProps = {}) {
   const router = useRouter();
@@ -122,7 +130,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       }
 
       if (!response.ok) {
-        setSubmitError(data?.error ?? 'Impossible d envoyer la demande. Merci de reessayer.');
+        setSubmitError(data?.error ?? 'Impossible d’envoyer la demande. Merci de réessayer.');
         return;
       }
 
@@ -133,12 +141,12 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       }
 
       setSuccessState({
-        message: 'Merci. Votre demande a ete envoyee.',
+        message: 'Merci. Votre demande a été envoyée.',
       });
       setUploadedFileName(null);
       reset({ ...defaultValues, consentToBeContacted: false });
     } catch {
-      setSubmitError('Connexion impossible au serveur. Verifiez votre reseau puis reessayez.');
+      setSubmitError('Connexion impossible au serveur. Vérifiez votre réseau puis réessayez.');
     }
   }, (invalid: FieldErrors<SongRequestFormValues>) => {
     const firstKey = Object.keys(invalid)[0] as keyof SongRequestFormValues | undefined;
@@ -147,11 +155,12 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       ? firstError.message
       : 'Certains champs obligatoires sont incomplets.';
 
-    setSubmitError(`Formulaire incomplet: ${message}`);
+    setSubmitError(`Formulaire incomplet : ${message}`);
     if (firstKey) {
       setFocus(firstKey);
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    window.scrollTo({ top: 0, behavior });
   });
 
   async function handleFileUpload(file: File) {
@@ -165,89 +174,97 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
         credentials: 'include',
         body: formData,
       });
-      const data = await response.json();
+      const data = (await response.json().catch(() => null)) as {
+        fileName?: string;
+        fileUrl?: string;
+        error?: string;
+        loginUrl?: string;
+      } | null;
       if (response.status === 401 && typeof data?.loginUrl === 'string') {
         window.location.href = data.loginUrl;
         return;
       }
       if (!response.ok) {
-        throw new Error(data.error || 'Upload impossible');
+        throw new Error(data?.error || 'Téléversement impossible');
       }
-      setUploadedFileName(data.fileName || file.name);
-      setValue('fileUrl', data.fileUrl ?? '', { shouldDirty: true, shouldValidate: true });
+      setUploadedFileName(data?.fileName || file.name);
+      setValue('fileUrl', data?.fileUrl ?? '', { shouldDirty: true, shouldValidate: true });
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Upload impossible');
+      setSubmitError(error instanceof Error ? error.message : 'Téléversement impossible');
     } finally {
       setUploadingFile(false);
     }
   }
 
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-      <h3 className="text-2xl font-bold text-slate-900">Nouvelle demande</h3>
-      <p className="mt-2 text-sm text-slate-600">Version simple: remplissez l essentiel, puis envoyez.</p>
+    <div className="crm-surface rounded-3xl border border-primary-500/15 p-5 shadow-[0_12px_34px_rgba(2,6,23,0.26)] sm:p-6 md:p-8">
+      <div className="max-w-3xl">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary-300">Création personnalisée</p>
+        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-white">Nouvelle demande</h3>
+        <p className="mt-2 text-sm leading-6 text-slate-300">Commencez par l’essentiel. Les détails avancés restent optionnels et peuvent être ajoutés au besoin.</p>
+      </div>
 
       {successState ? (
-        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div role="status" aria-live="polite" className="mt-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
           <p>{successState.message}</p>
         </div>
       ) : null}
 
       {submitError ? (
-        <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div role="alert" aria-live="assertive" className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
           {submitError}
         </div>
       ) : null}
 
-      <form onSubmit={onSubmit} className="mt-6 space-y-5">
-        <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-600">Essentiel</h4>
+      <form onSubmit={onSubmit} className="mt-6 space-y-5" noValidate aria-busy={isSubmitting || uploadingFile}>
+        <section className={panelClassName} aria-labelledby="song-request-essential-heading">
+          <h4 id="song-request-essential-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">Essentiel</h4>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="eventType">Titre ou occasion</label>
-            <input id="eventType" {...register('eventType')} className={inputClass()} placeholder="Anniversaire, hommage, retraite..." />
-            {errors.eventType ? <p className="mt-1 text-xs text-red-600">{errors.eventType.message}</p> : null}
+            <label className={labelClassName} htmlFor="eventType">Titre ou occasion</label>
+            <input id="eventType" {...register('eventType')} className={fieldClassName} placeholder="Anniversaire, hommage, retraite…" aria-invalid={Boolean(errors.eventType)} />
+            {errors.eventType ? <p className={errorClassName}>{errors.eventType.message}</p> : null}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="recipientName">Personne concernee</label>
-            <input id="recipientName" {...register('recipientName')} className={inputClass()} placeholder="Nom ou prenom" />
-            {errors.recipientName ? <p className="mt-1 text-xs text-red-600">{errors.recipientName.message}</p> : null}
+            <label className={labelClassName} htmlFor="recipientName">Personne concernée</label>
+            <input id="recipientName" {...register('recipientName')} className={fieldClassName} placeholder="Nom ou prénom" aria-invalid={Boolean(errors.recipientName)} />
+            {errors.recipientName ? <p className={errorClassName}>{errors.recipientName.message}</p> : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="mood">Emotion</label>
-              <select id="mood" {...register('mood')} className={inputClass()}>
-                <option value="">Selectionner</option>
+              <label className={labelClassName} htmlFor="mood">Émotion</label>
+              <select id="mood" {...register('mood')} className={fieldClassName} aria-invalid={Boolean(errors.mood)}>
+                <option value="">Sélectionner</option>
                 {moodOptions.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
-              {errors.mood ? <p className="mt-1 text-xs text-red-600">{errors.mood.message}</p> : null}
+              {errors.mood ? <p className={errorClassName}>{errors.mood.message}</p> : null}
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="style">Style musical</label>
-              <select id="style" {...register('style')} className={inputClass()}>
-                <option value="">Selectionner</option>
+              <label className={labelClassName} htmlFor="style">Style musical</label>
+              <select id="style" {...register('style')} className={fieldClassName} aria-invalid={Boolean(errors.style)}>
+                <option value="">Sélectionner</option>
                 {styleOptions.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
-              {errors.style ? <p className="mt-1 text-xs text-red-600">{errors.style.message}</p> : null}
+              {errors.style ? <p className={errorClassName}>{errors.style.message}</p> : null}
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="description">Histoire / message</label>
-            <textarea id="description" rows={5} {...register('description')} className={inputClass()} placeholder="Expliquez l histoire, les elements importants et le ton souhaite..." />
-            {errors.description ? <p className="mt-1 text-xs text-red-600">{errors.description.message}</p> : null}
+            <label className={labelClassName} htmlFor="description">Histoire / message</label>
+            <textarea id="description" rows={5} {...register('description')} className={fieldClassName} placeholder="Expliquez l’histoire, les éléments importants et le ton souhaité…" aria-invalid={Boolean(errors.description)} />
+            {errors.description ? <p className={errorClassName}>{errors.description.message}</p> : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="desiredDeadline">Date souhaitee (optionnel)</label>
-              <input id="desiredDeadline" type="date" {...register('desiredDeadline')} className={inputClass()} />
-              {errors.desiredDeadline ? <p className="mt-1 text-xs text-red-600">{errors.desiredDeadline.message}</p> : null}
+              <label className={labelClassName} htmlFor="desiredDeadline">Date souhaitée (optionnel)</label>
+              <input id="desiredDeadline" type="date" {...register('desiredDeadline')} className={fieldClassName} aria-invalid={Boolean(errors.desiredDeadline)} />
+              {errors.desiredDeadline ? <p className={errorClassName}>{errors.desiredDeadline.message}</p> : null}
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="songRequestFile">Fichier (optionnel)</label>
+              <label className={labelClassName} htmlFor="songRequestFile">Fichier (optionnel)</label>
               <input
                 id="songRequestFile"
                 type="file"
@@ -258,116 +275,117 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
                     await handleFileUpload(file);
                   }
                 }}
-                className={inputClass()}
+                className={`${fieldClassName} file:mr-3 file:rounded-lg file:border-0 file:bg-primary-500/15 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-primary-100`}
+                disabled={uploadingFile || isSubmitting}
               />
               <input type="hidden" {...register('fileUrl')} />
-              {uploadingFile ? <p className="mt-2 text-xs text-slate-500">Upload en cours...</p> : null}
-              {uploadedFileName ? <p className="mt-2 text-xs text-emerald-700">Fichier lie: {uploadedFileName}</p> : null}
+              {uploadingFile ? <p className="mt-2 text-xs text-slate-400" role="status">Téléversement en cours…</p> : null}
+              {uploadedFileName ? <p className="mt-2 text-xs text-emerald-200">Fichier lié : {uploadedFileName}</p> : null}
             </div>
           </div>
         </section>
 
-        <details className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <summary className="cursor-pointer text-sm font-semibold uppercase tracking-[0.14em] text-slate-600">Options avancees</summary>
+        <details className="rounded-2xl border border-primary-500/15 bg-slate-950/45 p-4 sm:p-5">
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold uppercase tracking-[0.14em] text-primary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60">Options avancées</summary>
           <div className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="title">Titre interne</label>
-                <input id="title" {...register('title')} className={inputClass()} />
+                <label className={labelClassName} htmlFor="title">Titre interne</label>
+                <input id="title" {...register('title')} className={fieldClassName} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="songType">Type de chanson</label>
-                <input id="songType" {...register('songType')} className={inputClass()} />
+                <label className={labelClassName} htmlFor="songType">Type de chanson</label>
+                <input id="songType" {...register('songType')} className={fieldClassName} />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="language">Langue</label>
-                <select id="language" {...register('language')} className={inputClass()}>
-                  {languageOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                <label className={labelClassName} htmlFor="language">Langue</label>
+                <select id="language" {...register('language')} className={fieldClassName}>
+                  {languageOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="tempo">Tempo</label>
-                <select id="tempo" {...register('tempo')} className={inputClass()}>
+                <label className={labelClassName} htmlFor="tempo">Tempo</label>
+                <select id="tempo" {...register('tempo')} className={fieldClassName}>
                   {tempoOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="theme">Theme</label>
-                <input id="theme" {...register('theme')} className={inputClass()} />
+                <label className={labelClassName} htmlFor="theme">Thème</label>
+                <input id="theme" {...register('theme')} className={fieldClassName} />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="specialMessage">Message special</label>
-              <input id="specialMessage" {...register('specialMessage')} className={inputClass()} />
+              <label className={labelClassName} htmlFor="specialMessage">Message spécial</label>
+              <input id="specialMessage" {...register('specialMessage')} className={fieldClassName} />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="inspirations">Inspirations</label>
-              <textarea id="inspirations" rows={3} {...register('inspirations')} className={inputClass()} />
+              <label className={labelClassName} htmlFor="inspirations">Inspirations</label>
+              <textarea id="inspirations" rows={3} {...register('inspirations')} className={fieldClassName} />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="lyrics">Paroles</label>
-              <textarea id="lyrics" rows={5} {...register('lyrics')} className={inputClass()} />
+              <label className={labelClassName} htmlFor="lyrics">Paroles</label>
+              <textarea id="lyrics" rows={5} {...register('lyrics')} className={fieldClassName} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="structureVerse">Structure couplet</label>
-                <textarea id="structureVerse" rows={3} {...register('structureVerse')} className={inputClass()} />
+                <label className={labelClassName} htmlFor="structureVerse">Structure couplet</label>
+                <textarea id="structureVerse" rows={3} {...register('structureVerse')} className={fieldClassName} />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="structureChorus">Structure refrain</label>
-                <textarea id="structureChorus" rows={3} {...register('structureChorus')} className={inputClass()} />
+                <label className={labelClassName} htmlFor="structureChorus">Structure refrain</label>
+                <textarea id="structureChorus" rows={3} {...register('structureChorus')} className={fieldClassName} />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="structureBridge">Structure pont</label>
-              <textarea id="structureBridge" rows={3} {...register('structureBridge')} className={inputClass()} />
+              <label className={labelClassName} htmlFor="structureBridge">Structure pont</label>
+              <textarea id="structureBridge" rows={3} {...register('structureBridge')} className={fieldClassName} />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="budget">Budget (optionnel)</label>
-              <input id="budget" type="number" min="0" step="1" {...register('budget')} className={inputClass()} />
+              <label className={labelClassName} htmlFor="budget">Budget (optionnel)</label>
+              <input id="budget" type="number" min="0" step="1" inputMode="numeric" {...register('budget')} className={fieldClassName} />
             </div>
           </div>
         </details>
 
-        <section className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-600">Coordonnees</h4>
+        <section className={panelClassName} aria-labelledby="song-request-contact-heading">
+          <h4 id="song-request-contact-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">Coordonnées</h4>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="fullName">Nom complet</label>
-              <input id="fullName" {...register('fullName')} className={inputClass()} />
-              {errors.fullName ? <p className="mt-1 text-xs text-red-600">{errors.fullName.message}</p> : null}
+              <label className={labelClassName} htmlFor="fullName">Nom complet</label>
+              <input id="fullName" autoComplete="name" {...register('fullName')} className={fieldClassName} aria-invalid={Boolean(errors.fullName)} />
+              {errors.fullName ? <p className={errorClassName}>{errors.fullName.message}</p> : null}
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="email">Courriel</label>
-              <input id="email" type="email" {...register('email')} className={inputClass()} />
-              {errors.email ? <p className="mt-1 text-xs text-red-600">{errors.email.message}</p> : null}
+              <label className={labelClassName} htmlFor="email">Courriel</label>
+              <input id="email" type="email" autoComplete="email" inputMode="email" {...register('email')} className={fieldClassName} aria-invalid={Boolean(errors.email)} />
+              {errors.email ? <p className={errorClassName}>{errors.email.message}</p> : null}
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="phone">Telephone</label>
-            <input id="phone" type="tel" {...register('phone')} className={inputClass()} />
-            {errors.phone ? <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p> : null}
+            <label className={labelClassName} htmlFor="phone">Téléphone</label>
+            <input id="phone" type="tel" autoComplete="tel" inputMode="tel" {...register('phone')} className={fieldClassName} aria-invalid={Boolean(errors.phone)} />
+            {errors.phone ? <p className={errorClassName}>{errors.phone.message}</p> : null}
           </div>
         </section>
 
-        <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-          <input type="checkbox" className="mt-1 h-4 w-4" {...register('consentToBeContacted')} />
-          <span>J accepte d etre recontacte(e) par Nowis pour le suivi de cette demande.</span>
+        <label className="flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-primary-500/15 bg-slate-950/45 px-4 py-3 text-sm leading-6 text-slate-200 transition hover:border-primary-500/30 motion-reduce:transition-none">
+          <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-sky-500" {...register('consentToBeContacted')} />
+          <span>J’accepte d’être recontacté(e) par NOWIS pour le suivi de cette demande.</span>
         </label>
 
         <input type="hidden" {...register('source')} value="website" />
         <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" {...register('antiSpam')} />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="min-h-12 w-full text-base" disabled={isSubmitting || uploadingFile}>
           {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande'}
         </Button>
       </form>
