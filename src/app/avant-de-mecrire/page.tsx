@@ -1,13 +1,14 @@
 import Link from 'next/link';
+import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { PageHero } from '@/components/marketing/PageHero';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
   title: 'Avant de m’écrire — Nowis Morin',
   description:
-    'Prépare mieux ta demande avant de contacter Nowis Morin: ce que je peux créer, ce que je ne fais pas, et comment formuler une demande claire.',
+    'Prépare mieux ta demande avant de contacter Nowis Morin : ce que je peux créer, les informations utiles et comment formuler une demande claire.',
   path: '/avant-de-mecrire',
-  keywords: ['avant de mecrire', 'préparer sa demande créative', 'Nowis Morin contact', 'demande claire projet créatif'],
+  keywords: ['avant de m’écrire', 'préparer sa demande créative', 'Nowis Morin contact', 'demande claire projet créatif'],
 });
 
 const canCreate = [
@@ -25,8 +26,8 @@ const cannotCreate = [
 ];
 
 const shouldPrepare = [
-  'Ton objectif principal: émouvoir, vendre, divertir ou présenter.',
-  'Le public visé: personne, famille, entreprise ou projet spécial.',
+  'Ton objectif principal : émouvoir, vendre, divertir ou présenter.',
+  'Le public visé : personne, famille, entreprise ou projet spécial.',
   'Le ton ou l’ambiance recherchée.',
   'Les détails essentiels à inclure et ce qu’il faut éviter.',
   'Ton délai idéal, même approximatif.',
@@ -39,36 +40,64 @@ const exampleRequests = [
   'Je veux une page ou un concept interactif pour expliquer un projet plus clairement à mes visiteurs.',
 ];
 
+const projectContactHref = `/contact?message=${encodeURIComponent(
+  'Je veux te parler de mon projet. Voici les détails que j’ai préparés.',
+)}`;
+
 export default function AvantDeMecrirePage() {
   return (
-    <div className="bg-slate-50 text-slate-900">
+    <main className="text-[color:var(--site-text)]">
       <PageHero
         eyebrow="Préparer sa demande"
         title="Avant de m’écrire"
-        description="Quelques repères simples pour mieux préparer ta demande et gagner du temps dès le premier message."
+        description="Quelques repères simples pour mieux préparer ta demande, gagner du temps et partir dans la bonne direction dès le premier échange."
+        primaryCta={{ label: 'Voir les services', href: '/services' }}
+        secondaryCta={{ label: 'Me contacter', href: '/contact' }}
       />
 
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+      <section className="mx-auto max-w-7xl px-6 py-14 md:py-20">
         <div className="grid gap-6 lg:grid-cols-2">
-          <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h2 className="text-3xl font-bold text-slate-950">Ce que je peux créer</h2>
-            <ul className="mt-6 space-y-4 text-slate-700">
+          <article className="brand-card p-7 sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-400">Ce qui fonctionne bien</p>
+            <h2 className="mt-4 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
+              Ce que je peux créer
+            </h2>
+            <ul className="mt-6 space-y-3">
               {canCreate.map((item) => (
-                <li key={item} className="flex gap-4 rounded-2xl bg-slate-50 p-4">
-                  <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white">✓</span>
-                  <span>{item}</span>
+                <li
+                  key={item}
+                  className="flex gap-4 rounded-2xl border border-[color:var(--site-accent)]/10 bg-white/70 p-4 text-[color:var(--site-text)]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[color:var(--site-accent)] text-sm font-bold text-white"
+                  >
+                    ✓
+                  </span>
+                  <span className="leading-7">{item}</span>
                 </li>
               ))}
             </ul>
           </article>
 
-          <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h2 className="text-3xl font-bold text-slate-950">Ce que je ne fais pas</h2>
-            <ul className="mt-6 space-y-4 text-slate-700">
+          <article className="warm-spotlight-panel p-7 sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-300">À cadrer avant de commencer</p>
+            <h2 className="mt-4 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
+              Ce que je ne peux pas promettre
+            </h2>
+            <ul className="mt-6 space-y-3">
               {cannotCreate.map((item) => (
-                <li key={item} className="flex gap-4 rounded-2xl bg-slate-50 p-4">
-                  <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-950 text-sm font-bold text-white">—</span>
-                  <span>{item}</span>
+                <li
+                  key={item}
+                  className="flex gap-4 rounded-2xl border border-[color:var(--site-accent)]/10 bg-white/70 p-4 text-[color:var(--site-text)]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] text-sm font-bold text-[color:var(--site-heading)]"
+                  >
+                    —
+                  </span>
+                  <span className="leading-7">{item}</span>
                 </li>
               ))}
             </ul>
@@ -76,24 +105,47 @@ export default function AvantDeMecrirePage() {
         </div>
       </section>
 
-      <section className="bg-white py-16 md:py-20">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-2">
-          <article className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
-            <h2 className="text-3xl font-bold">Ce que tu devrais préparer avant de me contacter</h2>
-            <ul className="mt-6 space-y-4 text-slate-200">
-              {shouldPrepare.map((item) => (
-                <li key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4">{item}</li>
+      <section className="section-soft px-6 py-14 md:py-20">
+        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-8">
+          <article className="warm-cta-panel p-7 sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-secondary-400">Avant le premier message</p>
+            <h2 className="mt-4 font-display text-3xl leading-tight text-[color:var(--site-heading)]">
+              Cinq informations suffisent pour bien partir
+            </h2>
+            <ul className="mt-6 space-y-3">
+              {shouldPrepare.map((item, index) => (
+                <li
+                  key={item}
+                  className="flex gap-4 rounded-2xl border border-[color:var(--site-accent)]/10 bg-white/70 p-4 text-[color:var(--site-text)]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[color:var(--site-heading)] text-xs font-bold text-white"
+                  >
+                    {index + 1}
+                  </span>
+                  <span className="leading-7">{item}</span>
+                </li>
               ))}
             </ul>
           </article>
 
-          <article className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm">
-            <h2 className="text-3xl font-bold text-slate-950">Exemples de demandes claires</h2>
-            <div className="mt-6 space-y-4">
+          <article className="brand-card p-7 sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-400">Exemples</p>
+            <h2 className="mt-4 font-display text-3xl leading-tight text-[color:var(--site-heading)]">
+              Des demandes claires, sans devoir écrire un roman
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--site-muted)]">
+              Quelques phrases précises donnent déjà assez de contexte pour comprendre l’intention, le format et le résultat recherché.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {exampleRequests.map((item, index) => (
-                <div key={item} className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-600">Exemple {index + 1}</p>
-                  <p className="mt-3 leading-7 text-slate-700">{item}</p>
+                <div
+                  key={item}
+                  className="rounded-2xl border border-[color:var(--site-accent)]/10 bg-white/70 p-5"
+                >
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-400">Exemple {index + 1}</p>
+                  <p className="mt-3 leading-7 text-[color:var(--site-muted)]">{item}</p>
                 </div>
               ))}
             </div>
@@ -101,20 +153,25 @@ export default function AvantDeMecrirePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="rounded-3xl bg-[linear-gradient(135deg,#0f172a_0%,#111827_45%,#065f46_100%)] px-8 py-10 text-white shadow-sm md:px-12 md:py-14">
-          <h2 className="text-3xl font-bold md:text-4xl">Tu es prêt à m’expliquer ton projet?</h2>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-200">
-            Avec quelques informations bien préparées, je peux te répondre plus clairement et t’orienter vers la bonne création plus vite.
+      <section className="mx-auto max-w-5xl px-6 py-14 md:py-20">
+        <div className="warm-spotlight-panel p-8 text-center sm:p-10 md:p-12">
+          <span className="brand-chip inline-flex">Prêt à commencer ?</span>
+          <h2 className="mx-auto mt-5 max-w-3xl font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
+            Explique-moi ton projet avec ce que tu as déjà
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-[color:var(--site-muted)]">
+            Pas besoin que tout soit décidé. Avec quelques repères, je peux te répondre clairement et t’orienter vers le bon service ou la bonne approche.
           </p>
-          <Link
-            href="/contact?message=Je%20veux%20te%20parler%20de%20mon%20projet.%20Voici%20les%20details%20que%20j%27ai%20prepares."
-            className="mt-8 inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
-          >
-            Me parler de mon projet
-          </Link>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <ContactPrefillLink href={projectContactHref} className="cta-primary w-full px-7 py-4 sm:w-auto">
+              Me parler de mon projet
+            </ContactPrefillLink>
+            <Link href="/creations" className="cta-secondary w-full px-7 py-4 sm:w-auto">
+              Voir des créations
+            </Link>
+          </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }
