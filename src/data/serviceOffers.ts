@@ -34,8 +34,8 @@ export const serviceOffers: ServiceOffer[] = [
     description:
       'Création d’ambiances visuelles, concepts, couvertures et images promotionnelles pour enrichir ta présence en ligne.',
     bullets: ['Visuels de lancement', 'Univers de marque', 'Direction artistique'],
-    href: '/autres-services',
-    cta: 'Voir mes créations',
+    href: '/creations',
+    cta: 'Explorer les créations',
   },
   {
     title: 'Concepts marketing avec IA',
