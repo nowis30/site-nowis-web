@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const musicPage = readFileSync(new URL('../src/app/musique/page.tsx', import.meta.url), 'utf8');
 const videosPage = readFileSync(new URL('../src/app/videos/page.tsx', import.meta.url), 'utf8');
+const songDetail = readFileSync(new URL('../src/app/chanson/[slug]/page.tsx', import.meta.url), 'utf8');
 const songCard = readFileSync(new URL('../src/components/music/SongCard.tsx', import.meta.url), 'utf8');
 const videoCard = readFileSync(new URL('../src/components/videos/VideoCard.tsx', import.meta.url), 'utf8');
 
@@ -36,11 +37,21 @@ test('media cards stay server rendered and optimize responsive images', () => {
 });
 
 test('media actions are touch friendly and keyboard visible', () => {
-  for (const source of [songCard, videoCard]) {
+  for (const source of [songCard, videoCard, songDetail]) {
     assert.match(source, /min-h-12/);
     assert.match(source, /w-full/);
     assert.match(source, /sm:w-auto/);
     assert.match(source, /focus-visible:ring-2/);
     assert.match(source, /nouvel onglet/);
   }
+});
+
+test('song detail uses responsive media and lazy embedded video', () => {
+  assert.match(songDetail, /sizes="\(min-width: 768px\) 42vw, 100vw"/);
+  assert.match(songDetail, /loading="lazy"/);
+  assert.match(songDetail, /referrerPolicy="strict-origin-when-cross-origin"/);
+  assert.match(songDetail, /brand-card/);
+  assert.doesNotMatch(songDetail, /bg-red-600/);
+  assert.doesNotMatch(songDetail, /bg-emerald-500/);
+  assert.doesNotMatch(songDetail, /text-slate-950/);
 });

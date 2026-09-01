@@ -71,43 +71,67 @@ export default async function ChansonPage({ params }: PageProps) {
   };
 
   return (
-    <div className="site-background">
+    <div className="site-background text-[color:var(--site-text)]">
       <Script id={`song-schema-${song.slug}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <section className="section-warm">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-[1.1fr_0.9fr] md:py-24">
-          <div>
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:py-24">
+          <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Nowis Morin</p>
-            <h1 className="mt-5 text-4xl font-bold leading-tight text-[color:var(--site-heading)] md:text-6xl">{song.title}</h1>
+            <h1 className="mt-5 font-display text-4xl leading-tight text-[color:var(--site-heading)] md:text-6xl">{song.title}</h1>
             {publishedAt ? <p className="mt-4 text-base font-medium text-[color:var(--site-muted)]">Sortie : {publishedAt}</p> : null}
-            <p className="mt-6 max-w-3xl text-lg leading-relaxed text-[color:var(--site-text)]">
+            <p className="mt-6 max-w-3xl text-base leading-8 text-[color:var(--site-text)] sm:text-lg">
               {song.description || 'Découvre cette chanson de Nowis Morin et accède directement aux plateformes officielles lorsqu’elles sont disponibles.'}
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {song.youtubeUrl ? (
-                <a href={song.youtubeUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-xl bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700">
+                <a
+                  href={song.youtubeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Voir ${song.title} sur YouTube (nouvel onglet)`}
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-6 py-3 text-base font-semibold text-white shadow-fire motion-safe:transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/50 focus-visible:ring-offset-2 sm:w-auto"
+                >
                   Voir sur YouTube
                 </a>
               ) : null}
               {song.spotifyUrl ? (
-                <a href={song.spotifyUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white transition hover:bg-emerald-600">
+                <a
+                  href={song.spotifyUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Écouter ${song.title} sur Spotify (nouvel onglet)`}
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-6 py-3 text-base font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-[color:var(--site-accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40 sm:w-auto"
+                >
                   Écouter sur Spotify
                 </a>
               ) : null}
               {song.otherStreamUrl ? (
-                <a href={song.otherStreamUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/85 px-6 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
+                <a
+                  href={song.otherStreamUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Écouter ${song.title} sur une autre plateforme (nouvel onglet)`}
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/80 px-6 py-3 text-base font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40 sm:w-auto"
+                >
                   Autre plateforme
                 </a>
               ) : null}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="glass-panel-soft relative aspect-square overflow-hidden rounded-3xl border border-[var(--site-border)] shadow-2xl md:aspect-[4/3]">
-              <Image src={song.coverImage} alt={song.title} fill className="object-cover" />
+          <div className="min-w-0 space-y-4">
+            <div className="brand-card relative aspect-square overflow-hidden rounded-[1.75rem] shadow-card md:aspect-[4/3]">
+              <Image
+                src={song.coverImage}
+                alt={song.title}
+                fill
+                sizes="(min-width: 768px) 42vw, 100vw"
+                className="object-cover"
+              />
             </div>
             {song.spotifyUrl ? (
-              <p className="text-sm text-[color:var(--site-muted)]">
+              <p className="text-sm leading-6 text-[color:var(--site-muted)]">
                 Accès direct vers les plateformes officielles pour écouter la chanson dans le bon contexte.
               </p>
             ) : null}
@@ -115,23 +139,23 @@ export default async function ChansonPage({ params }: PageProps) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <article className="rounded-3xl bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-950">À propos de cette chanson</h2>
-            <div className="mt-6 space-y-4 text-slate-600">
-              <p className="leading-relaxed">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
+          <article aria-labelledby="song-about-title" className="brand-card rounded-[1.75rem] p-6 sm:p-8">
+            <h2 id="song-about-title" className="font-display text-2xl text-[color:var(--site-heading)]">À propos de cette chanson</h2>
+            <div className="mt-6 space-y-5 text-[color:var(--site-muted)]">
+              <p className="leading-7">
                 Cette page présente la chanson avec ses liens d’écoute et une version plus claire de sa description, afin d’offrir une lecture simple et agréable aux visiteurs.
               </p>
               {publishedAt ? (
                 <div>
-                  <p className="font-semibold text-slate-950">Date de publication</p>
+                  <p className="font-semibold text-[color:var(--site-heading)]">Date de publication</p>
                   <p className="mt-1">{publishedAt}</p>
                 </div>
               ) : null}
               {(song.youtubeUrl || song.spotifyUrl || song.otherStreamUrl) ? (
                 <div>
-                  <p className="font-semibold text-slate-950">Plateformes disponibles</p>
+                  <p className="font-semibold text-[color:var(--site-heading)]">Plateformes disponibles</p>
                   <p className="mt-1">
                     {[song.youtubeUrl ? 'YouTube' : null, song.spotifyUrl ? 'Spotify' : null, song.otherStreamUrl ? 'Autre plateforme' : null]
                       .filter(Boolean)
@@ -142,42 +166,50 @@ export default async function ChansonPage({ params }: PageProps) {
             </div>
           </article>
 
-          <article className="warm-spotlight-panel rounded-3xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Continuer l’exploration</h2>
-            <p className="mt-4 leading-relaxed text-[color:var(--site-text)]">
+          <article aria-labelledby="song-next-title" className="warm-spotlight-panel rounded-[1.75rem] p-6 sm:p-8">
+            <h2 id="song-next-title" className="font-display text-2xl text-[color:var(--site-heading)]">Continuer l’exploration</h2>
+            <p className="mt-4 leading-7 text-[color:var(--site-text)]">
               Continue l’exploration du catalogue musical, découvre d’autres chansons et contacte Création Nowis si tu veux transformer une idée ou une histoire en projet sur mesure.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/musique" className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 transition hover:bg-slate-200">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                href="/musique"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-white/85 px-5 py-3 text-base font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40 sm:w-auto"
+              >
                 Retour à la musique
               </Link>
-              <ContactPrefillLink href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée ou d’un projet musical avec Création Nowis." className="inline-flex rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-5 py-3 font-semibold text-[color:var(--site-heading)] transition hover:border-[color:var(--site-accent)]/40 hover:bg-white">
+              <ContactPrefillLink
+                href="/contact?projectType=chanson&message=Bonjour, je veux discuter d’une chanson personnalisée ou d’un projet musical avec Création Nowis."
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[color:var(--site-accent)]/20 bg-[color:var(--site-panel)] px-5 py-3 text-base font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:border-[color:var(--site-accent)]/40 motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40 sm:w-auto"
+              >
                 Contacter Création Nowis
               </ContactPrefillLink>
             </div>
           </article>
         </div>
 
-        <div className="mt-10 rounded-3xl bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-bold text-slate-950">Vidéo intégrée</h2>
-          <div className="mt-6 overflow-hidden rounded-2xl bg-slate-100">
+        <section aria-labelledby="song-video-title" className="brand-card mt-8 rounded-[1.75rem] p-5 sm:mt-10 sm:p-6">
+          <h2 id="song-video-title" className="font-display text-2xl text-[color:var(--site-heading)]">Vidéo intégrée</h2>
+          <div className="mt-6 overflow-hidden rounded-2xl bg-[color:var(--site-soft)]">
             {youtubeId ? (
               <div className="aspect-video">
                 <iframe
                   className="h-full w-full"
                   src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
                   title={`${song.title} - Nowis Morin`}
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               </div>
             ) : (
-              <div className="flex aspect-video items-center justify-center px-6 text-center text-slate-500">
+              <div className="flex aspect-video items-center justify-center px-6 text-center text-[color:var(--site-muted)]">
                 Aucun lecteur YouTube disponible pour cette chanson pour le moment.
               </div>
             )}
           </div>
-        </div>
+        </section>
       </section>
     </div>
   );
