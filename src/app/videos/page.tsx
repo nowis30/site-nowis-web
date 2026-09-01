@@ -5,22 +5,26 @@ import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSecti
 import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
 import { buildMetadata } from '@/lib/seo';
 
+const videoContactMessage = encodeURIComponent(
+  'Bonjour, je veux discuter d’une option visuelle ou vidéo IA pour accompagner une chanson.',
+);
+
 const DEFAULT_VIDEOS_CONTENT = {
   hero: {
-    eyebrow: 'Videos',
-    title: 'Des options visuelles et videos IA pour accompagner une chanson',
+    eyebrow: 'Vidéos',
+    title: 'Des options visuelles et vidéos IA pour accompagner une chanson',
     description:
-      'Cette section presente les videos et formats visuels comme complements creatifs autour de la musique, et non comme le service principal.',
+      'Cette section présente les vidéos et formats visuels comme compléments créatifs autour de la musique, et non comme le service principal.',
     primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL },
     secondaryCta: {
       label: 'Parler de mon projet',
-      href: '/contact?projectType=video&message=Bonjour, je veux discuter d une option visuelle ou video IA pour accompagner une chanson.',
+      href: `/contact?projectType=video&message=${videoContactMessage}`,
     },
   },
   grid: {
-    title: 'Des complements visuels pour prolonger l emotion d une chanson',
+    title: 'Des compléments visuels pour prolonger l’émotion d’une chanson',
     description:
-      'Les videos presentees ici servent a montrer la couleur visuelle possible autour d un projet musical. Elles peuvent accompagner une chanson, une sortie ou un souvenir, sans prendre la place de l offre principale.',
+      'Les vidéos présentées ici servent à montrer la couleur visuelle possible autour d’un projet musical. Elles peuvent accompagner une chanson, une sortie ou un souvenir, sans prendre la place de l’offre principale.',
   },
 };
 
@@ -51,6 +55,21 @@ function spacingClass(verticalSpacing: 'tight' | 'normal' | 'airy') {
   return 'py-16 md:py-20';
 }
 
+function mobileSpacingClass(value: 'inherit' | 'compact' | 'comfortable' | 'airy') {
+  if (value === 'compact') return 'py-8 md:py-12';
+  if (value === 'comfortable') return 'py-14 md:py-20';
+  if (value === 'airy') return 'py-20 md:py-24';
+  return '';
+}
+
+function alignClass(contentAlign: 'left' | 'center', mobileAlign: 'inherit' | 'left' | 'center') {
+  const desktop = contentAlign === 'center' ? 'md:text-center' : 'md:text-left';
+
+  if (mobileAlign === 'center') return `text-center ${desktop}`;
+  if (mobileAlign === 'left') return `text-left ${desktop}`;
+  return contentAlign === 'center' ? 'text-center' : 'text-left';
+}
+
 function headingClass(headingScale: 'sm' | 'md' | 'lg') {
   if (headingScale === 'sm') return 'text-2xl md:text-3xl';
   if (headingScale === 'lg') return 'text-4xl md:text-5xl';
@@ -76,6 +95,8 @@ export default async function VideosPage() {
   const heroEnabled = heroSection?.isActive ?? false;
   const gridEnabled = gridSection?.isActive ?? false;
   const gridStyle = getAdminSectionVisualStyle(gridSection);
+  const gridMobileSpacing = mobileSpacingClass(gridStyle.mobileSpacing);
+  const gridAlign = alignClass(gridStyle.contentAlign, gridStyle.mobileAlign);
 
   const heroEyebrow = heroEnabled
     ? pickText(getAdminBlockValue(heroSection, 'eyebrow'), DEFAULT_VIDEOS_CONTENT.hero.eyebrow)
@@ -107,7 +128,7 @@ export default async function VideosPage() {
     : DEFAULT_VIDEOS_CONTENT.grid.description;
 
   return (
-    <div className="bg-slate-50">
+    <div className="section-soft text-[color:var(--site-text)]">
       <PageHero
         eyebrow={heroEyebrow}
         title={heroTitle}
@@ -116,18 +137,36 @@ export default async function VideosPage() {
         secondaryCta={{ label: heroSecondaryLabel, href: heroSecondaryHref }}
       />
 
-      <section className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-6 ${spacingClass(gridStyle.verticalSpacing)}`}>
-        <div className={`${gridStyle.contentAlign === 'center' ? 'mx-auto max-w-4xl text-center' : 'max-w-3xl text-left'}`}>
-          <h2 className={`${headingClass(gridStyle.headingScale)} font-bold text-slate-950`}>{gridTitle}</h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">
+      <section
+        aria-labelledby="video-gallery-title"
+        className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-4 sm:px-6 ${spacingClass(gridStyle.verticalSpacing)} ${gridMobileSpacing}`}
+      >
+        <div className={`${gridStyle.contentAlign === 'center' ? 'mx-auto max-w-4xl' : 'max-w-3xl'} ${gridAlign}`}>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">
+            Galerie vidéo
+          </p>
+          <h2 id="video-gallery-title" className={`mt-3 font-display ${headingClass(gridStyle.headingScale)} text-[color:var(--site-heading)]`}>
+            {gridTitle}
+          </h2>
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
             {gridDescription}
           </p>
         </div>
-        <div className="mt-12 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {videos.map((video) => (
-            <VideoCard key={video.slug} {...video} />
-          ))}
-        </div>
+
+        {videos.length > 0 ? (
+          <div className="mt-10 grid gap-6 md:mt-12 md:grid-cols-2 md:gap-8 xl:grid-cols-3">
+            {videos.map((video) => (
+              <VideoCard key={video.slug} {...video} />
+            ))}
+          </div>
+        ) : (
+          <div className="brand-card mx-auto mt-10 max-w-3xl rounded-[1.75rem] px-6 py-9 text-center sm:px-8 md:mt-12">
+            <h3 className="font-display text-2xl text-[color:var(--site-heading)]">De nouveaux exemples vidéo arrivent bientôt.</h3>
+            <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-[color:var(--site-muted)]">
+              Les options visuelles restent disponibles sur demande même lorsque la galerie publique est vide.
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );

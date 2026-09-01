@@ -119,7 +119,7 @@ export default async function MusiquePage() {
     : DEFAULT_MUSIQUE_CONTENT.grid.description;
 
   return (
-    <div className="bg-slate-50">
+    <div className="section-soft text-[color:var(--site-text)]">
       <PageHero
         eyebrow={heroEyebrow}
         title={heroTitle}
@@ -131,19 +131,36 @@ export default async function MusiquePage() {
         }}
       />
 
-      <section className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-6 ${spacingClass(gridStyle.verticalSpacing)} ${gridMobileSpacing}`}>
+      <section
+        aria-labelledby="music-library-title"
+        className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-4 sm:px-6 ${spacingClass(gridStyle.verticalSpacing)} ${gridMobileSpacing}`}
+      >
         <div className={`${gridStyle.contentAlign === 'center' ? 'mx-auto max-w-4xl' : 'max-w-3xl'} ${gridAlign}`}>
-          <h2 className={`${headingClass(gridStyle.headingScale)} font-bold text-slate-950`}>{gridTitle}</h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">
+            Bibliothèque musicale
+          </p>
+          <h2 id="music-library-title" className={`mt-3 font-display ${headingClass(gridStyle.headingScale)} text-[color:var(--site-heading)]`}>
+            {gridTitle}
+          </h2>
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
             {gridDescription}
           </p>
         </div>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {songs.map((song) => (
-            <SongCard key={song.slug} song={song} />
-          ))}
-        </div>
+        {songs.length > 0 ? (
+          <div className="mt-10 grid gap-6 md:mt-12 md:grid-cols-2 md:gap-8 xl:grid-cols-3">
+            {songs.map((song) => (
+              <SongCard key={song.slug} song={song} />
+            ))}
+          </div>
+        ) : (
+          <div className="brand-card mx-auto mt-10 max-w-3xl rounded-[1.75rem] px-6 py-9 text-center sm:px-8 md:mt-12">
+            <h3 className="font-display text-2xl text-[color:var(--site-heading)]">De nouvelles chansons arrivent bientôt.</h3>
+            <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-[color:var(--site-muted)]">
+              La bibliothèque publique est momentanément vide, mais les demandes de chansons personnalisées restent ouvertes.
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );
