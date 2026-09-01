@@ -106,6 +106,11 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/services" className="font-semibold text-[color:var(--site-accent-strong)] transition-colors hover:brightness-110">
+                  Services
+                </Link>
+              </li>
+              <li>
                 <Link href="/ateliers" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
                   Ateliers
                 </Link>
@@ -127,7 +132,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link href="/autres-services" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
-                  Autres services
+                  Expertises complémentaires
                 </Link>
               </li>
               <li>
@@ -156,11 +161,11 @@ export const Footer: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]"
-                  aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+                  aria-label="Ouvrir les logements à louer dans un nouvel onglet"
                   onClick={trackRentalClick}
                 >
                   <House size={14} aria-hidden="true" />
-                  Logements a louer
+                  Logements à louer
                 </a>
               </li>
             </ul>
@@ -189,7 +194,7 @@ export const Footer: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--site-accent-strong)] transition hover:brightness-110"
-                  aria-label="Ouvrir les logements a louer dans un nouvel onglet"
+                  aria-label="Ouvrir les logements à louer dans un nouvel onglet"
                   onClick={trackRentalClick}
                 >
                   Voir les logements disponibles →
