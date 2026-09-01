@@ -1,219 +1,134 @@
-/**
- * PortfolioScreen Component - Thème Camping 🏕️
- * Galerie T-shirts Etsy + Musiques Suno + Vidéos
- * 
- * 🎨 PERSONNALISATION:
- * - Ligne 25-33: Liste des T-shirts Etsy
- * - Ligne 36-44: Liste des musiques (WAV)
- * - Ligne 47-59: Liste des vidéos (MP4)
- */
+import Link from 'next/link';
+import { ArrowRight, Headphones, Images, ShoppingBag, Sparkles, Video } from 'lucide-react';
 
-'use client';
+const portfolioSections = [
+  {
+    icon: Headphones,
+    eyebrow: 'Musique',
+    title: 'Chansons et créations audio',
+    description: 'Écoute des exemples publiés pour découvrir les ambiances, les émotions et la direction musicale des créations NOWIS.',
+    href: '/musique',
+    cta: 'Écouter les chansons',
+  },
+  {
+    icon: Video,
+    eyebrow: 'Vidéo',
+    title: 'Clips et contenus visuels',
+    description: 'Parcours les vidéos disponibles et vois comment musique, image et narration peuvent être assemblées dans une même expérience.',
+    href: '/videos',
+    cta: 'Voir les vidéos',
+  },
+  {
+    icon: ShoppingBag,
+    eyebrow: 'Produits',
+    title: 'Boutique Création NOWIS',
+    description: 'Découvre les créations imprimées et les produits disponibles à la commande par l’intermédiaire de la boutique Printify.',
+    href: '/shop',
+    cta: 'Ouvrir la boutique',
+  },
+  {
+    icon: Images,
+    eyebrow: 'Sur mesure',
+    title: 'Projets créatifs et collaborations',
+    description: 'Chanson personnalisée, vidéo IA, visuel ou concept : les projets spéciaux commencent par une discussion claire sur le besoin.',
+    href: '/services',
+    cta: 'Explorer les services',
+  },
+];
 
-import React, { useState } from 'react';
-import { SectionTitle } from '@/components/ui';
-import { ProjectCard } from '@/components/portfolio';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  imageSrc?: string;
-  imageAlt?: string;
-  fallbackEmoji?: string;
-  tags: string[];
-  href?: string;
-}
-
-// Produits disponibles sur Printify
-const projects: Project[] = [];
-
-// Musiques Suno (WAV) – placeholders pour éviter les 404 tant que les fichiers ne sont pas en ligne
-const musiques: Array<{ id: string; title: string; file?: string }> = [];
-
-// Vidéos (MP4) – placeholders pour éviter les 404 tant que les fichiers ne sont pas en ligne
-const videos: Array<{ id: string; title: string; file?: string }> = [];
-
-export const PortfolioScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'tshirts' | 'music' | 'videos'>('tshirts');
-
+export function PortfolioScreen() {
   return (
-    <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 md:py-24 space-y-12 bg-gradient-to-b from-camp-night to-camp-purple min-h-screen">
-      
-      {/* Header */}
-      <div className="text-center">
-        <SectionTitle title="Portfolio" subtitle="Nos créations IA – T-shirts, Musique, Vidéos" />
-      </div>
+    <main className="site-background text-[color:var(--site-text)]">
+      <section className="mx-auto max-w-7xl px-6 pb-10 pt-10 md:pb-14 md:pt-16">
+        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+          <div>
+            <span className="brand-chip">Portfolio NOWIS</span>
+            <h1 className="mt-5 max-w-4xl font-display text-5xl leading-[0.98] text-[color:var(--site-heading)] md:text-6xl">
+              Des créations à écouter, regarder et explorer.
+            </h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
+              Le portfolio réunit maintenant les pages actives de Création NOWIS au même endroit. Plus de galerie vide : chaque carte mène vers du contenu, une boutique ou un service réellement accessible.
+            </p>
+          </div>
 
-      {/* Onglets de navigation */}
-      <div className="relative z-20 flex flex-wrap justify-center gap-4 pointer-events-auto" role="tablist" aria-label="Navigation portfolio">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'tshirts'}
-          aria-controls="portfolio-panel-tshirts"
-          id="portfolio-tab-tshirts"
-          onClick={() => setActiveTab('tshirts')}
-          className={`px-6 py-3 rounded-camp font-semibold transition-all duration-300 ${
-            activeTab === 'tshirts'
-              ? 'bg-camp-fire text-white shadow-fire scale-105'
-              : 'bg-camp-purple text-camp-sand hover:bg-camp-violet'
-          }`}
-        >
-          👕 T-shirts Etsy
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'music'}
-          aria-controls="portfolio-panel-music"
-          id="portfolio-tab-music"
-          onClick={() => setActiveTab('music')}
-          className={`px-6 py-3 rounded-camp font-semibold transition-all duration-300 ${
-            activeTab === 'music'
-              ? 'bg-camp-fire text-white shadow-fire scale-105'
-              : 'bg-camp-purple text-camp-sand hover:bg-camp-violet'
-          }`}
-        >
-          🎵 Musiques Suno
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'videos'}
-          aria-controls="portfolio-panel-videos"
-          id="portfolio-tab-videos"
-          onClick={() => setActiveTab('videos')}
-          className={`px-6 py-3 rounded-camp font-semibold transition-all duration-300 ${
-            activeTab === 'videos'
-              ? 'bg-camp-fire text-white shadow-fire scale-105'
-              : 'bg-camp-purple text-camp-sand hover:bg-camp-violet'
-          }`}
-        >
-          🎬 Vidéos
-        </button>
-      </div>
+          <aside className="glass-panel-soft p-6 md:p-7">
+            <div className="flex items-start gap-4">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--site-border)] bg-white/80 text-secondary-400 shadow-sm">
+                <Sparkles size={22} aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-secondary-400">Même univers, plusieurs formats</p>
+                <p className="mt-2 leading-7 text-[color:var(--site-muted)]">
+                  Musique, vidéo, produits et projets personnalisés gardent une identité commune sans être forcés dans la même présentation.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
 
-      {/* Section Boutique Printify */}
-      {activeTab === 'tshirts' && (
-        <section id="portfolio-panel-tshirts" role="tabpanel" aria-labelledby="portfolio-tab-tshirts">
-          <p className="text-center text-camp-sand text-lg mb-8">
-            🛍️ Découvrez nos produits disponibles sur Printify
-          </p>
-          <div className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-8 border-2 border-camp-fire/40 shadow-camp">
-            <div className="text-center space-y-6">
-              <div className="text-6xl">🛍️</div>
-              <h3 className="text-2xl font-bold text-camp-cream">Boutique Création NOWIS</h3>
-              <p className="text-camp-sand max-w-2xl mx-auto">
-                Découvrez nos produits créés avec l'IA, disponibles sur Printify. T-shirts, accessoires et plus encore !
+      <section className="section-soft px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary-400">Explorer les créations</p>
+              <h2 className="mt-3 font-display text-4xl leading-tight text-[color:var(--site-heading)] md:text-5xl">
+                Choisis le format qui t’intéresse.
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-7 text-[color:var(--site-muted)] md:text-right">
+              Chaque destination conserve son propre contenu et son propre rythme, mais le parcours reste cohérent avec le reste du site NOWIS.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {portfolioSections.map(({ icon: Icon, eyebrow, title, description, href, cta }) => (
+              <article key={title} className="brand-card group flex h-full flex-col p-7 md:p-8">
+                <div className="flex items-start justify-between gap-4">
+                  <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--site-border)] bg-white/75 text-primary-400 shadow-sm">
+                    <Icon size={22} aria-hidden="true" />
+                  </span>
+                  <span className="brand-chip">{eyebrow}</span>
+                </div>
+                <h3 className="mt-6 font-display text-3xl leading-tight text-[color:var(--site-heading)]">{title}</h3>
+                <p className="mt-4 flex-1 leading-7 text-[color:var(--site-muted)]">{description}</p>
+                <div className="mt-7">
+                  <Link href={href} className="cta-secondary w-full justify-center px-5 py-3.5 text-sm sm:w-auto">
+                    {cta}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-14 md:py-20">
+        <div className="warm-spotlight-panel mx-auto max-w-5xl p-8 md:p-10">
+          <div className="grid gap-8 md:grid-cols-[0.85fr_1.15fr] md:items-center">
+            <div>
+              <span className="text-4xl" role="img" aria-hidden="true">✨</span>
+              <h2 className="mt-4 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
+                Tu as une idée qui n’entre dans aucune case?
+              </h2>
+            </div>
+            <div>
+              <p className="leading-8 text-[color:var(--site-muted)]">
+                Le portfolio montre ce qui existe déjà. Pour bâtir quelque chose de nouveau, le plus simple est de partir de ton objectif, de ton public et de l’émotion que tu veux créer.
               </p>
-              <div className="flex gap-4 justify-center">
-                <a
-                  href="/shop"
-                  className="inline-block px-8 py-3 bg-camp-fire hover:bg-camp-flame text-white rounded-lg font-semibold transition-all duration-300 shadow-fire"
-                >
-                  🛍️ Voir la boutique complète
-                </a>
-                <a
-                  href="https://nowis.printify.me/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-block px-8 py-3 border-2 border-camp-flame text-camp-cream hover:bg-camp-flame hover:text-camp-night rounded-lg font-semibold transition-all duration-300"
-                >
-                  🔗 Ouvrir dans un nouvel onglet
-                </a>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Link href="/contact" className="cta-primary w-full justify-center px-7 py-3.5 sm:w-auto">
+                  Parler de mon projet
+                </Link>
+                <Link href="/services" className="cta-secondary w-full justify-center px-7 py-3.5 sm:w-auto">
+                  Voir les services
+                </Link>
               </div>
             </div>
           </div>
-        </section>
-      )}
-
-      {/* Section Musique Suno */}
-      {activeTab === 'music' && (
-        <section id="portfolio-panel-music" role="tabpanel" aria-labelledby="portfolio-tab-music" className="space-y-6">
-          <p className="text-center text-camp-sand text-lg mb-8">
-            🎵 Écoute mes compositions créées avec Suno. Parfait pour jingles, publicités, événements.
-          </p>
-          {musiques.length === 0 ? (
-            <p className="text-center text-camp-sand">
-              Les extraits audio seront mis en ligne bientôt. Contacte-moi pour un aperçu personnalisé.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {musiques.map((song) => (
-                <div
-                  key={song.id}
-                  className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-6 border-2 border-camp-fire/40 shadow-camp hover:shadow-fire transition-all duration-300"
-                >
-                  <h3 className="text-xl font-bold text-camp-cream mb-4 flex items-center gap-2">
-                    🎵 {song.title}
-                  </h3>
-                  <audio controls className="w-full" preload="metadata">
-                    <source src={song.file} type="audio/wav" />
-                    Ton navigateur ne supporte pas l&apos;audio.
-                  </audio>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Section Vidéos */}
-      {activeTab === 'videos' && (
-        <section id="portfolio-panel-videos" role="tabpanel" aria-labelledby="portfolio-tab-videos" className="space-y-6">
-          <p className="text-center text-camp-sand text-lg mb-8">
-            🎬 Mes vidéos créées avec Revide.ai. Publicités, clips, contenu viral.
-          </p>
-          {videos.length === 0 ? (
-            <p className="text-center text-camp-sand">
-              Les vidéos seront mises en ligne bientôt. Écris-moi pour recevoir des exemples.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {videos.map((video) => (
-                <div
-                  key={video.id}
-                  className="bg-gradient-to-br from-camp-purple to-camp-violet rounded-camp p-6 border-2 border-camp-flame/40 shadow-camp hover:shadow-fire transition-all duration-300"
-                >
-                  <h3 className="text-xl font-bold text-camp-cream mb-4 flex items-center gap-2">
-                    🎬 {video.title}
-                  </h3>
-                  <video
-                    controls
-                    className="w-full rounded-lg"
-                    preload="metadata"
-                  >
-                    <source src={video.file} type="video/mp4" />
-                    Ton navigateur ne supporte pas la vidéo.
-                  </video>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Call to Action */}
-      <div className="text-center py-12">
-        <p className="text-lg text-camp-sand mb-6">
-          Tu veux une création sur-mesure pour ta marque ?
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/shop"
-            className="inline-block px-8 py-3 bg-camp-fire hover:bg-camp-flame text-white rounded-lg font-semibold transition-all duration-300 shadow-fire"
-          >
-            🛍️ Voir la boutique
-          </a>
-          <a
-            href="/contact?projectType=autre&message=Bonjour%2C%20je%20veux%20une%20creation%20custom."
-            className="inline-block px-8 py-3 border-2 border-camp-flame text-camp-flame hover:bg-camp-flame hover:text-camp-night rounded-lg font-semibold transition-all duration-300"
-          >
-            🔥 Commander une création custom
-          </a>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
-};
+}
