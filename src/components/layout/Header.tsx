@@ -18,7 +18,7 @@ const navLinks = [
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Chansons personnalisées', href: '/commander-une-chanson' },
   { label: 'À propos', href: '/a-propos' },
-  { label: 'Autres services', href: '/autres-services' },
+  { label: 'Services', href: '/services' },
   { label: 'Tarifs', href: '/tarifs' },
   { label: 'Contact', href: '/contact' },
 ];
