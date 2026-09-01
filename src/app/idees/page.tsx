@@ -44,69 +44,118 @@ const aiIdeas = [
   'Créer une identité visuelle cohérente plus vite pour une nouvelle offre.',
   'Préparer des contenus courts qui résument un projet sur plusieurs plateformes.',
   'Créer une maquette ou un prototype avant d’investir plus loin.',
-  'Donner une ambiance plus forte à une présentation, une vidéo ou une landing page.',
+  'Donner une ambiance plus forte à une présentation, une vidéo ou une page d’atterrissage.',
   'Trouver un ton plus humain pour parler d’une offre ou d’une mission.',
   'Utiliser l’IA comme atelier d’idées pour lancer plus vite un projet concret.',
 ];
 
-function IdeasSection({ title, intro, items }: { title: string; intro: string; items: string[] }) {
+interface IdeasSectionProps {
+  id: string;
+  eyebrow: string;
+  title: string;
+  intro: string;
+  items: string[];
+}
+
+function IdeasSection({ id, eyebrow, title, intro, items }: IdeasSectionProps) {
+  const headingId = `${id}-title`;
+
   return (
-    <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+    <section id={id} aria-labelledby={headingId} className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
       <div className="max-w-3xl">
-        <h2 className="text-3xl font-bold text-slate-950 md:text-4xl">{title}</h2>
-        <p className="mt-4 text-lg leading-relaxed text-slate-600">{intro}</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">
+          {eyebrow}
+        </p>
+        <h2 id={headingId} className="mt-3 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">
+          {title}
+        </h2>
+        <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">{intro}</p>
       </div>
-      <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+
+      <ol className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {items.map((item, index) => (
-          <article key={item} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-600">Idée {index + 1}</p>
-            <p className="mt-3 leading-7 text-slate-700">{item}</p>
-          </article>
+          <li
+            key={item}
+            className="brand-card rounded-[1.5rem] p-5 motion-safe:transition motion-safe:hover:-translate-y-1 sm:p-6"
+          >
+            <span
+              className="inline-flex min-h-8 items-center rounded-full bg-[color:var(--site-accent-soft)] px-3 text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]"
+              aria-hidden="true"
+            >
+              Idée {index + 1}
+            </span>
+            <p className="mt-4 text-base leading-7 text-[color:var(--site-text)]">{item}</p>
+          </li>
         ))}
-      </div>
+      </ol>
     </section>
   );
 }
 
+const contactMessage = encodeURIComponent(
+  'Je veux transformer une idée créative en projet concret. Voici ce que j’ai en tête.',
+);
+
 export default function IdeesPage() {
   return (
-    <div className="bg-slate-50 text-slate-900">
+    <div className="section-soft text-[color:var(--site-text)]">
       <PageHero
         eyebrow="Idées créatives"
-        title="Idées créatives signées Nowis Morin"
-        description="Des idées concrètes pour transformer une émotion, une promotion ou un projet en création mémorable."
+        title="30 pistes concrètes pour déclencher le bon projet"
+        description="Chanson, vidéo ou IA : parcourez des idées simples à comprendre, puis adaptez celle qui correspond le mieux à votre objectif."
       />
 
       <IdeasSection
+        id="chansons"
+        eyebrow="Émotion et souvenirs"
         title="10 idées de chansons à offrir"
-        intro="Des formats simples à comprendre et forts en émotion pour offrir autre chose qu’un cadeau oublié trop vite."
+        intro="Des formats faciles à personnaliser et forts en émotion pour offrir autre chose qu’un cadeau oublié trop vite."
         items={songIdeas}
       />
 
-      <IdeasSection
-        title="10 idées de vidéos pour entreprises ou réseaux sociaux"
-        intro="Des idées humaines, visibles et faciles à adapter pour mieux présenter une offre, une entreprise ou un message."
-        items={videoIdeas}
-      />
+      <div className="border-y border-[color:var(--site-border)]/70 bg-white/45">
+        <IdeasSection
+          id="videos"
+          eyebrow="Visibilité et narration"
+          title="10 idées de vidéos pour entreprises ou réseaux sociaux"
+          intro="Des concepts humains et adaptables pour présenter une offre, une entreprise ou un message sans surcharger l’audience."
+          items={videoIdeas}
+        />
+      </div>
 
       <IdeasSection
+        id="ia"
+        eyebrow="Clarté et prototypage"
         title="10 façons d’utiliser l’IA pour présenter un projet"
-        intro="L’IA peut servir de vrai levier de clarté, de vitesse et de créativité quand elle est utilisée avec une bonne direction."
+        intro="L’IA devient surtout utile lorsqu’elle aide à clarifier, tester et accélérer une idée avant d’investir plus loin."
         items={aiIdeas}
       />
 
-      <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <div className="rounded-3xl bg-[linear-gradient(135deg,#0f172a_0%,#111827_45%,#065f46_100%)] px-8 py-10 text-white shadow-sm md:px-12 md:py-14">
-          <h2 className="text-3xl font-bold md:text-4xl">Tu veux que je crée ça pour toi?</h2>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-200">
-            Si une de ces idées te parle, je peux t’aider à la transformer en projet concret, plus clair, plus fort et plus utile pour ton objectif.
+      <section className="mx-auto max-w-5xl px-4 pb-16 pt-4 sm:px-6 md:pb-20" aria-labelledby="ideas-cta-title">
+        <div className="warm-cta-panel px-6 py-9 sm:px-8 md:px-12 md:py-12">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">
+            Passer de l’idée au projet
           </p>
-          <Link
-            href="/contact?message=Je%20veux%20transformer%20une%20idee%20creative%20en%20projet%20concret.%20Voici%20ce%20que%20j%27ai%20en%20tete."
-            className="mt-8 inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200"
-          >
-            Tu veux que je crée ça pour toi?
-          </Link>
+          <h2 id="ideas-cta-title" className="mt-3 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">
+            Une piste vous parle? Donnons-lui une forme concrète.
+          </h2>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-[color:var(--site-muted)] sm:text-lg">
+            Décrivez le résultat souhaité, le public visé et ce que vous avez déjà. Je pourrai ensuite vous orienter vers le format le plus pertinent.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link
+              href={`/contact?message=${contactMessage}`}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[color:var(--site-accent-strong)] px-6 py-3 text-base font-semibold text-white shadow-sm motion-safe:transition motion-safe:hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/50 focus-visible:ring-offset-2 sm:w-auto"
+            >
+              Parler de mon idée
+            </Link>
+            <Link
+              href="/avant-de-mecrire"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-[color:var(--site-border)] bg-white/75 px-6 py-3 text-base font-semibold text-[color:var(--site-heading)] motion-safe:transition motion-safe:hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40 sm:w-auto"
+            >
+              Préparer ma demande
+            </Link>
+          </div>
         </div>
       </section>
     </div>
