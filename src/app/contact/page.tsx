@@ -1,11 +1,11 @@
+import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
 import { ClientPortalRequestGate } from '@/components/marketing/ClientPortalRequestGate';
 import { PageHero } from '@/components/marketing/PageHero';
-import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
-import { legalConfig, legalLinks } from '@/data/legal';
 import { socialLinks } from '@/config/socialLinks';
-import { buildMetadata } from '@/lib/seo';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { legalConfig, legalLinks } from '@/data/legal';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
+import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { buildMetadata } from '@/lib/seo';
 
 const DEFAULT_CONTACT_CONTENT = {
   hero: {
@@ -34,6 +34,8 @@ const DEFAULT_CONTACT_CONTENT = {
   },
 };
 
+const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2';
+
 function pickText(adminValue: string | null | undefined, fallback: string) {
   if (typeof adminValue !== 'string') return fallback;
   const value = adminValue.trim();
@@ -45,11 +47,13 @@ function pickEmail(adminValue: string | null | undefined, fallback: string) {
   return value.includes('@') ? value : fallback;
 }
 
-function pickInternalHref(adminValue: string | null | undefined, fallback: string) {
+function pickSafeHref(adminValue: string | null | undefined, fallback: string) {
   if (typeof adminValue !== 'string') return fallback;
   const value = adminValue.trim();
   if (!value) return fallback;
-  return value.startsWith('/') || value.startsWith('#') ? value : fallback;
+  return value.startsWith('/') || value.startsWith('#') || value.startsWith('https://') || value.startsWith('http://')
+    ? value
+    : fallback;
 }
 
 function pickExternalHref(adminValue: string | null | undefined, fallback: string) {
@@ -78,13 +82,13 @@ function widthClass(contentWidth: 'compact' | 'normal' | 'wide') {
 function spacingClass(verticalSpacing: 'tight' | 'normal' | 'airy') {
   if (verticalSpacing === 'tight') return 'py-10 md:py-12';
   if (verticalSpacing === 'airy') return 'py-20 md:py-24';
-  return 'py-16';
+  return 'py-14 md:py-16';
 }
 
 export const metadata = buildMetadata({
   title: 'Contact Création Nowis | Demander un atelier, une chanson ou un projet créatif',
   description:
-    'Contactez Création Nowis à Drummondville pour demander un atelier de création musicale avec l IA, une chanson personnalisée ou un projet créatif. Réponse directe de Nowis Morin.',
+    'Contactez Création Nowis à Drummondville pour demander un atelier de création musicale avec l’IA, une chanson personnalisée ou un projet créatif. Réponse directe de Nowis Morin.',
   path: '/contact',
   keywords: ['contact Création Nowis', 'demander un atelier IA', 'demander une chanson personnalisée', 'Drummondville Québec'],
 });
@@ -119,17 +123,17 @@ export default async function ContactPage() {
     : DEFAULT_CONTACT_CONTENT.direct.phone;
   const phoneHref = normalizePhoneHref(phone, DEFAULT_CONTACT_CONTENT.direct.phoneHref);
 
-  const songRequestLabel = directEnabled
+  const workshopRequestLabel = directEnabled
     ? pickText(getAdminBlockValue(directSection, 'button1.label'), DEFAULT_CONTACT_CONTENT.direct.button1.label)
     : DEFAULT_CONTACT_CONTENT.direct.button1.label;
-  const songRequestHref = directEnabled
-    ? pickInternalHref(getAdminBlockValue(directSection, 'button1.href'), DEFAULT_CONTACT_CONTENT.direct.button1.href)
+  const workshopRequestHref = directEnabled
+    ? pickSafeHref(getAdminBlockValue(directSection, 'button1.href'), DEFAULT_CONTACT_CONTENT.direct.button1.href)
     : DEFAULT_CONTACT_CONTENT.direct.button1.href;
-  const workshopRequestLabel = directEnabled
+  const songRequestLabel = directEnabled
     ? pickText(getAdminBlockValue(directSection, 'button2.label'), DEFAULT_CONTACT_CONTENT.direct.button2.label)
     : DEFAULT_CONTACT_CONTENT.direct.button2.label;
-  const workshopRequestHref = directEnabled
-    ? pickInternalHref(getAdminBlockValue(directSection, 'button2.href'), DEFAULT_CONTACT_CONTENT.direct.button2.href)
+  const songRequestHref = directEnabled
+    ? pickSafeHref(getAdminBlockValue(directSection, 'button2.href'), DEFAULT_CONTACT_CONTENT.direct.button2.href)
     : DEFAULT_CONTACT_CONTENT.direct.button2.href;
 
   const spotify = socialEnabled
@@ -146,84 +150,184 @@ export default async function ContactPage() {
     : DEFAULT_CONTACT_CONTENT.social.facebook;
 
   return (
-    <div className="site-background text-[color:var(--site-text)]">
-      <PageHero
-        eyebrow={heroEyebrow}
-        title={heroTitle}
-        description={heroDescription}
-      />
+    <main className="text-[color:var(--site-text)]">
+      <PageHero eyebrow={heroEyebrow} title={heroTitle} description={heroDescription} />
 
-      <section className={`mx-auto grid ${widthClass(directStyle.contentWidth)} gap-10 px-6 ${spacingClass(directStyle.verticalSpacing)} lg:grid-cols-[1.05fr_0.95fr]`}>
+      <section
+        className={`mx-auto grid ${widthClass(directStyle.contentWidth)} gap-6 px-6 ${spacingClass(directStyle.verticalSpacing)} lg:grid-cols-[1.05fr_0.95fr] lg:gap-8`}
+      >
         <ClientPortalRequestGate nextPath="/client/dashboard" />
 
-        <div className="space-y-6">
-          <div className="glass-panel-strong rounded-3xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Contact direct</h2>
-            <p className="mt-4 text-[color:var(--site-muted)]">Pour une demande rapide, une collaboration ou une idée à clarifier :</p>
-            <p className="mt-3 text-sm leading-6 text-[color:var(--site-soft)]">Réponse humaine, soumission sur demande et orientation vers la bonne formule selon votre projet.</p>
-            <ul className="mt-6 space-y-3 text-[color:var(--site-text)]">
-              <li>Email: <a href={`mailto:${email}`} className="hover:underline">{email}</a></li>
-              <li>Telephone: <TrackedPhoneLink href={phoneHref} className="hover:underline">{phone}</TrackedPhoneLink></li>
-            </ul>
-            <div className="mt-6 flex flex-col gap-3">
-              <a href={songRequestHref} className="cta-primary rounded-2xl px-5 py-3">
-                {songRequestLabel}
-              </a>
-              <a href={workshopRequestHref} className="cta-secondary rounded-2xl px-5 py-3">
-                {workshopRequestLabel}
-              </a>
-            </div>
+        <article className="brand-card p-7 sm:p-8 md:p-10">
+          <span className="brand-chip inline-flex">Échange direct</span>
+          <h2 className="mt-5 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
+            Une façon simple de démarrer
+          </h2>
+          <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
+            Pour une demande rapide, une collaboration ou une idée à clarifier, choisissez le canal qui vous convient. Je pourrai ensuite vous orienter vers la bonne formule.
+          </p>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            <a
+              href={`mailto:${email}`}
+              className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+              aria-label={`Envoyer un courriel à ${email}`}
+            >
+              <span>
+                <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--site-soft)]">Courriel</span>
+                <span className="mt-1 block break-all">{email}</span>
+              </span>
+            </a>
+            <TrackedPhoneLink
+              href={phoneHref}
+              className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+              aria-label={`Appeler au ${phone}`}
+            >
+              <span>
+                <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--site-soft)]">Téléphone</span>
+                <span className="mt-1 block">{phone}</span>
+              </span>
+            </TrackedPhoneLink>
           </div>
 
-          <div className="glass-panel-soft rounded-3xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Protection des renseignements personnels</h2>
-            <p className="mt-4 leading-relaxed text-[color:var(--site-muted)]">
-              Responsable : {legalConfig.responsiblePrivacyName}. Pour toute demande liée à l’accès, à la correction ou au retrait de renseignements personnels, tu peux écrire directement à cette personne.
+          <div className="mt-6 grid gap-3">
+            <a
+              href={workshopRequestHref}
+              className={`cta-primary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+            >
+              {workshopRequestLabel}
+            </a>
+            <a
+              href={songRequestHref}
+              className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+            >
+              {songRequestLabel}
+            </a>
+          </div>
+        </article>
+
+        <div className="grid gap-6 lg:col-span-2 lg:grid-cols-2 lg:gap-8">
+          <article className="warm-spotlight-panel p-7 sm:p-8 md:p-10">
+            <span className="brand-chip inline-flex">Vie privée</span>
+            <h2 className="mt-5 font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">
+              Protection des renseignements personnels
+            </h2>
+            <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
+              Responsable : {legalConfig.responsiblePrivacyName}. Pour toute demande liée à l’accès, à la correction ou au retrait de renseignements personnels, communiquez directement avec cette personne.
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a href={`mailto:${legalConfig.privacyEmail}`} className="cta-secondary rounded-2xl px-5 py-4">
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <a
+                href={`mailto:${legalConfig.privacyEmail}`}
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-3 text-center text-sm font-semibold ${focusRing}`}
+              >
                 {legalConfig.privacyEmail}
               </a>
-              <TrackedPhoneLink href={legalConfig.privacyPhoneHref} className="cta-secondary rounded-2xl px-5 py-4">
+              <TrackedPhoneLink
+                href={legalConfig.privacyPhoneHref}
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-3 text-center text-sm font-semibold ${focusRing}`}
+              >
                 {legalConfig.privacyPhone}
               </TrackedPhoneLink>
             </div>
-            <div className="mt-6 flex flex-col gap-3">
-              <a href={legalLinks.legal} className="text-sm font-semibold text-[color:var(--site-accent-strong)] hover:underline">
-                Voir les mentions légales
-              </a>
-              <a href={legalLinks.privacy} className="text-sm font-semibold text-[color:var(--site-accent-strong)] hover:underline">
-                Voir la politique de confidentialité
-              </a>
-              <a href={legalLinks.terms} className="text-sm font-semibold text-[color:var(--site-accent-strong)] hover:underline">
-                Voir les conditions de vente
-              </a>
-            </div>
-          </div>
 
-          <div className="glass-panel-soft rounded-3xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Où suivre Nowis Morin</h2>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <a href={spotify} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Écouter sur Spotify</a>
-              <a href={youtube} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Voir sur YouTube</a>
-              <a href={instagram} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Instagram</a>
-              <a href={facebook} target="_blank" rel="noreferrer" className="cta-secondary rounded-2xl px-5 py-4">Facebook</a>
-            </div>
-          </div>
+            <nav className="mt-6 grid gap-3" aria-label="Informations légales">
+              <a
+                href={legalLinks.legal}
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-3 text-center text-sm font-semibold ${focusRing}`}
+              >
+                Mentions légales
+              </a>
+              <a
+                href={legalLinks.privacy}
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-3 text-center text-sm font-semibold ${focusRing}`}
+              >
+                Politique de confidentialité
+              </a>
+              <a
+                href={legalLinks.terms}
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-4 py-3 text-center text-sm font-semibold ${focusRing}`}
+              >
+                Conditions de vente
+              </a>
+            </nav>
+          </article>
 
-          <div className="warm-cta-panel rounded-3xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold text-[color:var(--site-heading)]">Vous ne savez pas encore quelle page choisir ?</h2>
-            <p className="mt-4 text-sm leading-7 text-[color:var(--site-muted)]">
-              Commencez par la bonne entrée : ateliers pour un groupe, chanson personnalisée pour un moment important, ou créations pour un besoin plus large.
+          <article className="brand-card p-7 sm:p-8 md:p-10">
+            <span className="brand-chip inline-flex">Réseaux et contenus</span>
+            <h2 className="mt-5 font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">
+              Suivre Nowis Morin
+            </h2>
+            <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
+              Retrouvez les chansons, vidéos et nouvelles créations sur les plateformes principales.
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <a href="/ateliers" className="cta-secondary rounded-2xl px-5 py-3">Demander un atelier</a>
-              <a href={SONG_REQUEST_GOOGLE_AUTH_URL} className="cta-secondary rounded-2xl px-5 py-3">Demander une chanson</a>
-              <a href="/creations" className="cta-secondary rounded-2xl px-5 py-3">Voir mes créations</a>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <a
+                href={spotify}
+                target="_blank"
+                rel="noreferrer"
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+              >
+                Spotify<span className="sr-only"> — ouvre dans un nouvel onglet</span>
+              </a>
+              <a
+                href={youtube}
+                target="_blank"
+                rel="noreferrer"
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+              >
+                YouTube<span className="sr-only"> — ouvre dans un nouvel onglet</span>
+              </a>
+              <a
+                href={instagram}
+                target="_blank"
+                rel="noreferrer"
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+              >
+                Instagram<span className="sr-only"> — ouvre dans un nouvel onglet</span>
+              </a>
+              <a
+                href={facebook}
+                target="_blank"
+                rel="noreferrer"
+                className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+              >
+                Facebook<span className="sr-only"> — ouvre dans un nouvel onglet</span>
+              </a>
             </div>
-          </div>
+          </article>
         </div>
+
+        <article className="warm-cta-panel p-7 sm:p-8 md:p-10 lg:col-span-2">
+          <span className="brand-chip inline-flex">Choisir la bonne entrée</span>
+          <h2 className="mt-5 font-display text-2xl leading-tight text-[color:var(--site-heading)] md:text-3xl">
+            Votre projet n’entre pas encore dans une case précise ?
+          </h2>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-[color:var(--site-muted)]">
+            Commencez par la section qui ressemble le plus à votre besoin : ateliers pour un groupe, chanson personnalisée pour un moment important, ou créations pour un projet plus large.
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <a
+              href="/ateliers"
+              className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+            >
+              Voir les ateliers
+            </a>
+            <a
+              href={SONG_REQUEST_GOOGLE_AUTH_URL}
+              className={`cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+            >
+              Demander une chanson
+            </a>
+            <a
+              href="/creations"
+              className={`cta-primary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center font-semibold ${focusRing}`}
+            >
+              Explorer les créations
+            </a>
+          </div>
+        </article>
       </section>
-    </div>
+    </main>
   );
 }
