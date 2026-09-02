@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, House } from 'lucide-react';
 import type { GameEntry } from './gameCatalog';
 import { upgradeEmbeddedGame } from './gameUpgrades';
 
@@ -11,6 +11,7 @@ type GameDetailScreenProps = {
 };
 
 const SOURCE_GAME_SHELL = '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"></head><body></body></html>';
+const VILLAGE_URL = process.env.NEXT_PUBLIC_VILLAGE_URL || 'https://village-ia.vercel.app';
 
 export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -93,6 +94,15 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
         <ArrowLeft size={22} strokeWidth={2.5} />
         <span className="sr-only">Retour aux jeux</span>
       </Link>
+
+      <a
+        href={VILLAGE_URL}
+        aria-label="Retour au Village IA"
+        className="absolute right-[max(0.6rem,env(safe-area-inset-right))] top-[max(0.6rem,env(safe-area-inset-top))] z-20 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-emerald-200/30 bg-emerald-950/80 px-3.5 text-sm font-black text-emerald-50 shadow-[0_8px_28px_rgba(0,0,0,0.45)] backdrop-blur-md transition active:scale-95 sm:min-h-12 sm:px-4"
+      >
+        <House size={19} strokeWidth={2.5} aria-hidden="true" />
+        <span>Village</span>
+      </a>
     </main>
   );
 }
