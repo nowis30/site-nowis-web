@@ -34,7 +34,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <Header />
       </div>
 
-      <main className="relative z-0 flex-grow pt-24 md:pt-28">
+      <main className="relative z-0 flex-grow pt-24 md:pt-[7.5rem] min-[1200px]:pt-28">
         {children}
       </main>
 
