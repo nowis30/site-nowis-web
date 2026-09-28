@@ -8,7 +8,7 @@ function formatPublishedAt(value?: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
-  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long' }).format(date);
+  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long', timeZone: 'UTC' }).format(date);
 }
 
 export type LibrarySong = Pick<Song, 'slug' | 'title' | 'publishedAt' | 'image' | 'shortDescription' | 'youtubeUrl' | 'spotifyUrl'>;
