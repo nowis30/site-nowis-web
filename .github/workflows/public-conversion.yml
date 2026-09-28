@@ -20,7 +20,7 @@ jobs:
           POSTGRES_DB: nowis_public_qa
         ports: ["5432:5432"]
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U nowis_test -d nowis_public_qa"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -42,11 +42,14 @@ jobs:
       - name: Generate client and prepare disposable test database
         run: npx prisma generate && npx prisma db push
       - name: Type check and focused security tests
-        run: npm run type-check && npx tsx scripts/public-conversion.test.ts
+        run: npm run type-check && npm run lint && npx tsx scripts/public-conversion.test.ts
       - name: Install isolated browser runner
-        run: npm install --no-save --package-lock=false @playwright/test@1.55.1 && npx playwright install --with-deps chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/nowis-browser" --no-save --package-lock=false @playwright/test@1.55.1
+          echo "NODE_PATH=$RUNNER_TEMP/nowis-browser/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" install --with-deps chromium
       - name: Browser and anonymous-inquiry integration tests
-        run: npx playwright test --config tests/public-conversion/playwright.config.cjs
+        run: '"$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" test --config tests/public-conversion/playwright.config.cjs'
       - uses: actions/upload-artifact@v4
         if: always()
         with:

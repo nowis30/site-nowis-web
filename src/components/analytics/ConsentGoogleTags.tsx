@@ -17,6 +17,8 @@ export function ConsentGoogleTags({ measurementId, adsId }: { measurementId: str
     if (!analytics && !advertising) return;
     if (!window.gtag) {
       window.dataLayer = window.dataLayer || [];
+      // Preserve the documented gtag IArguments command queue (Google tag platform).
+      // eslint-disable-next-line prefer-rest-params
       window.gtag = function () { window.dataLayer.push(arguments); };
       window.gtag('consent', 'default', {
         analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',

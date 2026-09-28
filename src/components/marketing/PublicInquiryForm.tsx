@@ -62,12 +62,11 @@ export function PublicInquiryForm({ serviceType = 'autre', groupType, initialMes
           <input className={fieldClass} id={`${id}-email`} name="email" type="email" autoComplete="email" required maxLength={254} disabled={state === 'sending'} />
         </label>
       </div>
-      <label className="mt-4 block text-sm font-semibold" htmlFor={`${id}-service`}>Type de projet
-        <select className={fieldClass} id={`${id}-service`} name="serviceType" defaultValue={serviceType} required disabled={state === 'sending'}>
-          <option value="chanson">Chanson personnalisée</option><option value="atelier">Atelier de groupe</option>
-          <option value="video">Vidéo ou création visuelle</option><option value="autre">Autre projet / question</option>
-        </select>
-      </label>
+      <label className="mt-4 block text-sm font-semibold" htmlFor={`${id}-service`}>Type de projet</label>
+      <select className={fieldClass} id={`${id}-service`} name="serviceType" defaultValue={serviceType} required disabled={state === 'sending'}>
+        <option value="chanson">Chanson personnalisée</option><option value="atelier">Atelier de groupe</option>
+        <option value="video">Vidéo ou création visuelle</option><option value="autre">Autre projet / question</option>
+      </select>
       <label className="mt-4 block text-sm font-semibold" htmlFor={`${id}-message`}>Votre message
         <textarea className={fieldClass} id={`${id}-message`} name="message" rows={5} required minLength={10} maxLength={3000} defaultValue={initialMessage.slice(0, 3000)} aria-describedby={`${id}-hint`} disabled={state === 'sending'} />
       </label>
