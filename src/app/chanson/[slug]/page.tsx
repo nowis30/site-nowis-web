@@ -16,7 +16,7 @@ function formatPublishedAt(value?: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
-  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long' }).format(date);
+  return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long', timeZone: 'UTC' }).format(date);
 }
 
 function toAbsoluteImageUrl(image: string) {
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps) {
     });
   }
 
-  const description = song.description?.trim() || `Découvre ${song.title}, une chanson de Nowis Morin disponible sur YouTube${song.spotifyUrl ? ' et Spotify' : ''}.`;
+  const description = song.description?.trim() || `Découvrez ${song.title}, une chanson de Nowis Morin disponible sur YouTube${song.spotifyUrl ? ' et Spotify' : ''}.`;
 
   return buildMetadata({
     title: `${song.title} – chanson de Nowis Morin`,
@@ -81,7 +81,7 @@ export default async function ChansonPage({ params }: PageProps) {
             <h1 className="mt-5 font-display text-4xl leading-tight text-[color:var(--site-heading)] md:text-6xl">{song.title}</h1>
             {publishedAt ? <p className="mt-4 text-base font-medium text-[color:var(--site-muted)]">Sortie : {publishedAt}</p> : null}
             <p className="mt-6 max-w-3xl text-base leading-8 text-[color:var(--site-text)] sm:text-lg">
-              {song.description || 'Découvre cette chanson de Nowis Morin et accède directement aux plateformes officielles lorsqu’elles sont disponibles.'}
+              {song.description || 'Découvrez cette chanson de Nowis Morin et ses plateformes d’écoute officielles.'}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {song.youtubeUrl ? (
@@ -145,7 +145,7 @@ export default async function ChansonPage({ params }: PageProps) {
             <h2 id="song-about-title" className="font-display text-2xl text-[color:var(--site-heading)]">À propos de cette chanson</h2>
             <div className="mt-6 space-y-5 text-[color:var(--site-muted)]">
               <p className="leading-7">
-                Cette page présente la chanson avec ses liens d’écoute et une version plus claire de sa description, afin d’offrir une lecture simple et agréable aux visiteurs.
+                Retrouvez la date de publication et les plateformes disponibles pour écouter cette chanson.
               </p>
               {publishedAt ? (
                 <div>
@@ -169,7 +169,7 @@ export default async function ChansonPage({ params }: PageProps) {
           <article aria-labelledby="song-next-title" className="warm-spotlight-panel rounded-[1.75rem] p-6 sm:p-8">
             <h2 id="song-next-title" className="font-display text-2xl text-[color:var(--site-heading)]">Continuer l’exploration</h2>
             <p className="mt-4 leading-7 text-[color:var(--site-text)]">
-              Continue l’exploration du catalogue musical, découvre d’autres chansons et contacte Création Nowis si tu veux transformer une idée ou une histoire en projet sur mesure.
+              Explorez le catalogue musical ou contactez Création Nowis pour transformer votre histoire en chanson.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
