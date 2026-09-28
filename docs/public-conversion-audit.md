@@ -20,7 +20,7 @@ La compilation Vercel et les résultats du workflow doivent être lus séparéme
 - Chanson souvenir 30 $ : durée, formats, révisions, délai; distinguer précisément les niveaux sur mesure.
 - Garantie/remboursement : conditions à faire valider par l’entreprise; texte contractuel non réécrit.
 - Vrais sous-titres de la vidéo : transcription à obtenir, pas de piste fictive ajoutée.
-- Témoignages clients : textes et autorisations à fournir. Trois exemples du catalogue public sont présentés sans les qualifier d’avis clients.
+- Témoignages clients : textes et autorisations à fournir. Les sélections de chansons ne sont pas présentées comme des avis clients.
 - Vérification de toutes les intégrations tierces, audit de sécurité global, paiement, accès privés et conformité juridique non couverts.
 
 ## Avant fusion
@@ -32,8 +32,15 @@ Vérifier le rendu réel et la réception dans Soumissions et Tâches du CRM en 
 - Appels commerciaux Google remplacés par les demandes publiques, y compris les anciennes valeurs CMS de PageHero et du CTA final chanson. Connexion du portail conservée.
 - Jeu : initialisation depuis l’effet même si le document de l’iframe est déjà chargé avant l’hydratation; initialisation unique par document; délai maximal et bouton de nouvelle tentative.
 - Bibliothèque : recherche insensible aux accents/casse, filtre de plateforme, pagination par 12 et état vide explicite. Seuls les champs utilisés par les cartes sont transmis au composant client.
-- Accueil : trois exemples sourcés dans `data/songs.json` (Papa, mon ami; 47 ans plus tard; La prochaine chanson pour toi).
+- Accueil : accès directs aux dix dernières chansons et aux dix plus populaires sur YouTube.
 - Tarifs : contrastes des montants corrigés, conditions à confirmer placées près des offres, distinction entre forfait atelier et formule par personne. Montants inchangés.
 - Suppression des textes de maintenance visibles et de plusieurs main imbriqués; lien d’évitement du menu ajouté.
 - Tests ajoutés : téléchargement vidéo au clic, recherche/filtre/pagination, canonical, parcours commerciaux, jeu avec hydratation retardée et retour de navigation.
 - Le navigateur de QA utilise Chrome pour les codecs H.264/AAC (voir https://playwright.dev/docs/browsers). La lecture réelle et une nouvelle tentative après erreur réseau sont contrôlées.
+
+## Sélections musicales demandées
+- Deux sélections de dix chansons sur `/musique`, avec rangs et nombres de vues dans la sélection populaire. Le catalogue complet reste accessible via une recherche dépliable.
+- Source : onglet Vidéos de https://www.youtube.com/@nowis30/videos, tris « Les plus récentes » et « Populaires », vérifiés le 28 septembre 2026. La publicité `pub atelier` est exclue du classement musical. Les Shorts ne font pas partie de ces listes.
+- Les dates exactes des dix dernières viennent du flux public https://www.youtube.com/feeds/videos.xml?channel_id=UCFx4xRldiLu_PIbMoKFuWNw. Aucune date approximative n’est inventée pour les anciens titres absents du catalogue.
+- Quatorze fiches ajoutées au catalogue existant; les anciens liens restent disponibles. Les sélections et les compteurs sont un instantané daté dans `data/youtube-selections.json`, sans promesse d’actualisation automatique. À actualiser ensemble après vérification YouTube.
+- La validation interdit les sélections incomplètes ou les liens perdus lors de la déduplication du catalogue.

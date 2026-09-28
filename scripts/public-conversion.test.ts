@@ -2,9 +2,20 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseCookieConsent } from '../src/lib/cookie-consent';
 import { publicInquiryHref, SONG_REQUEST_GOOGLE_AUTH_URL } from '../src/lib/client-portal-routes';
+import { getAllSongs } from '../src/data/songs';
+import { getYouTubeSelections, youtubeSelectionSnapshot } from '../src/data/youtubeSelections';
 import { PUBLIC_INQUIRY_MAX_BYTES, publicInquiryOriginAllowed, readPublicInquiryBody } from '../src/lib/public-inquiry-security';
 
 async function main() {
+  const selections = getYouTubeSelections(await getAllSongs());
+  for (const kind of ['latest', 'popular'] as const) {
+    assert.equal(selections[kind].length, 10, `All ten ${kind} songs must resolve after catalogue deduplication`);
+    assert.equal(new Set(selections[kind].map(({ song }) => song.youtubeVideoId)).size, 10);
+    assert.deepEqual(selections[kind].map(({ song }) => song.youtubeVideoId), youtubeSelectionSnapshot[kind].map(({ videoId }) => videoId));
+  }
+  assert.ok(selections.popular.every((entry, index, entries) => index === 0 || entry.viewCount <= entries[index - 1].viewCount));
+  assert.ok(selections.latest.every(({ song }, index, entries) => Boolean(song.publishedAt) && (index === 0 || Date.parse(song.publishedAt!) <= Date.parse(entries[index - 1].song.publishedAt!))));
+  console.log('PASS: ten recent songs, ten popular songs, complete detail links and verified ordering');
   assert.equal(publicInquiryHref(SONG_REQUEST_GOOGLE_AUTH_URL), '/commander-une-chanson#demande');
   assert.equal(publicInquiryHref('/api/client-auth/google/start?next=%2Fclient%2Fworkshops%2Fnouveau%3FgroupType%3DECOLE'), '/ateliers/demande?groupType=ECOLE');
   assert.equal(publicInquiryHref('/api/client-auth/google/start?next=/client'), '/api/client-auth/google/start?next=/client');

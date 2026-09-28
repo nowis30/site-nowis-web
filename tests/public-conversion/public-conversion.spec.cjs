@@ -36,7 +36,8 @@ test('video failure offers a working retry', async ({page}) => {
 test('music search, accents, empty state, filter and pagination', async ({page}) => {
   await refuseOnLoad(page);
   await page.goto('/musique');
-  const cards = page.locator('main article');
+  await page.locator('summary').filter({hasText: 'Rechercher dans tout le catalogue'}).click();
+  const cards = page.locator('details[aria-labelledby="music-library-title"] article');
   await expect(cards).toHaveCount(12);
   await page.getByRole('button', {name: 'Afficher 12 chansons supplémentaires'}).click();
   await expect(cards).toHaveCount(24);
@@ -50,6 +51,26 @@ test('music search, accents, empty state, filter and pagination', async ({page})
   await page.getByLabel('Plateforme d’écoute', {exact: true}).selectOption('spotify');
   await expect(cards).toHaveCount(12);
   await expect(cards.locator('a[href*="open.spotify.com"]')).toHaveCount(12);
+});
+
+test('two selections of ten songs and a working latest-song detail page', async ({page}, testInfo) => {
+  await page.setViewportSize({width: 1440, height: 1000});
+  await refuseOnLoad(page);
+  await page.goto('/musique');
+  const latest = page.getByRole('region', {name: 'Mes 10 dernières chansons', exact: true});
+  const popular = page.getByRole('region', {name: 'Mes 10 chansons les plus populaires sur YouTube', exact: true});
+  await expect(latest.locator('article')).toHaveCount(10);
+  await expect(popular.locator('article')).toHaveCount(10);
+  await expect(latest.locator('article').first()).toContainText('Un plaster sur l’âme');
+  await expect(popular.locator('article').first()).toContainText('ÇA VA BIEN ALLER');
+  await expect(popular).not.toContainText('pub atelier');
+  await page.getByRole('link', {name: 'Les 10 dernières', exact: true}).click();
+  await page.screenshot({path: testInfo.outputPath('music-latest.png'), fullPage: false});
+  await page.getByRole('link', {name: 'Les 10 plus populaires', exact: true}).click();
+  await page.screenshot({path: testInfo.outputPath('music-popular.png'), fullPage: false});
+  await latest.getByRole('link', {name: 'Voir la chanson Un plaster sur l’âme', exact: true}).click();
+  await expect(page.locator('h1')).toHaveText('Un plaster sur l’âme');
+  await expect(page.getByRole('link', {name: 'Voir Un plaster sur l’âme sur YouTube (nouvel onglet)', exact: true})).toHaveAttribute('href', 'https://www.youtube.com/watch?v=n8LPysVfMog');
 });
 
 for (const path of ['/portfolio', '/shop']) {

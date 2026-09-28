@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { ArrowRight, FolderOpen, Gamepad2, House, Music2, UsersRound } from 'lucide-react';
 import { HeroVideoPlaceholder } from '@/components/marketing/HeroVideoPlaceholder';
-import { PublishedExamples } from '@/components/marketing/PublishedExamples';
+import { HomeMusicSelections } from '@/components/marketing/HomeMusicSelections';
 import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 import { rentalsPublicUrl } from '@/lib/rentals-url';
 import { trackRentalSiteClick } from '@/lib/tracking/google';
@@ -68,7 +68,7 @@ export function HomeScreen() {
         </ol>
       </section>
 
-      <PublishedExamples />
+      <HomeMusicSelections />
 
       <section className="mt-10" aria-labelledby="home-explore-title">
         <h2 id="home-explore-title" className="text-2xl font-bold">Explorez aussi l’univers de Nowis</h2>

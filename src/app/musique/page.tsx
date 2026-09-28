@@ -1,4 +1,5 @@
 import { MusicLibrary } from '@/components/music/MusicLibrary';
+import { YouTubeSelections } from '@/components/music/YouTubeSelections';
 import { PageHero } from '@/components/marketing/PageHero';
 import { getAllSongs } from '@/data/songs';
 import { buildMetadata } from '@/lib/seo';
@@ -8,16 +9,16 @@ import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSecti
 const DEFAULT_MUSIQUE_CONTENT = {
   hero: {
     eyebrow: 'Musique',
-    title: 'Des exemples pour entendre le style des chansons Création Nowis',
+    title: 'Mes nouveautés et vos chansons préférées',
     description:
-      'Cette page rassemble les chansons publiées pour vous permettre d’écouter des exemples concrets avant de commander une création sur mesure.',
+      'Retrouvez mes 10 dernières chansons et mes 10 chansons les plus populaires sur YouTube. Choisissez un titre pour l’écouter et découvrir son histoire.',
     primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_PUBLIC_PATH },
     secondaryCta: { label: 'Voir les vidéos', href: '/videos' },
   },
   grid: {
-    title: 'Les créations musicales de Nowis Morin',
+    title: 'Rechercher dans tout le catalogue',
     description:
-      'Ces chansons servent d’exemples d’écoute. Elles montrent la direction émotionnelle, la couleur musicale et l’approche générale avant de passer à une demande personnalisée.',
+      'Retrouvez aussi les autres chansons publiées sur YouTube et Spotify.',
   },
 };
 
@@ -72,7 +73,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = buildMetadata({
   title: 'Musique | Création Nowis',
   description:
-    'Écoutez des exemples de chansons de Création Nowis pour découvrir le ton, l’émotion et la qualité des créations musicales personnalisées.',
+    'Écoutez les 10 dernières chansons de Nowis Morin et ses 10 chansons les plus populaires sur YouTube, puis recherchez dans son catalogue musical.',
   path: '/musique',
   keywords: ['musique Création Nowis', 'exemples chansons personnalisées', 'Nowis Morin musique', 'chansons Québec'],
 });
@@ -131,10 +132,13 @@ export default async function MusiquePage() {
         }}
       />
 
-      <section
+      <YouTubeSelections songs={songs} />
+
+      <details
         aria-labelledby="music-library-title"
         className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-4 sm:px-6 ${spacingClass(gridStyle.verticalSpacing)} ${gridMobileSpacing}`}
       >
+        <summary className="cursor-pointer py-4 text-xl font-semibold text-[color:var(--site-heading)]">Rechercher dans tout le catalogue</summary>
         <div className={`${gridStyle.contentAlign === 'center' ? 'mx-auto max-w-4xl' : 'max-w-3xl'} ${gridAlign}`}>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">
             Bibliothèque musicale
@@ -157,7 +161,7 @@ export default async function MusiquePage() {
             </p>
           </div>
         )}
-      </section>
+      </details>
     </div>
   );
 }

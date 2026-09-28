@@ -13,7 +13,7 @@ function formatPublishedAt(value?: string | null) {
 
 export type LibrarySong = Pick<Song, 'slug' | 'title' | 'publishedAt' | 'image' | 'shortDescription' | 'youtubeUrl' | 'spotifyUrl'>;
 
-export function SongCard({ song }: { song: LibrarySong }) {
+export function SongCard({ song, compact = false }: { song: LibrarySong; compact?: boolean }) {
   const publishedAt = formatPublishedAt(song.publishedAt);
 
   return (
@@ -32,7 +32,7 @@ export function SongCard({ song }: { song: LibrarySong }) {
         <div>
           <h3 className="font-display text-3xl leading-[1.08] text-[color:var(--site-heading)] md:text-[2rem]">{song.title}</h3>
           {publishedAt ? <p className="mt-2 text-sm font-medium text-[color:var(--site-muted)]">{publishedAt}</p> : null}
-          {song.shortDescription ? <p className="mt-3 text-base leading-7 text-[color:var(--site-text)]">{song.shortDescription}</p> : null}
+          {!compact && song.shortDescription ? <p className="mt-3 text-base leading-7 text-[color:var(--site-text)]">{song.shortDescription}</p> : null}
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Link

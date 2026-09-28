@@ -1,0 +1,30 @@
+{
+  "verifiedAt": "2026-09-28",
+  "channelUrl": "https://www.youtube.com/@nowis30/videos",
+  "channelId": "UCFx4xRldiLu_PIbMoKFuWNw",
+  "method": "Public Videos tab, newest and popular ordering; songs only, excluding advertisements and Shorts. Counts are a dated snapshot.",
+  "latest": [
+    { "videoId": "n8LPysVfMog", "title": "Un plaster sur l’âme", "viewCount": 0 },
+    { "videoId": "XSieRmVdeIw", "title": "J'ai cru à nous", "viewCount": 36 },
+    { "videoId": "NajqUgYXvBc", "title": "L'amour de ma vie", "viewCount": 27 },
+    { "videoId": "5WDqnPwu68U", "title": "Huit ans à deux", "viewCount": 73 },
+    { "videoId": "-5LHJDVl1fo", "title": "Soirée au Mel et Julie", "viewCount": 2 },
+    { "videoId": "3pvOhZDHAj4", "title": "Quand tu es là", "viewCount": 63 },
+    { "videoId": "-g9oc0-yx80", "title": "Moi, j’aime tout le monde", "viewCount": 20 },
+    { "videoId": "yBkWgcKqL-c", "title": "Veillée au Soleil Levant", "viewCount": 52 },
+    { "videoId": "vnJhMcT73Cg", "title": "Sébas et Julie", "viewCount": 11 },
+    { "videoId": "Iw38iBtFONk", "title": "J'ai l'goût d'jouer avec vous", "viewCount": 21 }
+  ],
+  "popular": [
+    { "videoId": "aDAXQ3p4ezU", "title": "Chanson ÇA VA BIEN ALLER / NOWIS", "viewCount": 914 },
+    { "videoId": "8U0b7QTEU6E", "title": "Une chanson pour rassembler", "viewCount": 378 },
+    { "videoId": "YM-4eFn2ShE", "title": "Mon père, le plus fort", "viewCount": 257 },
+    { "videoId": "XiknDQqRs3Q", "title": "Ta beauté", "viewCount": 241 },
+    { "videoId": "3tKzmtSy9pA", "title": "Dis oui à la vie", "viewCount": 192 },
+    { "videoId": "nlk6Zf40Dpg", "title": "Je vais t’aimer pour toujours (Marie-Lisa)", "viewCount": 179 },
+    { "videoId": "FmlynifgOz0", "title": "Pardon, m'man", "viewCount": 150 },
+    { "videoId": "PiqrbsG9oQY", "title": "Poussière de route", "viewCount": 129 },
+    { "videoId": "cMF60u9A6IA", "title": "Seul", "viewCount": 118 },
+    { "videoId": "RySpZIjdf5k", "title": "La plage en chaleur", "viewCount": 118 }
+  ]
+}
