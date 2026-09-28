@@ -4,7 +4,7 @@ import { useId, useMemo, useState } from 'react';
 import { SongCard, type LibrarySong } from './SongCard';
 
 const PAGE_SIZE = 12;
-const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr-CA');
+const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[’‘ʼ]/g, "'").toLocaleLowerCase('fr-CA');
 
 export function MusicLibrary({ songs }: { songs: LibrarySong[] }) {
   const id = useId();

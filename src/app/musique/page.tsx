@@ -138,7 +138,7 @@ export default async function MusiquePage() {
         aria-labelledby="music-library-title"
         className={`mx-auto ${widthClass(gridStyle.contentWidth)} px-4 sm:px-6 ${spacingClass(gridStyle.verticalSpacing)} ${gridMobileSpacing}`}
       >
-        <summary className="cursor-pointer py-4 text-xl font-semibold text-[color:var(--site-heading)]">Rechercher dans tout le catalogue</summary>
+        <summary id="recherche-catalogue" className="scroll-mt-32 cursor-pointer py-4 text-xl font-semibold text-[color:var(--site-heading)]">Rechercher dans tout le catalogue</summary>
         <div className={`${gridStyle.contentAlign === 'center' ? 'mx-auto max-w-4xl' : 'max-w-3xl'} ${gridAlign}`}>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[color:var(--site-accent-strong)]">
             Bibliothèque musicale

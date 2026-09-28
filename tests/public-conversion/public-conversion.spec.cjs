@@ -36,6 +36,8 @@ test('video failure offers a working retry', async ({page}) => {
 test('music search, accents, empty state, filter and pagination', async ({page}) => {
   await refuseOnLoad(page);
   await page.goto('/musique');
+  await page.getByRole('link', {name: 'Rechercher une chanson', exact: true}).click();
+  await expect(page).toHaveURL(/#recherche-catalogue$/);
   await page.locator('summary').filter({hasText: 'Rechercher dans tout le catalogue'}).click();
   const cards = page.locator('details[aria-labelledby="music-library-title"] article');
   await expect(cards).toHaveCount(12);
@@ -44,6 +46,9 @@ test('music search, accents, empty state, filter and pagination', async ({page})
   await page.getByLabel('Rechercher une chanson', {exact: true}).fill('LUMIERE TEMPETE');
   await expect(cards).toHaveCount(1);
   await expect(cards).toContainText('La lumière après la tempête');
+  await page.getByLabel('Rechercher une chanson', {exact: true}).fill("plaster sur l'ame");
+  await expect(cards).toHaveCount(1);
+  await expect(cards).toContainText('Un plaster sur l’âme');
   await page.getByLabel('Rechercher une chanson', {exact: true}).fill('zzzz-unmatched');
   await expect(cards).toHaveCount(0);
   await expect(page.getByText('Aucune chanson ne correspond', {exact: false})).toBeVisible();
@@ -54,9 +59,11 @@ test('music search, accents, empty state, filter and pagination', async ({page})
 });
 
 test('two selections of ten songs and a working latest-song detail page', async ({page}, testInfo) => {
+  await page.emulateMedia({reducedMotion: 'reduce'});
   await page.setViewportSize({width: 1440, height: 1000});
   await refuseOnLoad(page);
   await page.goto('/musique');
+  expect(await page.locator('html').evaluate(element => getComputedStyle(element).scrollBehavior)).toBe('auto');
   const latest = page.getByRole('region', {name: 'Mes 10 dernières chansons', exact: true});
   const popular = page.getByRole('region', {name: 'Mes 10 chansons les plus populaires sur YouTube', exact: true});
   await expect(latest.locator('article')).toHaveCount(10);
@@ -65,8 +72,10 @@ test('two selections of ten songs and a working latest-song detail page', async 
   await expect(popular.locator('article').first()).toContainText('ÇA VA BIEN ALLER');
   await expect(popular).not.toContainText('pub atelier');
   await page.getByRole('link', {name: 'Les 10 dernières', exact: true}).click();
+  await expect(latest.getByRole('heading')).toBeInViewport();
   await page.screenshot({path: testInfo.outputPath('music-latest.png'), fullPage: false});
   await page.getByRole('link', {name: 'Les 10 plus populaires', exact: true}).click();
+  await expect(popular.getByRole('heading')).toBeInViewport();
   await page.screenshot({path: testInfo.outputPath('music-popular.png'), fullPage: false});
   await latest.getByRole('link', {name: 'Voir la chanson Un plaster sur l’âme', exact: true}).click();
   await expect(page.locator('h1')).toHaveText('Un plaster sur l’âme');

@@ -15,6 +15,7 @@ export function YouTubeSelections({ songs }: { songs: Song[] }) {
       <nav aria-label="Sélections musicales" className="flex flex-wrap gap-3">
         <a href="#dernieres-chansons" className="cta-primary min-h-12 px-5 py-3">Les 10 dernières</a>
         <a href="#chansons-populaires" className="cta-secondary min-h-12 px-5 py-3">Les 10 plus populaires</a>
+        <a href="#recherche-catalogue" className="cta-secondary min-h-12 px-5 py-3">Rechercher une chanson</a>
       </nav>
       {sections.map((section) => (
         <section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} className="scroll-mt-32">
