@@ -38,7 +38,7 @@ export function SongCard({ song, compact = false }: { song: LibrarySong; compact
           <Link
             href={`/chanson/${song.slug}`}
             aria-label={`Voir la chanson ${song.title}`}
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-5 py-3 text-base font-semibold text-white shadow-fire motion-safe:transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/50 focus-visible:ring-offset-2 sm:w-auto"
+            className="cta-primary inline-flex min-h-12 w-full items-center justify-center px-5 py-3 text-base font-semibold sm:w-auto"
           >
             Voir la chanson
           </Link>
