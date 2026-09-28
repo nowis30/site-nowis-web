@@ -72,10 +72,10 @@ test('two selections of ten songs and a working latest-song detail page', async 
   await expect(popular.locator('article').first()).toContainText('ÇA VA BIEN ALLER');
   await expect(popular).not.toContainText('pub atelier');
   await page.getByRole('link', {name: 'Les 10 dernières', exact: true}).click();
-  await expect(latest.getByRole('heading')).toBeInViewport();
+  await expect(latest.getByRole('heading', {level: 2})).toBeInViewport();
   await page.screenshot({path: testInfo.outputPath('music-latest.png'), fullPage: false});
   await page.getByRole('link', {name: 'Les 10 plus populaires', exact: true}).click();
-  await expect(popular.getByRole('heading')).toBeInViewport();
+  await expect(popular.getByRole('heading', {level: 2})).toBeInViewport();
   await page.screenshot({path: testInfo.outputPath('music-popular.png'), fullPage: false});
   await latest.getByRole('link', {name: 'Voir la chanson Un plaster sur l’âme', exact: true}).click();
   await expect(page.locator('h1')).toHaveText('Un plaster sur l’âme');
