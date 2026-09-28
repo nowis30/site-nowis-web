@@ -8,6 +8,6 @@ module.exports = defineConfig({
   workers: 1,
   retries: 0,
   reporter: [['list'], ['html', {outputFolder: 'public-conversion-report', open: 'never'}]],
-  use: { baseURL: 'http://127.0.0.1:3000', browserName: 'chromium', timezoneId: 'America/Toronto', trace: 'retain-on-failure', screenshot: 'only-on-failure', navigationTimeout: 90_000 },
+  use: { baseURL: 'http://127.0.0.1:3000', browserName: 'chromium', channel: 'chrome', timezoneId: 'America/Toronto', trace: 'retain-on-failure', screenshot: 'only-on-failure', navigationTimeout: 90_000 },
   webServer: { command: 'npm run dev -- --hostname 127.0.0.1', url: 'http://127.0.0.1:3000', reuseExistingServer: false, timeout: 180_000 },
 });

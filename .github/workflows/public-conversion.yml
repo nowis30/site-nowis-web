@@ -47,7 +47,8 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/nowis-browser" --no-save --package-lock=false @playwright/test@1.55.1
           echo "NODE_PATH=$RUNNER_TEMP/nowis-browser/node_modules" >> "$GITHUB_ENV"
-          "$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" install --with-deps chromium
+          # Chrome includes the H.264/AAC codecs used by the actual presentation.
+          "$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" install --with-deps chrome
       - name: Browser and anonymous-inquiry integration tests
         run: '"$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" test --config tests/public-conversion/playwright.config.cjs'
       - uses: actions/upload-artifact@v4

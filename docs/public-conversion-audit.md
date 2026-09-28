@@ -36,3 +36,4 @@ Vérifier le rendu réel et la réception dans Soumissions et Tâches du CRM en 
 - Tarifs : contrastes des montants corrigés, conditions à confirmer placées près des offres, distinction entre forfait atelier et formule par personne. Montants inchangés.
 - Suppression des textes de maintenance visibles et de plusieurs main imbriqués; lien d’évitement du menu ajouté.
 - Tests ajoutés : téléchargement vidéo au clic, recherche/filtre/pagination, canonical, parcours commerciaux, jeu avec hydratation retardée et retour de navigation.
+- Le navigateur de QA utilise Chrome pour les codecs H.264/AAC (voir https://playwright.dev/docs/browsers). La lecture réelle et une nouvelle tentative après erreur réseau sont contrôlées.

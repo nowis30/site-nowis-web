@@ -18,6 +18,19 @@ test('presentation downloads only after a click', async ({page}) => {
   await page.getByRole('button', {name: 'Lire la présentation de Nowis avec le son'}).click();
   await expect(page.locator('video')).toHaveAttribute('src', '/videos/nowis-presentation-web.mp4');
   await expect.poll(() => videos.length).toBeGreaterThan(0);
+  await expect.poll(() => page.locator('video').evaluate(video => video.currentTime)).toBeGreaterThan(0);
+});
+
+test('video failure offers a working retry', async ({page}) => {
+  await refuseOnLoad(page);
+  await page.route('**/videos/nowis-presentation-web.mp4', route => route.fulfill({status: 503, body: 'Temporary QA failure'}));
+  await page.goto('/');
+  await page.getByRole('button', {name: 'Lire la présentation de Nowis avec le son'}).click();
+  await expect(page.getByText('La vidéo est indisponible pour le moment.', {exact: true})).toBeVisible();
+  await page.unroute('**/videos/nowis-presentation-web.mp4');
+  await page.getByRole('button', {name: 'Réessayer', exact: true}).click();
+  await page.getByRole('button', {name: 'Lire la présentation de Nowis avec le son'}).click();
+  await expect.poll(() => page.locator('video').evaluate(video => video.currentTime)).toBeGreaterThan(0);
 });
 
 test('music search, accents, empty state, filter and pagination', async ({page}) => {
