@@ -20,10 +20,19 @@ La compilation Vercel et les résultats du workflow doivent être lus séparéme
 - Chanson souvenir 30 $ : durée, formats, révisions, délai; distinguer précisément les niveaux sur mesure.
 - Garantie/remboursement : conditions à faire valider par l’entreprise; texte contractuel non réécrit.
 - Vrais sous-titres de la vidéo : transcription à obtenir, pas de piste fictive ajoutée.
-- Témoignages et exemples contextualisés : uniquement avec sources et autorisations.
-- Les anciens appels Google présents dans d’autres composants publics non modifiés et les textes secondaires restent à harmoniser.
-- La page Tarifs et les autres pages peuvent encore contenir des main imbriqués et des contenus à réviser.
+- Témoignages clients : textes et autorisations à fournir. Trois exemples du catalogue public sont présentés sans les qualifier d’avis clients.
 - Vérification de toutes les intégrations tierces, audit de sécurité global, paiement, accès privés et conformité juridique non couverts.
 
 ## Avant fusion
 Vérifier le rendu réel et la réception dans Soumissions et Tâches du CRM en environnement de test. Confirmer les termes commerciaux. La branche ne remplace ni les comptes clients ni les systèmes de paiement.
+
+## Deuxième lot : catalogue, médias et corrections techniques
+- Vidéo : affiche WebP de 23 236 octets; chargement au clic; version H.264/AAC 540 × 960 de 7 770 337 octets contre 29 931 084 octets (74 % de réduction). Original conservé. Commande : `ffmpeg -i ORIGINAL -vf scale=540:-2 -c:v libx264 -preset fast -crf 28 -c:a aac -b:a 96k -movflags +faststart SORTIE`.
+- Canonical propres à `/portfolio` et `/shop` avec Open Graph cohérent.
+- Appels commerciaux Google remplacés par les demandes publiques, y compris les anciennes valeurs CMS de PageHero et du CTA final chanson. Connexion du portail conservée.
+- Jeu : initialisation depuis l’effet même si le document de l’iframe est déjà chargé avant l’hydratation; initialisation unique par document; délai maximal et bouton de nouvelle tentative.
+- Bibliothèque : recherche insensible aux accents/casse, filtre de plateforme, pagination par 12 et état vide explicite. Seuls les champs utilisés par les cartes sont transmis au composant client.
+- Accueil : trois exemples sourcés dans `data/songs.json` (Papa, mon ami; 47 ans plus tard; La prochaine chanson pour toi).
+- Tarifs : contrastes des montants corrigés, conditions à confirmer placées près des offres, distinction entre forfait atelier et formule par personne. Montants inchangés.
+- Suppression des textes de maintenance visibles et de plusieurs main imbriqués; lien d’évitement du menu ajouté.
+- Tests ajoutés : téléchargement vidéo au clic, recherche/filtre/pagination, canonical, parcours commerciaux, jeu avec hydratation retardée et retour de navigation.

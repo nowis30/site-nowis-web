@@ -1,8 +1,8 @@
-import { SongCard } from '@/components/music/SongCard';
+import { MusicLibrary } from '@/components/music/MusicLibrary';
 import { PageHero } from '@/components/marketing/PageHero';
 import { getAllSongs } from '@/data/songs';
 import { buildMetadata } from '@/lib/seo';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
 
 const DEFAULT_MUSIQUE_CONTENT = {
@@ -10,8 +10,8 @@ const DEFAULT_MUSIQUE_CONTENT = {
     eyebrow: 'Musique',
     title: 'Des exemples pour entendre le style des chansons Création Nowis',
     description:
-      'Cette page rassemble les chansons publiées pour te permettre d’écouter des exemples concrets avant de commander une création sur mesure.',
-    primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL },
+      'Cette page rassemble les chansons publiées pour vous permettre d’écouter des exemples concrets avant de commander une création sur mesure.',
+    primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_PUBLIC_PATH },
     secondaryCta: { label: 'Voir les vidéos', href: '/videos' },
   },
   grid: {
@@ -72,7 +72,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = buildMetadata({
   title: 'Musique | Création Nowis',
   description:
-    'Écoute des exemples de chansons de Création Nowis pour découvrir le ton, l’émotion et la qualité des créations musicales personnalisées.',
+    'Écoutez des exemples de chansons de Création Nowis pour découvrir le ton, l’émotion et la qualité des créations musicales personnalisées.',
   path: '/musique',
   keywords: ['musique Création Nowis', 'exemples chansons personnalisées', 'Nowis Morin musique', 'chansons Québec'],
 });
@@ -148,11 +148,7 @@ export default async function MusiquePage() {
         </div>
 
         {songs.length > 0 ? (
-          <div className="mt-10 grid gap-6 md:mt-12 md:grid-cols-2 md:gap-8 xl:grid-cols-3">
-            {songs.map((song) => (
-              <SongCard key={song.slug} song={song} />
-            ))}
-          </div>
+          <MusicLibrary songs={songs.map(({ slug, title, publishedAt, image, shortDescription, youtubeUrl, spotifyUrl }) => ({ slug, title, publishedAt, image, shortDescription, youtubeUrl, spotifyUrl }))} />
         ) : (
           <div className="brand-card mx-auto mt-10 max-w-3xl rounded-[1.75rem] px-6 py-9 text-center sm:px-8 md:mt-12">
             <h3 className="font-display text-2xl text-[color:var(--site-heading)]">De nouvelles chansons arrivent bientôt.</h3>

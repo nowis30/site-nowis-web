@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseCookieConsent } from '../src/lib/cookie-consent';
+import { publicInquiryHref, SONG_REQUEST_GOOGLE_AUTH_URL } from '../src/lib/client-portal-routes';
 import { PUBLIC_INQUIRY_MAX_BYTES, publicInquiryOriginAllowed, readPublicInquiryBody } from '../src/lib/public-inquiry-security';
 
 async function main() {
+  assert.equal(publicInquiryHref(SONG_REQUEST_GOOGLE_AUTH_URL), '/commander-une-chanson#demande');
+  assert.equal(publicInquiryHref('/api/client-auth/google/start?next=%2Fclient%2Fworkshops%2Fnouveau%3FgroupType%3DECOLE'), '/ateliers/demande?groupType=ECOLE');
+  assert.equal(publicInquiryHref('/api/client-auth/google/start?next=/client'), '/api/client-auth/google/start?next=/client');
+  assert.equal(publicInquiryHref('https://example.com/api/client-auth/google/start?next=/client/song-requests/nouveau'), 'https://example.com/api/client-auth/google/start?next=/client/song-requests/nouveau');
+  console.log('PASS: legacy commercial links and private login boundaries');
   const production = { NODE_ENV: 'production', NEXT_PUBLIC_SITE_URL: 'https://nowis.store' } as NodeJS.ProcessEnv;
   for (const origin of [null, 'null', 'https://attacker.example', 'https://nowis.store.attacker.example', 'http://nowis.store', 'https://nowis.store/path']) {
     assert.equal(publicInquiryOriginAllowed(origin, production), false, `Reject ${origin}`);

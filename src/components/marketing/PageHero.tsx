@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
+import { publicInquiryHref } from '@/lib/client-portal-routes';
 
 type PageHeroProps = {
   eyebrow?: string;
@@ -51,6 +52,8 @@ function alignClass(contentAlign: 'left' | 'center', mobileAlign: 'inherit' | 'l
 }
 
 export function PageHero({ eyebrow, title, description, primaryCta, secondaryCta, style }: PageHeroProps) {
+  if (primaryCta) primaryCta = { ...primaryCta, href: publicInquiryHref(primaryCta.href) };
+  if (secondaryCta) secondaryCta = { ...secondaryCta, href: publicInquiryHref(secondaryCta.href) };
   const contentWidth = contentWidthClass(style?.contentWidth || 'normal');
   const spacing = spacingClass(style?.verticalSpacing || 'normal');
   const mobileSpacing = mobileSpacingClass(style?.mobileSpacing || 'inherit');

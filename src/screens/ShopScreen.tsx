@@ -21,7 +21,7 @@ const benefits = [
 
 export function ShopScreen() {
   return (
-    <main className="site-background text-[color:var(--site-text)]">
+    <div className="site-background text-[color:var(--site-text)]">
       <section className="mx-auto max-w-7xl px-6 pb-10 pt-10 md:pb-14 md:pt-16">
         <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
           <div>
@@ -60,7 +60,7 @@ export function ShopScreen() {
             </div>
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.22em] text-primary-400">Création + impression</p>
             <h2 className="mt-2 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
-              Une vitrine plus propre, sans faux inventaire.
+              Découvrez les collections Création NOWIS.
             </h2>
             <p className="mt-4 leading-7 text-[color:var(--site-muted)]">
               Les disponibilités, formats et délais affichés sur Printify sont la référence au moment de la commande. La page NOWIS sert de porte d’entrée claire vers cette boutique externe.
@@ -111,6 +111,6 @@ export function ShopScreen() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

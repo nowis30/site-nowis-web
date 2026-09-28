@@ -96,7 +96,7 @@ const resumeTarifs = [
 
 function PriceBadge({ amount, suffix = '' }: { amount: number; suffix?: string }) {
   return (
-    <span className="inline-flex min-h-11 items-center rounded-xl border border-emerald-700/20 bg-emerald-700/5 px-4 py-2 text-sm font-semibold text-emerald-300">
+    <span className="inline-flex min-h-11 items-center rounded-xl border border-emerald-700/20 bg-emerald-700/5 px-4 py-2 text-sm font-semibold text-[color:var(--site-accent-strong)]">
       {formatPrice(amount, suffix)}
     </span>
   );
@@ -104,7 +104,7 @@ function PriceBadge({ amount, suffix = '' }: { amount: number; suffix?: string }
 
 export default function TarifsPage() {
   return (
-    <main className="text-[color:var(--site-text)]">
+    <div className="text-[color:var(--site-text)]">
       <section className="relative overflow-hidden px-5 py-16 sm:px-6 md:py-24">
         <div
           aria-hidden="true"
@@ -139,7 +139,7 @@ export default function TarifsPage() {
               Demander une soumission
             </Link>
           </div>
-          <p className="mt-5 max-w-2xl text-sm leading-6 text-[color:var(--site-soft)]">
+          <p className="mt-5 max-w-2xl text-sm leading-6 text-[color:var(--site-muted)]">
             Taxes en sus si applicables. Une soumission personnalisée confirme toujours le prix final avant le début d’un mandat.
           </p>
         </div>
@@ -147,12 +147,12 @@ export default function TarifsPage() {
 
       <section className="section-soft px-5 py-16 sm:px-6 md:py-20" aria-labelledby="tarifs-ateliers">
         <div className="mx-auto max-w-6xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Ateliers de groupe</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Ateliers de groupe</p>
           <h2 id="tarifs-ateliers" className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Deux formats simples à comparer
           </h2>
           <p className="mt-4 max-w-4xl text-base leading-8 text-[color:var(--site-muted)]">
-            La durée habituelle des ateliers est de 1 h 30 à 2 heures, avec un léger dépassement possible selon la dynamique du groupe. Le déplacement est inclus jusqu’à 100 km aller-retour depuis Drummondville.
+            Les forfaits de 1 h 30 et de 2 heures affichent le même prix. Le nombre de participants inclus et les éventuels suppléments sont précisés dans la soumission. Le déplacement est inclus jusqu’à 100 km aller-retour depuis Drummondville.
           </p>
 
           <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -164,14 +164,14 @@ export default function TarifsPage() {
                 }`}
               >
                 {atelier.accent && (
-                  <span className="mb-3 inline-flex self-start rounded-full border border-primary-500/20 bg-primary-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-400">
+                  <span className="mb-3 inline-flex self-start rounded-full border border-primary-500/20 bg-primary-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">
                     Plus de temps pour créer
                   </span>
                 )}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{atelier.name}</h3>
-                    <p className="mt-1 text-sm font-medium text-[color:var(--site-soft)]">Durée : {atelier.duree}</p>
+                    <p className="mt-1 text-sm font-medium text-[color:var(--site-muted)]">Durée : {atelier.duree}</p>
                   </div>
                   <PriceBadge amount={atelier.regularPrice} />
                 </div>
@@ -183,14 +183,14 @@ export default function TarifsPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-16 sm:px-6 md:py-20" aria-labelledby="tarifs-inclus">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-400">Inclus dans chaque atelier</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Inclus dans chaque atelier</p>
         <h2 id="tarifs-inclus" className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
-          Une formule complète, sans petites surprises
+          L’accompagnement compris dans l’atelier
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {inclus.map((item) => (
             <article key={item.label} className="brand-card flex gap-4 p-5">
-              <span aria-hidden="true" className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-700/10 text-sm font-bold text-emerald-300">✓</span>
+              <span aria-hidden="true" className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-700/10 text-sm font-bold text-[color:var(--site-accent-strong)]">✓</span>
               <div>
                 <h3 className="font-semibold text-[color:var(--site-heading)]">{item.label}</h3>
                 <p className="mt-1 text-sm leading-6 text-[color:var(--site-muted)]">{item.desc}</p>
@@ -202,7 +202,7 @@ export default function TarifsPage() {
 
       <section className="section-warm px-5 py-16 sm:px-6 md:py-20" aria-labelledby="tarifs-personnalises">
         <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Services personnalisés</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Services personnalisés</p>
           <h2 id="tarifs-personnalises" className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
             Accompagnement à la carte
           </h2>
@@ -212,12 +212,12 @@ export default function TarifsPage() {
                 <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
                   <div>
                     <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{service.name}</h3>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--site-soft)]">{service.conditions}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--site-muted)]">{service.conditions}</p>
                   </div>
                   {service.regularPrice !== undefined ? (
                     <PriceBadge amount={service.regularPrice} suffix={service.suffix} />
                   ) : (
-                    <span className="inline-flex min-h-11 items-center rounded-xl border border-primary-500/20 bg-primary-500/10 px-4 py-2 text-sm font-bold text-primary-300">
+                    <span className="inline-flex min-h-11 items-center rounded-xl border border-primary-500/20 bg-primary-500/10 px-4 py-2 text-sm font-bold text-[color:var(--site-accent-strong)]">
                       {service.tarif}
                     </span>
                   )}
@@ -230,23 +230,24 @@ export default function TarifsPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-16 sm:px-6 md:py-20" aria-labelledby="tarifs-produits">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Produits à la carte</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Produits à la carte</p>
         <h2 id="tarifs-produits" className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
           Chansons et vidéos
         </h2>
+        <p className="mt-4 max-w-3xl leading-7 text-[color:var(--site-muted)]">Avant toute commande, nous confirmons avec vous la durée, le format du fichier, les révisions incluses et le délai de livraison.</p>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {produits.map((produit) => (
             <article key={produit.name} className="warm-spotlight-panel flex flex-col p-6">
               <h3 className="font-display text-2xl text-[color:var(--site-heading)]">{produit.name}</h3>
-              <span className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--site-soft)]">{produit.format}</span>
+              <span className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--site-muted)]">{produit.format}</span>
               <p className="mt-4 flex-1 text-sm leading-7 text-[color:var(--site-muted)]">{produit.desc}</p>
               <div className="mt-5 border-t border-[rgba(131,97,67,0.12)] pt-4">
-                <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Tarif</span>
+                <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--site-accent-strong)]">Tarif</span>
                 <div className="mt-2">
                   {produit.regularPrice !== undefined ? (
                     <PriceBadge amount={produit.regularPrice} />
                   ) : (
-                    <span className="inline-flex min-h-11 items-center text-lg font-bold text-amber-300">{produit.tarif}</span>
+                    <span className="inline-flex min-h-11 items-center text-lg font-bold text-[color:var(--site-accent-strong)]">{produit.tarif}</span>
                   )}
                 </div>
               </div>
@@ -258,14 +259,14 @@ export default function TarifsPage() {
       <section className="section-soft px-5 py-16 sm:px-6 md:py-20" aria-labelledby="tarifs-groupes">
         <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-2 lg:items-start">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Formules de groupe</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Formules de groupe</p>
             <h2 id="tarifs-groupes" className="mt-4 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:text-4xl">
-              Certaines activités sont offertes à partir de {formatPrice(groupRegularPrice, ' / personne')}
+              Une formule distincte, selon l’activité, à partir de {formatPrice(groupRegularPrice, ' / personne')}
             </h2>
             <div className="mt-6 space-y-3">
               {preferentiels.map((pref) => (
                 <article key={pref.clientele} className="brand-card flex gap-3 p-4">
-                  <span aria-hidden="true" className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-500/10 text-sm font-bold text-primary-300">✓</span>
+                  <span aria-hidden="true" className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-500/10 text-sm font-bold text-[color:var(--site-accent-strong)]">✓</span>
                   <div>
                     <h3 className="font-semibold text-[color:var(--site-heading)]">{pref.clientele}</h3>
                     <p className="mt-1 text-sm leading-6 text-[color:var(--site-muted)]">{pref.note}</p>
@@ -277,17 +278,17 @@ export default function TarifsPage() {
 
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-400">Déplacement</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Déplacement</p>
               <h2 className="mt-4 font-display text-3xl text-[color:var(--site-heading)] md:text-4xl">Un rayon simple à comprendre</h2>
             </div>
             <article className="brand-card p-5">
-              <h3 className="font-semibold text-emerald-300">Jusqu’à 100 km aller-retour</h3>
+              <h3 className="font-semibold text-[color:var(--site-accent-strong)]">Jusqu’à 100 km aller-retour</h3>
               <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">
                 À partir de Drummondville : <strong className="text-[color:var(--site-heading)]">inclus dans le tarif.</strong>
               </p>
             </article>
             <article className="warm-spotlight-panel p-5">
-              <h3 className="font-semibold text-amber-300">Au-delà de 100 km aller-retour</h3>
+              <h3 className="font-semibold text-[color:var(--site-accent-strong)]">Au-delà de 100 km aller-retour</h3>
               <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">Des frais supplémentaires peuvent s’appliquer selon la distance et sont confirmés avant le mandat.</p>
             </article>
           </div>
@@ -295,7 +296,7 @@ export default function TarifsPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-16 sm:px-6 md:py-20" aria-labelledby="resume-tarifs">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-400">Résumé rapide</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Résumé rapide</p>
         <h2 id="resume-tarifs" className="mt-4 font-display text-4xl leading-[1.05] text-[color:var(--site-heading)] md:text-5xl">
           Tous les tarifs en un coup d’œil
         </h2>
@@ -303,7 +304,7 @@ export default function TarifsPage() {
           {resumeTarifs.map((row) => (
             <div key={row.service} className="brand-card flex min-w-0 items-center justify-between gap-4 p-5">
               <dt className="min-w-0 text-sm font-semibold text-[color:var(--site-heading)]">{row.service}</dt>
-              <dd className="shrink-0 text-right text-sm font-bold text-amber-300">{row.tarif}</dd>
+              <dd className="min-w-0 text-right text-sm font-bold text-[color:var(--site-accent-strong)]">{row.tarif}</dd>
             </div>
           ))}
         </dl>
@@ -314,7 +315,7 @@ export default function TarifsPage() {
 
       <section className="px-5 py-16 sm:px-6 md:py-24" aria-labelledby="tarifs-cta">
         <div className="warm-cta-panel mx-auto max-w-4xl overflow-hidden p-7 text-center sm:p-10 md:p-16">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary-300">Passez à l’action</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[color:var(--site-accent-strong)]">Passez à l’action</p>
           <h2 id="tarifs-cta" className="mt-5 font-display text-4xl leading-[1.03] text-[color:var(--site-heading)] md:text-5xl">
             Choisissez votre prochaine étape
           </h2>
@@ -334,6 +335,6 @@ export default function TarifsPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

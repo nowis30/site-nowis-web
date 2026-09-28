@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'À propos de Nowis Morin | Création Nowis à Drummondville',
@@ -14,7 +14,7 @@ export const metadata = buildMetadata({
 
 export default function AProposPage() {
   return (
-    <main className="text-[color:var(--site-text)]">
+    <div className="text-[color:var(--site-text)]">
       {/* ── HÉROS ── */}
       <section className="relative overflow-hidden px-6 py-16 md:py-24">
         <div
@@ -155,7 +155,7 @@ export default function AProposPage() {
                 icon: '🎼',
                 title: 'Chansons personnalisées',
                 desc: 'Je crée des chansons sur mesure pour des occasions importantes : anniversaires, mariages, hommages, projets artistiques et plus encore.',
-                href: SONG_REQUEST_GOOGLE_AUTH_URL,
+                href: SONG_REQUEST_PUBLIC_PATH,
                 cta: 'Commander une chanson',
                 featured: false,
               },
@@ -234,6 +234,6 @@ export default function AProposPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

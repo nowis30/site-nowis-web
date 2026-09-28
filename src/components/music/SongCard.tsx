@@ -11,7 +11,9 @@ function formatPublishedAt(value?: string | null) {
   return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long' }).format(date);
 }
 
-export function SongCard({ song }: { song: Song }) {
+export type LibrarySong = Pick<Song, 'slug' | 'title' | 'publishedAt' | 'image' | 'shortDescription' | 'youtubeUrl' | 'spotifyUrl'>;
+
+export function SongCard({ song }: { song: LibrarySong }) {
   const publishedAt = formatPublishedAt(song.publishedAt);
 
   return (
@@ -27,16 +29,6 @@ export function SongCard({ song }: { song: Song }) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(53,35,23,0.55)] via-[rgba(53,35,23,0.08)] to-transparent" />
       </div>
       <div className="space-y-5 p-5 sm:p-7">
-        <div className="flex flex-wrap gap-2">
-          {song.seoTags.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex min-h-8 items-center rounded-full border border-[color:var(--site-accent)]/20 bg-[color:var(--site-accent-soft)] px-3 text-xs font-medium text-[color:var(--site-accent-strong)]"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
         <div>
           <h3 className="font-display text-3xl leading-[1.08] text-[color:var(--site-heading)] md:text-[2rem]">{song.title}</h3>
           {publishedAt ? <p className="mt-2 text-sm font-medium text-[color:var(--site-muted)]">{publishedAt}</p> : null}
@@ -45,6 +37,7 @@ export function SongCard({ song }: { song: Song }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Link
             href={`/chanson/${song.slug}`}
+            aria-label={`Voir la chanson ${song.title}`}
             className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-5 py-3 text-base font-semibold text-white shadow-fire motion-safe:transition motion-safe:hover:-translate-y-0.5 motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/50 focus-visible:ring-offset-2 sm:w-auto"
           >
             Voir la chanson

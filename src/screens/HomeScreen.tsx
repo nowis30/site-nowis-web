@@ -2,11 +2,12 @@
 import Link from 'next/link';
 import { ArrowRight, FolderOpen, Gamepad2, House, Music2, UsersRound } from 'lucide-react';
 import { HeroVideoPlaceholder } from '@/components/marketing/HeroVideoPlaceholder';
+import { PublishedExamples } from '@/components/marketing/PublishedExamples';
 import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 import { rentalsPublicUrl } from '@/lib/rentals-url';
 import { trackRentalSiteClick } from '@/lib/tracking/google';
 
-const HOME_INTRO_VIDEO_URL = '/videos/publicite-video-creation-nowis-avec-simon-morin.mp4';
+const HOME_INTRO_VIDEO_URL = '/videos/nowis-presentation-web.mp4';
 const secondaryLinks = [
   { title: 'Bibliothèque musicale', description: 'Écoutez les chansons et découvrez l’univers musical de Nowis.', href: '/musique', icon: Music2 },
   { title: 'Jeux NOWIS', description: 'Découvrez les mini-jeux et les expériences interactives.', href: '/jeux', icon: Gamepad2 },
@@ -66,6 +67,8 @@ export function HomeScreen() {
           <li><h3 className="font-bold">3. Le portail sert au suivi</h3><p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">Après le premier échange, l’espace client peut regrouper les documents et les prochaines étapes.</p></li>
         </ol>
       </section>
+
+      <PublishedExamples />
 
       <section className="mt-10" aria-labelledby="home-explore-title">
         <h2 id="home-explore-title" className="text-2xl font-bold">Explorez aussi l’univers de Nowis</h2>

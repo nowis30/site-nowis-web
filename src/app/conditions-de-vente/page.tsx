@@ -4,7 +4,7 @@ import { PageHero } from '@/components/marketing/PageHero';
 import { complianceNotes, conditionsContent, legalConfig, legalLinks } from '@/data/legal';
 import { songPackages, videoExtraOptions } from '@/data/songSales';
 import { buildMetadata } from '@/lib/seo';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'Conditions de vente | Création Nowis',
@@ -53,12 +53,12 @@ function LegalSection({ title, children }: { title: string; children: React.Reac
 
 export default function ConditionsDeVentePage() {
   return (
-    <main className="text-[color:var(--site-text)]">
+    <div className="text-[color:var(--site-text)]">
       <PageHero
         eyebrow="Conditions de vente"
         title="Des conditions claires avant de démarrer un projet"
         description="Cette page explique les services offerts, la validation du projet, le paiement, les délais, les révisions, les remboursements et les droits d’utilisation applicables aux commandes Création Nowis."
-        primaryCta={{ label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL }}
+        primaryCta={{ label: 'Commander une chanson', href: SONG_REQUEST_PUBLIC_PATH }}
         secondaryCta={{ label: 'Politique de confidentialité', href: legalLinks.privacy }}
       />
 
@@ -219,6 +219,6 @@ export default function ConditionsDeVentePage() {
           </div>
         </article>
       </section>
-    </main>
+    </div>
   );
 }

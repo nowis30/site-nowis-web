@@ -2,7 +2,7 @@ import { PageHero } from '@/components/marketing/PageHero';
 import { VideoCard } from '@/components/videos/VideoCard';
 import { getAllVideos } from '@/data/videos';
 import { getAdminBlockValue, getAdminPage, getAdminRuntimePayload, getAdminSection, getAdminSectionVisualStyle } from '@/lib/admin-runtime';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 import { buildMetadata } from '@/lib/seo';
 
 const videoContactMessage = encodeURIComponent(
@@ -15,7 +15,7 @@ const DEFAULT_VIDEOS_CONTENT = {
     title: 'Des options visuelles et vidéos IA pour accompagner une chanson',
     description:
       'Cette section présente les vidéos et formats visuels comme compléments créatifs autour de la musique, et non comme le service principal.',
-    primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_GOOGLE_AUTH_URL },
+    primaryCta: { label: 'Commander une chanson', href: SONG_REQUEST_PUBLIC_PATH },
     secondaryCta: {
       label: 'Parler de mon projet',
       href: `/contact?projectType=video&message=${videoContactMessage}`,

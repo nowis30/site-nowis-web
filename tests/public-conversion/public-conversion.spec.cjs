@@ -8,6 +8,76 @@ async function refuseOnLoad(page) {
   await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {key: CONSENT_KEY, value: consent});
 }
 
+test('presentation downloads only after a click', async ({page}) => {
+  await refuseOnLoad(page);
+  const videos = [];
+  page.on('request', request => { if (/\.mp4(?:\?|$)/.test(request.url())) videos.push(request.url()); });
+  await page.goto('/');
+  await expect(page.getByRole('button', {name: 'Lire la présentation de Nowis avec le son'})).toBeVisible();
+  expect(videos).toEqual([]);
+  await page.getByRole('button', {name: 'Lire la présentation de Nowis avec le son'}).click();
+  await expect(page.locator('video')).toHaveAttribute('src', '/videos/nowis-presentation-web.mp4');
+  await expect.poll(() => videos.length).toBeGreaterThan(0);
+});
+
+test('music search, accents, empty state, filter and pagination', async ({page}) => {
+  await refuseOnLoad(page);
+  await page.goto('/musique');
+  const cards = page.locator('main article');
+  await expect(cards).toHaveCount(12);
+  await page.getByRole('button', {name: 'Afficher 12 chansons supplémentaires'}).click();
+  await expect(cards).toHaveCount(24);
+  await page.getByLabel('Rechercher une chanson', {exact: true}).fill('LUMIERE TEMPETE');
+  await expect(cards).toHaveCount(1);
+  await expect(cards).toContainText('La lumière après la tempête');
+  await page.getByLabel('Rechercher une chanson', {exact: true}).fill('zzzz-unmatched');
+  await expect(cards).toHaveCount(0);
+  await expect(page.getByText('Aucune chanson ne correspond', {exact: false})).toBeVisible();
+  await page.getByRole('button', {name: 'Réinitialiser', exact: true}).click();
+  await page.getByLabel('Plateforme d’écoute', {exact: true}).selectOption('spotify');
+  await expect(cards).toHaveCount(12);
+  await expect(cards.locator('a[href*="open.spotify.com"]')).toHaveCount(12);
+});
+
+for (const path of ['/portfolio', '/shop']) {
+  test(`self canonical ${path}`, async ({page}) => {
+    await page.goto(path);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${baseURL}${path}`);
+    await expect(page.locator('main')).toHaveCount(1);
+  });
+}
+
+test('commercial calls to action lead to anonymous forms', async ({page}) => {
+  await refuseOnLoad(page);
+  for (const path of ['/musique', '/services', '/ateliers', '/creations', '/artistes']) {
+    await page.goto(path);
+    await expect(page.locator('main a[href*="/api/client-auth/google/start"]')).toHaveCount(0);
+  }
+  await page.goto('/ateliers');
+  await page.locator('main a[href="/ateliers/demande"]').first().click();
+  await expect(page.getByRole('button', {name: 'Envoyer ma demande sans compte'})).toBeVisible();
+});
+
+test('game starts after iframe load precedes delayed hydration, reload and navigation', async ({page}) => {
+  await refuseOnLoad(page);
+  await page.route('**/_next/static/**/*.js*', async route => {
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    await route.continue();
+  });
+  await page.goto('/jeux/tic-tac-toe');
+  const frame = page.frameLocator('iframe[title="Morpion"]');
+  await expect(frame.getByRole('button', {name: 'Commencer', exact: true})).toBeVisible();
+  await expect(page.getByLabel('Chargement du jeu')).toHaveCount(0);
+  await frame.getByRole('button', {name: 'Commencer', exact: true}).click();
+  await expect(frame.getByRole('grid')).toBeVisible();
+  await page.reload();
+  await expect(frame.getByRole('button', {name: 'Commencer', exact: true})).toBeVisible();
+  await page.getByRole('link', {name: 'Retour aux jeux', exact: true}).click();
+  await expect(page).toHaveURL(/\/jeux$/);
+  await page.goBack();
+  await expect(frame.getByRole('button', {name: 'Commencer', exact: true})).toBeVisible();
+});
+
 for (const width of [390, 768, 900, 1199, 1200, 1440]) {
   test(`home hierarchy and no horizontal overflow at ${width}px`, async ({page}, testInfo) => {
     await page.setViewportSize({width, height: 900});
@@ -25,7 +95,7 @@ for (const width of [390, 768, 900, 1199, 1200, 1440]) {
       expect(titleBox.y + titleBox.height).toBeLessThan(videoBox.y);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
-    await expect(page.locator('video')).not.toHaveAttribute('autoplay');
+    await expect(page.locator('video')).toHaveCount(0);
     expect(errors).toEqual([]);
     await page.screenshot({path: testInfo.outputPath(`home-${width}.png`), fullPage: true});
   });
