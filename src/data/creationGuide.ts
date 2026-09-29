@@ -1,3 +1,7 @@
+export const sunoReferral = {
+  url: 'https://suno.com/invite/@simonnowismorin',
+};
+
 export const revidReferral = {
   url: 'https://www.revid.ai/?via=simon-morin',
   code: 'NoWiS2026',

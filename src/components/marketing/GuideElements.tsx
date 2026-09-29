@@ -1,5 +1,9 @@
 import Link from 'next/link';
-import { revidReferral } from '@/data/creationGuide';
+import { revidReferral, sunoReferral } from '@/data/creationGuide';
+
+export function SunoOffer() {
+  return <aside className="ng-offer" aria-labelledby="suno-offer-title"><p className="nm-eyebrow">À votre tour de créer</p><h3 id="suno-offer-title">Votre première chanson commence avec une idée.</h3><p>Envie de donner une voix à vos mots ? Rejoignez Suno avec mon invitation, puis suivez les étapes du guide pour créer votre chanson.</p><a href={sunoReferral.url} target="_blank" rel="sponsored noopener noreferrer" className="cta-primary">Essayer Suno avec mon invitation ↗<span className="sr-only"> (nouvel onglet)</span></a><p className="nm-fine">Lien de parrainage : selon les conditions affichées par Suno, nous recevons chacun 250 crédits lorsque vous vous inscrivez avec ce lien et créez 10 chansons, dans la limite de 2 500 crédits par personne. Les conditions en vigueur sont précisées sur Suno.</p></aside>;
+}
 
 export function CreationFlow() {
   return <ol className="ng-flow" aria-label="Les trois étapes de création"><li><span>01 · ChatGPT</span><strong>Les mots justes</strong><p>Votre histoire → paroles → réécritures</p></li><li><span>02 · Suno</span><strong>L’émotion en musique</strong><p>Paroles + style → écoutes → MP3</p></li><li><span>03 · Revid</span><strong>Un univers visuel</strong><p>MP3 + direction → montage → vidéo</p></li></ol>;

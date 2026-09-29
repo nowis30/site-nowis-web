@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { buildMetadata } from '@/lib/seo';
-import { CreationFlow, GuideHelp, RevidOffer } from '@/components/marketing/GuideElements';
+import { CreationFlow, GuideHelp, RevidOffer, SunoOffer } from '@/components/marketing/GuideElements';
 import { CopyPrompt } from '@/components/marketing/CopyPrompt';
 import { songWritingPrompt, revisionPrompt } from '@/data/creationGuide';
 export const metadata = buildMetadata({title:'Comment je crée mes chansons avec ChatGPT, Suno et Revid',description:'La méthode de Nowis : raconter une histoire, retravailler les paroles avec ChatGPT, créer la musique dans Suno et réaliser une vidéo avec Revid.',path:'/comment-je-cree'});
@@ -15,6 +15,6 @@ export default function CreationMethodPage() {
       <section><p className="nm-eyebrow">03 · Passer des paroles à la musique</p><h2>Dans Suno, je choisis une direction musicale.</h2><p>Quand le texte me convient, je le copie dans le mode Custom de Suno. Je choisis le style voulu : genre, instruments, énergie, ambiance et façon de chanter. Je crée des propositions, puis j’écoute si la musique porte vraiment les mots.</p><p>Si le résultat ne transmet pas l’émotion recherchée, je retravaille le style ou les paroles. Une fois la bonne version choisie, je télécharge le fichier MP3 et je le conserve avec mon texte final.</p><Link className="nm-text-link" href="/outils-creation-musicale#suno">Suivre les étapes dans Suno ↗</Link></section>
       <section><p className="nm-eyebrow">04 · Donner des images à la chanson</p><h2>La vidéo vient après le choix de la chanson.</h2><p>J’importe le MP3 téléchargé depuis Suno dans Revid, puis je prépare l’univers visuel. Les images doivent accompagner l’histoire et son émotion. Je regarde le résultat, je corrige les scènes et les textes qui ne conviennent pas, puis j’exporte la vidéo.</p><p>Je trouve Revid dispendieux. Pour commencer, mieux vaut préparer sa direction et tester un court extrait avant de générer une chanson complète. La vidéo reste facultative : votre chanson peut déjà se partager en audio.</p><Link className="nm-text-link" href="/outils-creation-musicale#revid">Suivre les étapes dans Revid ↗</Link><RevidOffer /></section>
       <section><h2>Mon dernier passage avant de partager</h2><ul><li>Les paroles racontent-elles ce que je voulais dire ?</li><li>Les noms et les mots importants sont-ils bien prononcés ?</li><li>La musique, les images et les sous-titres vont-ils ensemble ?</li><li>Ai-je conservé le texte final, le MP3 et la vidéo ?</li></ul><p>Pour publier ou vendre une création, consultez les conditions des outils et de votre forfait. Demandez aussi l’accord des personnes avant de diffuser leurs photos ou une histoire privée.</p></section>
-    </div><GuideHelp />
+    </div><SunoOffer /><GuideHelp />
   </article>;
 }
