@@ -1,7 +1,7 @@
 """Match local Suno MP3s by their embedded song UUID; never by filename.
 
 Usage: python scripts/prepare-radio-audio.py <download-folder> <inventory.json> [extra-mp3-folder]
-Writes only an inventory of the 141 public tracks. Does not copy other songs.
+Writes only an inventory of the active public catalog. Does not copy other songs.
 """
 import concurrent.futures
 import argparse
@@ -20,7 +20,7 @@ parser.add_argument('extra_folders', nargs='*')
 parser.add_argument('--receipts', help='Private receipts for authorized older Suno downloads without ID3 identifiers')
 args = parser.parse_args()
 tracks = json.loads((root / 'src/data/radio-tracks.json').read_text(encoding='utf-8'))
-assert len(tracks) == len({t['id'] for t in tracks}) == 141
+assert tracks and len(tracks) == len({t['id'] for t in tracks})
 
 def inspect(path):
     try:

@@ -319,8 +319,8 @@ test('inquiry validation, save and independent CRM records — isolated database
 test('radio: click to start, persistent player, shuffle, pause and mobile controls', async ({page}, testInfo) => {
   await refuseOnLoad(page);
   const catalog = require('../../src/data/radio-tracks.json');
-  expect(catalog).toHaveLength(141);
-  expect(new Set(catalog.map(t=>t.id)).size).toBe(141);
+  expect(catalog).toHaveLength(139);
+  expect(new Set(catalog.map(t=>t.id)).size).toBe(139);
   // Real MP3 fixture tests browser playback; hosted catalog health is checked separately before release.
   const fs = require('node:fs');
   const body = fs.readFileSync('public/music/background.mp3');
@@ -381,6 +381,6 @@ test('radio: unavailable catalog stops after one attempt per track', async ({pag
   await page.goto('/radio');
   await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect(page.locator('.nr-player [role="status"]')).toContainText('momentanément indisponible',{timeout:45000});
-  expect(new Set(attempted).size).toBe(141);
-  expect(attempted.length).toBe(141);
+  expect(new Set(attempted).size).toBe(139);
+  expect(attempted.length).toBe(139);
 });

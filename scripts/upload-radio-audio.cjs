@@ -1,6 +1,6 @@
 /** Upload only the verified public Suno catalog. Existing objects are never overwritten.
- * node scripts/upload-radio-audio.cjs <inventory.json>
- * Requires the existing AWS_MEDIA_* settings in .env.radio.local (gitignored).
+ * node scripts/upload-radio-audio.cjs <inventory.json> [--stage-available]
+ * Requires existing AWS_MEDIA_* or S3_* settings in .env.radio.local (gitignored).
  */
 const fs = require('node:fs');
 const crypto = require('node:crypto');
@@ -8,14 +8,18 @@ const { S3Client, HeadObjectCommand, PutObjectCommand } = require('@aws-sdk/clie
 require('dotenv').config({path:'.env.radio.local', quiet:true});
 const tracks = require('../src/data/radio-tracks.json');
 const inventory = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-const required = ['AWS_MEDIA_ACCESS_KEY_ID','AWS_MEDIA_SECRET_ACCESS_KEY','AWS_MEDIA_REGION','AWS_MEDIA_BUCKET'];
-if (required.some(key=>!process.env[key])) throw new Error('Existing AWS_MEDIA configuration is required.');
-if (tracks.length !== 141 || inventory.missing.length) throw new Error('All 141 verified MP3s are required before publishing.');
+const accessKeyId = process.env.AWS_MEDIA_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_MEDIA_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+const region = process.env.AWS_MEDIA_REGION || process.env.S3_REGION;
+const Bucket = process.env.AWS_MEDIA_BUCKET || process.env.S3_BUCKET;
+const stageAvailable = process.argv.includes('--stage-available');
+if (![accessKeyId,secretAccessKey,region,Bucket].every(Boolean)) throw new Error('Existing storage configuration is required.');
+if (Bucket !== 'nowis-crm-files') throw new Error('Configured bucket differs from the existing public audio bucket.');
+if (!tracks.length || (!stageAvailable && inventory.missing.length)) throw new Error('All active catalog MP3s are required before publishing.');
 const ids = new Set(tracks.map(track=>track.id));
 const sources = new Map(inventory.matched.map(track=>[track.id,track.path]));
-if (ids.size !== 141 || inventory.matched.some(track=>!ids.has(track.id)) || tracks.some(track=>!track.src.startsWith('/audio/nowis-radio/') && !sources.has(track.id))) throw new Error('Inventory does not match the public catalog.');
-const Bucket = process.env.AWS_MEDIA_BUCKET;
-const client = new S3Client({region:process.env.AWS_MEDIA_REGION, credentials:{accessKeyId:process.env.AWS_MEDIA_ACCESS_KEY_ID, secretAccessKey:process.env.AWS_MEDIA_SECRET_ACCESS_KEY}});
+if (ids.size !== tracks.length || inventory.matched.some(track=>!ids.has(track.id)) || (!stageAvailable && tracks.some(track=>!track.src.startsWith('/audio/nowis-radio/') && !sources.has(track.id)))) throw new Error('Inventory does not match the public catalog.');
+const client = new S3Client({region, credentials:{accessKeyId,secretAccessKey}});
 (async()=>{
   for (const track of tracks) {
     if (track.src.startsWith('/audio/nowis-radio/')) {
@@ -24,6 +28,7 @@ const client = new S3Client({region:process.env.AWS_MEDIA_REGION, credentials:{a
       console.log(`Verified hosted ${track.id}`);
       continue;
     }
+    if (!sources.has(track.id)) { console.log(`Still missing ${track.id}`); continue; }
     const Body = fs.readFileSync(sources.get(track.id));
     const sha256 = crypto.createHash('sha256').update(Body).digest('hex');
     const Key = `audio/nowis-radio-suno/${track.id}.mp3`;
@@ -36,5 +41,5 @@ const client = new S3Client({region:process.env.AWS_MEDIA_REGION, credentials:{a
     await client.send(new PutObjectCommand({Bucket,Key,Body,ContentType:'audio/mpeg',CacheControl:'public, max-age=31536000, immutable',Metadata:{sha256},IfNoneMatch:'*'}));
     console.log(`Uploaded ${track.id}`);
   }
-  console.log('All 141 objects uploaded or verified.');
+  console.log(inventory.missing.length ? `Staging finished. ${inventory.missing.length} tracks still required before release.` : `All ${tracks.length} objects uploaded or verified.`);
 })().catch(error=>{ console.error(error.name, error.message); process.exitCode=1; });
