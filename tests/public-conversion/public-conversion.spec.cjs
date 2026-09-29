@@ -3,6 +3,33 @@ const { PrismaClient } = require('@prisma/client');
 const CONSENT_KEY = 'nowis_cookie_consent_v2';
 const baseURL = 'http://127.0.0.1:3000';
 
+test('creation guides: mobile reading, prompts, images and referral', async ({page, context}, testInfo) => {
+  await refuseOnLoad(page);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.setViewportSize({width:390,height:844});
+  for (const path of ['/comment-je-cree','/outils-creation-musicale']) {
+    await page.goto(path);
+    await expect(page.locator('h1')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.getByRole('button',{name:'Copier le modèle'}).first().click();
+    await expect(page.getByRole('status').first()).toContainText('Texte copié');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('L’émotion au début');
+    await expect(page.locator('main a[href="https://www.revid.ai/?via=simon-morin"]')).toHaveAttribute('rel','sponsored noopener noreferrer');
+    await expect(page.locator('main')).toContainText('NoWiS2026');
+    await expect(page.locator('main')).toContainText('ne sont pas confirmés ici');
+  }
+  await page.getByRole('link',{name:'2. Suno',exact:true}).click();
+  await expect(page).toHaveURL(/#suno$/);
+  await page.locator('summary').filter({hasText:'Suno Studio'}).click();
+  for (const image of await page.locator('main figure img').all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(() => image.evaluate(img => img.complete && img.naturalWidth > 0)).toBeTruthy();
+  }
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto('/outils-creation-musicale');
+  await page.screenshot({path:testInfo.outputPath('creation-guide.png')});
+});
+
 test('mobile menu supports keyboard close and reaches the explorer', async ({page}) => {
   await refuseOnLoad(page);
   await page.setViewportSize({width: 390, height: 844});

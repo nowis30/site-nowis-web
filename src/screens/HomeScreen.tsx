@@ -25,7 +25,7 @@ export function HomeScreen() {
     <SongExamples />
     <SongProcess />
     <SongOffers />
-    <section className="nm-section nm-about" aria-labelledby="about-nowis"><div><p className="nm-eyebrow">La personne derrière la création</p><h2 id="about-nowis">Moi, c’est Nowis.</h2><p className="nm-intro">Je vous accompagne pour donner une direction musicale à vos souvenirs et à vos idées. Vous apportez votre histoire; nous précisons ensemble ce que la chanson doit raconter.</p><Link className="nm-text-link" href="/a-propos">Découvrir mon parcours ↗</Link></div><div className="nowis-home-video"><HeroVideoPlaceholder videoUrl="/videos/nowis-presentation-web.mp4" /></div></section>
+    <section className="nm-section nm-about" aria-labelledby="about-nowis"><div><p className="nm-eyebrow">La personne derrière la création</p><h2 id="about-nowis">Moi, c’est Nowis.</h2><p className="nm-intro">Je vous accompagne pour donner une direction musicale à vos souvenirs et à vos idées. Vous apportez votre histoire; nous précisons ensemble ce que la chanson doit raconter.</p><Link className="nm-text-link" href="/a-propos">Découvrir mon parcours ↗</Link><br /><Link className="nm-text-link" href="/comment-je-cree">Comment je crée mes chansons ↗</Link></div><div className="nowis-home-video"><HeroVideoPlaceholder videoUrl="/videos/nowis-presentation-web.mp4" /></div></section>
     <HomeMusicSelections />
     <SongFaq />
     <section className="nm-final"><p className="nm-eyebrow">Quelques mots pour commencer</p><h2>À qui pensez-vous<br />en lisant cette page ?</h2><p>Racontez-moi cette personne et le moment que vous aimeriez souligner.</p><Link className="cta-primary" href="/commander-une-chanson#demande">Raconter mon idée ↗</Link></section>
