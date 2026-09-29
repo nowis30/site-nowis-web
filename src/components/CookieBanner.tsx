@@ -1,66 +1,55 @@
 'use client';
-
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-
-const STORAGE_KEY = 'nowis_cookie_consent';
-
-type ConsentValue = 'accepted' | 'declined';
+import { useCookieConsent } from '@/components/privacy/useCookieConsent';
+import { saveCookieConsent } from '@/lib/cookie-consent';
 
 export function CookieBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) setVisible(true);
-    } catch {
-      // localStorage unavailable (SSR safety)
-    }
-  }, []);
-
-  function saveConsent(value: ConsentValue) {
-    try {
-      localStorage.setItem(STORAGE_KEY, value);
-    } catch {
-      // ignore
-    }
-    setVisible(false);
+  const consent = useCookieConsent();
+  const [editing, setEditing] = useState(false);
+  const [customizing, setCustomizing] = useState(false);
+  const [analytics, setAnalytics] = useState(false);
+  const [advertising, setAdvertising] = useState(false);
+  const visible = !consent || editing;
+  const buttonClass = 'min-h-11 rounded-xl border border-[color:var(--site-border)] bg-white px-3 py-2 text-sm font-semibold text-[color:var(--site-heading)] hover:bg-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+  function choose(audience: boolean, ads: boolean) {
+    saveCookieConsent({ analytics: audience, advertising: ads });
+    setEditing(false); setCustomizing(false);
   }
-
-  if (!visible) return null;
-
+  function openPreferences() {
+    setAnalytics(consent?.analytics ?? false); setAdvertising(consent?.advertising ?? false);
+    setCustomizing(true); setEditing(true);
+  }
   return (
-    <div
-      role="dialog"
-      aria-modal="false"
-      aria-label="Consentement aux cookies"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[rgba(131,97,67,0.12)] bg-[rgba(252,247,241,0.94)] px-4 py-5 backdrop-blur-md md:px-6"
-    >
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 rounded-[1.75rem] border border-[rgba(131,97,67,0.12)] bg-[rgba(255,251,247,0.76)] px-4 py-4 shadow-soft md:flex-row md:items-center md:justify-between md:px-5">
-        <p className="text-sm leading-6 text-[color:var(--site-muted)] md:max-w-3xl">
-          Ce site utilise des cookies essentiels au fonctionnement du portail client et à la sécurité des sessions. Des outils Google de mesure d&apos;audience et d&apos;attribution publicitaire peuvent aussi être chargés pour mesurer les appels téléphoniques et les demandes d&apos;atelier.{' '}
-          <Link href="/confidentialite" className="underline underline-offset-2 transition-colors hover:text-[color:var(--site-accent-strong)]">
-            Politique de confidentialité
-          </Link>
-        </p>
-        <div className="flex shrink-0 gap-3">
-          <button
-            onClick={() => saveConsent('declined')}
-            className="cta-secondary rounded-lg px-4 py-2 text-sm"
-            type="button"
-          >
-            Fermer
-          </button>
-          <button
-            onClick={() => saveConsent('accepted')}
-            className="cta-primary rounded-lg px-5 py-2 text-sm"
-            type="button"
-          >
-            J’ai compris
-          </button>
-        </div>
+    <>
+      <div className="border-t border-[color:var(--site-border)] bg-[#fcf7f1] px-4 py-3 text-center text-sm">
+        <button type="button" onClick={openPreferences} className="min-h-11 px-4 underline underline-offset-4">Gérer mes cookies</button>
       </div>
-    </div>
+      {visible ? (
+        <section data-cookie-banner="open" aria-label="Choix des cookies facultatifs" className="fixed inset-x-0 bottom-0 z-[200] max-h-[75dvh] overflow-y-auto border-t border-[color:var(--site-border)] bg-[#fcf7f1] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] sm:p-4">
+          <div className="mx-auto grid max-w-6xl gap-3 min-[1200px]:grid-cols-[1fr_auto] min-[1200px]:items-center">
+            <div>
+              <h2 className="text-base font-bold text-[color:var(--site-heading)]">Votre choix de cookies</h2>
+              <p className="mt-1 text-sm leading-5 text-[color:var(--site-muted)]">Les cookies essentiels restent actifs. Google Analytics (audience) et Google Ads (publicité) sont facultatifs, désactivés avant votre accord. <Link href="/confidentialite" className="underline">Confidentialité</Link></p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 min-[1200px]:min-w-[20rem]">
+              <button type="button" className={buttonClass} onClick={() => choose(false, false)}>Tout refuser</button>
+              <button type="button" className={buttonClass} onClick={() => choose(true, true)}>Tout accepter</button>
+              <button type="button" className="col-span-2 min-h-11 text-sm underline" onClick={() => {
+                setAnalytics(consent?.analytics ?? false); setAdvertising(consent?.advertising ?? false); setCustomizing((value) => !value);
+              }} aria-expanded={customizing} aria-controls="cookie-options">Personnaliser mes choix</button>
+            </div>
+            {customizing ? (
+              <div id="cookie-options" className="space-y-3 rounded-xl border border-[color:var(--site-border)] bg-white p-4 min-[1200px]:col-span-2">
+                <p className="text-sm">Cookies essentiels : toujours actifs pour la sécurité et les sessions du portail.</p>
+                <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={analytics} onChange={(event) => setAnalytics(event.target.checked)} className="h-5 w-5" />Google Analytics — mesure d’audience</label>
+                <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={advertising} onChange={(event) => setAdvertising(event.target.checked)} className="h-5 w-5" />Google Ads — mesure publicitaire</label>
+                <button type="button" className={buttonClass} onClick={() => choose(analytics, advertising)}>Enregistrer mes choix</button>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+    </>
   );
 }

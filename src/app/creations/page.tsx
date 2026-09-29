@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Headphones, Images, Sparkles, Video, WandSparkles } from 'lucide-react';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import { buildMetadata } from '@/lib/seo';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 
 const creationPaths = [
   {
@@ -49,7 +49,7 @@ export const metadata = buildMetadata({
 
 export default function CreationsPage() {
   return (
-    <main className="site-background text-[color:var(--site-text)]">
+    <div className="site-background text-[color:var(--site-text)]">
       <section className="mx-auto max-w-7xl px-6 pb-10 pt-10 md:pb-14 md:pt-16">
         <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
           <div>
@@ -86,7 +86,7 @@ export default function CreationsPage() {
               Qu’est-ce que tu veux découvrir?
             </h2>
             <p className="mt-4 max-w-2xl leading-8 text-[color:var(--site-muted)]">
-              Chaque carte mène vers une section active du site. Aucun cul-de-sac, aucune galerie vide : tu arrives directement au contenu ou à la prochaine action utile.
+              Écoutez les chansons, regardez les vidéos et découvrez les projets que vous pouvez créer avec Nowis.
             </p>
           </div>
 
@@ -127,7 +127,7 @@ export default function CreationsPage() {
                 Pas besoin d’arriver avec un cahier des charges complet. Une idée, un moment à raconter ou un objectif suffit pour commencer et choisir ensuite le bon format.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link href={SONG_REQUEST_GOOGLE_AUTH_URL} className="cta-secondary w-full justify-center px-6 py-3.5 sm:w-auto">
+                <Link href={SONG_REQUEST_PUBLIC_PATH} className="cta-secondary w-full justify-center px-6 py-3.5 sm:w-auto">
                   Demander une chanson
                 </Link>
                 <Link href="/ateliers" className="cta-secondary w-full justify-center px-6 py-3.5 sm:w-auto">
@@ -141,6 +141,6 @@ export default function CreationsPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

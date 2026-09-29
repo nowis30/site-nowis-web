@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ContactPrefillLink } from '@/components/ContactPrefillLink';
 import type { ArtistProfile } from '@/data/artists';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 
 function sectionLink(id: string, label: string) {
   return (
@@ -51,7 +51,7 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <Link
-                  href={SONG_REQUEST_GOOGLE_AUTH_URL}
+                  href={SONG_REQUEST_PUBLIC_PATH}
                   className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white motion-safe:transition motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
                 >
                   Demander une chanson personnalisée
@@ -290,7 +290,7 @@ export function ArtistProfilePage({ artist }: { artist: ArtistProfile }) {
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
-              href={SONG_REQUEST_GOOGLE_AUTH_URL}
+              href={SONG_REQUEST_PUBLIC_PATH}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-warm px-6 py-3 text-center font-semibold text-white motion-safe:transition motion-safe:hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2 sm:w-auto"
             >
               Demander une chanson personnalisée

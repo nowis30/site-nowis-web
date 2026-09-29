@@ -1,7 +1,7 @@
 import { PageHero } from '@/components/marketing/PageHero';
 import { ProjectAssistant } from '@/components/tools/ProjectAssistant';
 import { buildMetadata } from '@/lib/seo';
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 
 export const metadata = buildMetadata({
   title: 'Assistant projet | Création Nowis',
@@ -31,7 +31,7 @@ const useCases = [
 
 export default function AssistantProjetPage() {
   return (
-    <main className="text-[color:var(--site-text)]">
+    <div className="text-[color:var(--site-text)]">
       <PageHero
         eyebrow="Assistant projet"
         title="Clarifie ton idée avant de passer à l’action"
@@ -40,7 +40,7 @@ export default function AssistantProjetPage() {
           label: 'Parler de mon projet',
           href: '/contact?projectType=autre&message=Bonjour%2C%20je%20veux%20discuter%20d%E2%80%99un%20projet%20cr%C3%A9atif%20avec%20Cr%C3%A9ation%20Nowis.',
         }}
-        secondaryCta={{ label: 'Commander une chanson personnalisée', href: SONG_REQUEST_GOOGLE_AUTH_URL }}
+        secondaryCta={{ label: 'Commander une chanson personnalisée', href: SONG_REQUEST_PUBLIC_PATH }}
       />
 
       <section className="section-soft px-5 py-14 sm:px-6 md:py-20" aria-labelledby="assistant-benefits-title">
@@ -73,6 +73,6 @@ export default function AssistantProjetPage() {
       </section>
 
       <ProjectAssistant />
-    </main>
+    </div>
   );
 }

@@ -1,0 +1,16 @@
+/* Public conversion layouts. One shared application, three presentation tiers. */
+.public-site .nowis-home-hero { display: grid; gap: 1.75rem; }
+.public-site .nowis-home-copy { order: 0; }
+.public-site .nowis-home-video { order: 1; }
+.public-site #demande { scroll-margin-top: 7rem; }
+.public-site .nowis-home :is(a, button) { overflow-wrap: anywhere; }
+/* The assistant cannot cover a consent choice, even during first hydration. */
+html:has([data-cookie-banner="open"]) .nowis-site-assistant { display: none; }
+@media (min-width: 768px) {
+  .public-site .nowis-home-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .public-site .nowis-home-video { max-width: 48rem; width: 100%; margin-inline: auto; }
+}
+@media (min-width: 1200px) {
+  .public-site .nowis-home-hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); align-items: center; gap: 2.5rem; }
+  .public-site .nowis-home-video { max-width: none; }
+}

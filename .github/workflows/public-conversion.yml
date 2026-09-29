@@ -1,0 +1,61 @@
+name: Public conversion QA (isolated)
+on:
+  push:
+    branches: ["audit/public-conversion-20260928"]
+permissions:
+  contents: read
+concurrency:
+  group: public-conversion-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  isolated-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: nowis_test
+          POSTGRES_PASSWORD: nowis_test
+          POSTGRES_DB: nowis_public_qa
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nowis_test -d nowis_public_qa"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://nowis_test:nowis_test@localhost:5432/nowis_public_qa
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      APP_URL: http://127.0.0.1:3000
+      NEXT_PUBLIC_GA4_MEASUREMENT_ID: G-NOWISQA01
+      NEXT_PUBLIC_GOOGLE_ADS_ID: AW-123456789
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked project dependencies
+        run: npm ci
+      - name: Generate client and prepare disposable test database
+        run: npx prisma generate && npx prisma db push
+      - name: Type check and focused security tests
+        run: npm run type-check && npm run lint && npx tsx scripts/public-conversion.test.ts
+      - name: Install isolated browser runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/nowis-browser" --no-save --package-lock=false @playwright/test@1.55.1
+          echo "NODE_PATH=$RUNNER_TEMP/nowis-browser/node_modules" >> "$GITHUB_ENV"
+          # Chrome includes the H.264/AAC codecs used by the actual presentation.
+          "$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" install --with-deps chrome
+      - name: Browser and anonymous-inquiry integration tests
+        run: '"$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" test --config tests/public-conversion/playwright.config.cjs'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-conversion-qa
+          path: |
+            test-results/
+            public-conversion-report/
+          retention-days: 7

@@ -1,4 +1,4 @@
-import { SONG_REQUEST_GOOGLE_AUTH_URL } from '@/lib/client-portal-routes';
+import { SONG_REQUEST_PUBLIC_PATH } from '@/lib/client-portal-routes';
 
 export type ServiceOffer = {
   title: string;
@@ -16,7 +16,7 @@ export const serviceOffers: ServiceOffer[] = [
     description:
       'Nowis Morin crée des chansons originales à partir de ton idée, de ton histoire ou de ton message, avec une direction artistique claire et un rendu moderne.',
     bullets: ['Cadeaux uniques', 'Projets personnels', 'Événements et hommages'],
-    href: SONG_REQUEST_GOOGLE_AUTH_URL,
+    href: SONG_REQUEST_PUBLIC_PATH,
     cta: 'Demander une chanson',
   },
   {

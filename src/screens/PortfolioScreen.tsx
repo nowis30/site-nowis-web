@@ -38,7 +38,7 @@ const portfolioSections = [
 
 export function PortfolioScreen() {
   return (
-    <main className="site-background text-[color:var(--site-text)]">
+    <div className="site-background text-[color:var(--site-text)]">
       <section className="mx-auto max-w-7xl px-6 pb-10 pt-10 md:pb-14 md:pt-16">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>
@@ -47,7 +47,7 @@ export function PortfolioScreen() {
               Des créations à écouter, regarder et explorer.
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-[color:var(--site-muted)]">
-              Le portfolio réunit maintenant les pages actives de Création NOWIS au même endroit. Plus de galerie vide : chaque carte mène vers du contenu, une boutique ou un service réellement accessible.
+              Découvrez les chansons, les vidéos et les projets de Création NOWIS, puis explorez les possibilités pour votre propre création.
             </p>
           </div>
 
@@ -129,6 +129,6 @@ export function PortfolioScreen() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

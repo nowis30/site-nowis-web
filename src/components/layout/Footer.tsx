@@ -236,7 +236,7 @@ export const Footer: React.FC = () => {
             <Link href={legalLinks.privacy} className="underline hover:text-[color:var(--site-accent-strong)]">Politique de confidentialité</Link>
             {' '}et{' '}
             <Link href={legalLinks.terms} className="underline hover:text-[color:var(--site-accent-strong)]">conditions de vente</Link>
-            {' '}accessibles en tout temps depuis le site public. Conformité vie privée présentée de façon claire et discrète.
+            {' '}accessibles en tout temps depuis le site public.
           </p>
         </div>
       </div>

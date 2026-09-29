@@ -17,6 +17,8 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const initializedDocuments = useRef(new WeakSet<Document>());
   const allowMicrophone = game.slug === 'speak-number-guessing';
 
   useEffect(() => {
@@ -37,49 +39,61 @@ export function GameDetailScreen({ game }: GameDetailScreenProps) {
     };
   }, []);
 
-  const onGameLoad = () => {
+  useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
-
+    setIsReady(false);
     setLoadError(false);
-
-    try {
-      const doc = iframe.contentDocument;
-      const win = iframe.contentWindow;
-      if (!doc || !win || !doc.documentElement) {
+    let finished = false;
+    const timeout = window.setTimeout(() => {
+      if (!finished) setLoadError(true);
+    }, 10_000);
+    const initialize = () => {
+      try {
+        const doc = iframe.contentDocument;
+        const win = iframe.contentWindow;
+        // The srcDoc load event can fire before React hydrates the page.
+        if (!doc || !win || doc.URL !== 'about:srcdoc' || !doc.body || doc.readyState === 'loading') return;
+        if (!initializedDocuments.current.has(doc)) {
+          if (!upgradeEmbeddedGame(doc, win, game.slug)) throw new Error('Game initialization failed');
+          initializedDocuments.current.add(doc);
+        }
+        finished = true;
+        window.clearTimeout(timeout);
+        setLoadError(false);
+        setIsReady(true);
+      } catch {
+        finished = true;
+        window.clearTimeout(timeout);
         setLoadError(true);
-        return;
       }
-
-      if (!upgradeEmbeddedGame(doc, win, game.slug)) {
-        setLoadError(true);
-        return;
-      }
-
-      win.focus();
-      setIsReady(true);
-    } catch {
-      setLoadError(true);
-    }
-  };
+    };
+    iframe.addEventListener('load', initialize);
+    initialize();
+    return () => {
+      iframe.removeEventListener('load', initialize);
+      window.clearTimeout(timeout);
+    };
+  }, [game.slug, attempt]);
 
   return (
     <main className="fixed inset-0 z-[1000] h-[100dvh] w-screen overflow-hidden bg-black text-white">
       <iframe
+        key={`${game.slug}-${attempt}`}
         ref={iframeRef}
         srcDoc={SOURCE_GAME_SHELL}
         title={game.name}
         className="absolute inset-0 h-full w-full border-0 bg-black"
         allow={allowMicrophone ? 'microphone' : undefined}
-        onLoad={onGameLoad}
       />
 
       {!isReady ? (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black px-6 text-center">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black px-6 text-center">
           {loadError ? (
-            <p className="max-w-sm text-sm font-medium text-white/80" role="alert">
-              Ce jeu NOWIS n’a pas pu démarrer. Revenez à l’arcade et réessayez.
-            </p>
+            <div className="max-w-sm" role="alert">
+              <p className="text-sm font-medium text-white/80">Le jeu n’a pas pu démarrer. Vous pouvez réessayer sans quitter cette page.</p>
+              <button type="button" className="mt-5 rounded-xl bg-white px-6 py-3 font-semibold text-black" onClick={() => setAttempt((value) => value + 1)}>Réessayer le jeu</button>
+            </div>
           ) : (
             <div className="h-9 w-9 animate-spin rounded-full border-4 border-white/20 border-t-white" aria-label="Chargement du jeu" />
           )}
