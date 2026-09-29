@@ -6,6 +6,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nowis.store';
 
 const staticPages = [
   { path: '', priority: 1 },
+  { path: '/explorer', priority: 0.6 },
   { path: '/services', priority: 0.95 },
   { path: '/ateliers', priority: 0.9 },
   { path: '/commander-une-chanson', priority: 0.9 },

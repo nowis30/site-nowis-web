@@ -70,7 +70,7 @@ export function PublicInquiryForm({ serviceType = 'autre', groupType, initialMes
       <label className="mt-4 block text-sm font-semibold" htmlFor={`${id}-message`}>Votre message
         <textarea className={fieldClass} id={`${id}-message`} name="message" rows={5} required minLength={10} maxLength={3000} defaultValue={initialMessage.slice(0, 3000)} aria-describedby={`${id}-hint`} disabled={state === 'sending'} />
       </label>
-      <p id={`${id}-hint`} className="mt-2 text-sm text-[color:var(--site-muted)]">Quelques phrases suffisent. Pour un atelier : groupe, participants approximatifs et date souhaitée. Évitez les renseignements sensibles.</p>
+      <p id={`${id}-hint`} className="mt-2 text-sm text-[color:var(--site-muted)]">{serviceType === 'chanson' ? 'Pour qui est la chanson ? Quelle occasion, quels souvenirs et quelle ambiance ? Ajoutez la date souhaitée si vous en avez une.' : 'Quelques phrases suffisent. Pour un atelier : groupe, participants approximatifs et date souhaitée.'} Évitez les renseignements sensibles.</p>
       <div className="hidden" aria-hidden="true"><label>Site web<input name="website" tabIndex={-1} autoComplete="off" defaultValue="" /></label></div>
       <div className="mt-5 flex items-start gap-3 text-sm leading-6">
         <input id={`${id}-privacy`} name="privacyAcknowledged" type="checkbox" required className="mt-1 h-5 w-5 shrink-0" disabled={state === 'sending'} />

@@ -100,6 +100,8 @@ export const Footer: React.FC = () => {
           <div className="glass-panel-soft rounded-[1.75rem] p-6">
             <h4 className="mb-4 font-semibold text-[color:var(--site-heading)]">Navigation</h4>
             <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:max-w-md">
+              <li><Link href="/explorer" className="font-semibold underline">Explorer tout le site</Link></li>
+              <li><Link href="/musique" className="font-semibold underline">Écouter les chansons</Link></li>
               <li>
                 <Link href="/" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
                   Accueil
