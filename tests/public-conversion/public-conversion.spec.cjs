@@ -16,6 +16,7 @@ test('creation guides: mobile reading, prompts, images and referral', async ({pa
     expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('L’émotion au début');
     await expect(page.locator('main a[href="https://www.revid.ai/?via=simon-morin"]')).toHaveAttribute('rel','sponsored noopener noreferrer');
     await expect(page.locator('main')).toContainText('NoWiS2026');
+    await expect(page.getByRole('link',{name:/Essayer Suno avec mon invitation/})).toHaveAttribute('href','https://suno.com/invite/@simonnowismorin');
     await expect(page.locator('main')).toContainText('ne sont pas confirmés ici');
   }
   await page.getByRole('link',{name:'2. Suno',exact:true}).click();
@@ -28,6 +29,8 @@ test('creation guides: mobile reading, prompts, images and referral', async ({pa
   await page.setViewportSize({width:1440,height:1000});
   await page.goto('/outils-creation-musicale');
   await page.screenshot({path:testInfo.outputPath('creation-guide.png')});
+  await page.locator('aside[aria-labelledby="suno-offer-title"]').scrollIntoViewIfNeeded();
+  await page.screenshot({path:testInfo.outputPath('suno-invitation.png')});
 });
 
 test('mobile menu supports keyboard close and reaches the explorer', async ({page}) => {
@@ -310,4 +313,74 @@ test('inquiry validation, save and independent CRM records — isolated database
     expect(await prisma.contact.count()).toBe(existingContacts);
     expect(await prisma.task.count({where: {description: {contains: inquiry.id}}})).toBe(1);
   } finally { await prisma.$disconnect(); }
+});
+
+
+test('radio: click to start, persistent player, shuffle, pause and mobile controls', async ({page}, testInfo) => {
+  await refuseOnLoad(page);
+  const catalog = require('../../src/data/radio-tracks.json');
+  expect(catalog).toHaveLength(139);
+  expect(new Set(catalog.map(t=>t.id)).size).toBe(139);
+  // Real MP3 fixture tests browser playback; hosted catalog health is checked separately before release.
+  const fs = require('node:fs');
+  const body = fs.readFileSync('public/music/background.mp3');
+  const requests = [];
+  await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/, route => {
+    requests.push(route.request().url());
+    return route.fulfill({status:200,contentType:'audio/mpeg',body});
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/radio');
+  const audio = page.getByTestId('nowis-radio-audio');
+  await expect(audio).not.toHaveAttribute('src', /.+/);
+  expect(requests).toHaveLength(0);
+  await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
+  await expect.poll(()=>audio.evaluate(a=>!a.paused && a.currentTime > 0)).toBeTruthy();
+  const first = await audio.getAttribute('src');
+  await page.locator('.nr-player').getByRole('button',{name:'Mettre la radio en pause'}).click();
+  await expect.poll(()=>audio.evaluate(a=>a.paused)).toBeTruthy();
+  const paused = await audio.evaluate(a=>a.currentTime);
+  await page.locator('.nr-player').getByRole('button',{name:'Écouter la radio'}).click();
+  await expect.poll(()=>audio.evaluate(a=>a.currentTime)).toBeGreaterThan(paused);
+  await audio.evaluate(a=>a.dataset.persisted='yes');
+  await page.getByRole('link',{name:'Voir les nouveautés et favoris',exact:true}).click();
+  await expect(page).toHaveURL(/\/musique$/);
+  await expect(audio).toHaveAttribute('data-persisted','yes');
+  await expect(audio).toHaveAttribute('src',first);
+  await page.getByRole('link',{name:'Jeux',exact:true}).click();
+  await expect(page).toHaveURL(/\/jeux$/);
+  await expect(audio).toHaveAttribute('data-persisted','yes');
+  await expect(audio).toHaveCount(1);
+  await expect(audio).toHaveAttribute('src',first);
+  await page.locator('.nr-dock').getByRole('button',{name:'Chanson suivante'}).click();
+  await expect(audio).not.toHaveAttribute('src',first);
+  await expect.poll(()=>audio.evaluate(a=>!a.paused && a.currentTime > 0)).toBeTruthy();
+  for(const width of [320,390,768,1200,1440]) {
+    await page.setViewportSize({width,height:900});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBeTruthy();
+    const button=await page.locator('.nr-dock').getByRole('button',{name:'Mettre la radio en pause'}).boundingBox();
+    expect(button.x).toBeGreaterThanOrEqual(0);
+    expect(button.x+button.width).toBeLessThanOrEqual(width);
+  }
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('.nr-dock-title').click();
+  await expect(page).toHaveURL(/\/radio$/);
+  await page.screenshot({path:testInfo.outputPath('radio-mobile.png'),fullPage:true});
+  await page.locator('.nr-dock').getByRole('button',{name:'Arrêter et fermer la radio'}).click();
+  await expect(page.locator('.nr-dock')).toHaveCount(0);
+  await expect(audio).not.toHaveAttribute('src',/.+/);
+});
+
+test('radio: unavailable catalog stops after one attempt per track', async ({page})=>{
+  await refuseOnLoad(page);
+  const attempted=[];
+  await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/,route=>{
+    attempted.push(route.request().url());
+    return route.fulfill({status:404,body:'Unavailable'});
+  });
+  await page.goto('/radio');
+  await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
+  await expect(page.locator('.nr-player [role="status"]')).toContainText('momentanément indisponible',{timeout:45000});
+  expect(new Set(attempted).size).toBe(139);
+  expect(attempted.length).toBe(139);
 });

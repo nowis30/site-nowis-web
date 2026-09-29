@@ -4,6 +4,8 @@ import './globals.css';
 import './public-polish.css';
 import './public-conversion.css';
 import './song-marketing.css';
+import './radio.css';
+import { RadioProvider } from '@/components/radio/RadioProvider';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -48,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-[#fcf7f1] text-[color:var(--site-text)] font-sans">
         <UnregisterServiceWorker />
-        <AuthProvider><AppLayout>{children}</AppLayout></AuthProvider>
+        <AuthProvider><RadioProvider><AppLayout>{children}</AppLayout></RadioProvider></AuthProvider>
         <ConsentGoogleTags measurementId={ga4MeasurementId} adsId={googleAdsId} />
         <CookieBanner />
       </body>

@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 const primary = [
   {label: 'Chansons personnalisées', href: '/commander-une-chanson'},
   {label: 'Écouter', href: '/musique'},
+  {label: 'Radio', href: '/radio'},
   {label: 'Ateliers', href: '/ateliers'},
   {label: 'Explorer', href: '/explorer'},
 ];

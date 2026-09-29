@@ -16,6 +16,7 @@ const staticPages = [
   { path: '/portfolio', priority: 0.85 },
   { path: '/jeux', priority: 0.85 },
   { path: '/musique', priority: 0.85 },
+  { path: '/radio', priority: 0.85 },
   { path: '/videos', priority: 0.85 },
   { path: '/shop', priority: 0.75 },
   { path: '/a-propos', priority: 0.75 },

@@ -1,7 +1,7 @@
 name: Public conversion QA (isolated)
 on:
   push:
-    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign"]
+    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign", "codex/nowis-radio"]
 permissions:
   contents: read
 concurrency:
@@ -42,7 +42,7 @@ jobs:
       - name: Generate client and prepare disposable test database
         run: npx prisma generate && npx prisma db push
       - name: Type check and focused security tests
-        run: npm run type-check && npm run lint && npx tsx scripts/public-conversion.test.ts
+        run: npm run type-check && npm run lint && npx tsx scripts/public-conversion.test.ts && npx tsx scripts/radio-shuffle.test.ts
       - name: Install isolated browser runner
         run: |
           npm install --prefix "$RUNNER_TEMP/nowis-browser" --no-save --package-lock=false @playwright/test@1.55.1

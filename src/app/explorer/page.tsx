@@ -5,7 +5,7 @@ export const metadata = buildMetadata({title: 'Explorer l’univers Nowis', desc
 const groups = [
   {title: 'Offrir & créer', links: [['Chansons personnalisées','/commander-une-chanson'],['Ateliers de groupe','/ateliers'],['Demander un atelier','/ateliers/demande'],['Services créatifs','/services'],['Tarifs','/tarifs'],['Préparer mon projet','/avant-de-mecrire'],['Assistant projet','/assistant-projet']]},
   {title: 'Apprendre à créer', links: [['Ma méthode de création','/comment-je-cree'],['Guide ChatGPT, Suno et Revid','/outils-creation-musicale']]},
-  {title: 'Écouter & découvrir', links: [['Musique : nouveautés et favoris','/musique'],['Vidéos','/videos'],['Créations','/creations'],['Portfolio','/portfolio'],['Artistes','/artistes'],['Idées','/idees'],['Jeux','/jeux'],['Boutique','/shop']]},
+  {title: 'Écouter & découvrir', links: [['Radio Nowis','/radio'],['Musique : nouveautés et favoris','/musique'],['Vidéos','/videos'],['Créations','/creations'],['Portfolio','/portfolio'],['Artistes','/artistes'],['Idées','/idees'],['Jeux','/jeux'],['Boutique','/shop']]},
   {title: 'Rencontrer & échanger', links: [['À propos de Nowis','/a-propos'],['Biographie','/biographie'],['Contact','/contact'],['Autres services','/autres-services'],['Prendre rendez-vous','/booking']]},
   {title: 'Retrouver mon projet', links: [['Portail client','/connexion'],['Créer un compte','/inscription'],['Confidentialité','/confidentialite'],['Conditions de vente','/conditions-de-vente'],['Mentions légales','/mentions-legales']]},
 ];
