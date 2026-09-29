@@ -29,6 +29,8 @@ test('creation guides: mobile reading, prompts, images and referral', async ({pa
   await page.setViewportSize({width:1440,height:1000});
   await page.goto('/outils-creation-musicale');
   await page.screenshot({path:testInfo.outputPath('creation-guide.png')});
+  await page.locator('aside[aria-labelledby="suno-offer-title"]').scrollIntoViewIfNeeded();
+  await page.screenshot({path:testInfo.outputPath('suno-invitation.png')});
 });
 
 test('mobile menu supports keyboard close and reaches the explorer', async ({page}) => {
@@ -323,7 +325,7 @@ test('radio: click to start, persistent player, shuffle, pause and mobile contro
   const fs = require('node:fs');
   const body = fs.readFileSync('public/music/background.mp3');
   const requests = [];
-  await page.route('**/audio/nowis-radio-suno/*.mp3', route => {
+  await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/, route => {
     requests.push(route.request().url());
     return route.fulfill({status:200,contentType:'audio/mpeg',body});
   });
@@ -344,6 +346,11 @@ test('radio: click to start, persistent player, shuffle, pause and mobile contro
   await page.getByRole('link',{name:'Voir les nouveautés et favoris',exact:true}).click();
   await expect(page).toHaveURL(/\/musique$/);
   await expect(audio).toHaveAttribute('data-persisted','yes');
+  await expect(audio).toHaveAttribute('src',first);
+  await page.getByRole('link',{name:'Jeux',exact:true}).click();
+  await expect(page).toHaveURL(/\/jeux$/);
+  await expect(audio).toHaveAttribute('data-persisted','yes');
+  await expect(audio).toHaveCount(1);
   await expect(audio).toHaveAttribute('src',first);
   await page.locator('.nr-dock').getByRole('button',{name:'Chanson suivante'}).click();
   await expect(audio).not.toHaveAttribute('src',first);
@@ -367,7 +374,7 @@ test('radio: click to start, persistent player, shuffle, pause and mobile contro
 test('radio: unavailable catalog stops after one attempt per track', async ({page})=>{
   await refuseOnLoad(page);
   const attempted=[];
-  await page.route('**/audio/nowis-radio-suno/*.mp3',route=>{
+  await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/,route=>{
     attempted.push(route.request().url());
     return route.fulfill({status:404,body:'Unavailable'});
   });

@@ -26,6 +26,7 @@ def inspect(path):
 with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
     sources = dict(item for item in pool.map(inspect, Path(sys.argv[1]).glob('*.mp3')) if item)
 matched = [{**track, 'path': sources[track['id']]} for track in tracks if track['id'] in sources]
-missing = [track for track in tracks if track['id'] not in sources]
-Path(sys.argv[2]).write_text(json.dumps({'matched': matched, 'missing': missing}, ensure_ascii=False, indent=2), encoding='utf-8')
-print(json.dumps({'matched': len(matched), 'missing': [{ 'id': t['id'], 'title': t['title']} for t in missing]}, ensure_ascii=False))
+hosted = [track for track in tracks if track['src'].startswith('/audio/nowis-radio/')]
+missing = [track for track in tracks if track['id'] not in sources and track not in hosted]
+Path(sys.argv[2]).write_text(json.dumps({'matched': matched, 'hosted': hosted, 'missing': missing}, ensure_ascii=False, indent=2), encoding='utf-8')
+print(json.dumps({'matched': len(matched), 'hosted': len(hosted), 'missing': [{ 'id': t['id'], 'title': t['title']} for t in missing]}, ensure_ascii=False))
