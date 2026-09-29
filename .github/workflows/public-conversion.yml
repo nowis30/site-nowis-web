@@ -1,7 +1,7 @@
 name: Public conversion QA (isolated)
 on:
   push:
-    branches: ["audit/public-conversion-20260928"]
+    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign"]
 permissions:
   contents: read
 concurrency:

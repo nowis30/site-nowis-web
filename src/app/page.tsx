@@ -4,9 +4,9 @@ import { HomeScreen } from '@/screens';
 export const dynamic = 'force-dynamic';
 
 export const metadata = buildMetadata({
-  title: 'Création Nowis | Ateliers IA, chansons personnalisées et vidéos créatives à Drummondville',
+  title: 'Chanson personnalisée à offrir | Création Nowis au Québec',
   description:
-    'Découvrez Création Nowis : ateliers de création musicale avec l IA pour écoles, aînés et organismes, chansons personnalisées et vidéos créatives à Drummondville et partout au Québec.',
+    'Offrez une chanson personnalisée pour un anniversaire, un amour ou un hommage. Écoutez Nowis et racontez votre idée, sans compte ni paiement pour la première demande.',
   path: '/',
   image: '/hero.jpg',
   keywords: [

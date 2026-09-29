@@ -3,6 +3,7 @@ import { Alfa_Slab_One, Inter } from 'next/font/google';
 import './globals.css';
 import './public-polish.css';
 import './public-conversion.css';
+import './song-marketing.css';
 import { UnregisterServiceWorker } from '@/components/UnregisterServiceWorker';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';

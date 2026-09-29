@@ -2,6 +2,94 @@ const { test, expect } = require('@playwright/test');
 const { PrismaClient } = require('@prisma/client');
 const CONSENT_KEY = 'nowis_cookie_consent_v2';
 const baseURL = 'http://127.0.0.1:3000';
+
+test('creation guides: mobile reading, prompts, images and referral', async ({page, context}, testInfo) => {
+  await refuseOnLoad(page);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.setViewportSize({width:390,height:844});
+  for (const path of ['/comment-je-cree','/outils-creation-musicale']) {
+    await page.goto(path);
+    await expect(page.locator('h1')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.getByRole('button',{name:'Copier le modèle'}).first().click();
+    await expect(page.getByRole('status').first()).toContainText('Texte copié');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('L’émotion au début');
+    await expect(page.locator('main a[href="https://www.revid.ai/?via=simon-morin"]')).toHaveAttribute('rel','sponsored noopener noreferrer');
+    await expect(page.locator('main')).toContainText('NoWiS2026');
+    await expect(page.locator('main')).toContainText('ne sont pas confirmés ici');
+  }
+  await page.getByRole('link',{name:'2. Suno',exact:true}).click();
+  await expect(page).toHaveURL(/#suno$/);
+  await page.locator('summary').filter({hasText:'Suno Studio'}).click();
+  for (const image of await page.locator('main figure img').all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(() => image.evaluate(img => img.complete && img.naturalWidth > 0)).toBeTruthy();
+  }
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto('/outils-creation-musicale');
+  await page.screenshot({path:testInfo.outputPath('creation-guide.png')});
+});
+
+test('mobile menu supports keyboard close and reaches the explorer', async ({page}) => {
+  await refuseOnLoad(page);
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto('/');
+  const toggle = page.getByRole('button', {name: 'Ouvrir le menu principal'});
+  await toggle.click();
+  await expect(page.locator('#mobile-main-menu')).toBeVisible();
+  await page.getByRole('button', {name: 'Fermer le menu principal'}).press('Escape');
+  await expect(page.locator('#mobile-main-menu')).toHaveCount(0);
+  await expect(toggle).toBeFocused();
+  await toggle.click();
+  await page.locator('#mobile-main-menu').getByRole('link', {name:'Explorer', exact:true}).click();
+  await expect(page).toHaveURL(/\/explorer$/);
+  await expect(page.locator('#mobile-main-menu')).toHaveCount(0);
+  for (const href of ['/musique','/ateliers','/jeux','/tarifs','/contact','/services','/portfolio','/shop','/connexion','/confidentialite']) {
+    await expect(page.locator(`main a[href="${href}"]`)).toHaveCount(1);
+  }
+  await expect(page.locator('main a[target="_blank"]')).toHaveAttribute('rel', 'noopener noreferrer');
+});
+
+test('occasion choice reaches editable song inquiry without losing context', async ({page}, testInfo) => {
+  await refuseOnLoad(page);
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await page.locator('#occasions a').filter({hasText:'Un amour à célébrer'}).click();
+  await expect(page).toHaveURL(/occasion=amour#demande$/);
+  await expect(page.getByLabel('Votre message', {exact:true})).toHaveValue(/célébrer notre histoire/);
+  await expect(page.getByLabel('Type de projet', {exact:true})).toHaveValue('chanson');
+  await page.getByLabel('Votre message', {exact:true}).fill('Notre anniversaire de mariage : dix ans ensemble.');
+  await expect(page.getByLabel('Votre message', {exact:true})).toHaveValue('Notre anniversaire de mariage : dix ans ensemble.');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+  await page.screenshot({path:testInfo.outputPath('song-request-mobile.png'),fullPage:true});
+  await page.goto('/commander-une-chanson?occasion=unknown');
+  await expect(page.getByLabel('Votre message', {exact:true})).toHaveValue('');
+});
+
+test('redesigned pages work at 320px and retain FAQ and primary action', async ({page}) => {
+  await refuseOnLoad(page);
+  await page.setViewportSize({width:320,height:740});
+  for (const path of ['/', '/commander-une-chanson', '/explorer']) {
+    await page.goto(path);
+    await expect(page.locator('main')).toHaveCount(1);
+    await expect(page.locator('h1')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+  }
+  await page.goto('/commander-une-chanson');
+  await page.locator('summary').filter({hasText:'Est-ce que la demande'}).click();
+  await expect(page.getByText('Non. Le formulaire sert à commencer un échange', {exact:false})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Envoyer ma demande sans compte'})).toBeVisible();
+});
+
+test('explorer keeps public destinations reachable', async ({page,request}) => {
+  test.setTimeout(180000);
+  await page.goto('/explorer');
+  const hrefs = await page.locator('main a[href^="/"]').evaluateAll(links => links.map(link => link.getAttribute('href')));
+  for (const href of [...new Set(hrefs)]) {
+    const response = await request.get(href);
+    expect(response.status(), href).toBeLessThan(400);
+  }
+});
 const consent = { version: 2, analytics: false, advertising: false, decidedAt: Date.now() };
 
 async function refuseOnLoad(page) {
