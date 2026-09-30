@@ -1,3 +1,5 @@
+const radioTracks = require('./src/data/radio-tracks.json');
+
 /** @type {import('next').NextConfig} */
 const retiredServiceRedirects = [
   '/services/annonce-evenement',
@@ -33,6 +35,10 @@ const nextConfig = {
   // Proxy /games/* and /audio/* vers S3 (évite les problèmes cross-origin dans les iframes)
   rewrites: async () => {
     return [
+      ...radioTracks.filter((track) => track.src.startsWith('/audio/nowis-radio-suno/')).map((track) => ({
+        source: `/audio/nowis-radio/${track.id}.mp3`,
+        destination: `https://nowis-crm-files.s3.us-east-1.amazonaws.com${track.src}`,
+      })),
       {
         source: '/games/:path*',
         destination: 'https://nowis-crm-files.s3.us-east-1.amazonaws.com/games/:path*',

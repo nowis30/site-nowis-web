@@ -384,3 +384,113 @@ test('radio: unavailable catalog stops after one attempt per track', async ({pag
   expect(new Set(attempted).size).toBe(139);
   expect(attempted.length).toBe(139);
 });
+
+// A short, decodable MP3 makes the browser fire real ended events for the entire
+// catalogue. Production audio integrity is checked separately, without fixtures.
+async function trackRadioEndings(page) {
+  await page.addInitScript(() => {
+    window.__radioEnded = [];
+    document.addEventListener('ended', (event) => {
+      if (event.target instanceof HTMLAudioElement && event.target.dataset.testid === 'nowis-radio-audio') {
+        window.__radioEnded.push(event.target.getAttribute('src'));
+      }
+    }, true);
+  });
+}
+
+test('radio: all 139 tracks end before a new tour starts on mobile', async ({page}) => {
+  test.setTimeout(150000);
+  await refuseOnLoad(page);
+  await trackRadioEndings(page);
+  const catalog = require('../../src/data/radio-tracks.json');
+  const body = require('node:fs').readFileSync('tests/fixtures/radio-short.mp3');
+  await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/,
+    route => route.fulfill({status:200,contentType:'audio/mpeg',body}));
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/radio');
+  await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
+  await expect.poll(() => page.evaluate(() => window.__radioEnded.length), {timeout:120000})
+    .toBeGreaterThanOrEqual(catalog.length + 1);
+  const ended = await page.evaluate(() => window.__radioEnded);
+  expect(new Set(ended.slice(0,catalog.length))).toEqual(new Set(catalog.map(t=>t.src)));
+  expect(ended[catalog.length]).not.toBe(ended[catalog.length - 1]);
+  await expect(page.getByTestId('radio-cycle-progress')).toContainText(`sur ${catalog.length}`);
+  await page.locator('.nr-dock').getByRole('button',{name:'Arrêter et fermer la radio'}).click();
+});
+
+test('radio: temporary failures cannot trap later tours on three playable tracks', async ({page}) => {
+  test.setTimeout(150000);
+  await refuseOnLoad(page);
+  await trackRadioEndings(page);
+  const catalog = require('../../src/data/radio-tracks.json');
+  const allowed = new Set(catalog.slice(0,3).map(t=>t.src));
+  const body = require('node:fs').readFileSync('tests/fixtures/radio-short.mp3');
+  const attempted = [];
+  await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/, route => {
+    const src = new URL(route.request().url()).pathname;
+    attempted.push(src);
+    if (attempted.length <= catalog.length && !allowed.has(src)) {
+      return route.fulfill({status:503,body:'Temporary interruption'});
+    }
+    return route.fulfill({status:200,contentType:'audio/mpeg',body});
+  });
+  await page.goto('/radio');
+  await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
+  await expect.poll(() => page.evaluate(() => window.__radioEnded.length), {timeout:120000})
+    .toBeGreaterThanOrEqual(catalog.length + 3);
+  const ended = await page.evaluate(() => window.__radioEnded);
+  expect(new Set(ended.slice(0,3))).toEqual(allowed);
+  expect(new Set(ended.slice(3,catalog.length + 3))).toEqual(new Set(catalog.map(t=>t.src)));
+  expect(new Set(attempted.slice(0,catalog.length)).size).toBe(catalog.length);
+  await page.locator('.nr-dock').getByRole('button',{name:'Arrêter et fermer la radio'}).click();
+});
+
+test('radio: reloading and closing preserve the tour and resume the current song', async ({page}) => {
+  await refuseOnLoad(page);
+  const catalog = require('../../src/data/radio-tracks.json');
+  const body = require('node:fs').readFileSync('public/music/background.mp3');
+  await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/,
+    route => route.fulfill({status:200,contentType:'audio/mpeg',body}));
+  await page.goto('/radio');
+  const audio = page.getByTestId('nowis-radio-audio');
+  await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
+  await expect.poll(()=>audio.evaluate(a=>!a.paused && a.currentTime > 0)).toBeTruthy();
+  for (let i=0;i<2;i++) {
+    const previous = await audio.getAttribute('src');
+    await page.locator('.nr-player').getByRole('button',{name:'Chanson suivante'}).click();
+    await expect(audio).not.toHaveAttribute('src',previous);
+    await expect.poll(()=>audio.evaluate(a=>!a.paused && a.currentTime > 0)).toBeTruthy();
+  }
+  await page.locator('.nr-player').getByRole('button',{name:'Mettre la radio en pause'}).click();
+  const selected = await audio.getAttribute('src');
+  const saved = await page.evaluate(()=>JSON.parse(sessionStorage.getItem('nowis-radio-session-v1')));
+  expect(saved.queue.length).toBe(catalog.length - 3);
+  await page.reload();
+  await expect(audio).not.toHaveAttribute('src',/.+/);
+  await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
+  await expect(audio).toHaveAttribute('src',selected);
+  await expect.poll(()=>audio.evaluate(a=>!a.paused && a.currentTime >= 0)).toBeTruthy();
+  await expect(page.getByTestId('radio-cycle-progress')).toContainText(`Titre 3 sur ${catalog.length}`);
+  await page.locator('.nr-dock').getByRole('button',{name:'Arrêter et fermer la radio'}).click();
+  await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
+  await expect(audio).toHaveAttribute('src',selected);
+  await page.locator('.nr-player').getByRole('button',{name:'Chanson suivante'}).click();
+  await expect(audio).toHaveAttribute('src',catalog[saved.queue[0]].src);
+  await expect(page.getByTestId('radio-cycle-progress')).toContainText(`Titre 4 sur ${catalog.length}`);
+});
+
+test('radio: legacy playlist endpoint serves the complete current catalogue', async ({request}) => {
+  const catalog = require('../../src/data/radio-tracks.json');
+  const response = await request.get('/audio/nowis-radio/playlist.json');
+  expect(response.ok()).toBeTruthy();
+  expect(response.headers()['cache-control']).toBe('no-store');
+  expect(await response.json()).toEqual(catalog.map(({title,src}) => ({
+    title,src:src.replace('/nowis-radio-suno/','/nowis-radio/'),
+  })));
+  const config = require('../../next.config.js');
+  const rewrites = await config.rewrites();
+  for (const track of catalog.filter(t=>t.src.startsWith('/audio/nowis-radio-suno/'))) {
+    expect(rewrites.some(r=>r.source === track.src.replace('/nowis-radio-suno/','/nowis-radio/')
+      && r.destination.endsWith(track.src))).toBeTruthy();
+  }
+});
