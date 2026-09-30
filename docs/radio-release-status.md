@@ -33,3 +33,17 @@ Les tests navigateur utilisent un vrai MP3 de test pour contrôler le lecteur. L
 TypeScript, ESLint, 100 cycles de mélange et 27 tests navigateur réussis sur le commit `76c9138`. Les tests couvrent aussi la navigation vers les jeux et l’absence de doublon de lecteur. La PR #28 est fusionnée et le lien Suno est vérifié sur nowis.store. La PR #29 publie le catalogue actif de 139 sources disponibles.
 
 Les 139 sources ont été contrôlées par HEAD après transfert. Le lancement à 139 a été explicitement approuvé par l’utilisateur. Les deux titres restants seront ajoutés quand leurs MP3 seront disponibles.
+
+## Contrôle du 30 septembre 2026 : catalogue complet et tours de lecture
+
+Après le signalement de trois chansons en boucle, les 139 URL de production ont été téléchargées intégralement par GET, puis décodées jusqu’à leur fin avec FFmpeg (`-xerror`). Résultat : 139 réponses audio valides, aucun échec de téléchargement ou de décodage. Durées de 42,6 à 402 secondes, total de 33 044,304 secondes (environ 9 h 11). Le titre court est la publicité « plancher rousseau rodier ».
+
+Les fichiers comprennent 138 empreintes SHA-256 distinctes : les deux entrées « je leve le son » (`ec5c9b02-233e-42ea-9863-ebb847ce94e7` et `8aa8c82e-6031-4cca-a4e8-80f7c4043f85`) servent exactement le même MP3. Leurs deux identifiants Suno sont conservés; retrouver une éventuelle version distincte reste à faire.
+
+Dans le navigateur de production, un morceau de 194 secondes a joué jusqu’à sa fin et le suivant a démarré automatiquement. Plusieurs autres titres ont démarré et la lecture a continué en allant vers les jeux. Ce contrôle ne constitue pas neuf heures d’écoute de chaque fichier dans le navigateur.
+
+Deux mécanismes ont été identifiés dans le code : l’ancien lecteur contenait un secours de trois titres; le lecteur actuel conservait ses exclusions après une erreur audio pour toute la session. Ainsi, un tour où seuls trois fichiers chargent pouvait limiter tous les tours suivants à ces trois fichiers. L’état du téléphone de l’utilisateur n’a pas été inspecté; la cause exacte de sa session ne doit pas être présentée comme certaine.
+
+La correction réessaie le catalogue entier à chaque nouveau tour, conserve la file et la position lors d’un rechargement ou d’une fermeture du lecteur, et affiche l’avancement du tour. Le manifeste historique utilise maintenant les mêmes 139 entrées que le lecteur; des alias préservent les chemins attendus par l’ancien lecteur. Les anciens caches du site sont retirés sans supprimer les autres caches ni forcer le rechargement d’un formulaire en cours.
+
+Les tests navigateur ajoutés utilisent un court MP3 réel pour obtenir 139 événements `ended` naturels, puis vérifier le passage au tour suivant. Un scénario simule seulement trois fichiers disponibles au premier tour, puis le rétablissement du réseau : les 139 titres doivent être rejouables au tour suivant. La reprise après rechargement et fermeture, le manifeste historique et le retrait ciblé des caches sont aussi couverts.

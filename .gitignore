@@ -27,6 +27,7 @@ public/games/
 *.mp4
 *.wav
 *.mp3
+!tests/fixtures/radio-short.mp3
 *.jks
 
 ### Misc

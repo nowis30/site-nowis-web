@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Pause, Play, SkipForward, X } from 'lucide-react';
 import { shuffleTracks } from '@/lib/radio-shuffle';
+import { parseRadioSession, RADIO_SESSION_KEY } from '@/lib/radio-session';
 import tracks from '@/data/radio-tracks.json';
+
+const catalog = JSON.stringify(tracks.map(({ id, src }) => [id, src]));
 
 type RadioState = {
   track: (typeof tracks)[number] | null;
@@ -12,6 +15,8 @@ type RadioState = {
   loading: boolean;
   message: string;
   volume: number;
+  positionInCycle: number;
+  totalTracks: number;
   toggle: () => void;
   next: () => void;
   stop: () => void;
@@ -31,21 +36,43 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const operation = useRef(0);
   const failed = useRef(new Set<number>());
   const wantsPlayback = useRef(false);
+  const resumePosition = useRef(0);
+  const pendingSeek = useRef(false);
+  const lastSavedSecond = useRef(-1);
   const [index, setIndex] = useState(-1);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [volume, updateVolume] = useState(0.7);
+  const [positionInCycle, setPositionInCycle] = useState(0);
+
+  function saveSession() {
+    if (current.current < 0) return;
+    try {
+      sessionStorage.setItem(RADIO_SESSION_KEY, JSON.stringify({
+        catalog, queue: queue.current, current: current.current, position: resumePosition.current,
+      }));
+    } catch { /* A browser that blocks storage can still play the whole catalogue. */ }
+  }
+
+  function recordPosition(force = false) {
+    const element = audio.current;
+    if (!element?.getAttribute('src') || pendingSeek.current || element.readyState === 0) return;
+    resumePosition.current = element.currentTime;
+    const second = Math.floor(element.currentTime / 5);
+    if (force || second !== lastSavedSecond.current) {
+      lastSavedSecond.current = second;
+      saveSession();
+    }
+  }
 
   function stop() {
+    recordPosition(true);
     operation.current++;
     wantsPlayback.current = false;
     audio.current?.pause();
     audio.current?.removeAttribute('src');
     audio.current?.load();
-    current.current = -1;
-    queue.current = [];
-    failed.current.clear();
     setIndex(-1);
     setPlaying(false);
     setLoading(false);
@@ -56,6 +83,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     const element = audio.current;
     if (!element) return;
     const attempt = ++operation.current;
+    const selected = current.current;
     wantsPlayback.current = true;
     setLoading(true);
     setMessage('');
@@ -65,7 +93,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         wantsPlayback.current = false;
         setMessage('Appuyez sur Lecture pour reprendre la radio.');
       } else if (!(error instanceof DOMException && error.name === 'AbortError')) {
-        unavailable();
+        unavailable(selected, attempt);
       }
     }).finally(() => {
       if (attempt === operation.current) setLoading(false);
@@ -75,29 +103,47 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   function next() {
     const element = audio.current;
     if (!element) return;
-    if (failed.current.size >= tracks.length) {
-      wantsPlayback.current = false;
-      element.pause();
-      setLoading(false);
-      setMessage('La radio est momentanément indisponible. Réessayez dans un instant.');
-      return;
+    if (!queue.current.length) {
+      if (failed.current.size >= tracks.length) {
+        wantsPlayback.current = false;
+        element.pause();
+        setPlaying(false);
+        setLoading(false);
+        setMessage('La radio est momentanément indisponible. Réessayez dans un instant.');
+        return;
+      }
+      // A temporary loading error must never reduce all later tours to a few songs.
+      failed.current.clear();
+      queue.current = shuffleTracks(tracks.length, current.current);
     }
-    if (!queue.current.length) queue.current = shuffleTracks(tracks.length, current.current);
-    let selected = queue.current.shift()!;
-    while (failed.current.has(selected)) {
-      if (!queue.current.length) queue.current = shuffleTracks(tracks.length, current.current);
-      selected = queue.current.shift()!;
-    }
+    const selected = queue.current.shift()!;
     current.current = selected;
+    resumePosition.current = 0;
+    pendingSeek.current = false;
+    lastSavedSecond.current = -1;
     setIndex(selected);
+    setPositionInCycle(tracks.length - queue.current.length);
+    setPlaying(false);
+    saveSession();
     operation.current++;
     element.src = tracks[selected].src;
     element.load();
     play();
   }
 
-  function unavailable() {
-    if (!wantsPlayback.current || failed.current.has(current.current)) return;
+  function unavailable(selected = current.current, attempt = operation.current) {
+    if (!wantsPlayback.current || attempt !== operation.current || selected !== current.current
+      || failed.current.has(selected)) return;
+    if (!navigator.onLine) {
+      recordPosition(true);
+      wantsPlayback.current = false;
+      operation.current++;
+      audio.current?.pause();
+      setPlaying(false);
+      setLoading(false);
+      setMessage('Connexion interrompue. Appuyez sur Lecture après le retour du réseau pour reprendre ce titre.');
+      return;
+    }
     failed.current.add(current.current);
     next();
   }
@@ -107,11 +153,23 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       wantsPlayback.current = false;
       operation.current++;
       audio.current?.pause();
+      recordPosition(true);
       setLoading(false);
     } else if (current.current < 0 || failed.current.has(current.current)) {
       failed.current.clear();
       next();
-    } else play();
+    } else {
+      const element = audio.current;
+      if (!element) return;
+      setIndex(current.current);
+      setPositionInCycle(tracks.length - queue.current.length);
+      if (!element.getAttribute('src') || element.error) {
+        pendingSeek.current = resumePosition.current > 0;
+        element.src = tracks[current.current].src;
+        element.load();
+      }
+      play();
+    }
   }
 
   function setVolume(value: number) {
@@ -122,6 +180,14 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const element = audio.current;
     if (element) element.volume = 0.7;
+    try {
+      const saved = parseRadioSession(sessionStorage.getItem(RADIO_SESSION_KEY), catalog, tracks.length);
+      if (saved) {
+        queue.current = saved.queue;
+        current.current = saved.current;
+        resumePosition.current = saved.position;
+      }
+    } catch { /* Storage is optional. Never autoplay on reload. */ }
     return () => { element?.pause(); };
   }, []);
 
@@ -130,15 +196,27 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     return () => document.body.classList.remove('nowis-radio-active');
   }, [index]);
 
-  const value = { track: tracks[index] ?? null, playing, loading, message, volume, toggle, next, stop, setVolume };
+  const value = { track: tracks[index] ?? null, playing, loading, message, volume,
+    positionInCycle, totalTracks: tracks.length, toggle, next, stop, setVolume };
   return <RadioContext.Provider value={value}>
     {children}
     <audio ref={audio} data-testid="nowis-radio-audio" preload="none"
+      onLoadedMetadata={() => {
+        const element = audio.current;
+        if (element && pendingSeek.current) {
+          // A saved position at EOF continues to the next song, rather than replaying it.
+          element.currentTime = Math.min(resumePosition.current, element.duration);
+          pendingSeek.current = false;
+        }
+      }}
+      onTimeUpdate={() => recordPosition()}
       onPlaying={() => { setPlaying(true); setLoading(false); }}
-      onPause={() => setPlaying(false)} onWaiting={() => { if (wantsPlayback.current) setLoading(true); }}
-      onEnded={next} onError={unavailable} />
+      onPause={() => { setPlaying(false); recordPosition(true); }}
+      onWaiting={() => { if (wantsPlayback.current) setLoading(true); }}
+      onEnded={() => { if (wantsPlayback.current) next(); }}
+      onError={() => { if (audio.current?.error) unavailable(); }} />
     {index >= 0 && <aside className="nr-dock" aria-label="Lecteur Radio Nowis">
-      <Link href="/radio" className="nr-dock-title"><small>RADIO NOWIS · ALÉATOIRE</small><strong>{tracks[index].title}</strong></Link>
+      <Link href="/radio" className="nr-dock-title"><small>RADIO NOWIS · {positionInCycle}/{tracks.length}</small><strong>{tracks[index].title}</strong></Link>
       <RadioControls compact />
       <button className="nr-icon" onClick={stop} aria-label="Arrêter et fermer la radio"><X size={19} /></button>
       {message && <p role="status" className="nr-message">{message}</p>}
