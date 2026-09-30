@@ -380,7 +380,7 @@ test('radio: unavailable catalog stops after one attempt per track', async ({pag
   });
   await page.goto('/radio');
   await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
-  await expect(page.locator('.nr-player [role="status"]')).toContainText('momentanément indisponible',{timeout:45000});
+  await expect(page.locator('.nr-player [role="status"]').filter({hasText:'momentanément indisponible'})).toBeVisible({timeout:45000});
   expect(new Set(attempted).size).toBe(139);
   expect(attempted.length).toBe(139);
 });

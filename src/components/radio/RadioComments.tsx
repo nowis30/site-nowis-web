@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import tracks from '@/data/radio-tracks.json';
 import { useRadio } from './RadioProvider';
 
@@ -22,29 +22,35 @@ export function RadioComments({ displayName = '' }: { displayName?: string }) {
   const [message, setMessage] = useState('');
   const [trackId, setTrackId] = useState('');
   const [openOlder, setOpenOlder] = useState(false);
+  const pageGeneration = useRef(0);
   useEffect(() => { setName(displayName); }, [displayName]);
   const loadLatest = useCallback(async () => {
+    const generation = ++pageGeneration.current;
     setLoading(true); setLoadError('');
+    setLoadingOlder(false);
     try {
       const response = await fetch('/api/radio/comments', { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
+      if (generation !== pageGeneration.current) return;
       setLatest((data as CommentPage).comments); setCursor(data.nextCursor); setOlder([]); setOpenOlder(false);
-    } catch (err) { setLoadError(err instanceof Error ? err.message : 'Impossible de charger les commentaires.'); }
-    finally { setLoading(false); }
+    } catch (err) { if (generation === pageGeneration.current) setLoadError(err instanceof Error ? err.message : 'Impossible de charger les commentaires.'); }
+    finally { if (generation === pageGeneration.current) setLoading(false); }
   }, []);
   useEffect(() => { void loadLatest(); }, [loadLatest]);
   async function loadOlder() {
     if (!cursor || loadingOlder) return;
+    const generation = pageGeneration.current;
     setLoadingOlder(true); setLoadError('');
     try {
       const response = await fetch(`/api/radio/comments?cursor=${encodeURIComponent(cursor)}`, { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
+      if (generation !== pageGeneration.current) return;
       setOlder(previous => [...previous, ...data.comments.filter((item: Comment) => !previous.some(old => old.id === item.id))]);
       setCursor(data.nextCursor);
-    } catch (err) { setLoadError(err instanceof Error ? err.message : 'Impossible de charger la suite.'); }
-    finally { setLoadingOlder(false); }
+    } catch (err) { if (generation === pageGeneration.current) setLoadError(err instanceof Error ? err.message : 'Impossible de charger la suite.'); }
+    finally { if (generation === pageGeneration.current) setLoadingOlder(false); }
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

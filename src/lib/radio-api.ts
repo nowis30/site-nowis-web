@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z, ZodError } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { consumeContactRateLimit } from '@/lib/contact-rate-limit';
+import { publicInquiryOriginAllowed } from '@/lib/public-inquiry-security';
 import { CLIENT_PORTAL_COOKIE_NAME, verifyClientPortalSession } from '@/features/client-portal/auth/session';
 import tracks from '@/data/radio-tracks.json';
 
@@ -27,7 +28,9 @@ export function radioError(error: unknown) {
 }
 export async function readRadioJson(request: NextRequest): Promise<unknown> {
   const origin = request.headers.get('origin');
-  if ((origin && origin !== request.nextUrl.origin) || request.headers.get('sec-fetch-site') === 'cross-site') {
+  // Next can normalize the internal request hostname behind a proxy or in development.
+  // Reuse the explicit public-site / exact-preview allowlist, never a caller-supplied Host.
+  if ((origin && !publicInquiryOriginAllowed(origin)) || request.headers.get('sec-fetch-site') === 'cross-site') {
     throw new RadioHttpError(403, 'Cette demande doit provenir du site Nowis.');
   }
   if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
