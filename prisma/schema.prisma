@@ -334,6 +334,7 @@ model User {
   oauthAccounts              ClientOAuthAccount[]
   calendarConnections        CalendarConnection[]  @relation("CalendarConnectionCreatedBy")
   passwordResetTokens        PasswordResetToken[]
+  radioFavorites             RadioFavorite[]
 
   @@map("users")
 }
@@ -1327,6 +1328,7 @@ model PublicComment {
   rating        Int?
   status        PublicCommentStatus @default(PENDING)
   sourcePage    String              @default("/")
+  radioTrackId  String?
   approvedAt    DateTime?
   rejectedAt    DateTime?
   ipHash        String?
@@ -1337,7 +1339,19 @@ model PublicComment {
   @@index([status, createdAt])
   @@index([sourcePage, status])
   @@index([approvedAt])
+  @@index([sourcePage, status, createdAt, id])
   @@map("public_comments")
+}
+
+model RadioFavorite {
+  userId    String   @db.Uuid
+  trackId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, trackId])
+  @@index([userId, createdAt])
+  @@map("radio_favorites")
 }
 
 model ApiRateLimit {

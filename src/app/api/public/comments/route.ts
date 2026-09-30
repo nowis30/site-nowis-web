@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     : DEFAULT_LIMIT;
 
   const comments = await prisma.publicComment.findMany({
-    where: { status: 'APPROVED' },
+    where: { status: 'APPROVED', sourcePage: { not: '/radio' } },
     orderBy: [{ approvedAt: 'desc' }, { createdAt: 'desc' }],
     take: limit,
     select: {

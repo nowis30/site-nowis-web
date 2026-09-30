@@ -1,7 +1,7 @@
 const { defineConfig } = require('@playwright/test');
 module.exports = defineConfig({
   testDir: __dirname,
-  testMatch: 'public-conversion.spec.cjs',
+  testMatch: ['public-conversion.spec.cjs', 'radio-community.spec.cjs'],
   timeout: 90_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

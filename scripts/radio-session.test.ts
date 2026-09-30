@@ -8,6 +8,11 @@ async function main() {
   const catalog = JSON.stringify(tracks.map(({ id, src }) => [id, src]));
   const saved = { catalog, queue: [1, 3, 4], current: 2, position: 73.5 };
   assert.deepEqual(parseRadioSession(JSON.stringify(saved), catalog, tracks.length), saved);
+  const selection = { ...saved, selection: [1, 2, 3, 4] };
+  assert.deepEqual(parseRadioSession(JSON.stringify(selection), catalog, tracks.length), selection);
+  for (const invalid of [[], [1, 3, 4], [2], [1, 2, 3, 3, 4], [1, 2, 3, 4, tracks.length]]) {
+    assert.equal(parseRadioSession(JSON.stringify({ ...saved, selection: invalid }), catalog, tracks.length), null);
+  }
   for (const change of [
     { catalog: 'outdated' }, { queue: [1, 1] }, { queue: [2] },
     { queue: [-1] }, { queue: [tracks.length] }, { current: -1 },

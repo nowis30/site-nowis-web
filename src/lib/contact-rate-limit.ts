@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 const USER_LIMIT = { scope: 'contact:user', max: 5, windowMs: 10 * 60 * 1000 } as const;
 const IP_LIMIT = { scope: 'contact:ip', max: 20, windowMs: 60 * 60 * 1000 } as const;
 
-type RateLimitScope = typeof USER_LIMIT.scope | typeof IP_LIMIT.scope;
+type RateLimitScope = typeof USER_LIMIT.scope | typeof IP_LIMIT.scope | 'radio:comment' | 'radio:register' | 'radio:favorite';
 
 type ConsumeArgs = {
   scope: RateLimitScope;
@@ -101,7 +101,7 @@ export async function consumeContactRateLimit({ scope, identifier, max, windowMs
     try {
       return await runAttempt();
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034' && attempt < 2) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && ['P2034', 'P2002'].includes(error.code) && attempt < 2) {
         continue;
       }
       throw error;

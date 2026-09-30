@@ -1,0 +1,434 @@
+{
+  "verifiedAt": "2026-09-30",
+  "source": "https://itunes.apple.com/lookup?id=6817287623&country=ca&entity=song&limit=200",
+  "album": {
+    "title": "L'amour de Nowis",
+    "artist": "Nowis Morin",
+    "url": "https://music.apple.com/ca/album/lamour-de-nowis/6817287623?uo=4",
+    "cover": "/images/albums/lamour-de-nowis.jpg",
+    "tracks": [
+      {
+        "id": 6817287625,
+        "title": "Québécois",
+        "url": "https://music.apple.com/ca/album/qu%C3%A9b%C3%A9cois/6817287623?i=6817287625&uo=4"
+      },
+      {
+        "id": 6817287629,
+        "title": "Le gros nounours",
+        "url": "https://music.apple.com/ca/album/le-gros-nounours/6817287623?i=6817287629&uo=4"
+      },
+      {
+        "id": 6817287630,
+        "title": "Mon père, c’est le plus fort",
+        "url": "https://music.apple.com/ca/album/mon-p%C3%A8re-cest-le-plus-fort/6817287623?i=6817287630&uo=4"
+      },
+      {
+        "id": 6817287631,
+        "title": "Qu’une maman, un seul papa",
+        "url": "https://music.apple.com/ca/album/quune-maman-un-seul-papa/6817287623?i=6817287631&uo=4"
+      },
+      {
+        "id": 6817287632,
+        "title": "Pardon m'man",
+        "url": "https://music.apple.com/ca/album/pardon-mman/6817287623?i=6817287632&uo=4"
+      },
+      {
+        "id": 6817287818,
+        "title": "Parent",
+        "url": "https://music.apple.com/ca/album/parent/6817287623?i=6817287818&uo=4"
+      },
+      {
+        "id": 6817287826,
+        "title": "Bonjour Sébas, Bonjour Julie",
+        "url": "https://music.apple.com/ca/album/bonjour-s%C3%A9bas-bonjour-julie/6817287623?i=6817287826&uo=4"
+      },
+      {
+        "id": 6817287827,
+        "title": "Louise du Soleil Levant",
+        "url": "https://music.apple.com/ca/album/louise-du-soleil-levant/6817287623?i=6817287827&uo=4"
+      },
+      {
+        "id": 6817287828,
+        "title": "Caya",
+        "url": "https://music.apple.com/ca/album/caya/6817287623?i=6817287828&uo=4"
+      },
+      {
+        "id": 6817287830,
+        "title": "Chanel",
+        "url": "https://music.apple.com/ca/album/chanel/6817287623?i=6817287830&uo=4"
+      },
+      {
+        "id": 6817287831,
+        "title": "Nowis",
+        "url": "https://music.apple.com/ca/album/nowis/6817287623?i=6817287831&uo=4"
+      },
+      {
+        "id": 6817287833,
+        "title": "Motard dans l’âme",
+        "url": "https://music.apple.com/ca/album/motard-dans-l%C3%A2me/6817287623?i=6817287833&uo=4"
+      },
+      {
+        "id": 6817287834,
+        "title": "Camping",
+        "url": "https://music.apple.com/ca/album/camping/6817287623?i=6817287834&uo=4"
+      },
+      {
+        "id": 6817287836,
+        "title": "Tambours Caraïbes",
+        "url": "https://music.apple.com/ca/album/tambours-cara%C3%AFbes/6817287623?i=6817287836&uo=4"
+      },
+      {
+        "id": 6817287837,
+        "title": "Je prend mon temps",
+        "url": "https://music.apple.com/ca/album/je-prend-mon-temps/6817287623?i=6817287837&uo=4"
+      },
+      {
+        "id": 6817287838,
+        "title": "Je suis tomber amoureux — acoustique",
+        "url": "https://music.apple.com/ca/album/je-suis-tomber-amoureux-acoustique/6817287623?i=6817287838&uo=4"
+      },
+      {
+        "id": 6817287839,
+        "title": "Ange",
+        "url": "https://music.apple.com/ca/album/ange/6817287623?i=6817287839&uo=4"
+      },
+      {
+        "id": 6817287840,
+        "title": "Je t’aime",
+        "url": "https://music.apple.com/ca/album/je-taime/6817287623?i=6817287840&uo=4"
+      },
+      {
+        "id": 6817287841,
+        "title": "L’amour de ma vie",
+        "url": "https://music.apple.com/ca/album/lamour-de-ma-vie/6817287623?i=6817287841&uo=4"
+      },
+      {
+        "id": 6817287842,
+        "title": "Huit ans à deux",
+        "url": "https://music.apple.com/ca/album/huit-ans-%C3%A0-deux/6817287623?i=6817287842&uo=4"
+      },
+      {
+        "id": 6817287843,
+        "title": "Quand tu es là",
+        "url": "https://music.apple.com/ca/album/quand-tu-es-l%C3%A0/6817287623?i=6817287843&uo=4"
+      },
+      {
+        "id": 6817287845,
+        "title": "Aime moi",
+        "url": "https://music.apple.com/ca/album/aime-moi/6817287623?i=6817287845&uo=4"
+      },
+      {
+        "id": 6817287937,
+        "title": "Je t’aime sans vouloir",
+        "url": "https://music.apple.com/ca/album/je-taime-sans-vouloir/6817287623?i=6817287937&uo=4"
+      },
+      {
+        "id": 6817287939,
+        "title": "J’ai cru à nous",
+        "url": "https://music.apple.com/ca/album/jai-cru-%C3%A0-nous/6817287623?i=6817287939&uo=4"
+      },
+      {
+        "id": 6817287940,
+        "title": "Mal d’aimer",
+        "url": "https://music.apple.com/ca/album/mal-daimer/6817287623?i=6817287940&uo=4"
+      },
+      {
+        "id": 6817287943,
+        "title": "Chemins Croches",
+        "url": "https://music.apple.com/ca/album/chemins-croches/6817287623?i=6817287943&uo=4"
+      },
+      {
+        "id": 6817287944,
+        "title": "Plaster sur l’âme",
+        "url": "https://music.apple.com/ca/album/plaster-sur-l%C3%A2me/6817287623?i=6817287944&uo=4"
+      },
+      {
+        "id": 6817287945,
+        "title": "Revenue dans mes bras",
+        "url": "https://music.apple.com/ca/album/revenue-dans-mes-bras/6817287623?i=6817287945&uo=4"
+      },
+      {
+        "id": 6817287946,
+        "title": "À cœur ouvert",
+        "url": "https://music.apple.com/ca/album/%C3%A0-c%C5%93ur-ouvert/6817287623?i=6817287946&uo=4"
+      },
+      {
+        "id": 6817287947,
+        "title": "L’au-delà",
+        "url": "https://music.apple.com/ca/album/lau-del%C3%A0/6817287623?i=6817287947&uo=4"
+      },
+      {
+        "id": 6817287950,
+        "title": "Un vieux refrain",
+        "url": "https://music.apple.com/ca/album/un-vieux-refrain/6817287623?i=6817287950&uo=4"
+      },
+      {
+        "id": 6817287951,
+        "title": "Dis oui à la vie",
+        "url": "https://music.apple.com/ca/album/dis-oui-%C3%A0-la-vie/6817287623?i=6817287951&uo=4"
+      }
+    ]
+  },
+  "radioLinks": {
+    "15572c8d-09e1-426a-803a-12f2d7083c55": {
+      "title": "Revenue dans mes bras",
+      "url": "https://music.apple.com/ca/album/revenue-dans-mes-bras/6817287623?i=6817287945&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "780d74a4-ba36-452e-a244-9bc68aaa40b5": {
+      "title": "Plaster sur l’âme",
+      "url": "https://music.apple.com/ca/album/plaster-sur-l%C3%A2me/6817287623?i=6817287944&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "56aac3c7-132e-43fd-be42-6be4da461872": {
+      "title": "J’ai cru à nous",
+      "url": "https://music.apple.com/ca/album/jai-cru-%C3%A0-nous/6817287623?i=6817287939&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "5f2bba94-9043-49c1-9eb3-a68ec90178fa": {
+      "title": "L’amour de ma vie",
+      "url": "https://music.apple.com/ca/album/lamour-de-ma-vie/6817287623?i=6817287841&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "95a3eded-dc54-48ea-bdf1-271d31f0f37c": {
+      "title": "L’au-delà",
+      "url": "https://music.apple.com/ca/album/lau-del%C3%A0/6817287623?i=6817287947&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "2f73607e-0010-4e09-a430-9d83f807ad75": {
+      "title": "Bonjour Sébas, Bonjour Julie",
+      "url": "https://music.apple.com/ca/album/bonjour-s%C3%A9bas-bonjour-julie/6817287623?i=6817287826&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "e937c76e-89c3-4c23-bc7b-7775050a65d2": {
+      "title": "Quand tu es là",
+      "url": "https://music.apple.com/ca/album/quand-tu-es-l%C3%A0/6817287623?i=6817287843&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "2dc149a5-de53-44e8-b4e9-91c2da8a779d": {
+      "title": "J'ai le goût de danser",
+      "url": "https://music.apple.com/ca/album/jai-le-go%C3%BBt-de-danser/1859472579?i=1859472580&uo=4",
+      "album": "Nowis danse avec l'intelligence artificielle - EP"
+    },
+    "6ec6c1f0-77e0-4b71-9693-118b307eb29c": {
+      "title": "À cœur ouvert",
+      "url": "https://music.apple.com/ca/album/%C3%A0-c%C5%93ur-ouvert/6817287623?i=6817287946&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "2f1ba495-b9d1-456b-a06c-7c33f6c54533": {
+      "title": "Huit ans à deux",
+      "url": "https://music.apple.com/ca/album/huit-ans-%C3%A0-deux/6817287623?i=6817287842&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "86dc3614-42f6-4074-813a-6b9013748f79": {
+      "title": "Le gros nounours",
+      "url": "https://music.apple.com/ca/album/le-gros-nounours/6817287623?i=6817287629&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "201d46c3-e1c4-499b-aec8-8d6a71f6ef2e": {
+      "title": "Camping",
+      "url": "https://music.apple.com/ca/album/camping/6817287623?i=6817287834&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "b5273cdc-2de9-4910-89f1-b2adeba9d70c": {
+      "title": "Motard dans l’âme",
+      "url": "https://music.apple.com/ca/album/motard-dans-l%C3%A2me/6817287623?i=6817287833&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "de077289-c956-40ef-a7f5-5e85f9f899d5": {
+      "title": "Chanel",
+      "url": "https://music.apple.com/ca/album/chanel/6817287623?i=6817287830&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "d5adbda6-9822-4c34-bfb2-48413d30cc2a": {
+      "title": "Je t’aime",
+      "url": "https://music.apple.com/ca/album/je-taime/6817287623?i=6817287840&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "87f61de7-45ab-41b9-8c1f-e870c85f359b": {
+      "title": "Québécois",
+      "url": "https://music.apple.com/ca/album/qu%C3%A9b%C3%A9cois/6817287623?i=6817287625&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "35262a92-d51e-4309-a93b-e175942f4600": {
+      "title": "Ange",
+      "url": "https://music.apple.com/ca/album/ange/6817287623?i=6817287839&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "fb30a4ef-0af1-4078-80f1-aaeb6531d7e8": {
+      "title": "Caya",
+      "url": "https://music.apple.com/ca/album/caya/6817287623?i=6817287828&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "9aa15b8e-fcd8-47ae-8ff9-e5fbf7db519e": {
+      "title": "Chemins Croches",
+      "url": "https://music.apple.com/ca/album/chemins-croches/6817287623?i=6817287943&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "9da6536b-7809-4a4f-ae03-4f4b153dc20b": {
+      "title": "Parent",
+      "url": "https://music.apple.com/ca/album/parent/6817287623?i=6817287818&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "27aada72-fb16-4f38-bc97-f1aa574442c3": {
+      "title": "Mon père, c’est le plus fort",
+      "url": "https://music.apple.com/ca/album/mon-p%C3%A8re-cest-le-plus-fort/6817287623?i=6817287630&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "90cbb11f-ac18-4e13-bbdf-9db1f56fa53a": {
+      "title": "Pardon m'man",
+      "url": "https://music.apple.com/ca/album/pardon-mman/6817287623?i=6817287632&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "a0458dd4-2966-469c-97e1-6cbb08745aae": {
+      "title": "Aime moi",
+      "url": "https://music.apple.com/ca/album/aime-moi/6817287623?i=6817287845&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "637f4617-1b30-4ebc-adf5-08c8c25c38b5": {
+      "title": "Tambours Caraïbes",
+      "url": "https://music.apple.com/ca/album/tambours-cara%C3%AFbes/6817287623?i=6817287836&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "923875b1-cb0e-4838-bef8-a05fc602c964": {
+      "title": "Un vieux refrain",
+      "url": "https://music.apple.com/ca/album/un-vieux-refrain/6817287623?i=6817287950&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "45759fb5-37df-4690-9b28-8924e4dde670": {
+      "title": "Dis oui à la vie",
+      "url": "https://music.apple.com/ca/album/dis-oui-%C3%A0-la-vie/6817287623?i=6817287951&uo=4",
+      "album": "L'amour de Nowis"
+    },
+    "9e36ec6a-51d9-467e-97cf-8950dd07149d": {
+      "title": "Placement",
+      "url": "https://music.apple.com/ca/album/placement/1895561894?i=6763934732&uo=4",
+      "album": "Nowis aide avec l'IA"
+    },
+    "3dc7246d-8091-4b53-9ad7-17e44c4bd64a": {
+      "title": "Frères de bruit",
+      "url": "https://music.apple.com/ca/album/fr%C3%A8res-de-bruit/1895561894?i=6763934727&uo=4",
+      "album": "Nowis aide avec l'IA"
+    },
+    "1ae4da19-ae6c-4faa-949a-8d14efd7eb35": {
+      "title": "Seul mais marié",
+      "url": "https://music.apple.com/ca/album/seul-mais-mari%C3%A9/1895561894?i=6763934735&uo=4",
+      "album": "Nowis aide avec l'IA"
+    },
+    "a8140b0f-64d7-4782-a349-28b5c441301f": {
+      "title": "Guitare à l'IA",
+      "url": "https://music.apple.com/ca/album/guitare-%C3%A0-lia/1895561894?i=6763934728&uo=4",
+      "album": "Nowis aide avec l'IA"
+    },
+    "423654c1-b46a-46d5-a693-6ba0f8d466be": {
+      "title": "Pas tous du même bord",
+      "url": "https://music.apple.com/ca/album/pas-tous-du-m%C3%AAme-bord/1895561894?i=6763934731&uo=4",
+      "album": "Nowis aide avec l'IA"
+    },
+    "8793cda8-ab44-4646-a140-9fb02b54b0fe": {
+      "title": "Retrouvaille",
+      "url": "https://music.apple.com/ca/album/retrouvaille/1895561894?i=6763934734&uo=4",
+      "album": "Nowis aide avec l'IA"
+    },
+    "c981120c-4600-46f8-90e5-bd6971bc52b6": {
+      "title": "Un père et sa fille",
+      "url": "https://music.apple.com/ca/album/un-p%C3%A8re-et-sa-fille/1883069134?i=1883069136&uo=4",
+      "album": "La famille Morin - Single"
+    },
+    "3c9c17a9-7dab-46af-afd8-0ea72cd1108c": {
+      "title": "Marraine",
+      "url": "https://music.apple.com/ca/album/marraine/1880670466?i=1880670480&uo=4",
+      "album": "Seul"
+    },
+    "f4a88f2a-8465-4bb5-afbf-7613ffa59d4a": {
+      "title": "Seul",
+      "url": "https://music.apple.com/ca/album/seul/1880670466?i=1880670474&uo=4",
+      "album": "Seul"
+    },
+    "e9b638b6-f246-4c52-b250-3b62668ed04c": {
+      "title": "Ta beauté",
+      "url": "https://music.apple.com/ca/album/ta-beaut%C3%A9/1880670466?i=1880670478&uo=4",
+      "album": "Seul"
+    },
+    "cb487bd3-638f-41e1-a603-d335b30345dd": {
+      "title": "Tout croche",
+      "url": "https://music.apple.com/ca/album/tout-croche/1880670466?i=1880670477&uo=4",
+      "album": "Seul"
+    },
+    "440511c0-77ec-484e-a5fd-0dcea2ddd386": {
+      "title": "Superbowl",
+      "url": "https://music.apple.com/ca/album/superbowl/1880670466?i=1880670476&uo=4",
+      "album": "Seul"
+    },
+    "11863b47-a7a6-4940-abf1-72149527d4cf": {
+      "title": "Roule roule",
+      "url": "https://music.apple.com/ca/album/roule-roule/1880670466?i=1880670473&uo=4",
+      "album": "Seul"
+    },
+    "7ec62a0c-4fc6-4bbe-895f-a4f1b88f3c53": {
+      "title": "L'amour nous retient",
+      "url": "https://music.apple.com/ca/album/lamour-nous-retient/1880670466?i=1880670469&uo=4",
+      "album": "Seul"
+    },
+    "750cdfb2-7b68-45a8-9e5c-a9f54d3da227": {
+      "title": "Boxing day",
+      "url": "https://music.apple.com/ca/album/boxing-day/1895561894?i=6763934725&uo=4",
+      "album": "Nowis aide avec l'IA"
+    },
+    "2ead23a4-1990-4152-a907-fc619ff9bdea": {
+      "title": "Création Nowis",
+      "url": "https://music.apple.com/ca/album/cr%C3%A9ation-nowis/1863881447?i=1863881453&uo=4",
+      "album": "Nowis Morin joue de la musique avec L'IA"
+    },
+    "630bb116-e203-484c-b619-89c67e3ebac8": {
+      "title": "On n'aime l'argent",
+      "url": "https://music.apple.com/ca/album/on-naime-largent/1880670466?i=1880670467&uo=4",
+      "album": "Seul"
+    },
+    "2f8b168d-be10-4130-a00f-f1e23996b094": {
+      "title": "tu es la musique",
+      "url": "https://music.apple.com/ca/album/tu-es-la-musique/1859472579?i=1859472581&uo=4",
+      "album": "Nowis danse avec l'intelligence artificielle - EP"
+    },
+    "e953e7a8-c783-4f38-a76f-da9b8577375e": {
+      "title": "La plage en chaleur",
+      "url": "https://music.apple.com/ca/album/la-plage-en-chaleur/1859472579?i=1859473033&uo=4",
+      "album": "Nowis danse avec l'intelligence artificielle - EP"
+    },
+    "5367c193-23c0-4973-818e-f26cb43ea98c": {
+      "title": "Petite misère",
+      "url": "https://music.apple.com/ca/album/petite-mis%C3%A8re/1863881447?i=1863881450&uo=4",
+      "album": "Nowis Morin joue de la musique avec L'IA"
+    },
+    "4fefb41f-b96a-42bd-8d2b-8f8f2768a5db": {
+      "title": "Jour d'éveil",
+      "url": "https://music.apple.com/ca/album/jour-d%C3%A9veil/1863881447?i=1863881456&uo=4",
+      "album": "Nowis Morin joue de la musique avec L'IA"
+    },
+    "89d87e42-5d05-4f32-b606-491cd0b82574": {
+      "title": "Isa",
+      "url": "https://music.apple.com/ca/album/isa/1863881447?i=1863881454&uo=4",
+      "album": "Nowis Morin joue de la musique avec L'IA"
+    },
+    "ba7b9484-fffb-4c04-a0d3-d2e1e8aed37f": {
+      "title": "Verre cassé",
+      "url": "https://music.apple.com/ca/album/verre-cass%C3%A9/1863881447?i=1863881452&uo=4",
+      "album": "Nowis Morin joue de la musique avec L'IA"
+    },
+    "6a7e0394-635b-4c67-a10a-8ebcbb985b7b": {
+      "title": "J'ai le gout de te voir",
+      "url": "https://music.apple.com/ca/album/jai-le-gout-de-te-voir/1857247742?i=1857247749&uo=4",
+      "album": "FreeRider"
+    },
+    "94116726-0047-4e98-8bc7-004bc23a655c": {
+      "title": "encore encore",
+      "url": "https://music.apple.com/ca/album/encore-encore/1857247742?i=1857247747&uo=4",
+      "album": "FreeRider"
+    },
+    "4947833e-a4cc-4b5a-a90a-dda7994b5195": {
+      "title": "Merci la vie",
+      "url": "https://music.apple.com/ca/album/merci-la-vie/1857247742?i=1857247745&uo=4",
+      "album": "FreeRider"
+    }
+  }
+}

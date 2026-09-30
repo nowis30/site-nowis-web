@@ -1,7 +1,7 @@
 name: Public conversion QA (isolated)
 on:
   push:
-    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign", "codex/nowis-radio", "codex/radio-full-catalog"]
+    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign", "codex/nowis-radio", "codex/radio-full-catalog", "codex/radio-community-album"]
 permissions:
   contents: read
 concurrency:
@@ -31,6 +31,7 @@ jobs:
       NEXT_PUBLIC_GA4_MEASUREMENT_ID: G-NOWISQA01
       NEXT_PUBLIC_GOOGLE_ADS_ID: AW-123456789
       NEXT_TELEMETRY_DISABLED: "1"
+      CLIENT_PORTAL_JWT_SECRET: isolated-radio-qa-session-secret-not-for-production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
