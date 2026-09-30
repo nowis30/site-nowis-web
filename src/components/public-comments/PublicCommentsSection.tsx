@@ -7,7 +7,7 @@ function formatCommentDate(date: Date) {
 
 export async function PublicCommentsSection() {
   const comments = await prisma.publicComment.findMany({
-    where: { status: 'APPROVED' },
+    where: { status: 'APPROVED', sourcePage: { not: '/radio' } },
     orderBy: [{ approvedAt: 'desc' }, { createdAt: 'desc' }],
     take: 6,
     select: {

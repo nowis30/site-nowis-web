@@ -1,7 +1,7 @@
 name: Public conversion QA (isolated)
 on:
   push:
-    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign", "codex/nowis-radio", "codex/radio-full-catalog"]
+    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign", "codex/nowis-radio", "codex/radio-full-catalog", "codex/radio-community-album"]
 permissions:
   contents: read
 concurrency:
@@ -31,6 +31,7 @@ jobs:
       NEXT_PUBLIC_GA4_MEASUREMENT_ID: G-NOWISQA01
       NEXT_PUBLIC_GOOGLE_ADS_ID: AW-123456789
       NEXT_TELEMETRY_DISABLED: "1"
+      CLIENT_PORTAL_JWT_SECRET: isolated-radio-qa-session-secret-not-for-production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,13 +50,16 @@ jobs:
           echo "NODE_PATH=$RUNNER_TEMP/nowis-browser/node_modules" >> "$GITHUB_ENV"
           # Chrome includes the H.264/AAC codecs used by the actual presentation.
           "$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" install --with-deps chrome
+      - name: Radio accounts, comments, favorites and album integration
+        run: '"$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" test --config tests/public-conversion/playwright.config.cjs radio-community.spec.cjs --output radio-community-results --reporter list'
       - name: Browser and anonymous-inquiry integration tests
-        run: '"$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" test --config tests/public-conversion/playwright.config.cjs'
+        run: '"$RUNNER_TEMP/nowis-browser/node_modules/.bin/playwright" test --config tests/public-conversion/playwright.config.cjs public-conversion.spec.cjs'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: public-conversion-qa
           path: |
             test-results/
+            radio-community-results/
             public-conversion-report/
           retention-days: 7
