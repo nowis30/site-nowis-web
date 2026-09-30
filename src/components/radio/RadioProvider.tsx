@@ -6,6 +6,7 @@ import { Pause, Play, SkipForward, X } from 'lucide-react';
 import { shuffleTracks } from '@/lib/radio-shuffle';
 import { parseRadioSession, RADIO_SESSION_KEY } from '@/lib/radio-session';
 import tracks from '@/data/radio-tracks.json';
+import { ShareMenu } from './ShareMenu';
 
 const catalog = JSON.stringify(tracks.map(({ id, src }) => [id, src]));
 
@@ -233,6 +234,7 @@ export function RadioControls({ compact = false }: { compact?: boolean }) {
       {!compact && (radio.loading ? 'Chargement…' : radio.playing ? 'Pause' : radio.track ? 'Reprendre' : 'Écouter la radio')}
     </button>
     <button type="button" className="nr-icon" onClick={radio.next} aria-label="Chanson suivante"><SkipForward size={21} /></button>
+    <ShareMenu compact={compact} />
     {!compact && <label className="nr-volume">Volume<input aria-label="Volume de la radio" type="range" min="0" max="1" step="0.05" value={radio.volume} onChange={event => radio.setVolume(Number(event.target.value))} /></label>}
   </div>;
 }
