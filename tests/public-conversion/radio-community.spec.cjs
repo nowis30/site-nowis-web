@@ -122,13 +122,31 @@ test('radio comments: immediate publication, exactly five recent, older paginati
 
 test('radio favorites: selected songs loop, reload preserves selection, single-song list and full-radio return',async({page})=>{
   await register(page.request);await favorite(page.request,tracks[0].id);await favorite(page.request,tracks[1].id);
-  await audioFixture(page);await page.goto('/radio');
+  // A real short MP3 verifies natural ended events; seeking in a mocked HTTP
+  // response without Range support is not a reliable way to reach EOF in Chrome.
+  await page.addInitScript(()=>{
+    window.__selectionEnded=[];
+    document.addEventListener('ended',event=>{
+      if(event.target instanceof HTMLAudioElement && event.target.dataset.testid==='nowis-radio-audio') window.__selectionEnded.push(event.target.getAttribute('src'));
+    },true);
+  });
+  const audioPattern=/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/;
+  const short=fs.readFileSync('tests/fixtures/radio-short.mp3');
+  await page.route(audioPattern,route=>route.fulfill({status:200,contentType:'audio/mpeg',body:short}));
+  await page.goto('/radio');
   const audio=page.getByTestId('nowis-radio-audio');
+  await page.getByRole('button',{name:'Écouter ma sélection',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>window.__selectionEnded.length)).toBeGreaterThanOrEqual(6);
+  await page.locator('.nr-dock').getByRole('button',{name:'Arrêter et fermer la radio'}).click();
+  expect((await page.evaluate(()=>window.__selectionEnded)).slice(0,6)).toEqual([tracks[0].src,tracks[1].src,tracks[0].src,tracks[1].src,tracks[0].src,tracks[1].src]);
+  await page.unroute(audioPattern);await audioFixture(page);
   await page.getByRole('button',{name:'Écouter ma sélection',exact:true}).click();
   await expect(audio).toHaveAttribute('src',tracks[0].src);
   await expect.poll(()=>audio.evaluate(a=>!a.paused&&a.currentTime>0)).toBeTruthy();
-  await audio.evaluate(a=>{a.currentTime=a.duration-0.05;});
+  await page.locator('.nr-player').getByRole('button',{name:'Chanson suivante'}).click();
   await expect(audio).toHaveAttribute('src',tracks[1].src);
+  await expect.poll(()=>audio.evaluate(a=>!a.paused&&a.currentTime>0)).toBeTruthy();
+  await page.locator('.nr-player').getByRole('button',{name:'Mettre la radio en pause'}).click();
   await expect(page.getByTestId('radio-cycle-progress')).toContainText('Titre 2 sur 2');
   await page.reload();await expect(audio).not.toHaveAttribute('src',/.+/);
   await page.locator('.nr-player').getByRole('button',{name:'Écouter la radio',exact:true}).click();
