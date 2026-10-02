@@ -11,6 +11,7 @@ const primary = [
   {label: 'Écouter', href: '/musique'},
   {label: 'Radio', href: '/radio'},
   {label: 'Ateliers', href: '/ateliers'},
+  {label: 'Tarot', href: '/tarot'},
   {label: 'Explorer', href: '/explorer'},
 ];
 export function Header() {

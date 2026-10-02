@@ -105,6 +105,7 @@ export const Footer: React.FC = () => {
               <li><Link href="/explorer" className="font-semibold underline">Explorer tout le site</Link></li>
               <li><Link href="/radio" className="font-semibold underline">Radio Nowis · écoute aléatoire</Link></li>
               <li><Link href="/musique" className="font-semibold underline">Écouter les chansons</Link></li>
+              <li><Link href="/tarot" className="font-semibold underline">Liseuse de tarot</Link></li>
               <li>
                 <Link href="/" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
                   Accueil
