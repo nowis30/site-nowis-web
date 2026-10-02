@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173e36">
+  <meta name="description" content="Tirez les cartes à l’écran et explorez une lecture symbolique adaptée à votre question.">
+  <meta name="robots" content="noindex,follow">
+  <title>Clair de cartes — Votre liseuse de tarot</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23173e36'/%3E%3Cpath d='M20 7a10 10 0 1 0 0 18 10 10 0 0 1 0-18' fill='%23dcc398'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="tarot-data.js" defer></script>
+  <script src="tarot-personalization.js" defer></script>
+  <script src="tarot-reading.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Clair de cartes, accueil"><span class="brand-mark" aria-hidden="true">☾</span><span>Clair de cartes<small>Une pause pour voir autrement</small></span></a>
+    <button class="source-button" id="open-sources">Les sources <span aria-hidden="true">↗</span></button>
+  </header>
+  <main>
+    <div class="intro"><p class="eyebrow">TAROT DE MARSEILLE · 78 CARTES</p><h1>Un tirage pour éclairer votre question.</h1><p>Posez votre question, tirez les cartes et prenez le temps de les lire.</p></div>
+    <nav class="view-tabs" aria-label="Explorer le tarot"><button id="tab-reading" aria-pressed="true">Mon tirage</button><button id="tab-dictionary" aria-pressed="false">Les définitions</button></nav>
+    <section id="reading-view" aria-label="Votre tirage">
+      <div class="reading-layout">
+        <aside class="controls">
+          <p class="eyebrow">01 / VOTRE INTENTION</p>
+          <label for="question">Une question à explorer <span>(facultatif)</span></label>
+          <textarea id="question" maxlength="500" rows="2" placeholder="Que puis-je mieux comprendre en ce moment ?"></textarea>
+          <p class="private-note">Votre question reste dans cette page.</p>
+          <details id="personal-context" class="personal-context">
+            <summary>Préciser ma situation <span>4 questions facultatives</span></summary>
+            <div class="context-fields">
+              <label for="context-situation">Que se passe-t-il en ce moment ?</label>
+              <textarea id="context-situation" maxlength="280" rows="2" placeholder="Décrivez ce qui vous amène à poser cette question."></textarea>
+              <label for="context-goal">Qu’aimeriez-vous voir évoluer ?</label>
+              <textarea id="context-goal" maxlength="180" rows="2" placeholder="Le changement que vous souhaitez."></textarea>
+              <label for="context-feeling">Comment vous sentez-vous face à cette question ?</label>
+              <select id="context-feeling"><option value="">Je préfère ne pas préciser</option><option value="inquiet">Inquiet / inquiète</option><option value="perdu">Dans le flou</option><option value="serein">Serein / sereine</option><option value="motive">Motivé / motivée</option><option value="deborde">Débordé / débordée</option></select>
+              <label for="context-blocker">Qu’est-ce qui vous freine le plus ?</label>
+              <select id="context-blocker"><option value="">Je préfère ne pas préciser</option><option value="informations">Le manque d’informations</option><option value="hesitation">La difficulté à choisir</option><option value="moyens">Des moyens limités</option><option value="attente">L’attente d’une autre personne</option><option value="peur">La peur d’agir</option><option value="aucun">Aucun frein particulier</option></select>
+              <p id="context-status" class="context-status" role="status" aria-live="polite">Vos réponses affinent la lecture et restent dans cet onglet.</p>
+              <button id="clear-context" type="button" class="clear-context">Effacer mes réponses</button>
+            </div>
+          </details>
+          <fieldset><legend>Choisissez votre tirage</legend><div class="spread-options">
+            <button type="button" data-spread="2" aria-pressed="false"><b>2</b><span>Problème & solution</span></button>
+            <button type="button" data-spread="3" aria-pressed="true"><b>3</b><span>Passé, présent, avenir</span></button>
+            <button type="button" data-spread="4" aria-pressed="false"><b>4</b><span>Situation & ressources</span></button>
+            <button type="button" data-spread="5" aria-pressed="false"><b>5</b><span>Une vue d’ensemble</span></button>
+          </div></fieldset>
+          <label for="deck">Le jeu utilisé</label><select id="deck"><option value="all">Le jeu complet · 78 cartes</option><option value="major">Les arcanes majeurs · 22 cartes</option></select>
+          <button class="primary-button" id="draw">Mélanger et tirer <span aria-hidden="true">↗</span></button>
+          <p class="gentle-note">Une lecture symbolique pour réfléchir à votre situation. L’avenir reste ouvert.</p>
+        </aside>
+        <div class="table-area"><div class="table-heading"><div><p class="eyebrow">02 / VOS CARTES</p><h2 id="spread-title">Passé, présent, avenir</h2></div><span class="table-count" id="reveal-count">3 cartes</span></div>
+          <p id="table-instruction">Commencez par mélanger le jeu. Vos cartes apparaîtront ici.</p>
+          <div class="card-table" id="card-table"></div>
+          <div class="reveal-actions"><button id="reveal-all" class="secondary-button" hidden>Tout révéler</button><p id="draw-status" role="status" aria-live="polite"></p></div>
+        </div>
+      </div>
+      <section id="interpretations" class="interpretations" hidden aria-label="Interprétation de votre tirage"><div class="section-heading"><div><p class="eyebrow">03 / PRENDRE LE TEMPS DE LIRE</p><h2>Votre lecture</h2></div><p id="question-summary"></p></div><p id="reading-context-note" class="reading-context-note" hidden>Cette lecture tient compte de vos réponses.</p><div id="reading-cards"></div><div id="synthesis" class="synthesis" hidden></div></section>
+    </section>
+    <section id="dictionary-view" class="dictionary" hidden aria-label="Définitions des 78 cartes"><div><p class="eyebrow">LE SENS DES CARTES</p><h2>Une carte, plusieurs pistes.</h2><p>Consultez la signification et sa source.</p><label for="card-select">Choisissez une carte</label><select id="card-select"></select></div><article id="dictionary-card" class="definition-panel"></article></section>
+    <footer><span>Clair de cartes <span aria-hidden="true">✦</span> Tarot de Marseille</span><p>Une lecture symbolique qui relie votre question, le sens des cartes et leur position dans le tirage.</p></footer>
+  </main>
+  <dialog id="sources-dialog"><div class="dialog-header"><p class="eyebrow">LA BASE DE VOTRE LISEUSE</p><button id="close-sources" aria-label="Fermer les sources">×</button></div><h2>D’où viennent les lectures ?</h2><p>Cette liseuse utilise les documents de référence ci-dessous pour les significations de base des cartes.</p><div id="source-list"></div><div class="method-note"><h3>Du sens de la carte à votre question</h3><p>Les significations de base viennent de ces sources. Les descriptions développées sont des lectures proposées par la liseuse : elles relient ces significations au sujet de votre question et à la position de chaque carte.</p><p>La lecture des mineurs associe leur famille et leur rang selon la méthode documentée. Les textes contextualisés sont des interprétations, et non des citations des auteurs ou des probabilités calculées.</p><p><b>À compléter :</b> aucune définition explicite du Mat n’a été vérifiée dans les sources consultées.</p><p>Les tirages suivent le guide Street Tarots. Les cartes sont lues à l’endroit. Les illustrations sont des symboles de la liseuse. Les interprétations sont préparées dans cette page et ne consultent aucun service externe lors du tirage.</p></div><button id="close-sources-bottom" class="primary-button">Revenir aux cartes</button></dialog>
+</body>
+</html>
