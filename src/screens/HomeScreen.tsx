@@ -1,15 +1,21 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { FeaturedAlbum } from '@/components/marketing/FeaturedAlbum';
 import { HeroVideoPlaceholder } from '@/components/marketing/HeroVideoPlaceholder';
 import { HomeMusicSelections } from '@/components/marketing/HomeMusicSelections';
 import { SongExamples, SongFaq, SongOccasions, SongOffers, SongProcess } from '@/components/marketing/SongMarketingSections';
 import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
+import { featuredAlbum } from '@/lib/music-store';
 
 export function HomeScreen() {
   return <div className="nm-page">
     <section className="nm-hero" aria-labelledby="home-title">
       <div><p className="nm-eyebrow">Chansons personnalisées · Création Nowis</p>
         <h1 id="home-title">Il y a des histoires<br />qui méritent<br /><em>leur chanson.</em></h1>
+        <Link className="nm-home-album-cover" href="/album" aria-label="Découvrir le nouvel album L’amour de Nowis">
+          <Image src={featuredAlbum.cover} alt="Pochette du nouvel album L’amour de Nowis de Nowis Morin" width={800} height={800} sizes="(max-width: 767px) 78vw, 260px" priority />
+          <span>Nouvel album · L’amour de Nowis</span>
+        </Link>
         <p className="nm-hero-text">Un amour, un merci, un souvenir. Transformez ce qui vous touche en une chanson à offrir, avec l’accompagnement de Nowis Morin et la création musicale assistée par IA.</p>
         <div className="nm-actions"><Link className="cta-primary" href="/commander-une-chanson">Créer ma chanson ↗</Link><a className="cta-secondary" href="#exemples">Écouter des exemples</a></div>
         <p className="nm-fine">Première demande sans compte ni paiement.</p>
