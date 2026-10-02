@@ -335,6 +335,9 @@ model User {
   calendarConnections        CalendarConnection[]  @relation("CalendarConnectionCreatedBy")
   passwordResetTokens        PasswordResetToken[]
   radioFavorites             RadioFavorite[]
+  aiArtistProfile            AiArtistProfile?
+  aiMusicLikes               AiMusicLike[]
+  aiMusicComments            AiMusicComment[]
 
   @@map("users")
 }
@@ -1355,23 +1358,77 @@ model RadioFavorite {
 }
 
 
+model AiArtistProfile {
+  id          String         @id @default(uuid()) @db.Uuid
+  userId      String         @unique @db.Uuid
+  slug        String         @unique
+  displayName String
+  bio         String?
+  avatarUrl   String?
+  bannerUrl   String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shares      AiMusicShare[]
+
+  @@index([displayName])
+  @@map("ai_artist_profiles")
+}
+
 model AiMusicShare {
-  id              String   @id @default(uuid()) @db.Uuid
+  id              String           @id @default(uuid()) @db.Uuid
   artistName      String
+  artistProfileId String?          @db.Uuid
   title           String
   aiTool          String
   genre           String?
   listenUrl       String
+  coverUrl        String?
   description     String?
-  rightsConfirmed Boolean  @default(false)
-  isPublished     Boolean  @default(true)
+  rightsConfirmed Boolean          @default(false)
+  isPublished     Boolean          @default(true)
   ipHash          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  artistProfile   AiArtistProfile? @relation(fields: [artistProfileId], references: [id], onDelete: SetNull)
+  likes           AiMusicLike[]
+  comments        AiMusicComment[]
 
   @@index([isPublished, createdAt])
   @@index([aiTool])
+  @@index([artistProfileId, createdAt])
   @@map("ai_music_shares")
+}
+
+model AiMusicLike {
+  shareId   String       @db.Uuid
+  userId    String       @db.Uuid
+  createdAt DateTime     @default(now())
+
+  share     AiMusicShare @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([shareId, userId])
+  @@index([userId, createdAt])
+  @@map("ai_music_likes")
+}
+
+model AiMusicComment {
+  id          String       @id @default(uuid()) @db.Uuid
+  shareId     String       @db.Uuid
+  userId      String       @db.Uuid
+  displayName String
+  message     String
+  createdAt   DateTime     @default(now())
+
+  share       AiMusicShare @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([shareId, createdAt])
+  @@index([userId, createdAt])
+  @@map("ai_music_comments")
 }
 
 // Anonymous audience data is isolated between the public site and previews.
