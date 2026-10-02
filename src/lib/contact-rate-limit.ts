@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 const USER_LIMIT = { scope: 'contact:user', max: 5, windowMs: 10 * 60 * 1000 } as const;
 const IP_LIMIT = { scope: 'contact:ip', max: 20, windowMs: 60 * 60 * 1000 } as const;
 
-type RateLimitScope = typeof USER_LIMIT.scope | typeof IP_LIMIT.scope | 'radio:comment' | 'radio:register' | 'radio:favorite' | 'ai-music:share';
+type RateLimitScope = typeof USER_LIMIT.scope | typeof IP_LIMIT.scope | 'radio:comment' | 'radio:register' | 'radio:favorite' | 'ai-music:share' | 'ai-music:comment';
 
 type ConsumeArgs = {
   scope: RateLimitScope;
