@@ -1354,6 +1354,26 @@ model RadioFavorite {
   @@map("radio_favorites")
 }
 
+
+model AiMusicShare {
+  id              String   @id @default(uuid()) @db.Uuid
+  artistName      String
+  title           String
+  aiTool          String
+  genre           String?
+  listenUrl       String
+  description     String?
+  rightsConfirmed Boolean  @default(false)
+  isPublished     Boolean  @default(true)
+  ipHash          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isPublished, createdAt])
+  @@index([aiTool])
+  @@map("ai_music_shares")
+}
+
 // Anonymous audience data is isolated between the public site and previews.
 model SiteAudienceCounter {
   namespace   String                @id
