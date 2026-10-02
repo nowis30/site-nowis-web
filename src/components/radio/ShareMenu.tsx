@@ -4,17 +4,24 @@ import { useId, useRef, useState } from 'react';
 import { Copy, Share2, X } from 'lucide-react';
 
 // Always share the public pages, including from a preview or a private portal.
-const destinations = [
+const defaultDestinations = [
   { id: 'radio', label: 'la radio', title: 'Radio Nowis', url: 'https://nowis.store/radio', text: 'Écoute Radio Nowis : les chansons de Nowis en continu.' },
   { id: 'site', label: 'le site', title: 'Création Nowis', url: 'https://nowis.store', text: 'Découvre Création Nowis : des chansons, des créations et des histoires à partager.' },
 ] as const;
 
-type Destination = (typeof destinations)[number];
+type Destination = { id: string; label: string; title: string; url: string; text: string };
 
-export function ShareMenu({ compact = false }: { compact?: boolean }) {
+type ShareMenuProps = {
+  compact?: boolean;
+  destinations?: readonly Destination[];
+  triggerLabel?: string;
+  triggerClassName?: string;
+};
+
+export function ShareMenu({ compact = false, destinations = defaultDestinations, triggerLabel, triggerClassName }: ShareMenuProps) {
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
-  const links = useRef<Partial<Record<Destination['id'], HTMLInputElement | null>>>({});
+  const links = useRef<Record<string, HTMLInputElement | null>>({});
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -47,10 +54,10 @@ export function ShareMenu({ compact = false }: { compact?: boolean }) {
   }
 
   return <>
-    <button type="button" className={compact ? 'nr-icon ns-trigger' : 'ns-trigger ns-trigger-label'}
-      aria-label="Partager la radio ou le site" aria-haspopup="dialog" aria-controls={id}
-      title="Partager la radio ou le site" onClick={() => { setStatus(''); dialog.current?.showModal(); }}>
-      <Share2 size={19} aria-hidden="true" />{!compact && <span>Partager</span>}
+    <button type="button" className={triggerClassName ?? (compact ? 'nr-icon ns-trigger' : 'ns-trigger ns-trigger-label')}
+      aria-label={triggerLabel ?? 'Partager la radio ou le site'} aria-haspopup="dialog" aria-controls={id}
+      title={triggerLabel ?? 'Partager la radio ou le site'} onClick={() => { setStatus(''); dialog.current?.showModal(); }}>
+      <Share2 size={19} aria-hidden="true" />{!compact && <span>{triggerLabel ?? 'Partager'}</span>}
     </button>
     <dialog ref={dialog} id={id} className="ns-dialog" aria-labelledby={`${id}-title`}
       onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>

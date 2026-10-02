@@ -1354,6 +1354,27 @@ model RadioFavorite {
   @@map("radio_favorites")
 }
 
+// Anonymous audience data is isolated between the public site and previews.
+model SiteAudienceCounter {
+  namespace   String                @id
+  totalVisits BigInt                @default(0)
+  startedAt   DateTime              @default(now())
+  sessions    SiteAudienceSession[]
+
+  @@map("site_audience_counters")
+}
+
+model SiteAudienceSession {
+  namespace  String
+  sessionHash String
+  lastSeenAt DateTime
+  counter    SiteAudienceCounter @relation(fields: [namespace], references: [namespace], onDelete: Cascade)
+
+  @@id([namespace, sessionHash])
+  @@index([namespace, lastSeenAt])
+  @@map("site_audience_sessions")
+}
+
 model ApiRateLimit {
   id           String   @id @default(uuid()) @db.Uuid
   scope        String

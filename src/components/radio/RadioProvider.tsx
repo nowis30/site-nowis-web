@@ -3,15 +3,19 @@
 import Link from 'next/link';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Pause, Play, SkipForward, X } from 'lucide-react';
-import { shuffleTracks } from '@/lib/radio-shuffle';
+import { buildRadioQueue, buildSelectionQueue, type PlaySelectionOptions } from '@/lib/radio-queue';
 import { parseRadioSession, RADIO_SESSION_KEY } from '@/lib/radio-session';
-import tracks from '@/data/radio-tracks.json';
+import radioTracks from '@/data/radio-tracks.json';
+import albumTracks from '@/data/album-tracks.json';
 import { ShareMenu } from './ShareMenu';
 
+type AudioTrack = { id: string; title: string; src: string; sunoUrl?: string };
+const tracks: AudioTrack[] = [...radioTracks, ...albumTracks];
 const catalog = JSON.stringify(tracks.map(({ id, src }) => [id, src]));
 
 type RadioState = {
-  track: (typeof tracks)[number] | null;
+  track: AudioTrack | null;
+  selectedTrack: AudioTrack | null;
   playing: boolean;
   loading: boolean;
   message: string;
@@ -19,8 +23,9 @@ type RadioState = {
   positionInCycle: number;
   totalTracks: number;
   isSelection: boolean;
+  selectionLabel: string;
   playTrack: (id: string) => void;
-  playSelection: (ids: string[]) => void;
+  playSelection: (ids: string[], options?: PlaySelectionOptions) => void;
   playRadio: () => void;
   clearSelection: () => void;
   toggle: () => void;
@@ -41,6 +46,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const current = useRef(-1);
   const selection = useRef<number[] | null>(null);
   const [selectionSize, setSelectionSize] = useState(0);
+  const selectionName = useRef('');
+  const [selectionLabel, setSelectionLabel] = useState('');
   const operation = useRef(0);
   const failed = useRef(new Set<number>());
   const wantsPlayback = useRef(false);
@@ -48,6 +55,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const pendingSeek = useRef(false);
   const lastSavedSecond = useRef(-1);
   const [index, setIndex] = useState(-1);
+  // The selected song survives closing the dock and a paused session restore.
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -59,7 +68,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     try {
       sessionStorage.setItem(RADIO_SESSION_KEY, JSON.stringify({
         catalog, queue: queue.current, current: current.current, position: resumePosition.current,
-        ...(selection.current ? { selection: selection.current } : {}),
+        ...(selection.current ? { selection: selection.current, selectionLabel: selectionName.current } : {}),
       }));
     } catch { /* A browser that blocks storage can still play the whole catalogue. */ }
   }
@@ -113,7 +122,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     const element = audio.current;
     if (!element) return;
     if (!queue.current.length) {
-      if (failed.current.size >= (selection.current?.length ?? tracks.length)) {
+      if (failed.current.size >= (selection.current?.length ?? radioTracks.length)) {
         wantsPlayback.current = false;
         element.pause();
         setPlaying(false);
@@ -123,7 +132,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       }
       // A temporary loading error must never reduce all later tours to a few songs.
       failed.current.clear();
-      queue.current = selection.current ? [...selection.current] : shuffleTracks(tracks.length, current.current);
+      queue.current = selection.current ? [...selection.current] : buildRadioQueue(radioTracks.length, current.current);
     }
     const selected = queue.current.shift()!;
     current.current = selected;
@@ -131,7 +140,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     pendingSeek.current = false;
     lastSavedSecond.current = -1;
     setIndex(selected);
-    setPositionInCycle((selection.current?.length ?? tracks.length) - queue.current.length);
+    setSelectedIndex(selected);
+    setPositionInCycle((selection.current?.length ?? radioTracks.length) - queue.current.length);
     setPlaying(false);
     saveSession();
     operation.current++;
@@ -171,7 +181,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       const element = audio.current;
       if (!element) return;
       setIndex(current.current);
-      setPositionInCycle((selection.current?.length ?? tracks.length) - queue.current.length);
+      setPositionInCycle((selection.current?.length ?? radioTracks.length) - queue.current.length);
       if (!element.getAttribute('src') || element.error) {
         pendingSeek.current = resumePosition.current > 0;
         element.src = tracks[current.current].src;
@@ -187,29 +197,32 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   }
 
   function playTrack(id: string) {
-    const selected = tracks.findIndex(track => track.id === id);
+    const selected = radioTracks.findIndex(track => track.id === id);
     if (selected < 0) return;
-    selection.current = null; setSelectionSize(0); failed.current.clear();
-    queue.current = [selected, ...shuffleTracks(tracks.length, selected).filter(index => index !== selected)];
+    selection.current = null; setSelectionSize(0); selectionName.current = ''; setSelectionLabel(''); failed.current.clear();
+    queue.current = [selected, ...buildRadioQueue(radioTracks.length, selected).filter(index => index !== selected)];
     next();
   }
 
-  function playSelection(ids: string[]) {
-    const indices = [...new Set(ids)].map(id => tracks.findIndex(track => track.id === id)).filter(index => index >= 0);
-    if (!indices.length) return;
-    selection.current = indices; setSelectionSize(indices.length); failed.current.clear();
-    queue.current = [...indices]; next();
+  function playSelection(ids: string[], options: PlaySelectionOptions = {}) {
+    const selected = buildSelectionQueue(tracks, ids, options.startId);
+    if (!selected.selection.length) return;
+    const label = options.label?.trim().slice(0, 80) || 'Mes favoris';
+    selection.current = selected.selection; setSelectionSize(selected.selection.length);
+    selectionName.current = label; setSelectionLabel(label); failed.current.clear();
+    queue.current = selected.queue; next();
   }
 
   function playRadio() {
-    selection.current = null; setSelectionSize(0); failed.current.clear();
-    queue.current = shuffleTracks(tracks.length, current.current); next();
+    selection.current = null; setSelectionSize(0); selectionName.current = ''; setSelectionLabel(''); failed.current.clear();
+    queue.current = buildRadioQueue(radioTracks.length, current.current); next();
   }
 
   function clearSelection() {
     if (!selection.current) return;
-    stop(); selection.current = null; setSelectionSize(0);
+    stop(); selection.current = null; setSelectionSize(0); selectionName.current = ''; setSelectionLabel('');
     current.current = -1; queue.current = []; resumePosition.current = 0; failed.current.clear();
+    setSelectedIndex(-1);
     try { sessionStorage.removeItem(RADIO_SESSION_KEY); } catch { /* Optional storage. */ }
   }
 
@@ -221,9 +234,13 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       if (saved) {
         queue.current = saved.queue;
         current.current = saved.current;
+        setSelectedIndex(saved.current);
         resumePosition.current = saved.position;
         selection.current = saved.selection ?? null;
         setSelectionSize(saved.selection?.length ?? 0);
+        setPositionInCycle((saved.selection?.length ?? radioTracks.length) - saved.queue.length);
+        selectionName.current = saved.selection ? saved.selectionLabel || 'Ma sélection' : '';
+        setSelectionLabel(selectionName.current);
       }
     } catch { /* Storage is optional. Never autoplay on reload. */ }
     return () => { element?.pause(); };
@@ -234,8 +251,8 @@ export function RadioProvider({ children }: { children: ReactNode }) {
     return () => document.body.classList.remove('nowis-radio-active');
   }, [index]);
 
-  const value = { track: tracks[index] ?? null, playing, loading, message, volume,
-    positionInCycle, totalTracks: selectionSize || tracks.length, isSelection: selectionSize > 0,
+  const value = { track: tracks[index] ?? null, selectedTrack: tracks[selectedIndex] ?? null, playing, loading, message, volume,
+    positionInCycle, totalTracks: selectionSize || radioTracks.length, isSelection: selectionSize > 0, selectionLabel,
     toggle, next, stop, setVolume, playTrack, playSelection, playRadio, clearSelection };
   return <RadioContext.Provider value={value}>
     {children}
@@ -255,7 +272,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
       onEnded={() => { if (wantsPlayback.current) next(); }}
       onError={() => { if (audio.current?.error) unavailable(); }} />
     {index >= 0 && <aside className="nr-dock" aria-label="Lecteur Radio Nowis">
-      <Link href="/radio" className="nr-dock-title"><small>{selectionSize ? 'MES FAVORIS' : 'RADIO NOWIS'} · {positionInCycle}/{selectionSize || tracks.length}</small><strong>{tracks[index].title}</strong></Link>
+      <Link href={tracks[index].id.startsWith('album-') ? '/album#ecouter' : '/radio'} className="nr-dock-title"><small>{selectionSize ? selectionLabel.toLocaleUpperCase('fr') : 'RADIO NOWIS'} · {positionInCycle}/{selectionSize || radioTracks.length}</small><strong>{tracks[index].title}</strong></Link>
       <RadioControls compact />
       <button className="nr-icon" onClick={stop} aria-label="Arrêter et fermer la radio"><X size={19} /></button>
       {message && <p role="status" className="nr-message">{message}</p>}

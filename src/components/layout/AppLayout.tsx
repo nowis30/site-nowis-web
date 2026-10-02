@@ -20,7 +20,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     <div className="public-site site-background relative flex min-h-screen flex-col overflow-x-clip pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] text-[color:var(--site-text)]">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-xl focus:bg-white focus:p-4 focus:text-black">Aller au contenu</a>
       <div><Header /></div>
-      <main id="main-content" tabIndex={-1} className="relative z-0 flex-grow pt-24 md:pt-[7.5rem] min-[1200px]:pt-28">{children}</main>
+      <main id="main-content" tabIndex={-1} className="nm-public-main relative z-0 flex-grow">{children}</main>
       <div className="relative z-0"><Footer /></div>
       <div className="nowis-site-assistant"><SiteAssistant /></div>
     </div>
