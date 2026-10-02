@@ -10,6 +10,7 @@ const primary = [
   {label: 'Chansons personnalisées', href: '/commander-une-chanson'},
   {label: 'Écouter', href: '/musique'},
   {label: 'Radio', href: '/radio'},
+  {label: 'Communauté IA', href: '/communaute-ia'},
   {label: 'Ateliers', href: '/ateliers'},
   {label: 'Tarot', href: '/tarot'},
   {label: 'Explorer', href: '/explorer'},
