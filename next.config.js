@@ -23,7 +23,7 @@ const nextConfig = {
   poweredByHeader: false,
   // Optimize images
   images: {
-    domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'localhost', '127.0.0.1', 'nowis.store', 'nowis-admin.vercel.app'],
+    domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'localhost', '127.0.0.1', 'nowis.store', 'nowis-admin.vercel.app', 'nowis-crm-files.s3.us-east-1.amazonaws.com'],
     remotePatterns: [
       {
         protocol: 'https',
