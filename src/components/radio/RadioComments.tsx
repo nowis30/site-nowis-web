@@ -9,6 +9,7 @@ const dateFormat = new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeS
 
 export function RadioComments({ displayName = '' }: { displayName?: string }) {
   const radio = useRadio();
+  const currentRadioTrack = tracks.find(track => track.id === radio.track?.id);
   const [latest, setLatest] = useState<Comment[]>([]);
   const [older, setOlder] = useState<Comment[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -78,7 +79,7 @@ export function RadioComments({ displayName = '' }: { displayName?: string }) {
       <h3>Laisser un commentaire</h3>
       <label htmlFor="comment-name">Prénom ou pseudo</label><input id="comment-name" value={name} onChange={event => setName(event.target.value)} autoComplete="nickname" required minLength={2} maxLength={80} />
       <label htmlFor="comment-track">De quelle chanson parlez-vous ? <span className="nm-fine">(facultatif)</span></label><select id="comment-track" value={trackId} onChange={event => setTrackId(event.target.value)}><option value="">La musique de Nowis en général</option>{tracks.map(track => <option key={track.id} value={track.id}>{track.title}</option>)}</select>
-      {radio.track && <button className="nr-text-button" type="button" onClick={() => setTrackId(radio.track!.id)}>Choisir le titre en cours : {radio.track.title}</button>}
+      {currentRadioTrack && <button className="nr-text-button" type="button" onClick={() => setTrackId(currentRadioTrack.id)}>Choisir le titre en cours : {currentRadioTrack.title}</button>}
       <label htmlFor="comment-message">Votre commentaire</label><textarea id="comment-message" rows={5} required minLength={3} maxLength={1200} value={message} onChange={event => setMessage(event.target.value)} aria-describedby="comment-public" />
       <p id="comment-public" className="nm-fine">Votre prénom ou pseudo et votre commentaire seront visibles par tous dès la publication. Merci de rester respectueux.</p>
       <div className="nr-honeypot" aria-hidden="true"><label>Site web<input name="website" tabIndex={-1} autoComplete="off" /></label></div>

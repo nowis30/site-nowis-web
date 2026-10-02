@@ -66,6 +66,8 @@ const privacySections = [
       'Le site utilise surtout des mécanismes techniques nécessaires à son bon fonctionnement, à la sécurité ou à la gestion d’une session authentifiée lorsque certaines zones privées sont utilisées.',
       complianceNotes.noMarketingCookies,
       complianceNotes.cookieBannerRule,
+      'Avec votre accord pour la mesure d’audience, les compteurs du site utilisent un identifiant aléatoire de session partagé entre vos onglets. Une nouvelle visite est comptée après 30 minutes d’inactivité ; le nombre en ligne correspond aux sessions actives durant les 3 dernières minutes. Ce compteur n’utilise ni votre adresse IP ni une empreinte de votre appareil pour vous identifier.',
+      'L’identifiant de ce compteur est conservé dans le stockage local de votre navigateur et renouvelé après 30 minutes d’inactivité. Il est supprimé lorsque vous retirez votre accord. Les totaux agrégés restent visibles même si vous refusez la mesure d’audience. Vous pouvez modifier vos choix depuis « Gérer mes cookies ».',
       'Vous pouvez limiter certains cookies dans votre navigateur, mais certaines fonctions du site pourraient alors être affectées.',
     ],
   },

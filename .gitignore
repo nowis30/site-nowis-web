@@ -43,3 +43,4 @@ manifest-checksum.txt
 *.idsig
 *test.png
 store_icon.png
+.local-review/

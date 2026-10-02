@@ -41,6 +41,9 @@ export function saveCookieConsent(choice: Pick<CookieConsent, 'analytics' | 'adv
   volatileConsent = next;
   try { window.localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(next)); volatileConsent = null; } catch { /* Session-only choice when storage is blocked. */ }
   const revoked = (previous?.analytics && !next.analytics) || (previous?.advertising && !next.advertising);
+  if (!next.analytics) {
+    try { window.localStorage.removeItem('nowis_site_audience_session_v1'); } catch { /* Storage may be blocked. */ }
+  }
   if (revoked) {
     // A script already executed cannot be unloaded by removing its DOM element.
     // Reload after persisting the new choice; the next document starts blocked.

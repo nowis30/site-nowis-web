@@ -6,6 +6,7 @@ export type RadioSession = {
   current: number;
   position: number;
   selection?: number[];
+  selectionLabel?: string;
 };
 
 /** Ignore old catalogues and malformed storage without preventing playback. */
@@ -20,6 +21,8 @@ export function parseRadioSession(raw: string | null, catalog: string, length: n
     if (value.selection !== undefined && (!Array.isArray(value.selection) || !value.selection.length
       || !value.selection.every(validIndex) || new Set(value.selection).size !== value.selection.length
       || !value.selection.includes(value.current) || !value.queue.every(index => value.selection!.includes(index)))) return null;
+    if (value.selectionLabel !== undefined && (!value.selection || typeof value.selectionLabel !== 'string'
+      || !value.selectionLabel.trim() || value.selectionLabel.length > 80)) return null;
     return value;
   } catch {
     return null;

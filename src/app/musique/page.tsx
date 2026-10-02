@@ -1,5 +1,6 @@
 import { MusicLibrary } from '@/components/music/MusicLibrary';
 import { YouTubeSelections } from '@/components/music/YouTubeSelections';
+import { FeaturedAlbum } from '@/components/marketing/FeaturedAlbum';
 import { PageHero } from '@/components/marketing/PageHero';
 import { getAllSongs } from '@/data/songs';
 import { buildMetadata } from '@/lib/seo';
@@ -132,6 +133,7 @@ export default async function MusiquePage() {
         }}
       />
 
+      <div className="nm-page"><FeaturedAlbum /></div>
       <YouTubeSelections songs={songs} />
 
       <details
