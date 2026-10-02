@@ -5,6 +5,7 @@
   const names = {'2':'Problème & solution','3':'Passé, présent, avenir','4':'Situation & ressources','5':'Une vue d’ensemble'};
   const state = {spread:'3',drawn:[],revealed:new Set(),question:'',deck:'all',answers:window.TAROT_PERSONAL.cleanAnswers({})};
   const answerFields={situation:'context-situation',goal:'context-goal',feeling:'context-feeling',blocker:'context-blocker'};
+  const sessionKey='nowis-tarot-reading-v1';
   function updateContextStatus() {
     const context=window.TAROT_READING.detectContext(state.question,state.answers);
     const count=Object.values(state.answers).filter(Boolean).length;
@@ -16,9 +17,13 @@
   function rememberReading() {
     const record={spread:state.spread,cardIds:state.drawn.map(card=>card.id),revealed:[...state.revealed],question:state.question,deck:$('deck').value,answers:state.answers,contextOpen:$('personal-context').open};
     try{history.replaceState({...history.state,tarotReading:record},'',location.hash.startsWith('#lecture=')?location.pathname+location.search:location.href);}catch{}
+    // A parent-page refresh recreates the iframe's history entry. Keep a local
+    // tab-scoped copy so the visitor can continue the same reading afterwards.
+    try{sessionStorage.setItem(sessionKey,JSON.stringify(record));}catch{}
   }
   function restoreReading() {
     let record=history.state?.tarotReading;
+    if(!record){try{const saved=sessionStorage.getItem(sessionKey);if(saved&&saved.length<10000)record=JSON.parse(saved);}catch{}}
     if(location.hash.startsWith('#lecture=')){try{record=JSON.parse(decodeURIComponent(location.hash.slice(9)));}catch{return;}}
     if(!record||!['string','number'].includes(typeof record.spread)||!['2','3','4','5'].includes(String(record.spread))||!Array.isArray(record.cardIds)||![0,Number(record.spread)].includes(record.cardIds.length)||new Set(record.cardIds).size!==record.cardIds.length)return;
     const cards=record.cardIds.map(id=>data.cards.find(card=>card.id===id));
