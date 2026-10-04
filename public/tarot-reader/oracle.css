@@ -1,0 +1,383 @@
+/* Oracle NOWIS — local, decorative celestial design. Load after styles.css. */
+:root {
+  --ink: #183149;
+  --paper: #f7f0e3;
+  --white: #fffbf2;
+  --muted: #5b655f;
+  --gold: #bd9149;
+  --line: #ddd3bf;
+  --oracle-night: #101d31;
+  --oracle-deep: #172942;
+  --oracle-light: #f5ebd7;
+  --oracle-gold: #dfc18a;
+}
+body {
+  margin: 0;
+  min-width: 0;
+  background-color: var(--oracle-night);
+  background-image:
+    radial-gradient(ellipse at 10% 4%, #39486145, transparent 38%),
+    radial-gradient(ellipse at 90% 26%, #3d344535, transparent 34%),
+    radial-gradient(circle at 13px 28px, #dfc18a75 .65px, transparent 1.05px),
+    radial-gradient(circle at 68px 77px, #f5ebd74d .6px, transparent 1px);
+  background-size: auto, auto, 169px 181px, 263px 239px;
+  color: var(--ink);
+}
+button, a, input, textarea, select { touch-action: manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 3px solid #e5c27e;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px #21324b;
+}
+.site-header {
+  padding: 27px 36px 24px;
+  color: var(--oracle-light);
+  border-color: #dfc18a33;
+}
+.brand { gap: 13px; font-size: 25px; letter-spacing: -.02em; }
+.brand-mark { color: var(--oracle-gold); transform: none; }
+.brand small { color: #c8c6be; font-size: 10px; letter-spacing: .12em; }
+.source-button { color: #ede0c5; min-height: 44px; padding: 8px 10px; }
+.source-button:hover { color: #fff9ed; }
+main { max-width: 1232px; min-width: 0; padding: 0 32px; }
+.eyebrow { font-size: 10px; letter-spacing: .16em; color: #646253; }
+.oracle-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  align-items: center;
+  gap: 24px;
+  margin: 26px 0 28px;
+  padding: 48px 42px;
+  overflow: hidden;
+  border: 1px solid #dfc18a48;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at 80% 45%, #36476969, transparent 56%), linear-gradient(135deg, #172941, #101b2e 75%);
+  color: var(--oracle-light);
+  box-shadow: 0 22px 65px #050c192b;
+}
+.oracle-hero::before {
+  position: absolute;
+  z-index: -1;
+  content: '';
+  inset: 10px;
+  border: 1px solid #dfc18a1a;
+  border-radius: 11px;
+  pointer-events: none;
+}
+.oracle-hero-copy { position: relative; z-index: 1; min-width: 0; }
+.oracle-hero .eyebrow { color: var(--oracle-gold); line-height: 1.7; }
+.oracle-hero h1 { max-width: 590px; font-size: clamp(36px, 4.7vw, 61px); line-height: 1.07; letter-spacing: -.038em; text-wrap: balance; }
+.oracle-lead { max-width: 490px; margin: 24px 0 0; color: #dfded7; font-size: 16px; line-height: 1.8; }
+.oracle-hero-actions { margin-top: 28px; }
+.oracle-hero-actions .primary-button {
+  display: inline-flex;
+  width: auto;
+  min-height: 48px;
+  gap: 26px;
+  margin: 0;
+  padding: 13px 21px;
+  text-decoration: none;
+  background: #ead2a2;
+  color: #162941;
+  font-size: 13px;
+  border: 1px solid #eedbb6;
+}
+.oracle-hero-actions .primary-button:hover { background: #f5e4c0; }
+.oracle-caption { max-width: 420px; margin: 15px 0 0; color: #c8c6bf; font-size: 12px; line-height: 1.65; }
+.oracle-sky { display: grid; align-items: center; min-width: 0; }
+.oracle-sky img { display: block; width: 100%; height: auto; max-width: 470px; margin: auto; filter: drop-shadow(0 0 30px #dfc18a0d); }
+.intro { color: var(--oracle-light); }
+.intro .eyebrow { color: var(--oracle-gold); }
+.intro > p:last-child { color: #dfded7; }
+.reading-disclaimer {
+  border-color: #dbcdae;
+  border-left-color: #bd9149;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 26px;
+  background: #f9f3e7;
+}
+.reading-disclaimer h2 { font-size: 14px; }
+.reading-disclaimer p { color: #4f564f; font-size: 13px; line-height: 1.75; }
+.oracle-ritual {
+  padding: 30px 32px;
+  margin-bottom: 27px;
+  border: 1px solid #ded1b7;
+  border-radius: 13px;
+  background: linear-gradient(115deg, #fffaf0, #f3ead9);
+}
+.oracle-ritual-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 10px 28px; }
+.oracle-ritual-heading > .eyebrow { grid-column: 1 / -1; font-size: 10px; letter-spacing: .16em; color: #646253; }
+.oracle-ritual-heading h2 { font-size: 29px; max-width: 430px; }
+.oracle-ritual-heading p { max-width: 445px; margin: 0; font-size: 13px; line-height: 1.8; color: #606253; }
+.oracle-ritual-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; margin-top: 25px; }
+.oracle-ritual-steps article { min-width: 0; padding-top: 20px; border-top: 1px solid #d4c5a7; }
+.oracle-ritual-steps b { display: inline-block; margin-bottom: 9px; color: #836021; font: 17px/1.3 var(--serif); }
+.oracle-ritual-steps h3 { font-size: 23px; }
+.oracle-ritual-steps p { margin: 11px 0 0; color: #5b625b; font-size: 13px; line-height: 1.75; }
+.ritual-action { min-height: 44px; margin-top: 13px; border: 1px solid #bba16f; border-radius: 6px; padding: 9px 13px; background: transparent; font-size: 12px; }
+.ritual-action:hover { background: #e9dcc0; }
+#ritual-status { font-size: 12px; line-height: 1.8; color: #4b5b58; overflow-wrap: anywhere; }
+#ritual-status:not(:empty) { padding: 11px 13px; border-left: 2px solid #ac873f; background: #eae1cf; border-radius: 0 5px 5px 0; margin-top: 14px; }
+.oracle-intentions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 24px; padding-top: 21px; border-top: 1px solid #ded1b7; }
+.oracle-intentions legend { width: 100%; margin-bottom: 10px; font-size: 12px; }
+.oracle-intentions label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0;
+  border: 1px solid #d0c5b0;
+  border-radius: 22px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 400;
+  background: #fffaf0;
+  cursor: pointer;
+}
+.oracle-intentions input { accent-color: #243b54; margin: 0; width: 15px; height: 15px; flex: 0 0 15px; }
+.oracle-intentions label:has(input:checked) { border-color: #40536b; background: #e7e8e2; color: #142b43; }
+.oracle-intentions label:has(input:focus-visible) { outline: 3px solid #8f6929; outline-offset: 3px; }
+.oracle-intentions input:focus-visible { outline: 0; box-shadow: none; }
+.view-tabs {
+  gap: 28px;
+  padding: 0 24px;
+  margin-bottom: 24px;
+  border: 1px solid #dfc18a33;
+  border-radius: 9px;
+  background: #17273c;
+}
+.view-tabs button { min-height: 52px; color: #cecfc9; font-size: 13px; padding: 15px 0 13px; }
+.view-tabs button[aria-pressed=true] { color: #f5e7c6; border-bottom-color: #dfc18a; }
+.reading-layout { grid-template-columns: 310px minmax(0, 1fr); gap: 24px; align-items: start; }
+.controls {
+  min-width: 0;
+  padding: 25px 23px;
+  border: 1px solid #e0d3bb;
+  border-radius: 13px;
+  background: #f7f0e3;
+  box-shadow: 0 12px 32px #050d1826;
+}
+.controls > .eyebrow { margin-bottom: 19px; }
+.controls label, .controls legend { font-size: 13px; }
+.controls textarea, .controls select { font-size: 14px; }
+textarea, select { border-color: #cec4b1; background: #fffaf1; }
+textarea::placeholder { color: #686c63; }
+.private-note, .gentle-note { font-size: 11px; line-height: 1.7; color: #5b655f; }
+.spread-options button { background: #fffbf2; border-color: #d0c5b0; min-height: 77px; }
+.spread-options span { font-size: 10px; }
+.spread-options button[aria-pressed=true] { background: #e6e8e0; border-color: #35526b; box-shadow: inset 0 0 0 1px #35526b; }
+.primary-button { min-height: 48px; background: #243b54; color: #fff6df; font-size: 13px; }
+.primary-button:hover { background: #324d69; }
+.personal-context { background: #ede6d7; border-color: #d2c5ad; margin: 21px 0; }
+.personal-context summary { color: var(--ink); padding: 14px; font-size: 14px; line-height: 1.55; }
+.personal-context summary span { color: #5c6259; font-size: 12px; }
+.context-fields { padding: 0 14px 15px; }
+.context-fields textarea, .context-fields select { font-size: 16px; }
+.context-status, .clear-context { color: #4f5e60; }
+.clear-context { min-height: 44px; font-size: 13px; border-bottom-color: #8a9392; }
+.table-area {
+  padding: 29px 25px 24px;
+  border-color: #dfc18a45;
+  border-radius: 13px;
+  background: radial-gradient(ellipse at 50% 35%, #34476665, transparent 70%), #17283e;
+  color: var(--oracle-light);
+  min-height: 515px;
+}
+.table-heading .eyebrow { color: var(--oracle-gold); }
+.table-heading h2 { font-size: 27px; }
+.table-count { color: #e8dac0; border-color: #b69b665e; font-size: 11px; }
+.table-area > p { color: #d4d6cf; font-size: 12px; line-height: 1.75; margin-top: 17px; margin-bottom: 28px; }
+.position-label { color: #e4d3ae; }
+.tarot-card { background: #122138; border-color: #ad91645c; color: #e8ce9b; box-shadow: 0 9px 20px #070f1f55; }
+.tarot-card:not(:disabled):hover { box-shadow: 0 14px 26px #060d1c80; }
+.card-inner { border-color: #d4b78270; }
+.card-inner::before, .card-inner::after { border-color: #d4b78224; }
+.tarot-card.revealed { background: #fff8e9; border-color: #d3b887; color: var(--ink); }
+.revealed .card-inner { border-color: #d3bd91; }
+.card-name { color: var(--oracle-light); }
+.card-helper, .reveal-actions p { color: #c6cbc5; }
+.secondary-button { border-color: #bda576; color: #f5e7c7; min-height: 44px; font-size: 12px; }
+.secondary-button:hover { background: #d2b87915; }
+.interpretations {
+  padding: 30px 32px;
+  margin-top: 29px;
+  background: #f9f2e5;
+  border: 1px solid #ded1b7;
+  border-radius: 13px;
+}
+.section-heading { gap: 24px; }
+.section-heading h2 { font-size: 33px; }
+.section-heading > p { color: #6a5534; font-size: 19px; }
+.reading-context-note { color: #5c655f; font-size: 13px; line-height: 1.7; }
+.reading-entry { grid-template-columns: 125px minmax(0, 1fr); padding: 26px 0; gap: 25px; border-color: #d8ccb5; }
+.entry-position { font-size: 10px; letter-spacing: .06em; }
+.entry-position span { font-size: 23px; letter-spacing: 0; }
+.reading-entry h3 { font-size: 27px; }
+.contextual-reading p { color: #344651; font-size: 16px; line-height: 1.85; }
+.keyword { background: #e6e6dc; color: #3d5055; }
+.coverage { color: #5c674f; }
+.coverage.missing { color: #855a1b; }
+.reflection { color: #5b625b; }
+.synthesis { background: #ede4d2; border: 1px solid #dfd0b1; padding: 25px 28px; }
+.synthesis h3 { font-size: 26px; }
+.synthesis p { color: #344651; font-size: 16px; line-height: 1.85; }
+.oracle-vision { margin-top: 28px; padding-top: 28px; border-top: 1px solid #d8ccb5; }
+.oracle-vision > h3 { font-size: 29px; margin-bottom: 18px; }
+.oracle-vision-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.oracle-vision-grid article { min-width: 0; padding: 21px 20px; border: 1px solid #d8cbb1; border-radius: 8px; background: #fffbf1; }
+.oracle-vision-grid h4 { margin: 0 0 12px; color: var(--ink); font: 400 22px/1.2 var(--serif); }
+.oracle-vision-grid p { margin: 0; color: #52615f; font-size: 14px; line-height: 1.8; overflow-wrap: anywhere; }
+.oracle-journal { margin-top: 25px; }
+.oracle-journal label { font-size: 14px; line-height: 1.55; }
+.oracle-journal textarea { min-height: 110px; font-size: 16px; line-height: 1.7; }
+.oracle-vision-note { color: #626457; font-size: 12px; line-height: 1.8; margin-top: 16px; overflow-wrap: anywhere; }
+.oracle-ai { margin-top: 27px; padding: 26px 25px; border: 1px solid #d4c2a0; border-radius: 10px; background: #f1e8d6; }
+.oracle-ai > h3 { font-size: 27px; margin-bottom: 15px; }
+.oracle-ai > p { font-size: 14px; line-height: 1.85; color: #4d5c5c; margin: 12px 0; overflow-wrap: anywhere; }
+#oracle-ai-controls { margin-top: 20px; }
+.oracle-ai-consent { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: start; gap: 10px; min-height: 44px; margin: 0; font-size: 13px; font-weight: 400; line-height: 1.8; color: #344b55; cursor: pointer; overflow-wrap: anywhere; }
+.oracle-ai-consent input { width: 17px; height: 17px; margin: 4px 0 0; accent-color: #243b54; }
+.oracle-ai .private-note { font-size: 12px; line-height: 1.8; margin: 12px 0 0; }
+.oracle-ai .primary-button { width: auto; max-width: 100%; min-height: 48px; gap: 26px; margin-top: 18px; text-align: left; }
+.oracle-ai .primary-button:disabled { cursor: default; background: #ddd7c9; color: #51595d; border: 1px solid #c6bcaa; }
+.oracle-ai .primary-button:disabled:hover { background: #ddd7c9; }
+#oracle-ai-status { margin: 17px 0 0; font-size: 12px; line-height: 1.8; color: #596057; }
+.oracle-ai-result { padding: 21px 23px; margin-top: 21px; border: 1px solid #d5c6a9; border-radius: 8px; background: #fffbf1; overflow-wrap: anywhere; }
+.oracle-ai-result h4 { font: 400 23px/1.3 var(--serif); margin: 0 0 13px; }
+.oracle-ai-result p { font-size: 16px; line-height: 1.85; color: #344651; margin: 14px 0; white-space: pre-wrap; }
+.oracle-ai-result p:first-child { margin-top: 0; }
+.oracle-ai-result p:last-child { margin-bottom: 0; }
+.dictionary { gap: 30px; padding-top: 8px; color: var(--oracle-light); }
+.dictionary > div > .eyebrow { color: var(--oracle-gold); }
+.dictionary > div > p:not(.eyebrow) { color: #d1d4cd; line-height: 1.8; font-size: 13px; }
+.dictionary label { color: #ecdec1; font-size: 13px; }
+.definition-panel { border-color: #dbcdae; background: #fbf4e6; color: var(--ink); padding: 30px; }
+.definition-panel .secondary-button { color: var(--ink); }
+footer { color: #c2c4bd; border-color: #dfc18a33; padding: 27px 2px; font-size: 11px; gap: 25px; }
+footer > span > span { color: var(--oracle-gold); }
+footer p { line-height: 1.75; }
+dialog { background: #f9f2e5; border-color: #c2a875; color: var(--ink); box-shadow: 0 24px 80px #050b1c55; }
+dialog::backdrop { background: #071020b8; }
+.dialog-header button { min-width: 44px; min-height: 44px; }
+dialog p, .source-entry { font-size: 13px; line-height: 1.8; }
+.method-note { background: #ebe2cf; }
+@media (max-width: 980px) {
+  .site-header { padding-left: 26px; padding-right: 26px; }
+  main { padding-left: 24px; padding-right: 24px; }
+  .oracle-hero { padding: 37px 31px; gap: 8px; }
+  .oracle-hero h1 { font-size: clamp(36px, 5.2vw, 50px); }
+  .oracle-lead { font-size: 15px; }
+  .reading-layout { grid-template-columns: 270px minmax(0, 1fr); gap: 20px; }
+  .controls { padding: 23px 20px; }
+  .table-area { padding: 26px 20px; }
+  .table-heading { flex-wrap: wrap; }
+  .table-heading h2 { font-size: 25px; }
+  .oracle-vision-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 740px) {
+  .oracle-hero { grid-template-columns: minmax(0, 1fr); padding: 34px 29px 22px; }
+  .oracle-hero-copy { max-width: 540px; }
+  .oracle-hero h1 { max-width: 540px; font-size: clamp(37px, 6vw, 49px); }
+  .oracle-sky img { width: min(100%, 360px); margin-top: 7px; }
+  .oracle-ritual { padding: 26px; }
+  .oracle-ritual-heading { display: block; }
+  .oracle-ritual-heading p { margin-top: 14px; }
+  .oracle-ritual-steps { gap: 17px; }
+  .oracle-ritual-steps h3 { font-size: 21px; }
+  .reading-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .controls { padding: 25px; }
+  .spread-options { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .table-area { min-height: 405px; padding: 25px; }
+  .table-heading { flex-wrap: nowrap; }
+  .dictionary { grid-template-columns: 1fr; }
+  .interpretations { padding: 26px; }
+  .reading-entry { grid-template-columns: 85px minmax(0, 1fr); gap: 20px; }
+}
+@media (max-width: 480px) {
+  .site-header { padding: 21px 20px 18px; gap: 12px; align-items: start; }
+  .brand { font-size: 21px; gap: 9px; }
+  .brand-mark { font-size: 34px; }
+  .brand small { font-size: 9px; letter-spacing: .07em; line-height: 1.5; }
+  .source-button { padding: 0 2px; font-size: 11px; white-space: nowrap; }
+  .source-button span { margin-left: 6px; }
+  main { padding: 0 18px; }
+  .oracle-hero { margin-top: 20px; padding: 28px 23px 18px; border-radius: 13px; }
+  .oracle-hero h1 { font-size: 39px; line-height: 1.08; }
+  .oracle-hero .eyebrow { font-size: 9px; letter-spacing: .11em; }
+  .oracle-lead { margin-top: 21px; font-size: 14px; line-height: 1.8; }
+  .oracle-hero-actions { margin-top: 23px; }
+  .oracle-hero-actions .primary-button { width: 100%; font-size: 12px; padding: 13px 16px; gap: 14px; }
+  .oracle-caption { font-size: 11px; line-height: 1.75; }
+  .oracle-sky img { max-width: 280px; }
+  .reading-disclaimer { padding: 18px; margin-bottom: 22px; }
+  .reading-disclaimer p { font-size: 12px; line-height: 1.8; }
+  .oracle-ritual { padding: 23px 20px; margin-bottom: 23px; }
+  .oracle-ritual-heading h2 { font-size: 27px; }
+  .oracle-ritual-heading p { font-size: 12px; line-height: 1.8; }
+  .oracle-ritual-steps { grid-template-columns: 1fr; gap: 19px; margin-top: 22px; }
+  .oracle-ritual-steps article { padding-top: 17px; }
+  .oracle-ritual-steps b { float: left; width: 34px; margin: 1px 0 0; }
+  .oracle-ritual-steps h3, .oracle-ritual-steps p { margin-left: 34px; }
+  .oracle-ritual-steps h3 { font-size: 22px; }
+  .oracle-ritual-steps p { margin-top: 9px; font-size: 12px; line-height: 1.85; }
+  .ritual-action { margin-left: 34px; }
+  .oracle-intentions { gap: 8px; margin-top: 22px; padding-top: 18px; }
+  .oracle-intentions label { font-size: 11px; padding: 9px 12px; }
+  .view-tabs { padding: 0 18px; gap: 23px; }
+  .view-tabs button { font-size: 12px; }
+  .controls { padding: 23px 20px; }
+  .controls label { line-height: 1.6; }
+  .controls textarea, .controls select { font-size: 16px; }
+  .spread-options { gap: 7px; }
+  .spread-options button { padding: 10px 7px; min-height: 79px; }
+  .spread-options span { font-size: 9px; }
+  .table-area { padding: 23px 17px 20px; min-height: 390px; }
+  .table-heading { gap: 10px; align-items: center; }
+  .table-heading h2 { font-size: 23px; }
+  .table-heading .eyebrow { font-size: 9px; }
+  .table-count { font-size: 10px; padding: 5px 8px; }
+  .table-area > p { font-size: 11px; margin-bottom: 23px; }
+  .card-table { gap: 9px; }
+  .position-label { font-size: 9px; letter-spacing: .02em; }
+  .card-name { font-size: 13px; }
+  .card-helper { font-size: 9px; }
+  .card-bottom { font-size: 7px; }
+  .tarot-card { padding: 7px; }
+  .revealed .card-bottom { font-size: 11px; }
+  .interpretations { padding: 24px 20px; margin-top: 24px; }
+  .section-heading h2 { font-size: 29px; }
+  .section-heading > p { font-size: 17px; }
+  .reading-entry { grid-template-columns: minmax(0, 1fr); gap: 15px; padding: 23px 0; }
+  .entry-position { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+  .entry-position span { margin-top: 0; font-size: 20px; }
+  .reading-entry h3 { font-size: 26px; }
+  .contextual-reading p, .synthesis p { font-size: 15px; line-height: 1.85; }
+  .synthesis { padding: 21px 18px; }
+  .synthesis h3 { font-size: 25px; }
+  .oracle-vision > h3 { font-size: 27px; }
+  .oracle-vision-grid article { padding: 20px 18px; }
+  .oracle-vision-grid h4 { font-size: 23px; }
+  .oracle-vision-grid p { font-size: 14px; }
+  .oracle-journal label { font-size: 13px; }
+  .oracle-vision-note { font-size: 11px; }
+  .oracle-ai { padding: 22px 18px; }
+  .oracle-ai > h3 { font-size: 25px; }
+  .oracle-ai > p { font-size: 13px; }
+  .oracle-ai-consent { font-size: 12px; gap: 9px; }
+  .oracle-ai .primary-button { width: 100%; gap: 12px; padding: 14px 15px; font-size: 12px; }
+  .oracle-ai .private-note, #oracle-ai-status { font-size: 11px; }
+  .oracle-ai-result { padding: 20px 16px; }
+  .oracle-ai-result p { font-size: 15px; line-height: 1.85; }
+  .dictionary h2 { font-size: 31px; }
+  .definition-panel { padding: 25px 21px; }
+  .definition-panel h3 { font-size: 31px; }
+  footer { display: block; font-size: 10px; padding-bottom: 25px; }
+  footer p { text-align: left; margin-top: 14px; }
+  dialog { padding: 23px 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

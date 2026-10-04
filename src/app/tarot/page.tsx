@@ -5,20 +5,20 @@ import { ShareMenu } from '@/components/radio/ShareMenu';
 const tarotDestinations = [{
   id: 'tarot',
   label: 'la page Tarot',
-  title: 'Clair de cartes · Tarot NOWIS',
+  title: 'Oracle NOWIS · Tarot',
   url: 'https://nowis.store/tarot',
-  text: 'Découvrez Clair de cartes : tirez les cartes du Tarot de Marseille et explorez leur sens autour de votre question.',
+  text: 'Entrez dans l’univers de l’Oracle NOWIS : un rituel, les cartes du Tarot de Marseille et une vision symbolique autour de votre question.',
 }] as const;
 
 export const metadata = buildMetadata({
-  title: 'Clair de cartes · Liseuse de tarot',
-  description: 'Tirez les 78 cartes du Tarot de Marseille et explorez une lecture symbolique liée à votre question, à chaque carte et à sa position. Un questionnaire facultatif permet de préciser votre situation.',
+  title: 'Oracle NOWIS · Tarot et intuition',
+  description: 'Un univers céleste, un rituel facultatif et les 78 cartes du Tarot de Marseille. Explorez une lecture liée à votre question et une vision IA sur demande, avec votre accord.',
   path: '/tarot',
 });
 
 export default function TarotPage() {
   return (
-    <section aria-label="Clair de cartes · Liseuse de tarot" className="mx-auto w-full max-w-[1320px]">
+    <section aria-label="Oracle NOWIS · Tarot et intuition" className="mx-auto w-full max-w-[1320px]">
       <div className="flex justify-end px-6 pb-2 md:px-11">
         <ShareMenu destinations={tarotDestinations} triggerLabel="Partager la page Tarot" />
       </div>
