@@ -78,7 +78,7 @@ test('prompt uses server meanings, preserves the unknown Mat and labels biograph
   const input = parseTarotOracleInput({ ...payload, cardIds: ['major-0', 'major-17', 'coupes-13'], answers: { situation: 'Je prépare un atelier.', feeling: 'inquiet' }, intention: 'apaisement' });
   const prompt = buildTarotOraclePrompt(input);
   assert.match(prompt, /Définition|Aucune définition du Mat/);
-  assert.match(prompt, /"couverture":"missing"/);
+  assert.equal(prompt.includes('"couverture"'), false);
   assert.match(prompt, /"position":"Passé","carte":"Le Mat"/);
   assert.match(prompt, /contexteDeclare/);
   assert.match(prompt, /accueillir ce qui est ressenti avec calme/);
