@@ -1,0 +1,947 @@
+{
+  "tradition": "Tarot de Marseille",
+  "cards": [
+    {
+      "id": "major-0",
+      "name": "Le Mat",
+      "family": "Majeurs",
+      "keywords": [],
+      "meaning": "Aucune définition du Mat n’a encore été vérifiée dans les sources actuellement consultées.",
+      "coverage": "missing"
+    },
+    {
+      "id": "major-1",
+      "name": "Le Bateleur",
+      "family": "Majeurs",
+      "keywords": [
+        "commencement",
+        "potentiel",
+        "action"
+      ],
+      "meaning": "Commencement, possibilités et passage à l’action.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-2",
+      "name": "La Papesse",
+      "family": "Majeurs",
+      "keywords": [
+        "intuition",
+        "sagesse"
+      ],
+      "meaning": "Savoir intérieur et connaissances encore cachées.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-3",
+      "name": "L’Impératrice",
+      "family": "Majeurs",
+      "keywords": [
+        "créativité",
+        "abondance"
+      ],
+      "meaning": "Création, fécondité des idées et abondance.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-4",
+      "name": "L’Empereur",
+      "family": "Majeurs",
+      "keywords": [
+        "autorité",
+        "stabilité"
+      ],
+      "meaning": "Autorité, cadre et stabilité.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-5",
+      "name": "Le Pape",
+      "family": "Majeurs",
+      "keywords": [
+        "tradition",
+        "transmission"
+      ],
+      "meaning": "Traditions, enseignements et dimension spirituelle.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-6",
+      "name": "L’Amoureux",
+      "family": "Majeurs",
+      "keywords": [
+        "choix",
+        "relations"
+      ],
+      "meaning": "Choix, amour et liens affectifs.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-7",
+      "name": "Le Chariot",
+      "family": "Majeurs",
+      "keywords": [
+        "détermination",
+        "victoire"
+      ],
+      "meaning": "Avancer avec volonté et maîtrise.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-8",
+      "name": "La Justice",
+      "family": "Majeurs",
+      "keywords": [
+        "équilibre",
+        "vérité"
+      ],
+      "meaning": "Équilibre, vérité et décisions.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-9",
+      "name": "L’Hermite",
+      "family": "Majeurs",
+      "keywords": [
+        "retrait",
+        "sagesse"
+      ],
+      "meaning": "Retrait, recherche intérieure et sagesse.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-10",
+      "name": "La Roue de Fortune",
+      "family": "Majeurs",
+      "keywords": [
+        "changement",
+        "chance"
+      ],
+      "meaning": "Changement, chance et destin.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-11",
+      "name": "La Force",
+      "family": "Majeurs",
+      "keywords": [
+        "courage",
+        "maîtrise"
+      ],
+      "meaning": "Courage et maîtrise de sa force intérieure.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-12",
+      "name": "Le Pendu",
+      "family": "Majeurs",
+      "keywords": [
+        "pause",
+        "perspective"
+      ],
+      "meaning": "Pause, renoncement et regard différent.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-13",
+      "name": "L’Arcane sans nom",
+      "family": "Majeurs",
+      "keywords": [
+        "transformation",
+        "renouveau"
+      ],
+      "meaning": "Fin d’une étape, transformation et renouveau.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-14",
+      "name": "Tempérance",
+      "family": "Majeurs",
+      "keywords": [
+        "équilibre",
+        "modération"
+      ],
+      "meaning": "Équilibre et mesure.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-15",
+      "name": "Le Diable",
+      "family": "Majeurs",
+      "keywords": [
+        "tentation",
+        "dépendance"
+      ],
+      "meaning": "Tentations, dépendances et liens qui entravent.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-16",
+      "name": "La Maison Dieu",
+      "family": "Majeurs",
+      "keywords": [
+        "bouleversement",
+        "révélation"
+      ],
+      "meaning": "Bouleversement, révélation et déconstruction.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-17",
+      "name": "L’Étoile",
+      "family": "Majeurs",
+      "keywords": [
+        "espoir",
+        "inspiration"
+      ],
+      "meaning": "Espoir, inspiration et orientation.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-18",
+      "name": "La Lune",
+      "family": "Majeurs",
+      "keywords": [
+        "intuition",
+        "illusion"
+      ],
+      "meaning": "Rêves, intuition et apparences trompeuses.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-19",
+      "name": "Le Soleil",
+      "family": "Majeurs",
+      "keywords": [
+        "joie",
+        "clarté"
+      ],
+      "meaning": "Joie, réussite et clarté.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-20",
+      "name": "Le Jugement",
+      "family": "Majeurs",
+      "keywords": [
+        "éveil",
+        "renaissance"
+      ],
+      "meaning": "Prise de conscience, révélation et nouveau départ.",
+      "coverage": "direct"
+    },
+    {
+      "id": "major-21",
+      "name": "Le Monde",
+      "family": "Majeurs",
+      "keywords": [
+        "accomplissement",
+        "plénitude"
+      ],
+      "meaning": "Accomplissement, intégration et plénitude.",
+      "coverage": "direct"
+    },
+    {
+      "id": "batons-1",
+      "name": "As de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "début"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + commencement.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-2",
+      "name": "Deux de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "dualité"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + dualité.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-3",
+      "name": "Trois de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "création"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + création.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-4",
+      "name": "Quatre de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "concrétisation"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + concrétisation.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-5",
+      "name": "Cinq de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "évolution"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + évolution, gains et pertes.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-6",
+      "name": "Six de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "transition",
+        "choix"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + transition et choix.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-7",
+      "name": "Sept de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "victoire",
+        "obstacles"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + victoire et obstacles.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-8",
+      "name": "Huit de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "équilibre",
+        "mouvement"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + équilibre et mouvement.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-9",
+      "name": "Neuf de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "expérience"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + apogée et expérience.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-10",
+      "name": "Dix de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "aboutissement"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + aboutissement.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-11",
+      "name": "Valet de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "projet",
+        "essai"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + projet et expérimentation.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-12",
+      "name": "Cavalier de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "action"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + action.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-13",
+      "name": "Reine de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "patience"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + compréhension et patience.",
+      "coverage": "method"
+    },
+    {
+      "id": "batons-14",
+      "name": "Roi de Bâtons",
+      "family": "Bâtons",
+      "keywords": [
+        "professionnel",
+        "pouvoir",
+        "connaissance"
+      ],
+      "meaning": "Association famille/rang : domaine professionnel + pouvoir et connaissance.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-1",
+      "name": "As de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "début"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + commencement.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-2",
+      "name": "Deux de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "dualité"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + dualité.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-3",
+      "name": "Trois de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "création"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + création.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-4",
+      "name": "Quatre de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "concrétisation"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + concrétisation.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-5",
+      "name": "Cinq de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "évolution"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + évolution, gains et pertes.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-6",
+      "name": "Six de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "transition",
+        "choix"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + transition et choix.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-7",
+      "name": "Sept de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "victoire",
+        "obstacles"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + victoire et obstacles.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-8",
+      "name": "Huit de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "équilibre",
+        "mouvement"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + équilibre et mouvement.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-9",
+      "name": "Neuf de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "expérience"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + apogée et expérience.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-10",
+      "name": "Dix de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "aboutissement"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + aboutissement.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-11",
+      "name": "Valet de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "projet",
+        "essai"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + projet et expérimentation.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-12",
+      "name": "Cavalier de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "action"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + action.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-13",
+      "name": "Reine de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "patience"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + compréhension et patience.",
+      "coverage": "method"
+    },
+    {
+      "id": "coupes-14",
+      "name": "Roi de Coupes",
+      "family": "Coupes",
+      "keywords": [
+        "affectif",
+        "pouvoir",
+        "connaissance"
+      ],
+      "meaning": "Association famille/rang : domaine affectif + pouvoir et connaissance.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-1",
+      "name": "As d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "début"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + commencement.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-2",
+      "name": "Deux d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "dualité"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + dualité.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-3",
+      "name": "Trois d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "création"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + création.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-4",
+      "name": "Quatre d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "concrétisation"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + concrétisation.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-5",
+      "name": "Cinq d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "évolution"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + évolution, gains et pertes.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-6",
+      "name": "Six d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "transition",
+        "choix"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + transition et choix.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-7",
+      "name": "Sept d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "victoire",
+        "obstacles"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + victoire et obstacles.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-8",
+      "name": "Huit d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "équilibre",
+        "mouvement"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + équilibre et mouvement.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-9",
+      "name": "Neuf d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "expérience"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + apogée et expérience.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-10",
+      "name": "Dix d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "aboutissement"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + aboutissement.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-11",
+      "name": "Valet d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "projet",
+        "essai"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + projet et expérimentation.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-12",
+      "name": "Cavalier d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "action"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + action.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-13",
+      "name": "Reine d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "patience"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + compréhension et patience.",
+      "coverage": "method"
+    },
+    {
+      "id": "epees-14",
+      "name": "Roi d’Épées",
+      "family": "Épées",
+      "keywords": [
+        "intellectuel",
+        "pouvoir",
+        "connaissance"
+      ],
+      "meaning": "Association famille/rang : domaine intellectuel + pouvoir et connaissance.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-1",
+      "name": "As de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "début"
+      ],
+      "meaning": "Association famille/rang : domaine financier + commencement.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-2",
+      "name": "Deux de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "dualité"
+      ],
+      "meaning": "Association famille/rang : domaine financier + dualité.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-3",
+      "name": "Trois de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "création"
+      ],
+      "meaning": "Association famille/rang : domaine financier + création.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-4",
+      "name": "Quatre de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "concrétisation"
+      ],
+      "meaning": "Association famille/rang : domaine financier + concrétisation.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-5",
+      "name": "Cinq de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "évolution"
+      ],
+      "meaning": "Association famille/rang : domaine financier + évolution, gains et pertes.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-6",
+      "name": "Six de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "transition",
+        "choix"
+      ],
+      "meaning": "Association famille/rang : domaine financier + transition et choix.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-7",
+      "name": "Sept de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "victoire",
+        "obstacles"
+      ],
+      "meaning": "Association famille/rang : domaine financier + victoire et obstacles.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-8",
+      "name": "Huit de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "équilibre",
+        "mouvement"
+      ],
+      "meaning": "Association famille/rang : domaine financier + équilibre et mouvement.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-9",
+      "name": "Neuf de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "expérience"
+      ],
+      "meaning": "Association famille/rang : domaine financier + apogée et expérience.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-10",
+      "name": "Dix de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "aboutissement"
+      ],
+      "meaning": "Association famille/rang : domaine financier + aboutissement.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-11",
+      "name": "Valet de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "projet",
+        "essai"
+      ],
+      "meaning": "Association famille/rang : domaine financier + projet et expérimentation.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-12",
+      "name": "Cavalier de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "action"
+      ],
+      "meaning": "Association famille/rang : domaine financier + action.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-13",
+      "name": "Reine de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "patience"
+      ],
+      "meaning": "Association famille/rang : domaine financier + compréhension et patience.",
+      "coverage": "method"
+    },
+    {
+      "id": "deniers-14",
+      "name": "Roi de Deniers",
+      "family": "Deniers",
+      "keywords": [
+        "financier",
+        "pouvoir",
+        "connaissance"
+      ],
+      "meaning": "Association famille/rang : domaine financier + pouvoir et connaissance.",
+      "coverage": "method"
+    }
+  ],
+  "spreads": {
+    "2": [
+      {
+        "title": "Problème",
+        "prompt": "Quel aspect de la situation mérite votre attention ?"
+      },
+      {
+        "title": "Solution",
+        "prompt": "Quelle piste concrète pourriez-vous explorer ?"
+      }
+    ],
+    "3": [
+      {
+        "title": "Passé",
+        "prompt": "Quelle expérience passée éclaire votre question ?"
+      },
+      {
+        "title": "Présent",
+        "prompt": "Qu’observez-vous dans votre situation actuelle ?"
+      },
+      {
+        "title": "Avenir",
+        "prompt": "Quelle possibilité pourriez-vous envisager pour la suite ?"
+      }
+    ],
+    "4": [
+      {
+        "title": "Situation",
+        "prompt": "Quel point décrit le mieux ce que vous vivez ?"
+      },
+      {
+        "title": "Obstacle",
+        "prompt": "Qu’est-ce qui freine votre progression ?"
+      },
+      {
+        "title": "Aide",
+        "prompt": "Sur quelle ressource pourriez-vous vous appuyer ?"
+      },
+      {
+        "title": "Résultat",
+        "prompt": "Quel résultat souhaitez-vous construire ?"
+      }
+    ],
+    "5": [
+      {
+        "title": "Passé",
+        "prompt": "Qu’avez-vous appris de ce qui précède ?"
+      },
+      {
+        "title": "Présent",
+        "prompt": "Qu’est-ce qui compte pour vous maintenant ?"
+      },
+      {
+        "title": "Avenir",
+        "prompt": "Quelle direction souhaiteriez-vous explorer ?"
+      },
+      {
+        "title": "Conseil",
+        "prompt": "Quel petit pas pourriez-vous choisir ?"
+      },
+      {
+        "title": "Synthèse",
+        "prompt": "Quel fil relie vos réflexions sur ces cartes ?"
+      }
+    ]
+  }
+}

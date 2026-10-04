@@ -3,29 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#173e36">
-  <meta name="description" content="Tirez les cartes à l’écran et explorez une lecture symbolique adaptée à votre question.">
+  <meta name="theme-color" content="#101c32">
+  <meta name="description" content="Entrez dans l’univers de l’Oracle NOWIS : un rituel calme, le Tarot de Marseille et une vision symbolique liée à votre question.">
   <meta name="robots" content="noindex,follow">
-  <title>Clair de cartes — Votre liseuse de tarot</title>
+  <title>Oracle NOWIS — Un univers de symboles</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23173e36'/%3E%3Cpath d='M20 7a10 10 0 1 0 0 18 10 10 0 0 1 0-18' fill='%23dcc398'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="oracle.css">
   <script src="tarot-data.js" defer></script>
   <script src="tarot-personalization.js" defer></script>
   <script src="tarot-reading.js" defer></script>
   <script src="app.js" defer></script>
+  <script src="oracle.js" defer></script>
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="#" aria-label="Clair de cartes, accueil"><span class="brand-mark" aria-hidden="true">☾</span><span>Clair de cartes<small>Une pause pour voir autrement</small></span></a>
+    <a class="brand" href="#" aria-label="Oracle NOWIS, accueil"><span class="brand-mark" aria-hidden="true">☾</span><span>Oracle NOWIS<small>Un univers de symboles, une écoute de soi</small></span></a>
     <button class="source-button" id="open-sources">Les sources <span aria-hidden="true">↗</span></button>
   </header>
   <main>
-    <div class="intro"><p class="eyebrow">TAROT DE MARSEILLE · 78 CARTES</p><h1>Un tirage pour éclairer votre question.</h1><p>Posez votre question, tirez les cartes et prenez le temps de les lire.</p></div>
+    <section class="oracle-hero" aria-labelledby="oracle-title">
+      <div class="oracle-hero-copy">
+        <p class="eyebrow">L’ORACLE CYBERNÉTIQUE · TAROT DE MARSEILLE</p>
+        <h1 id="oracle-title">Se relier à l’univers.<br>Revenir à soi.</h1>
+        <p class="oracle-lead">Un ciel de symboles, une question, un instant pour vous. L’Oracle NOWIS relie les cartes à votre situation pour ouvrir une vision possible et écouter ce qui résonne en vous.</p>
+        <div class="oracle-hero-actions"><a class="primary-button" href="#oracle-ritual">Entrer dans le rituel <span aria-hidden="true">✦</span></a><span>78 cartes · 2 à 5 cartes par tirage</span></div>
+        <p class="oracle-caption">Une expérience symbolique inspirée de l’Oracle cybernétique. Vos choix restent entre vos mains.</p>
+      </div>
+      <div class="oracle-sky" aria-hidden="true"><img src="oracle-sky.svg" width="540" height="540" alt="" decoding="async"></div>
+    </section>
     <aside class="reading-disclaimer" aria-labelledby="reading-disclaimer-title">
       <h2 id="reading-disclaimer-title">Avertissement</h2>
       <p>Les réponses proposées sont des interprétations symboliques destinées à la réflexion et au divertissement. Nous n’affirmons pas qu’elles sont vraies et ne garantissons aucune prédiction.</p>
       <p>NOWIS décline toute responsabilité quant aux réponses fournies et à l’usage qui en est fait. Vous restez responsable de vos décisions.</p>
+      <p>Le logiciel ne perçoit pas d’énergies ni de messages surnaturels.</p>
     </aside>
+    <section id="oracle-ritual" class="oracle-ritual" aria-labelledby="ritual-title">
+      <div class="oracle-ritual-heading"><p class="eyebrow">AVANT LES CARTES · UN MOMENT POUR VOUS</p><h2 id="ritual-title">Préparer votre espace intérieur.</h2><p>Ce petit rituel est facultatif. Vous pouvez aussi passer directement au tirage.</p></div>
+      <div class="oracle-ritual-steps">
+        <article><b>01</b><h3>Ralentir</h3><p>Posez les pieds au sol et prenez une respiration à votre rythme.</p><button type="button" id="ritual-breath" class="ritual-action" aria-describedby="ritual-status">Un instant de présence</button><p id="ritual-status" role="status" aria-live="polite"></p></article>
+        <article><b>02</b><h3>Formuler</h3><p>Choisissez une question ouverte : « Que puis-je comprendre ? » ou « Quelle place puis-je donner à… ? »</p></article>
+        <article><b>03</b><h3>Écouter</h3><p>Accueillez les images comme des pistes de réflexion. Gardez ce qui vous parle, laissez le reste.</p></article>
+      </div>
+      <fieldset class="oracle-intentions"><legend>Qu’aimeriez-vous accueillir dans cette lecture ?</legend><label><input type="radio" name="oracle-intention" value="clarte" checked> De la clarté</label><label><input type="radio" name="oracle-intention" value="elan"> Un nouvel élan</label><label><input type="radio" name="oracle-intention" value="apaisement"> De l’apaisement</label></fieldset>
+    </section>
     <nav class="view-tabs" aria-label="Explorer le tarot"><button id="tab-reading" aria-pressed="true">Mon tirage</button><button id="tab-dictionary" aria-pressed="false">Les définitions</button></nav>
     <section id="reading-view" aria-label="Votre tirage">
       <div class="reading-layout">
@@ -33,7 +54,7 @@
           <p class="eyebrow">01 / VOTRE INTENTION</p>
           <label for="question">Une question à explorer <span>(facultatif)</span></label>
           <textarea id="question" maxlength="500" rows="2" placeholder="Que puis-je mieux comprendre en ce moment ?"></textarea>
-          <p class="private-note">Votre question reste dans cette page.</p>
+          <p class="private-note">La lecture se fait dans cet onglet. Une vision IA peut être demandée ensuite, avec votre accord.</p>
           <details id="personal-context" class="personal-context">
             <summary>Préciser ma situation <span>4 questions facultatives</span></summary>
             <div class="context-fields">
@@ -65,11 +86,23 @@
           <div class="reveal-actions"><button id="reveal-all" class="secondary-button" hidden>Tout révéler</button><p id="draw-status" role="status" aria-live="polite"></p></div>
         </div>
       </div>
-      <section id="interpretations" class="interpretations" hidden aria-label="Interprétation de votre tirage"><div class="section-heading"><div><p class="eyebrow">03 / PRENDRE LE TEMPS DE LIRE</p><h2>Votre lecture</h2></div><p id="question-summary"></p></div><p id="reading-context-note" class="reading-context-note" hidden>Cette lecture tient compte de vos réponses.</p><div id="reading-cards"></div><div id="synthesis" class="synthesis" hidden></div></section>
+      <section id="interpretations" class="interpretations" hidden aria-label="Interprétation de votre tirage"><div class="section-heading"><div><p class="eyebrow">03 / PRENDRE LE TEMPS DE LIRE</p><h2>Votre lecture</h2></div><p id="question-summary"></p></div><p id="reading-context-note" class="reading-context-note" hidden>Cette lecture tient compte de vos réponses.</p><div id="reading-cards"></div><div id="synthesis" class="synthesis" hidden></div>
+        <section id="oracle-vision" class="oracle-vision" hidden aria-labelledby="vision-title">
+          <p class="eyebrow">04 / CE QUI RÉSONNE</p><h3 id="vision-title">Votre boussole symbolique</h3>
+          <div class="oracle-vision-grid"><article><h4>Le miroir des cartes</h4><p id="vision-mirror"></p></article><article><h4>Votre intention</h4><p id="vision-intention"></p></article><article><h4>Un pas à votre portée</h4><p id="vision-step"></p></article></div>
+          <p class="oracle-vision-note">Une lecture de symboles ouvre des possibilités ; elle ne mesure pas la probabilité d’un événement et ne révèle pas des faits cachés sur vous.</p>
+          <section class="oracle-ai" aria-labelledby="oracle-ai-title">
+            <h3 id="oracle-ai-title">La vision de l’oracle · IA</h3><p>À votre demande, une IA peut réunir votre question, vos cartes et leurs positions dans une lecture plus libre, inspirée du corpus de cette liseuse.</p>
+            <div id="oracle-ai-controls" hidden><label class="oracle-ai-consent"><input id="oracle-ai-consent" type="checkbox"> J’accepte d’envoyer ma question, les cartes, mon intention et mes éventuelles réponses au questionnaire au service d’IA externe (Vercel AI Gateway ou OpenAI, selon la configuration) pour cette lecture.</label><p class="private-note">Évitez les informations confidentielles. Votre journal ci-dessous n’est jamais envoyé à l’IA.</p><button id="oracle-ai-request" class="primary-button" type="button" disabled>Demander une vision à l’IA <span aria-hidden="true">✦</span></button></div>
+            <p id="oracle-ai-status" role="status" aria-live="polite">Vérification de la disponibilité de l’IA…</p><div id="oracle-ai-result" class="oracle-ai-result" hidden aria-label="Vision générée par l’IA"></div>
+          </section>
+          <div class="oracle-journal"><label for="oracle-journal">Votre carnet d’intuition <span>(facultatif)</span></label><p>Qu’est-ce qui résonne ? Quel petit geste voulez-vous retenir ?</p><textarea id="oracle-journal" rows="3" maxlength="1600" placeholder="Je retiens de cette lecture…"></textarea><p class="private-note">Ce carnet reste dans cet onglet, y compris après une actualisation.</p><button type="button" id="oracle-journal-clear" class="clear-context">Effacer mon carnet</button></div>
+        </section>
+      </section>
     </section>
     <section id="dictionary-view" class="dictionary" hidden aria-label="Définitions des 78 cartes"><div><p class="eyebrow">LE SENS DES CARTES</p><h2>Une carte, plusieurs pistes.</h2><p>Consultez la signification et sa source.</p><label for="card-select">Choisissez une carte</label><select id="card-select"></select></div><article id="dictionary-card" class="definition-panel"></article></section>
-    <footer><span>Clair de cartes <span aria-hidden="true">✦</span> Tarot de Marseille</span><p>Une lecture symbolique qui relie votre question, le sens des cartes et leur position dans le tirage.</p></footer>
+    <footer><span>Oracle NOWIS <span aria-hidden="true">✦</span> Tarot de Marseille</span><p>Des symboles pour réfléchir. Une intuition à écouter. Un avenir qui reste ouvert.</p></footer>
   </main>
-  <dialog id="sources-dialog"><div class="dialog-header"><p class="eyebrow">LA BASE DE VOTRE LISEUSE</p><button id="close-sources" aria-label="Fermer les sources">×</button></div><h2>D’où viennent les lectures ?</h2><p>Cette liseuse utilise les documents de référence ci-dessous pour les significations de base des cartes.</p><div id="source-list"></div><div class="method-note"><h3>Du sens de la carte à votre question</h3><p>Les significations de base viennent de ces sources. Les descriptions développées sont des lectures proposées par la liseuse : elles relient ces significations au sujet de votre question et à la position de chaque carte.</p><p>La lecture des mineurs associe leur famille et leur rang selon la méthode documentée. Les textes contextualisés sont des interprétations, et non des citations des auteurs ou des probabilités calculées.</p><p><b>À compléter :</b> aucune définition explicite du Mat n’a été vérifiée dans les sources consultées.</p><p>Les tirages suivent le guide Street Tarots. Les cartes sont lues à l’endroit. Les illustrations sont des symboles de la liseuse. Les interprétations sont préparées dans cette page et ne consultent aucun service externe lors du tirage.</p></div><button id="close-sources-bottom" class="primary-button">Revenir aux cartes</button></dialog>
+  <dialog id="sources-dialog"><div class="dialog-header"><p class="eyebrow">LA BASE DE VOTRE LISEUSE</p><button id="close-sources" aria-label="Fermer les sources">×</button></div><h2>D’où viennent les lectures ?</h2><p>Cette liseuse utilise les documents de référence ci-dessous pour les significations de base des cartes.</p><div id="source-list"></div><div class="method-note"><h3>Du sens de la carte à votre question</h3><p>Les significations de base viennent de ces sources. Les descriptions développées sont des lectures proposées par la liseuse : elles relient ces significations au sujet de votre question et à la position de chaque carte.</p><p>La lecture des mineurs associe leur famille et leur rang selon la méthode documentée. Les textes contextualisés sont des interprétations, et non des citations des auteurs ou des probabilités calculées.</p><p><b>À compléter :</b> aucune définition explicite du Mat n’a été vérifiée dans les sources consultées.</p><p>Les tirages suivent le guide Street Tarots. Les cartes sont lues à l’endroit. Les illustrations sont des symboles de la liseuse. Le tirage et sa lecture symbolique sont préparés dans cet onglet. Seule la vision IA facultative consulte un service externe, après votre accord.</p><h3>Un rituel, un miroir</h3><p>L’ambiance et le rituel s’inspirent du projet « L’Oracle cybernétique » et des sources sur la méditation et l’écriture intuitive. Ils proposent un moment de réflexion ; ils ne prouvent aucune capacité surnaturelle. Le décor céleste est une illustration, sans calcul astronomique.</p><p>La vision IA reçoit les définitions de ce corpus, la question, les cartes et leurs positions, votre intention et vos réponses facultatives. Elle ne consulte pas le notebook en direct et ne reçoit pas votre carnet.</p></div><button id="close-sources-bottom" class="primary-button">Revenir aux cartes</button></dialog>
 </body>
 </html>

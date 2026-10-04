@@ -65,9 +65,9 @@ export function TarotReader() {
       <iframe
         ref={frame}
         src="/tarot-reader/index.html"
-        title="Clair de cartes : tirage et interprétation du tarot"
+        title="Oracle NOWIS : rituel, tirage et interprétation du tarot"
         onLoad={connect}
-        className="block w-full border-0 bg-[#f7f5ee]"
+        className="block w-full border-0 bg-[#101d31]"
         style={{ height }}
         referrerPolicy="no-referrer"
       />

@@ -6,6 +6,7 @@
   const state = {spread:'3',drawn:[],revealed:new Set(),question:'',deck:'all',answers:window.TAROT_PERSONAL.cleanAnswers({})};
   const answerFields={situation:'context-situation',goal:'context-goal',feeling:'context-feeling',blocker:'context-blocker'};
   const sessionKey='nowis-tarot-reading-v1';
+  window.TAROT_SESSION = Object.freeze({getReading:()=>({spread:state.spread,cardIds:state.drawn.map(card=>card.id),revealed:[...state.revealed],question:state.question,answers:{...state.answers}})});
   function updateContextStatus() {
     const context=window.TAROT_READING.detectContext(state.question,state.answers);
     const count=Object.values(state.answers).filter(Boolean).length;
@@ -90,7 +91,7 @@
     table.innerHTML=positions.map((position,i)=>{
       const card=state.drawn[i];const revealed=state.revealed.has(i);
       const label=!card?'Emplacement '+position.title:revealed?card.name+' — '+position.title:'Révéler la carte '+(i+1)+' — '+position.title;
-      return `<div class="card-slot"><p class="position-label">${i+1}. ${esc(position.title)}</p><button class="tarot-card ${revealed?'revealed':''}" data-index="${i}" aria-label="${esc(label)}" ${!card?'disabled':''} aria-pressed="${revealed}"><span class="card-inner"><span class="card-ornament">${revealed?esc(card.roman||'✦'):'· ✦ ·'}</span><span class="card-center">${illustration(revealed?card:null)}</span><span class="card-bottom">${revealed?esc(card.name):'CLAIR DE CARTES'}</span></span></button><p class="${revealed?'card-name':'card-helper'}">${revealed?esc(card.name):card?'Touchez pour révéler':'Une carte à découvrir'}</p></div>`;
+      return `<div class="card-slot"><p class="position-label">${i+1}. ${esc(position.title)}</p><button class="tarot-card ${revealed?'revealed':''}" data-index="${i}" aria-label="${esc(label)}" ${!card?'disabled':''} aria-pressed="${revealed}"><span class="card-inner"><span class="card-ornament">${revealed?esc(card.roman||'✦'):'· ✦ ·'}</span><span class="card-center">${illustration(revealed?card:null)}</span><span class="card-bottom">${revealed?esc(card.name):'ORACLE NOWIS'}</span></span></button><p class="${revealed?'card-name':'card-helper'}">${revealed?esc(card.name):card?'Touchez pour révéler':'Une carte à découvrir'}</p></div>`;
     }).join('');
     $('spread-title').textContent=names[state.spread];
     $('reveal-count').textContent=state.drawn.length?`${state.revealed.size} / ${state.spread} révélées`:`${state.spread} cartes`;
@@ -119,6 +120,7 @@
       const paragraphs=window.TAROT_READING.synthesize(state.drawn,data.spreads[state.spread],state.question,state.answers);
       $('synthesis').innerHTML=`<h3>Le fil de votre tirage</h3>${paragraphs.map(paragraph=>`<p>${esc(paragraph)}</p>`).join('')}`;
     }
+    window.dispatchEvent(new Event('tarot:changed'));
   }
   function reveal(index) {
     if(!state.drawn[index]||state.revealed.has(index))return;
