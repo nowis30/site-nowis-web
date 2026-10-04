@@ -1,5 +1,7 @@
 # Oracle NOWIS sur la page Tarot
 
+Pour cette page, AI Gateway utilise par défaut `openai/gpt-5.4-nano`, avec priorité au modèle explicitement configuré dans `SITE_ASSISTANT_MODEL`. OpenAI direct conserve son choix `OPENAI_MODEL` et son défaut `gpt-5.6-luna`. Les diagnostics fournisseur ne contiennent que le statut HTTP et des codes documentés autorisés (`customer_verification_required`, `quota_for_entity_exceeded`, `invalid_request_error`, `missing_parameter`) ou `OTHER` : aucun corps de réponse, message, contenu personnel ou secret.
+
 La page publique `/tarot` héberge la liseuse dans une iframe de même origine, servie depuis `public/tarot-reader`. Les accès au menu, au pied de page, à Explorer et au sitemap sont conservés. Le thème bleu nuit, ivoire et or et l’astrolabe décoratif original s’inspirent du projet « L’Oracle cybernétique ». Aucun calcul astronomique, aucune perception surnaturelle et aucune consultation du notebook en direct ne sont annoncés.
 
 Le rituel facultatif propose une respiration naturelle, une question ouverte et une lecture des symboles. Trois intentions (clarté, élan, apaisement) modifient la boussole finale. Les définitions, les tirages et les interprétations locales restent utilisables sans fournisseur IA. Les 78 cartes, les tirages de 2 à 5 cartes, les positions, le questionnaire facultatif et la synthèse sont conservés. Le Mat reste sans définition vérifiée et est exclu des associations de sens.

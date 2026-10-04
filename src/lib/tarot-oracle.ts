@@ -79,7 +79,7 @@ function oracleProvider(env: NodeJS.ProcessEnv, request?: Request): OracleProvid
   const gatewayToken = env.AI_GATEWAY_API_KEY?.trim() || env.VERCEL_OIDC_TOKEN?.trim();
   if (gatewayToken) return {
     endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: gatewayToken,
-    model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.6-luna', gateway: true,
+    model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.4-nano', gateway: true,
   };
   const token = env.OPENAI_API_KEY?.trim();
   if (token) return {
@@ -92,7 +92,7 @@ function oracleProvider(env: NodeJS.ProcessEnv, request?: Request): OracleProvid
   const runtimeToken = env.VERCEL === '1' ? request?.headers.get('x-vercel-oidc-token')?.trim() : null;
   return runtimeToken ? {
     endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: runtimeToken,
-    model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.6-luna', gateway: true,
+    model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.4-nano', gateway: true,
   } : null;
 }
 
@@ -165,6 +165,23 @@ export function extractTarotOracleReply(data: unknown): string | null {
   return reply;
 }
 
+// Only documented, fixed enums may enter diagnostics; messages can contain
+// request content or account details and must never be included.
+const providerErrorCodes = new Set([
+  'customer_verification_required', 'quota_for_entity_exceeded',
+  'invalid_request_error', 'missing_parameter',
+]);
+function providerErrorCode(data: unknown): string {
+  if (!data || typeof data !== 'object') return 'OTHER';
+  const error = (data as { error?: unknown }).error;
+  if (!error || typeof error !== 'object') return 'OTHER';
+  const detail = error as { code?: unknown; type?: unknown };
+  for (const value of [detail.code, detail.type]) {
+    if (typeof value === 'string' && providerErrorCodes.has(value)) return value;
+  }
+  return 'OTHER';
+}
+
 export async function requestTarotOracleVision(
   input: TarotOracleInput,
   options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request } = {},
@@ -186,7 +203,9 @@ export async function requestTarotOracleVision(
       signal: AbortSignal.timeout(25000),
     });
     if (!response.ok) {
-      console.warn('TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: response.status });
+      let providerCode = 'OTHER';
+      try { providerCode = providerErrorCode(await response.json()); } catch { /* Non-JSON errors remain opaque. */ }
+      console.warn('TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: response.status, providerCode });
       return null;
     }
     const reply = extractTarotOracleReply(await response.json());

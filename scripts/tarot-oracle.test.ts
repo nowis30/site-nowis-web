@@ -126,14 +126,16 @@ test('runtime OIDC is used only on Vercel, only for the current request and neve
 test('configured provider credentials remain prior to runtime OIDC headers', async () => {
   const runtimeRequest = request(payload, { 'x-vercel-oidc-token': 'ignored-runtime-token' });
   const fixtures = [
-    { env: { VERCEL: '1', AI_GATEWAY_API_KEY: 'configured-gateway-token' }, endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: 'configured-gateway-token' },
-    { env: { VERCEL: '1', VERCEL_OIDC_TOKEN: 'configured-env-oidc-token' }, endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: 'configured-env-oidc-token' },
-    { env: { VERCEL: '1', OPENAI_API_KEY: 'configured-openai-token' }, endpoint: 'https://api.openai.com/v1/responses', token: 'configured-openai-token' },
+    { env: { VERCEL: '1', AI_GATEWAY_API_KEY: 'configured-gateway-token' }, endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: 'configured-gateway-token', model: 'openai/gpt-5.4-nano' },
+    { env: { VERCEL: '1', VERCEL_OIDC_TOKEN: 'configured-env-oidc-token' }, endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: 'configured-env-oidc-token', model: 'openai/gpt-5.4-nano' },
+    { env: { VERCEL: '1', OPENAI_API_KEY: 'configured-openai-token' }, endpoint: 'https://api.openai.com/v1/responses', token: 'configured-openai-token', model: 'gpt-5.6-luna' },
+    { env: { VERCEL: '1' }, endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: 'ignored-runtime-token', model: 'openai/gpt-5.4-nano' },
   ];
   for (const fixture of fixtures) {
     const reply = await requestTarotOracleVision(parseTarotOracleInput(payload), { env: fixture.env, request: runtimeRequest, fetchImpl: (async (url, init) => {
       assert.equal(url, fixture.endpoint);
       assert.equal(new Headers(init?.headers).get('authorization'), `Bearer ${fixture.token}`);
+      assert.equal(JSON.parse(String(init?.body)).model, fixture.model);
       return Response.json({ output: [{ content: [{ type: 'output_text', text: 'Vision issue du fournisseur configuré.' }] }] });
     }) as typeof fetch });
     assert.equal(reply, 'Vision issue du fournisseur configuré.');
@@ -201,15 +203,29 @@ test('provider errors, incomplete/empty output and outputs over 500 words never 
   const diagnostics: unknown[][] = [];
   console.warn = (...args: unknown[]) => { diagnostics.push(args); };
   try {
-    for (const response of [new Response('provider body must never be logged', { status: 401 }), new Response('', { status: 429 }), Response.json({ status: 'incomplete', output: [{ content: [{ type: 'output_text', text: 'private incomplete output' }] }] }), Response.json({ output: [] })]) {
+    for (const response of [
+      new Response('provider body must never be logged', { status: 401 }), new Response('', { status: 429 }),
+      Response.json({ error: { code: 'customer_verification_required', message: 'private account details' } }, { status: 403 }),
+      Response.json({ error: { type: 'quota_for_entity_exceeded', message: 'private budget details' } }, { status: 402 }),
+      Response.json({ error: { code: 'missing_parameter', type: 'invalid_request_error', message: payload.question } }, { status: 400 }),
+      Response.json({ error: { type: 'invalid_request_error', message: 'private request details' } }, { status: 400 }),
+      Response.json({ error: { code: 'private test-not-secret', type: 'unknown_account_state', message: payload.question } }, { status: 403 }),
+      Response.json({ status: 'incomplete', output: [{ content: [{ type: 'output_text', text: 'private incomplete output' }] }] }),
+      Response.json({ output: [] }),
+    ]) {
       assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => response) as typeof fetch }), null);
     }
     assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => { throw new DOMException('private timeout details', 'TimeoutError'); }) as typeof fetch }), null);
     assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => { throw new Error('private request details with token test-not-secret'); }) as typeof fetch }), null);
   } finally { console.warn = savedWarn; }
   assert.deepEqual(diagnostics, [
-    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 401 }],
-    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 429 }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 401, providerCode: 'OTHER' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 429, providerCode: 'OTHER' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 403, providerCode: 'customer_verification_required' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 402, providerCode: 'quota_for_entity_exceeded' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 400, providerCode: 'missing_parameter' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 400, providerCode: 'invalid_request_error' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 403, providerCode: 'OTHER' }],
     ['TAROT_ORACLE', { code: 'PROVIDER_OUTPUT' }],
     ['TAROT_ORACLE', { code: 'PROVIDER_OUTPUT' }],
     ['TAROT_ORACLE', { code: 'PROVIDER_TIMEOUT' }],
