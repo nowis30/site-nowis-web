@@ -40,7 +40,7 @@
     rememberReading();
   }
   const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const labels = {direct:'Définition sourcée',method:'Association famille + rang',missing:'À compléter'};
+  const labels = {direct:'Explication reformulée',method:'Association famille + rang',missing:'À compléter'};
   const motifs = {
     moon:'<path d="M64 14a35 35 0 1 0 0 72 40 40 0 0 1 0-72Z"/><path d="m72 22 2 7 7 2-7 2-2 7-2-7-7-2 7-2Z"/>',
     star:'<path d="m50 12 10 26 28 1-22 18 7 28-23-17-23 17 7-28-22-18 28-1Z"/><circle cx="50" cy="50" r="7"/>',
@@ -99,11 +99,13 @@
     $('table-instruction').textContent=!state.drawn.length?'Commencez par mélanger le jeu. Vos cartes apparaîtront ici.':state.revealed.size===Number(state.spread)?'Votre tirage est révélé. Retrouvez sa lecture ci-dessous.':'Vos cartes sont tirées. Révélez-les à votre rythme.';
   }
   function referenceHtml(card) {
+    if(card.reference)return `<div class="reference-links"><a href="${esc(card.reference.url)}" target="_blank" rel="noopener noreferrer">Source : ${esc(card.reference.title)} ↗</a></div>`;
     if(!card.sourceIds.length)return '<p class="reference-links">Définition à compléter à partir d’une source vérifiée.</p>';
     return `<div class="reference-links">${card.sourceIds.map(id=>{const source=data.sources.find(s=>s.id===id);return source?`<a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.title)} ↗</a>`:'';}).join('')}</div>`;
   }
   function definitionHtml(card) {
-    return `<span class="coverage ${card.coverage==='missing'?'missing':''}">${labels[card.coverage]}</span><div class="keywords">${card.keywords.map(k=>`<span class="keyword">${esc(k)}</span>`).join('')}</div><p class="meaning">${esc(card.meaning)}</p>${referenceHtml(card)}`;
+    const paragraphs=card.definitionParagraphs||[card.meaning];
+    return `<span class="coverage ${card.coverage==='missing'?'missing':''}">${labels[card.coverage]}</span><div class="keywords">${card.keywords.map(k=>`<span class="keyword">${esc(k)}</span>`).join('')}</div><div class="expanded-meaning">${paragraphs.map(paragraph=>`<p>${esc(paragraph)}</p>`).join('')}</div>${referenceHtml(card)}`;
   }
   function renderReading() {
     $('interpretations').hidden=state.revealed.size===0;
@@ -112,7 +114,8 @@
       if(!state.revealed.has(i))return '';
       const position=data.spreads[state.spread][i].title;
       const reading=window.TAROT_READING.interpret(card,position,state.question,state.answers);
-      return `<article class="reading-entry"><div class="entry-position">CARTE ${i+1}<span>${esc(position)}</span></div><div><h3>${esc(card.name)}</h3>${card.coverage==='missing'?'<span class="coverage missing">Définition à compléter</span>':''}<div class="contextual-reading">${reading.paragraphs.map(paragraph=>`<p>${esc(paragraph)}</p>`).join('')}</div></div></article>`;
+      const details=card.definitionParagraphs?.slice(1)||[];
+      return `<article class="reading-entry"><div class="entry-position">CARTE ${i+1}<span>${esc(position)}</span></div><div><h3>${esc(card.name)}</h3>${card.coverage==='missing'?'<span class="coverage missing">Définition à compléter</span>':''}<div class="contextual-reading">${reading.paragraphs.map(paragraph=>`<p>${esc(paragraph)}</p>`).join('')}</div>${details.length?`<div class="reading-details expanded-meaning"><h4>Pour mieux comprendre cette carte</h4>${details.map(paragraph=>`<p>${esc(paragraph)}</p>`).join('')}</div>`:''}</div></article>`;
     }).join('');
     const allRevealed=state.drawn.length>0&&state.revealed.size===state.drawn.length;
     $('synthesis').hidden=!allRevealed;
@@ -169,7 +172,7 @@
   $('card-select').value='major-1';
   function renderDictionary() {const card=data.cards.find(c=>c.id===$('card-select').value);$('dictionary-card').innerHTML=`<p class="card-family">${esc(card.family==='Majeurs'?'ARCANE MAJEUR':card.family.toUpperCase())} ${esc(card.roman)}</p><h3>${esc(card.name)}</h3>${definitionHtml(card)}`;}
   $('card-select').addEventListener('change',renderDictionary);
-  $('source-list').innerHTML=data.sources.map(source=>`<div class="source-entry"><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.title)} ↗</a><small>${source.id==='street'?'21 définitions majeures et tirages de 2 à 5 cartes.':'Méthode d’association des familles et des rangs des 56 mineurs.'}</small></div>`).join('');
+  $('source-list').innerHTML=data.sources.map(source=>`<div class="source-entry"><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.title)} ↗</a><small>${esc(source.description||'')}</small></div>`).join('');
   $('open-sources').addEventListener('click',()=>$('sources-dialog').showModal());
   $('close-sources').addEventListener('click',()=>$('sources-dialog').close());
   $('close-sources-bottom').addEventListener('click',()=>$('sources-dialog').close());
