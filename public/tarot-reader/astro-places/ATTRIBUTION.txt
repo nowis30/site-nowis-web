@@ -1,0 +1,6 @@
+Données géographiques : GeoNames (CC BY 4.0). Adaptation NOWIS : champs réduits, coordonnées arrondies et répartition par pays.
+https://www.geonames.org/
+Licence : https://creativecommons.org/licenses/by/4.0/
+Source : https://download.geonames.org/export/dump/cities1000.zip
+Format et couverture : https://download.geonames.org/export/dump/readme.txt
+Construction : 2026-10-04T22:51:59.436Z

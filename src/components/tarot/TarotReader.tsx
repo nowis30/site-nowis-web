@@ -32,7 +32,12 @@ export function TarotReader() {
     observer.observe(document.body);
     const dialog = document.querySelector('dialog');
     const dialogObserver = new MutationObserver(placeDialog);
-    if (dialog) dialogObserver.observe(dialog, { attributes: true, attributeFilter: ['open'] });
+    // Some embedded browser hosts expose the child document through a proxy.
+    // Click/resize listeners below still place the dialog if observation is unavailable.
+    if (dialog) {
+      try { dialogObserver.observe(dialog, { attributes: true, attributeFilter: ['open'] }); }
+      catch { /* Layout remains available through the ordinary interaction listeners. */ }
+    }
     const header = window.document.querySelector('.nm-header');
     const headerObserver = new ResizeObserver(placeDialog);
     headerObserver.observe(element);
@@ -41,6 +46,32 @@ export function TarotReader() {
     window.addEventListener('resize', placeDialog);
     window.visualViewport?.addEventListener('resize', placeDialog);
     document.addEventListener('click', placeDialog, true);
+    const readerWindow = document.defaultView;
+    const scrollTargets = {
+      'oracle:scroll-astro': 'astro-view',
+      'oracle:scroll-ritual': 'oracle-ritual',
+      'oracle:scroll-result': 'astro-result',
+      'oracle:scroll-summary': 'summary-section',
+    } as const;
+    const scrollSection = (id: string) => requestAnimationFrame(() => {
+        const target = document.getElementById(id);
+        if (!target || target.hidden) return;
+        measure();
+        const headerHeight = header?.getBoundingClientRect().height ?? 0;
+        const top = window.scrollY + element.getBoundingClientRect().top + target.getBoundingClientRect().top - headerHeight - 20;
+        window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+      });
+    const sectionScrollers = Object.entries(scrollTargets).map(([event, id]) => {
+      const handler = () => scrollSection(id);
+      readerWindow?.addEventListener(event, handler);
+      return { event, handler };
+    });
+    const receiveScroll = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== element.contentWindow) return;
+      if (event.data?.type !== 'nowis-reader-scroll' || !Object.values(scrollTargets).includes(event.data.target)) return;
+      scrollSection(event.data.target);
+    };
+    window.addEventListener('message', receiveScroll);
     measure();
     placeDialog();
 
@@ -52,6 +83,8 @@ export function TarotReader() {
       window.removeEventListener('resize', placeDialog);
       window.visualViewport?.removeEventListener('resize', placeDialog);
       document.removeEventListener('click', placeDialog, true);
+      sectionScrollers.forEach(({ event, handler }) => readerWindow?.removeEventListener(event, handler));
+      window.removeEventListener('message', receiveScroll);
     };
   }, []);
 
@@ -65,14 +98,14 @@ export function TarotReader() {
       <iframe
         ref={frame}
         src="/tarot-reader/index.html"
-        title="Oracle NOWIS : rituel, tirage et interprétation du tarot"
+        title="Oracle NOWIS : tarot, carte du ciel et conclusion des lectures"
         onLoad={connect}
         className="block w-full border-0 bg-[#101d31]"
         style={{ height }}
         referrerPolicy="no-referrer"
       />
       <noscript>
-        <p className="px-6 py-4">Activez JavaScript pour mélanger les cartes et lire votre tirage.</p>
+        <p className="px-6 py-4">Activez JavaScript pour lire votre tirage et calculer votre carte du ciel.</p>
       </noscript>
     </>
   );
