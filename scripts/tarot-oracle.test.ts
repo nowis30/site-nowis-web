@@ -113,6 +113,8 @@ test('runtime OIDC is used only on Vercel, only for the current request and neve
     assert.equal(new Headers(init?.headers).get('authorization'), 'Bearer test-runtime-oidc-not-secret');
     const body = JSON.parse(String(init?.body));
     assert.equal(body.model, 'openai/test-runtime-model');
+    assert.deepEqual(body.input, [{ type: 'message', role: 'user', content: buildTarotOraclePrompt(parseTarotOracleInput(payload)) }]);
+    assert.equal(body.instructions, TAROT_ORACLE_GUIDE);
     assert.equal(String(init?.body).includes('test-runtime-oidc-not-secret'), false);
     return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Une vision symbolique.' }] }] });
   }) as typeof fetch });
@@ -171,7 +173,12 @@ test('real-provider adapter sends only the permitted context, with non-storage a
     assert.equal(body.max_output_tokens, 2200);
     assert.equal('previous_response_id' in body, false);
     assert.equal(init?.signal?.aborted, false);
-    assert.match(body.input, /"carte":"Le Bateleur"/);
+    assert.equal(Array.isArray(body.input), true);
+    assert.equal(body.input.length, 1);
+    assert.equal(body.input[0].type, 'message');
+    assert.equal(body.input[0].role, 'user');
+    assert.match(body.input[0].content, /"carte":"Le Bateleur"/);
+    assert.equal(body.instructions, TAROT_ORACLE_GUIDE);
     return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Dans cette vision symbolique, votre projet offre des pistes à explorer.' }] }] });
   }) as typeof fetch;
   const reply = await requestTarotOracleVision(input, { env: { AI_GATEWAY_API_KEY: 'test-not-secret', OPENAI_API_KEY: 'unused-not-secret', SITE_ASSISTANT_MODEL: 'openai/test-model' }, fetchImpl: mockFetch });
@@ -179,7 +186,10 @@ test('real-provider adapter sends only the permitted context, with non-storage a
   assert.equal(providerCalls, 1);
   await requestTarotOracleVision(input, { env: { OPENAI_API_KEY: 'test-not-secret', OPENAI_MODEL: 'direct-test-model' }, fetchImpl: (async (url, init) => {
     assert.equal(url, 'https://api.openai.com/v1/responses');
-    assert.equal(JSON.parse(String(init?.body)).model, 'direct-test-model');
+    const body = JSON.parse(String(init?.body));
+    assert.equal(body.model, 'direct-test-model');
+    assert.equal(body.input[0].role, 'user');
+    assert.equal(body.input[0].type, 'message');
     return Response.json({ output: [{ content: [{ type: 'output_text', text: 'Une piste symbolique.' }] }] });
   }) as typeof fetch });
 });
@@ -187,10 +197,27 @@ test('real-provider adapter sends only the permitted context, with non-storage a
 test('provider errors, incomplete/empty output and outputs over 500 words never become a fake vision', async () => {
   const env = { OPENAI_API_KEY: 'test-not-secret' };
   const input = parseTarotOracleInput(payload);
-  for (const response of [new Response('', { status: 401 }), new Response('', { status: 429 }), Response.json({ status: 'incomplete', output: [{ content: [{ type: 'output_text', text: 'incomplete' }] }] }), Response.json({ output: [] })]) {
-    assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => response) as typeof fetch }), null);
+  const savedWarn = console.warn;
+  const diagnostics: unknown[][] = [];
+  console.warn = (...args: unknown[]) => { diagnostics.push(args); };
+  try {
+    for (const response of [new Response('provider body must never be logged', { status: 401 }), new Response('', { status: 429 }), Response.json({ status: 'incomplete', output: [{ content: [{ type: 'output_text', text: 'private incomplete output' }] }] }), Response.json({ output: [] })]) {
+      assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => response) as typeof fetch }), null);
+    }
+    assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => { throw new DOMException('private timeout details', 'TimeoutError'); }) as typeof fetch }), null);
+    assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => { throw new Error('private request details with token test-not-secret'); }) as typeof fetch }), null);
+  } finally { console.warn = savedWarn; }
+  assert.deepEqual(diagnostics, [
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 401 }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: 429 }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_OUTPUT' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_OUTPUT' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_TIMEOUT' }],
+    ['TAROT_ORACLE', { code: 'PROVIDER_ERROR' }],
+  ]);
+  for (const sensitive of [payload.question, 'test-not-secret', 'private', 'provider body']) {
+    assert.equal(JSON.stringify(diagnostics).includes(sensitive), false);
   }
-  assert.equal(await requestTarotOracleVision(input, { env, fetchImpl: (async () => { throw new DOMException('timed out', 'TimeoutError'); }) as typeof fetch }), null);
   assert.equal(extractTarotOracleReply({ output: [{ content: [{ type: 'output_text', text: 'mot '.repeat(501) }] }] }), null);
   assert.equal(extractTarotOracleReply({ output: [{ content: [{ type: 'refusal', refusal: 'no' }] }] }), null);
 });

@@ -179,14 +179,24 @@ export async function requestTarotOracleVision(
         ...(provider.gateway ? { 'ai-reporting-tags': 'feature:tarot-oracle' } : {}),
       },
       body: JSON.stringify({
-        model: provider.model, instructions: TAROT_ORACLE_GUIDE, input: buildTarotOraclePrompt(input),
+        model: provider.model, instructions: TAROT_ORACLE_GUIDE,
+        input: [{ type: 'message', role: 'user', content: buildTarotOraclePrompt(input) }],
         max_output_tokens: 2200, store: false,
       }),
       signal: AbortSignal.timeout(25000),
     });
-    if (!response.ok) return null;
-    return extractTarotOracleReply(await response.json());
-  } catch { return null; }
+    if (!response.ok) {
+      console.warn('TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: response.status });
+      return null;
+    }
+    const reply = extractTarotOracleReply(await response.json());
+    if (!reply) console.warn('TAROT_ORACLE', { code: 'PROVIDER_OUTPUT' });
+    return reply;
+  } catch (error) {
+    const timedOut = error instanceof Error && ['AbortError', 'TimeoutError'].includes(error.name);
+    console.warn('TAROT_ORACLE', { code: timedOut ? 'PROVIDER_TIMEOUT' : 'PROVIDER_ERROR' });
+    return null;
+  }
 }
 
 /** A bounded, ephemeral per-instance guard. A shared firewall can add deployment-wide limits. */
