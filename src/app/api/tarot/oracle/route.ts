@@ -12,18 +12,18 @@ const consumeRateLimit = createTarotOracleLimiter();
 const unavailable = 'La vision IA est indisponible pour le moment. Votre lecture symbolique locale reste accessible.';
 const headers = { 'Cache-Control': 'no-store' };
 
-export function GET() {
-  return NextResponse.json({ available: isTarotOracleAvailable() }, { headers });
+export function GET(request: Request) {
+  return NextResponse.json({ available: isTarotOracleAvailable(process.env, request) }, { headers });
 }
 
 export async function POST(request: Request) {
   try {
     const input = await readTarotOracleInput(request);
-    if (!isTarotOracleAvailable()) return NextResponse.json({ mode: 'unavailable', message: unavailable }, { status: 503, headers });
+    if (!isTarotOracleAvailable(process.env, request)) return NextResponse.json({ mode: 'unavailable', message: unavailable }, { status: 503, headers });
     const client = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
     const limit = consumeRateLimit(client);
     if (!limit.allowed) return NextResponse.json({ mode: 'unavailable', message: 'Patientez avant de demander une autre vision IA. Votre lecture locale reste disponible.' }, { status: 429, headers: { ...headers, 'Retry-After': String(limit.retryAfter) } });
-    const reply = await requestTarotOracleVision(input);
+    const reply = await requestTarotOracleVision(input, { request });
     if (!reply) return NextResponse.json({ mode: 'unavailable', message: unavailable }, { status: 503, headers });
     return NextResponse.json({ mode: 'ai', reply }, { headers });
   } catch (error) {

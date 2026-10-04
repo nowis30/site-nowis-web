@@ -75,21 +75,29 @@ export async function readTarotOracleInput(request: Request): Promise<TarotOracl
 
 type OracleProvider = { endpoint: string; token: string; model: string; gateway: boolean };
 /** Use the provider choice already configured for the NOWIS assistant. */
-function oracleProvider(env: NodeJS.ProcessEnv): OracleProvider | null {
+function oracleProvider(env: NodeJS.ProcessEnv, request?: Request): OracleProvider | null {
   const gatewayToken = env.AI_GATEWAY_API_KEY?.trim() || env.VERCEL_OIDC_TOKEN?.trim();
   if (gatewayToken) return {
     endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: gatewayToken,
     model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.6-luna', gateway: true,
   };
   const token = env.OPENAI_API_KEY?.trim();
-  return token ? {
+  if (token) return {
     endpoint: 'https://api.openai.com/v1/responses', token,
     model: env.OPENAI_MODEL?.trim() || 'gpt-5.6-luna', gateway: false,
+  };
+  // Vercel issues the function token on each Request, not in the build-time env.
+  // Never cache it or accept this fallback on a non-Vercel server. Explicit
+  // provider credentials above remain authoritative; AI Gateway verifies OIDC.
+  const runtimeToken = env.VERCEL === '1' ? request?.headers.get('x-vercel-oidc-token')?.trim() : null;
+  return runtimeToken ? {
+    endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: runtimeToken,
+    model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.6-luna', gateway: true,
   } : null;
 }
 
-export function isTarotOracleAvailable(env: NodeJS.ProcessEnv = process.env): boolean {
-  return oracleProvider(env) !== null;
+export function isTarotOracleAvailable(env: NodeJS.ProcessEnv = process.env, request?: Request): boolean {
+  return oracleProvider(env, request) !== null;
 }
 
 const intentions = {
@@ -159,9 +167,9 @@ export function extractTarotOracleReply(data: unknown): string | null {
 
 export async function requestTarotOracleVision(
   input: TarotOracleInput,
-  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch } = {},
+  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request } = {},
 ): Promise<string | null> {
-  const provider = oracleProvider(options.env || process.env);
+  const provider = oracleProvider(options.env || process.env, options.request);
   if (!provider) return null;
   try {
     const response = await (options.fetchImpl || fetch)(provider.endpoint, {

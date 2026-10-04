@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import corpus from '../src/data/tarot-oracle-cards.json';
+import { GET } from '../src/app/api/tarot/oracle/route';
 import {
   buildTarotOraclePrompt, createTarotOracleLimiter, extractTarotOracleReply, isTarotOracleAvailable,
   isTarotOracleOriginAllowed, parseTarotOracleInput, readTarotOracleInput, requestTarotOracleVision,
@@ -94,6 +95,68 @@ test('capabilities expose only a Boolean and never make a provider request', asy
   let called = false;
   assert.equal(await requestTarotOracleVision(parseTarotOracleInput(payload), { env: {}, fetchImpl: (async () => { called = true; throw new Error('unexpected call'); }) as typeof fetch }), null);
   assert.equal(called, false);
+});
+
+test('runtime OIDC is used only on Vercel, only for the current request and never leaked into model context', async () => {
+  const runtimeRequest = request(payload, { 'x-vercel-oidc-token': 'test-runtime-oidc-not-secret' });
+  assert.equal(isTarotOracleAvailable({}, runtimeRequest), false);
+  assert.equal(isTarotOracleAvailable({ VERCEL: '0' }, runtimeRequest), false);
+  assert.equal(isTarotOracleAvailable({ VERCEL: '1' }, runtimeRequest), true);
+  assert.equal(isTarotOracleAvailable({ VERCEL: '1' }, request(payload)), false);
+  assert.equal(isTarotOracleAvailable({ VERCEL: '1' }, request(payload, { 'x-vercel-oidc-token': '   ' })), false);
+  let called = false;
+  assert.equal(await requestTarotOracleVision(parseTarotOracleInput(payload), { env: {}, request: runtimeRequest, fetchImpl: (async () => { called = true; throw new Error('unexpected'); }) as typeof fetch }), null);
+  assert.equal(called, false);
+  const env = { VERCEL: '1', SITE_ASSISTANT_MODEL: 'openai/test-runtime-model' };
+  const reply = await requestTarotOracleVision(parseTarotOracleInput(payload), { env, request: runtimeRequest, fetchImpl: (async (url, init) => {
+    assert.equal(url, 'https://ai-gateway.vercel.sh/v1/responses');
+    assert.equal(new Headers(init?.headers).get('authorization'), 'Bearer test-runtime-oidc-not-secret');
+    const body = JSON.parse(String(init?.body));
+    assert.equal(body.model, 'openai/test-runtime-model');
+    assert.equal(String(init?.body).includes('test-runtime-oidc-not-secret'), false);
+    return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Une vision symbolique.' }] }] });
+  }) as typeof fetch });
+  assert.equal(reply, 'Une vision symbolique.');
+  assert.deepEqual(env, { VERCEL: '1', SITE_ASSISTANT_MODEL: 'openai/test-runtime-model' });
+  assert.equal(isTarotOracleAvailable({ VERCEL: '1' }, request(payload)), false);
+});
+
+test('configured provider credentials remain prior to runtime OIDC headers', async () => {
+  const runtimeRequest = request(payload, { 'x-vercel-oidc-token': 'ignored-runtime-token' });
+  const fixtures = [
+    { env: { VERCEL: '1', AI_GATEWAY_API_KEY: 'configured-gateway-token' }, endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: 'configured-gateway-token' },
+    { env: { VERCEL: '1', VERCEL_OIDC_TOKEN: 'configured-env-oidc-token' }, endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: 'configured-env-oidc-token' },
+    { env: { VERCEL: '1', OPENAI_API_KEY: 'configured-openai-token' }, endpoint: 'https://api.openai.com/v1/responses', token: 'configured-openai-token' },
+  ];
+  for (const fixture of fixtures) {
+    const reply = await requestTarotOracleVision(parseTarotOracleInput(payload), { env: fixture.env, request: runtimeRequest, fetchImpl: (async (url, init) => {
+      assert.equal(url, fixture.endpoint);
+      assert.equal(new Headers(init?.headers).get('authorization'), `Bearer ${fixture.token}`);
+      return Response.json({ output: [{ content: [{ type: 'output_text', text: 'Vision issue du fournisseur configuré.' }] }] });
+    }) as typeof fetch });
+    assert.equal(reply, 'Vision issue du fournisseur configuré.');
+  }
+});
+
+test('GET returns only per-request capabilities without serializing the runtime credential', async () => {
+  const names = ['VERCEL', 'AI_GATEWAY_API_KEY', 'VERCEL_OIDC_TOKEN', 'OPENAI_API_KEY'];
+  const saved = names.map(name => [name, process.env[name]] as const);
+  try {
+    for (const name of names) delete process.env[name];
+    process.env.VERCEL = '1';
+    const runtimeRequest = request(payload, { 'x-vercel-oidc-token': 'runtime-token-not-for-client' });
+    const response = GET(runtimeRequest);
+    assert.deepEqual(await response.json(), { available: true });
+    assert.equal(response.headers.get('x-vercel-oidc-token'), null);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(await GET(request(payload)).json(), { available: false });
+    delete process.env.VERCEL;
+    assert.deepEqual(await GET(runtimeRequest).json(), { available: false });
+  } finally {
+    for (const [name, value] of saved) {
+      if (value === undefined) delete process.env[name]; else process.env[name] = value;
+    }
+  }
 });
 
 test('real-provider adapter sends only the permitted context, with non-storage and a timeout', async () => {

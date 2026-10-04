@@ -81,7 +81,7 @@
         $('oracle-ai-status').textContent=response.status===429?'Plusieurs visions ont été demandées récemment. Prenez le temps de lire votre tirage avant de réessayer.':unavailable;
         return;
       }
-      const paragraphs=result.reply.slice(0,6500).split(/\n+/).filter(line=>line.trim()).map(line=>{const paragraph=document.createElement('p');paragraph.textContent=line;return paragraph;});
+      const paragraphs=result.reply.slice(0,7000).split(/\n+/).filter(line=>line.trim()).map(line=>{const paragraph=document.createElement('p');paragraph.textContent=line;return paragraph;});
       $('oracle-ai-result').replaceChildren(...paragraphs);$('oracle-ai-result').hidden=false;
       $('oracle-ai-status').textContent='Vision générée par l’IA pour cette question et ce tirage. Elle peut contenir des erreurs ; gardez votre discernement.';
     } catch {
