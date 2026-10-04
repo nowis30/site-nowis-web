@@ -1,0 +1,134 @@
+.astro-hero-link{display:inline-flex;align-items:center;gap:14px;padding:12px 0;color:#f5e7c6;font-size:14px;text-decoration:none;border-bottom:1px solid #dfc18a80}
+.oracle-hero-actions{flex-wrap:wrap;gap:18px}
+.view-tabs{gap:30px;flex-wrap:wrap}
+.astro-view,.oracle-summary{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:38px;margin:0 0 28px;min-width:0}
+.astro-heading{max-width:820px}
+.astro-heading h2,.oracle-summary h2{font:400 clamp(30px,4vw,42px)/1.2 var(--serif);margin:9px 0 18px}
+.astro-heading>p,.oracle-summary>p{line-height:1.85;max-width:880px}
+.astro-form{margin:28px 0;padding:28px;background:#fffbf3;border:1px solid #d7cab0;border-radius:10px}
+.astro-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.astro-fields>div{min-width:0}
+.astro-form label{display:block;font-size:14px;font-weight:600;margin:0 0 9px}
+.astro-form input:not([type=checkbox]),.astro-form select{display:block;width:100%;min-width:0;max-width:100%;min-height:46px;font:16px/1.4 var(--sans);padding:10px 11px;border:1px solid #c7c4b7;border-radius:5px;background:#fffef8;color:#263c4d}
+.astro-form small{display:block;margin:8px 0;color:#5b655f;font-size:12px;line-height:1.7}
+.astro-form .astro-check{display:flex;gap:9px;align-items:flex-start;font-size:13px;font-weight:400;line-height:1.7;margin-top:10px;cursor:pointer}
+.astro-check input{flex-shrink:0;margin:4px 0 0;accent-color:#243b54;width:16px;height:16px}
+.astro-place-fields{border:0;padding:0;margin:24px 0}
+.astro-place-fields legend{font:400 23px/1.4 var(--serif);margin:0 0 15px}
+.astro-place-search{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+#astro-search-place{margin-top:10px;min-height:44px}
+#astro-place-results{margin-top:15px}
+#astro-place-status,#astro-status{font-size:13px;line-height:1.75;color:#425a62;overflow-wrap:anywhere}
+#astro-custom-place{border-top:1px solid #ded3bd;padding-top:14px}
+#astro-custom-place summary{font-size:14px;cursor:pointer;padding:5px 0}
+#astro-custom-place p{font-size:13px;line-height:1.75;max-width:750px}
+#astro-time-choice{padding:18px;border-left:3px solid #b18b4b;background:#f4ead6;margin:20px 0}
+.astro-actions{display:flex;align-items:center;flex-wrap:wrap;gap:20px}
+.astro-actions .primary-button{width:auto;gap:20px}
+.astro-result-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;padding-top:15px}
+.astro-result-heading h2{font:400 35px/1.3 var(--serif);margin:8px 0}
+.astro-result-heading p{font-size:13px;line-height:1.8;max-width:720px;overflow-wrap:anywhere}
+.astro-result-heading a{flex-shrink:0;font-size:12px;text-decoration:none;text-align:center;max-width:100%}
+.astro-chart-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start;margin:25px 0}
+.astro-chart{margin:0;padding:15px;border-radius:14px;background:radial-gradient(circle,#22364f,#101d31 75%);border:1px solid #c1a67366;min-width:0}
+.astro-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.astro-chart figcaption{color:#d7d9da;font-size:12px;line-height:1.8;margin:12px 6px 5px}
+.chart-outline{fill:none;stroke:#c9b584;stroke-width:1}
+.chart-guide{fill:none;stroke:#c9b58455;stroke-width:.7}
+.chart-sign{font:29px Georgia,serif;fill:#ead1a1}
+.chart-house{stroke:#d5c4a744;stroke-width:.7}
+.chart-house-number{font:13px Arial,sans-serif;fill:#c2b699}
+.chart-aspect{stroke:#6b9bab;stroke-width:.7;opacity:.7}
+.chart-aspect.tension{stroke:#c89a80}
+.chart-pointer{stroke-width:1;fill:none}
+.chart-pointer.natal{stroke:#edcb8d}
+.chart-pointer.transit{stroke:#96c8ec}
+.chart-dot.natal{fill:#edcb8d}
+.chart-dot.transit{fill:#96c8ec}
+.chart-badge{fill:#15263e;stroke:#8b9aa355;stroke-width:.5}
+.chart-planet{font:21px Georgia,serif}
+.chart-planet.natal{fill:#edcb8d}
+.chart-planet.transit{fill:#96c8ec}
+.chart-angle{font:10px Arial,sans-serif;fill:#edcb8d}
+.chart-center{fill:#14253c;stroke:#c9b58466;stroke-width:.7}
+.chart-center-text{font:12px Arial,sans-serif;letter-spacing:3px;fill:#e7d2a8}
+.astro-chart-layout h3,.astro-block h3{font:400 28px/1.35 var(--serif);margin:0 0 17px}
+.astro-details{background:#fffcf5;border:1px solid #dbcfb8;border-radius:7px;margin:12px 0;min-width:0}
+.astro-details summary{font:400 20px/1.5 var(--serif);padding:17px 18px;cursor:pointer;color:#233e50;overflow-wrap:anywhere}
+.astro-details>div,.astro-details>p{padding:0 18px 15px}
+.astro-details p{font-size:15px;line-height:1.85;overflow-wrap:anywhere;margin:12px 0}
+.astro-details .astro-position{font-size:12px;line-height:1.7;color:#656357}
+.astro-details .astro-action{border-left:2px solid #b99558;padding-left:12px}
+.astro-sources{display:flex;gap:8px 15px;flex-wrap:wrap}
+.astro-source{display:inline-block;color:#53666b;font-size:11px;line-height:1.6;margin:5px 0;overflow-wrap:anywhere}
+.astro-block{margin:32px 0;padding-top:24px;border-top:1px solid #dacfba}
+.astro-block>p{font-size:14px;line-height:1.85;max-width:900px}
+.astro-elements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}
+.astro-element{background:#fffbf3;border:1px solid #d9ccb2;border-radius:9px;padding:22px;min-width:0}
+.astro-element-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.astro-element h4{font:400 26px/1.3 var(--serif);margin:0}
+.astro-element-heading span{font-size:12px;color:#596867}
+.astro-element p{font-size:14px;line-height:1.9;margin:14px 0}
+.astro-element-bar{height:4px;background:#e6decc;border-radius:3px;margin:14px 0;overflow:hidden}
+.astro-element-bar i{display:block;height:100%;background:#b08e51}
+.astro-warnings,.astro-unavailable{background:#f1e6cf;border:1px solid #d2c2a0;border-radius:7px;padding:15px 18px}
+.astro-warnings p,.astro-unavailable p{font-size:13px;line-height:1.8;margin:8px 0}
+.astro-unavailable h4{font:400 22px var(--serif);margin:8px 0}
+.astro-uncertain{font-size:13px!important;color:#5a6054;line-height:1.85}
+.astro-table-wrap{max-width:100%;overflow-x:auto}
+.astro-table-wrap table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.astro-table-wrap caption{text-align:left;font-size:12px;margin:12px 0;color:#656357}
+.astro-table-wrap th,.astro-table-wrap td{padding:12px;border-bottom:1px solid #ded3bd;min-width:100px}
+.astro-method p{padding-bottom:0}
+.astro-method p:last-child{padding-bottom:15px}
+.astro-method a{color:#375d70}
+.oracle-summary{padding:32px 38px}
+.summary-context{margin:22px 0;padding:20px 23px;background:#fffbf3;border:1px solid #d7cab0;border-radius:8px}
+.summary-context h3{font:400 23px/1.4 var(--serif);margin:14px 0}
+#summary-astro-status{font-size:14px;line-height:1.8}
+.summary-reading{padding:14px 0;border-bottom:1px solid #dfd4bf;display:flex;justify-content:space-between;gap:15px;align-items:center}
+.summary-reading p{font-size:13px;margin:4px 0;overflow-wrap:anywhere}
+.summary-reading button{flex-shrink:0;color:#35536a;border:1px solid #c5c2b3;border-radius:4px;background:transparent;min-height:40px;cursor:pointer;padding:8px 12px;font-size:12px}
+#summary-request{width:auto;max-width:100%;margin-top:18px;gap:20px}
+#summary-request:disabled{background:#d8d4c7;color:#566166;cursor:default}
+#summary-status{font-size:13px;line-height:1.8;margin:20px 0;color:#4d6368}
+.summary-choice{font-size:14px;line-height:1.85;border-left:3px solid #b99558;padding:0 0 0 15px;margin:24px 0 0}
+#summary-section,#astro-result{scroll-margin-top:24px}
+@media(max-width:900px){.astro-chart-layout{grid-template-columns:1fr}
+.astro-chart{max-width:600px;width:100%;margin:0 auto}
+.astro-result-heading{flex-direction:column;align-items:flex-start}
+.astro-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.astro-fields>div:last-child{grid-column:auto}
+}
+@media(max-width:640px){.view-tabs{gap:18px;padding:0 18px}
+.view-tabs button{font-size:11px;min-height:48px}
+.astro-view,.oracle-summary{padding:24px 18px}
+.astro-heading h2,.oracle-summary h2{font-size:31px}
+.astro-heading>p,.oracle-summary>p{font-size:14px}
+.astro-form{padding:20px 15px}
+.astro-fields,.astro-place-search{grid-template-columns:1fr;gap:17px}
+.astro-actions{gap:17px}
+.astro-actions .primary-button,#summary-request{width:100%;padding:14px 13px;gap:12px;font-size:12px}
+.astro-chart-layout{gap:23px}
+.astro-chart{padding:7px}
+.astro-chart figcaption{font-size:11px}
+.astro-details summary{font-size:20px;padding:15px}
+.astro-details>div,.astro-details>p{padding-left:15px;padding-right:15px}
+.astro-details p{font-size:14px}
+.astro-elements{grid-template-columns:1fr}
+.astro-element{padding:20px}
+.astro-result-heading h2{font-size:31px}
+.astro-result-heading a{flex-shrink:1}
+.summary-context{padding:18px 15px}
+.summary-reading{align-items:flex-start}
+.summary-choice{font-size:13px}
+.astro-source{font-size:11px}
+.astro-method summary{font-size:18px}
+}
+.summary-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 15px;padding:16px 0;border-bottom:1px solid #dfd4bf}
+.summary-entry h3{font:400 21px/1.4 var(--serif);margin:0}
+.summary-question,.summary-card-list{font-size:13px;line-height:1.8;overflow-wrap:anywhere;margin:3px 0}
+.summary-entry .summary-remove{grid-column:2;grid-row:1 / span 3;align-self:start;border:1px solid #c5c2b3;border-radius:4px;background:transparent;color:#35536a;min-height:40px;padding:8px 12px;font-size:12px;cursor:pointer}
+.summary-empty{font-size:13px;line-height:1.8;color:#596057}
+.astro-view .secondary-button{color:#28495d;border-color:#b9a67f;background:#fffbf1}
+.astro-view .secondary-button:hover{background:#eee2ca}

@@ -5,20 +5,20 @@ import { ShareMenu } from '@/components/radio/ShareMenu';
 const tarotDestinations = [{
   id: 'tarot',
   label: 'la page Tarot',
-  title: 'Oracle NOWIS · Tarot',
+  title: 'Oracle NOWIS · Tarot et carte du ciel',
   url: 'https://nowis.store/tarot',
-  text: 'Entrez dans l’univers de l’Oracle NOWIS : un rituel, les cartes du Tarot de Marseille et une vision symbolique autour de votre question.',
+  text: 'Explorez votre carte du ciel, le rôle des quatre éléments et vos tirages de tarot avec l’Oracle NOWIS. Des pistes symboliques, un avenir qui reste ouvert.',
 }] as const;
 
 export const metadata = buildMetadata({
-  title: 'Oracle NOWIS · Tarot et intuition',
-  description: 'Un univers céleste, un rituel facultatif et les 78 cartes du Tarot de Marseille. Explorez une lecture liée à votre question et une vision IA sur demande, avec votre accord.',
+  title: 'Oracle NOWIS · Tarot et carte du ciel',
+  description: 'Calculez votre carte du ciel avec votre naissance, comprenez les planètes et les quatre éléments, puis réunissez les transits et plusieurs tirages dans une conclusion IA facultative. Vos choix restent libres.',
   path: '/tarot',
 });
 
 export default function TarotPage() {
   return (
-    <section aria-label="Oracle NOWIS · Tarot et intuition" className="mx-auto w-full max-w-[1320px]">
+    <section aria-label="Oracle NOWIS · Tarot et carte du ciel" className="mx-auto w-full max-w-[1320px]">
       <div className="flex justify-end px-6 pb-2 md:px-11">
         <ShareMenu destinations={tarotDestinations} triggerLabel="Partager la page Tarot" />
       </div>

@@ -3,10 +3,12 @@
   const data = window.TAROT_DATA;
   const $ = id => document.getElementById(id);
   const names = {'2':'Problème & solution','3':'Passé, présent, avenir','4':'Situation & ressources','5':'Une vue d’ensemble'};
-  const state = {spread:'3',drawn:[],revealed:new Set(),question:'',deck:'all',answers:window.TAROT_PERSONAL.cleanAnswers({})};
+  let drawSequence=0;
+  const newDrawId=()=>`${Date.now()}-${++drawSequence}`;
+  const state = {spread:'3',drawId:newDrawId(),drawn:[],revealed:new Set(),question:'',deck:'all',answers:window.TAROT_PERSONAL.cleanAnswers({})};
   const answerFields={situation:'context-situation',goal:'context-goal',feeling:'context-feeling',blocker:'context-blocker'};
   const sessionKey='nowis-tarot-reading-v1';
-  window.TAROT_SESSION = Object.freeze({getReading:()=>({spread:state.spread,cardIds:state.drawn.map(card=>card.id),revealed:[...state.revealed],question:state.question,answers:{...state.answers}})});
+  window.TAROT_SESSION = Object.freeze({getReading:()=>({drawId:state.drawId,spread:state.spread,cardIds:state.drawn.map(card=>card.id),revealed:[...state.revealed],question:state.question,answers:{...state.answers}})});
   function updateContextStatus() {
     const context=window.TAROT_READING.detectContext(state.question,state.answers);
     const count=Object.values(state.answers).filter(Boolean).length;
@@ -16,7 +18,7 @@
     $('clear-context').disabled=!count;
   }
   function rememberReading() {
-    const record={spread:state.spread,cardIds:state.drawn.map(card=>card.id),revealed:[...state.revealed],question:state.question,deck:$('deck').value,answers:state.answers,contextOpen:$('personal-context').open};
+    const record={drawId:state.drawId,spread:state.spread,cardIds:state.drawn.map(card=>card.id),revealed:[...state.revealed],question:state.question,deck:$('deck').value,answers:state.answers,contextOpen:$('personal-context').open};
     try{history.replaceState({...history.state,tarotReading:record},'',location.hash.startsWith('#lecture=')?location.pathname+location.search:location.href);}catch{}
     // A parent-page refresh recreates the iframe's history entry. Keep a local
     // tab-scoped copy so the visitor can continue the same reading afterwards.
@@ -29,6 +31,7 @@
     if(!record||!['string','number'].includes(typeof record.spread)||!['2','3','4','5'].includes(String(record.spread))||!Array.isArray(record.cardIds)||![0,Number(record.spread)].includes(record.cardIds.length)||new Set(record.cardIds).size!==record.cardIds.length)return;
     const cards=record.cardIds.map(id=>data.cards.find(card=>card.id===id));
     if(cards.some(card=>!card)||(record.deck==='major'&&cards.some(card=>card.family!=='Majeurs')))return;
+    state.drawId=typeof record.drawId==='string'&&/^[0-9-]{1,64}$/.test(record.drawId)?record.drawId:newDrawId();
     state.spread=String(record.spread);state.drawn=cards;state.question=typeof record.question==='string'?record.question.slice(0,500):'';state.deck=record.deck==='major'?'major':'all';
     state.revealed=new Set((Array.isArray(record.revealed)?record.revealed:[]).filter(index=>Number.isInteger(index)&&index>=0&&index<cards.length));
     $('question').value=state.question;$('deck').value=state.deck;
@@ -135,6 +138,7 @@
     state.drawn=[];state.revealed.clear();state.question=$('question').value.trim();$('draw-status').textContent='';renderTable();renderReading();rememberReading();
   }
   function startDraw() {
+    state.drawId=newDrawId();
     state.question=$('question').value.trim();state.deck=$('deck').value;
     state.drawn=drawCards(data.cards.filter(c=>state.deck!=='major'||c.family==='Majeurs'),Number(state.spread));state.revealed.clear();
     $('draw').innerHTML='Faire un nouveau tirage <span aria-hidden="true">↗</span>';
@@ -162,11 +166,21 @@
   }));
   $('deck').addEventListener('change',resetDraw);
   function setView(view) {
-    const dictionary=view==='dictionary';$('reading-view').hidden=dictionary;$('dictionary-view').hidden=!dictionary;
-    $('tab-reading').setAttribute('aria-pressed',String(!dictionary));$('tab-dictionary').setAttribute('aria-pressed',String(dictionary));
+    const dictionary=view==='dictionary',sky=view==='astro';$('reading-view').hidden=dictionary||sky;$('dictionary-view').hidden=!dictionary;
+    if($('astro-view'))$('astro-view').hidden=!sky;
+    if($('oracle-ritual'))$('oracle-ritual').hidden=sky;
+    $('tab-reading').setAttribute('aria-pressed',String(!dictionary&&!sky));$('tab-dictionary').setAttribute('aria-pressed',String(dictionary));
+    $('tab-astro')?.setAttribute('aria-pressed',String(sky));
   }
+  window.ORACLE_VIEW=Object.freeze({show:setView});
   $('tab-reading').addEventListener('click',()=>setView('reading'));
   $('tab-dictionary').addEventListener('click',()=>setView('dictionary'));
+  $('tab-astro')?.addEventListener('click',()=>setView('astro'));
+  function notifyParentScroll(target) {
+    if(window.parent&&window.parent!==window&&window.parent.postMessage)window.parent.postMessage({type:'nowis-reader-scroll',target},location.origin);
+  }
+  $('hero-astro')?.addEventListener('click',()=>{setView('astro');window.dispatchEvent(new Event('oracle:scroll-astro'));notifyParentScroll('astro-view');});
+  $('hero-tarot')?.addEventListener('click',()=>{setView('reading');window.dispatchEvent(new Event('oracle:scroll-ritual'));notifyParentScroll('oracle-ritual');});
   document.querySelector('.brand').addEventListener('click',event=>{event.preventDefault();setView('reading');});
   $('card-select').innerHTML=['Majeurs','Bâtons','Coupes','Épées','Deniers'].map(family=>`<optgroup label="${esc(family==='Majeurs'?'Arcanes majeurs':family)}">${data.cards.filter(c=>c.family===family).map(c=>`<option value="${esc(c.id)}">${esc(c.roman?c.roman+' · '+c.name:c.name)}</option>`).join('')}</optgroup>`).join('');
   $('card-select').value='major-1';

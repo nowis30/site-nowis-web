@@ -149,7 +149,7 @@ export function buildTarotOraclePrompt(input: TarotOracleInput): string {
 }
 
 /** Refuse missing/incomplete provider output; never turn the local text into an AI result. */
-export function extractTarotOracleReply(data: unknown): string | null {
+export function extractSymbolicVisionReply(data: unknown, limits: { maxWords: number; maxCharacters: number }): string | null {
   if (!data || typeof data !== 'object') return null;
   const response = data as { status?: unknown; output?: unknown };
   if (response.status && response.status !== 'completed') return null;
@@ -162,8 +162,12 @@ export function extractTarotOracleReply(data: unknown): string | null {
     }
   }
   const reply = parts.join('\n\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim();
-  if (!reply || reply.length > 7000 || reply.split(/\s+/u).length > 500) return null;
+  if (!reply || reply.length > limits.maxCharacters || reply.split(/\s+/u).length > limits.maxWords) return null;
   return reply;
+}
+
+export function extractTarotOracleReply(data: unknown): string | null {
+  return extractSymbolicVisionReply(data, { maxWords: 500, maxCharacters: 7000 });
 }
 
 // Only documented, fixed enums may enter diagnostics; messages can contain
@@ -183,40 +187,58 @@ function providerErrorCode(data: unknown): string {
   return 'OTHER';
 }
 
-export async function requestTarotOracleVision(
-  input: TarotOracleInput,
+export async function requestSymbolicVision(
+  settings: {
+    instructions: string; prompt: string; maxOutputTokens: number; maxWords: number;
+    maxCharacters: number; timeoutMs: number; feature: 'tarot-oracle' | 'oracle-conclusion';
+    quiet?: boolean;
+  },
   options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request } = {},
 ): Promise<string | null> {
   const provider = oracleProvider(options.env || process.env, options.request);
   if (!provider) return null;
+  const diagnostic = (detail: Record<string, unknown>) => {
+    if (!settings.quiet) console.warn('TAROT_ORACLE', detail);
+  };
   try {
     const response = await (options.fetchImpl || fetch)(provider.endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${provider.token}`, 'Content-Type': 'application/json',
-        ...(provider.gateway ? { 'ai-reporting-tags': 'feature:tarot-oracle' } : {}),
+        ...(provider.gateway ? { 'ai-reporting-tags': `feature:${settings.feature}` } : {}),
       },
       body: JSON.stringify({
-        model: provider.model, instructions: TAROT_ORACLE_GUIDE,
-        input: [{ type: 'message', role: 'user', content: buildTarotOraclePrompt(input) }],
-        max_output_tokens: 2200, store: false,
+        model: provider.model, instructions: settings.instructions,
+        input: [{ type: 'message', role: 'user', content: settings.prompt }],
+        max_output_tokens: settings.maxOutputTokens, store: false,
       }),
-      signal: AbortSignal.timeout(25000),
+      signal: AbortSignal.timeout(settings.timeoutMs),
     });
     if (!response.ok) {
       let providerCode = 'OTHER';
       try { providerCode = providerErrorCode(await response.json()); } catch { /* Non-JSON errors remain opaque. */ }
-      console.warn('TAROT_ORACLE', { code: 'PROVIDER_HTTP', status: response.status, providerCode });
+      diagnostic({ code: 'PROVIDER_HTTP', status: response.status, providerCode });
       return null;
     }
-    const reply = extractTarotOracleReply(await response.json());
-    if (!reply) console.warn('TAROT_ORACLE', { code: 'PROVIDER_OUTPUT' });
+    const reply = extractSymbolicVisionReply(await response.json(), settings);
+    if (!reply) diagnostic({ code: 'PROVIDER_OUTPUT' });
     return reply;
   } catch (error) {
     const timedOut = error instanceof Error && ['AbortError', 'TimeoutError'].includes(error.name);
-    console.warn('TAROT_ORACLE', { code: timedOut ? 'PROVIDER_TIMEOUT' : 'PROVIDER_ERROR' });
+    diagnostic({ code: timedOut ? 'PROVIDER_TIMEOUT' : 'PROVIDER_ERROR' });
     return null;
   }
+}
+
+export async function requestTarotOracleVision(
+  input: TarotOracleInput,
+  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request } = {},
+): Promise<string | null> {
+  return requestSymbolicVision({
+    instructions: TAROT_ORACLE_GUIDE, prompt: buildTarotOraclePrompt(input),
+    maxOutputTokens: 2200, maxWords: 500, maxCharacters: 7000, timeoutMs: 25000,
+    feature: 'tarot-oracle',
+  }, options);
 }
 
 /** A bounded, ephemeral per-instance guard. A shared firewall can add deployment-wide limits. */
