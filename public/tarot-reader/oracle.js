@@ -57,7 +57,7 @@
     const known=entries.filter(entry=>entry.card.coverage!=='missing');
     const selected=intentions[intention];
     const opening=reading.question?`Autour de « ${reading.question} », `:'Pour ce tirage libre, ';
-    $('vision-mirror').textContent=opening+(known.length?known.slice(0,2).map(entry=>`${entry.card.name} en position « ${entry.position} » invite à explorer les thèmes ${entry.card.keywords.slice(0,2).map(word=>`« ${word} »`).join(' et ')}`).join(' ; ')+'.':'aucune définition vérifiée ne permet encore de relier les cartes à votre question.')+(known.length!==entries.length?' Le Mat reste une place ouverte : sa définition n’a pas été vérifiée.':'');
+    $('vision-mirror').textContent=opening+(known.length?known.slice(0,2).map(entry=>`${entry.card.name} en position « ${entry.position} » invite à explorer les thèmes ${entry.card.keywords.slice(0,2).map(word=>`« ${word} »`).join(' et ')}`).join(' ; ')+'.':'aucune définition vérifiée ne permet encore de relier les cartes à votre question.')+(known.length!==entries.length?' Une carte sans définition vérifiée reste une question ouverte.':'');
     $('vision-intention').textContent=`Vous avez choisi ${selected.label}. ${selected.lens} Relisez la place de chaque carte : ce qui décrit une difficulté ne joue pas le même rôle que ce qui propose une ressource.`;
     $('vision-step').textContent=`${selected.action} Pour ${context.area}, vous pouvez ${context.step}. Retenez ce qui vous semble juste après l’avoir rapproché de votre situation réelle.`;
     syncButton();

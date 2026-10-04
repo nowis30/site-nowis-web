@@ -27,6 +27,13 @@ test('server corpus contains the same 78 meanings and positions as the public de
     assert.equal(card.name, source.name);
     assert.equal(card.meaning, source.meaning);
     assert.equal(card.coverage, source.coverage);
+    assert.equal(card.coverage, 'direct');
+    assert.equal(card.definitionParagraphs.length, 3, card.id);
+    const words=card.meaning.split(/\s+/).length;
+    assert.ok(words >= 140 && words <= 180, card.id + ': ' + words);
+    const reference=new URL(card.reference.url);
+    assert.equal(reference.protocol, 'https:');
+    assert.ok(['www.apprendre-tarotdemarseille.com', 'marselia.app'].includes(reference.hostname));
   }
   assert.equal(JSON.stringify(corpus.spreads), JSON.stringify(data.spreads));
 });
@@ -74,16 +81,17 @@ test('body reader rejects oversized streams even when declared length is small',
   assert.equal((await readTarotOracleInput(request(payload))).question, payload.question);
 });
 
-test('prompt uses server meanings, preserves the unknown Mat and labels biographical data as declared', () => {
+test('prompt uses the complete server meanings including Mat and labels biographical data as declared', () => {
   const input = parseTarotOracleInput({ ...payload, cardIds: ['major-0', 'major-17', 'coupes-13'], answers: { situation: 'Je prépare un atelier.', feeling: 'inquiet' }, intention: 'apaisement' });
   const prompt = buildTarotOraclePrompt(input);
-  assert.match(prompt, /Définition|Aucune définition du Mat/);
+  assert.ok(prompt.includes(JSON.stringify(corpus.cards.find(card=>card.id==='major-0')!.meaning)));
+  assert.equal(prompt.includes('Aucune définition du Mat'), false);
   assert.equal(prompt.includes('"couverture"'), false);
   assert.match(prompt, /"position":"Passé","carte":"Le Mat"/);
   assert.match(prompt, /contexteDeclare/);
   assert.match(prompt, /accueillir ce qui est ressenti avec calme/);
   assert.match(TAROT_ORACLE_GUIDE, /tu n’es ni voyant ni médium/);
-  assert.match(TAROT_ORACLE_GUIDE, /sans lui inventer un sens/);
+  assert.match(TAROT_ORACLE_GUIDE, /sans leur inventer un sens/);
   assert.match(TAROT_ORACLE_GUIDE, /personne décédée/);
   assert.match(TAROT_ORACLE_GUIDE, /médicale, juridique ou financière/);
 });

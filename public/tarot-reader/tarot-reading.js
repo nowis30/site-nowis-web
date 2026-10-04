@@ -263,6 +263,9 @@
   }
 
   const majors = {
+    0: major('la liberté et l’exploration d’un nouveau chemin', 'Le Mat évoque le mouvement, l’indépendance et un départ vers une étape encore inconnue.', 'les envies de liberté et les changements de direction que vous avez envisagés', 'un départ motivé par la fuite ou engagé sans préparation', 'gardez un point d’appui et essayez une étape limitée', 'un chemin plus personnel pourra se préciser à partir de ce que cet essai vous apprend', 'distinguer votre envie de découvrir d’une difficulté que vous cherchez à éviter', {
+      finances: 'Pour vos finances, il invite à examiner ce que votre envie de liberté demande concrètement à vos ressources et à votre organisation.', travail: 'Au travail, il propose de regarder une réorientation ou une manière plus personnelle de faire, en conservant des appuis réalistes.', relation: 'Dans le lien, il invite à parler de l’espace et de l’indépendance dont chacun a besoin, sans fuir une conversation importante.', projet: 'Pour le projet, il éclaire une piste originale à explorer par un premier essai, sans demander de tout bouleverser.', choix: 'Face au choix, il invite à distinguer une découverte qui vous attire d’un départ motivé surtout par l’évitement.'
+    }),
     1: major('le potentiel d’un commencement', 'Le Bateleur évoque les possibilités d’un début et le passage à l’action, lorsque les moyens disponibles cherchent encore leur usage.', 'la manière dont un commencement ou une initiative a été envisagé', 'la dispersion entre plusieurs possibilités sans engagement clair', 'choisissez une possibilité et une première étape réalisable', 'un commencement pourra prendre forme et être évalué en chemin', 'identifier vos moyens et choisir un premier geste utile', {
       finances: 'Pour vos finances, ce potentiel invite à regarder les moyens dont vous disposez déjà et l’usage concret que vous pourriez mieux en faire.', travail: 'Au travail, le Bateleur ouvre une réflexion sur vos compétences disponibles et sur la première initiative qui leur donnerait un usage.', relation: 'Dans le lien, il invite à considérer ce qui pourrait être commencé ou renouvelé par un échange simple et sincère.', projet: 'Pour le projet, il s’agit de transformer une possibilité en un premier essai plutôt que de multiplier les intentions.', choix: 'Face au choix, il invite à reconnaître les options réelles et celle pour laquelle vous pouvez définir un premier pas.'
     }),
@@ -329,9 +332,19 @@
   };
 
   function profileFor(card) {
-    if (!card || card.coverage === 'missing' || card.id === 'major-0') return null;
-    if (card.family === 'Majeurs' || /^major-/.test(String(card.id))) return majors[Number(card.number)] || null;
+    if (!card || card.coverage === 'missing') return null;
+    const symbol=card.definitionParagraphs?.[0];
+    if (card.family === 'Majeurs' || /^major-/.test(String(card.id))) {
+      const profile=majors[Number(card.number)];
+      return profile ? Object.assign({},profile,symbol?{symbol}:{}):null;
+    }
     const family = String(card.id || '').split('-')[0];
+    if(card.reading&&familyBridges[family])return {
+      ...card.reading, family, bridges:familyBridges[family], symbol:symbol||card.meaning,
+      past:'les expériences et les habitudes qui éclairent cette dynamique',
+      condition:'essayez cette piste à votre rythme et regardez ce qu’elle change concrètement',
+      promise:'une prochaine étape pourra se préciser à partir de ce que vous aurez observé'
+    };
     const rank = ranks[Number(card.number)];
     if (!rank || !familyBridges[family]) return null;
     return Object.assign({}, rank, { bridges: familyBridges[family], family: family });

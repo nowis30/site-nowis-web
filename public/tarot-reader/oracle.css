@@ -217,6 +217,10 @@ textarea::placeholder { color: #686c63; }
 .entry-position span { font-size: 23px; letter-spacing: 0; }
 .reading-entry h3 { font-size: 27px; }
 .contextual-reading p { color: #344651; font-size: 16px; line-height: 1.85; }
+.expanded-meaning { max-width: 74ch; }
+.expanded-meaning p { color: #344651; font-size: 16px; line-height: 1.85; margin: 18px 0; overflow-wrap: anywhere; }
+.reading-details { margin-top: 22px; padding-top: 20px; border-top: 1px solid #d8ccb5; }
+.reading-details h4 { margin: 0 0 15px; font: 400 22px/1.3 var(--serif); }
 .keyword { background: #e6e6dc; color: #3d5055; }
 .coverage { color: #5c674f; }
 .coverage.missing { color: #855a1b; }
