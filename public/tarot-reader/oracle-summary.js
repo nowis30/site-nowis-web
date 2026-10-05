@@ -10,6 +10,18 @@
   const validId = value => typeof value === 'string' && /^[A-Za-z0-9:._-]{1,120}$/.test(value);
   const text = (value, length) => typeof value === 'string' ? value.trim().slice(0, length) : '';
   const unavailable = 'La conclusion IA est momentanément indisponible. Vos lectures restent disponibles sur cette page.';
+  const failureMessages = {
+    timeout: 'L’IA a mis trop de temps à répondre. Vos résultats sont conservés : vous pouvez réessayer.',
+    incomplete: 'L’IA n’a pas terminé sa conclusion. Vos résultats sont conservés : vous pouvez réessayer.',
+    auth: 'Le service de conclusion IA est momentanément indisponible. Vos résultats sont conservés.',
+    configuration: 'Le service de conclusion IA est momentanément indisponible. Vos résultats sont conservés.',
+    http: 'Le service d’IA n’a pas pu répondre. Vos résultats sont conservés : vous pouvez réessayer.',
+    quota: 'Le service de conclusion IA a atteint sa limite temporaire. Vos résultats sont conservés.',
+    refusal: 'L’IA n’a pas pu proposer de conclusion pour cette demande. Vos résultats sont conservés.',
+    empty: 'L’IA n’a pas renvoyé de conclusion utilisable. Vos résultats sont conservés : vous pouvez réessayer.',
+    output_limit: 'L’IA n’a pas pu terminer une conclusion adaptée. Vos résultats sont conservés : vous pouvez réessayer.',
+    error: 'La demande n’a pas abouti. Vos résultats sont conservés : vous pouvez réessayer.'
+  };
   const initialStatus = 'La conclusion IA est facultative. Retenez une carte du ciel ou un tirage révélé, puis donnez votre accord.';
   let readings = [];
   let dismissedDrawIds = [];
@@ -181,7 +193,7 @@
     const submittedSignature = JSON.stringify(payload);
     const version = ++requestVersion;
     controller = new AbortController(); const requestController = controller;
-    const timeout = setTimeout(() => requestController.abort(), 50000);
+    const timeout = setTimeout(() => requestController.abort(), 70000);
     busy = true; syncButton();
     $('summary-result').replaceChildren(); $('summary-result').hidden = true;
     $('summary-status').textContent = 'L’IA rapproche les symboles de la carte du ciel et les tirages retenus pour proposer une conclusion…';
@@ -191,13 +203,13 @@
       });
       const result = await response.json();
       if (version !== requestVersion || submittedSignature !== JSON.stringify(requestPayload())) return;
-      if (requestController.signal.aborted) { $('summary-status').textContent = unavailable; return; }
+      if (requestController.signal.aborted) { $('summary-status').textContent = failureMessages.timeout; return; }
       if (!response.ok || result.mode !== 'ai' || typeof result.reply !== 'string' || !result.reply.trim()) {
         $('summary-status').textContent = response.status === 429
           ? 'Plusieurs conclusions ont été demandées récemment. Prenez le temps de lire vos résultats avant de réessayer.'
           : response.status === 400
             ? 'Vérifiez les informations de la carte du ciel et les tirages retenus avant de réessayer.'
-            : unavailable;
+            : Object.prototype.hasOwnProperty.call(failureMessages, result.reason) ? failureMessages[result.reason] : unavailable;
         return;
       }
       const paragraphs = limitReply(result.reply).split(/\n+/).map(line => line.trim()).filter(Boolean).map(line => {
@@ -208,7 +220,9 @@
       window.dispatchEvent(new Event('oracle:scroll-summary'));
       if(window.parent&&window.parent!==window&&window.parent.postMessage)window.parent.postMessage({type:'nowis-reader-scroll',target:'summary-section'},location.origin);
     } catch {
-      if (version === requestVersion) $('summary-status').textContent = unavailable;
+      if (version === requestVersion) $('summary-status').textContent = requestController.signal.aborted
+        ? failureMessages.timeout
+        : 'La connexion avec l’IA a été interrompue. Vos résultats sont conservés : vous pouvez réessayer.';
     } finally {
       clearTimeout(timeout);
       if (version === requestVersion) { busy = false; controller = null; syncButton(); }

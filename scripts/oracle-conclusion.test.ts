@@ -3,7 +3,7 @@ import test from 'node:test';
 import corpus from '../src/data/tarot-oracle-cards.json';
 import { GET, POST } from '../src/app/api/tarot/conclusion/route';
 import {
-  buildOracleConclusionContext, buildOracleConclusionPrompt, parseOracleConclusionInput,
+  buildOracleConclusionContext, buildOracleConclusionPrompt, fitOracleConclusionReply, parseOracleConclusionInput,
   readOracleConclusionInput, requestOracleConclusion, OracleConclusionRequestError,
   ORACLE_CONCLUSION_GUIDE, ORACLE_CONCLUSION_CLOSING,
 } from '../src/lib/oracle-conclusion';
@@ -191,7 +191,7 @@ test('provider adapter sends one ephemeral request with server calculations and 
     const body = JSON.parse(String(init?.body));
     assert.equal(body.model, 'openai/test-conclusion');
     assert.equal(body.store, false);
-    assert.equal(body.max_output_tokens, 3500);
+    assert.equal(body.max_output_tokens, 6000);
     assert.equal(body.instructions, ORACLE_CONCLUSION_GUIDE);
     assert.equal(body.input.length, 1);
     assert.equal(body.input[0].role, 'user');
@@ -216,13 +216,81 @@ test('provider failures, incomplete and overlong output are refused without logg
       Response.json({ error: { message: 'private location and test-not-secret', code: 'invalid_request_error' } }, { status: 400 }),
       Response.json({ status: 'incomplete', output: [{ content: [{ type: 'output_text', text: 'private output' }] }] }),
       Response.json({ output: [] }),
-      Response.json({ output: [{ content: [{ type: 'output_text', text: 'mot '.repeat(761) }] }] }),
+      Response.json({ output: [{ content: [{ type: 'output_text', text: 'mot '.repeat(1201) }] }] }),
       Response.json({ output: [{ content: [{ type: 'refusal', refusal: 'not a reply' }] }] }),
     ]) assert.equal(await requestOracleConclusion(input, { env: { OPENAI_API_KEY: 'test-not-secret' }, fetchImpl: (async () => response) as typeof fetch }), null);
     assert.equal(await requestOracleConclusion(input, { env: { OPENAI_API_KEY: 'test-not-secret' }, fetchImpl: (async () => { throw new DOMException('private birth details', 'TimeoutError'); }) as typeof fetch }), null);
     assert.equal(await requestOracleConclusion(input, { env: { OPENAI_API_KEY: 'test-not-secret' }, fetchImpl: (async () => { throw new Error('private provider and user content'); }) as typeof fetch }), null);
   } finally { console.warn = savedWarn; }
-  assert.deepEqual(diagnostics, []);
+  assert.equal(diagnostics.length, 8);
+  for (const [tag, detail] of diagnostics) {
+    assert.equal(tag, 'ORACLE_CONCLUSION');
+    assert.ok(detail && typeof detail === 'object');
+    const safe = detail as { reason: string; durationMs: number };
+    assert.ok(['auth', 'http', 'incomplete', 'empty', 'output_limit', 'refusal', 'timeout', 'error'].includes(safe.reason));
+    assert.ok(Number.isFinite(safe.durationMs) && safe.durationMs >= 0);
+    assert.ok(Object.keys(safe).every(key => ['reason', 'durationMs', 'httpStatus', 'providerStatus', 'incompleteReason'].includes(key)));
+  }
+  for (const sensitive of ['private', 'test-not-secret', astrology.birthDate, astrology.placeName, reading.question]) assert.equal(JSON.stringify(diagnostics).includes(sensitive), false);
+});
+
+test('a completed reply over 760 words keeps complete prose and the entire free-choice closing', async () => {
+  const sentence = `${'piste '.repeat(19)}possible.`;
+  const raw = Array.from({ length: 42 }, () => sentence).join(' ');
+  assert.equal(raw.split(/\s+/u).length, 840);
+  const failures: unknown[] = [];
+  const reply = await requestOracleConclusion(parseOracleConclusionInput({ consent: true, readings: [reading] }), {
+    env: { OPENAI_API_KEY: 'test-not-secret' }, onFailure: value => failures.push(value),
+    fetchImpl: (async () => Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: raw }] }] })) as typeof fetch,
+  });
+  assert.ok(reply);
+  const prose = reply.split(`\n\n${ORACLE_CONCLUSION_CLOSING}`)[0];
+  assert.equal(prose, Array.from({ length: 38 }, () => sentence).join(' '));
+  assert.ok(prose.endsWith('possible.'));
+  assert.ok(reply.endsWith(ORACLE_CONCLUSION_CLOSING));
+  assert.ok(reply.split(/\s+/u).length <= 800 && reply.length <= 11000);
+  assert.deepEqual(failures, []);
+});
+
+test('shortening respects character bounds and paragraph boundaries without an unfinished word', () => {
+  const paragraph = `${'interprétation '.repeat(59)}possible.`;
+  const raw = Array.from({ length: 14 }, () => paragraph).join('\n\n');
+  assert.ok(raw.length > 10750 && raw.length < 18000);
+  const fitted = fitOracleConclusionReply(raw)!;
+  assert.ok(fitted.length <= 10750 && fitted.split(/\s+/u).length <= 760);
+  assert.ok(fitted.endsWith('possible.'));
+  assert.equal(raw.startsWith(fitted), true);
+  assert.equal(fitOracleConclusionReply('sans ponctuation '.repeat(500)), null);
+  assert.equal(fitOracleConclusionReply('a'.repeat(10751)), null);
+  assert.equal(fitOracleConclusionReply(`${'a'.repeat(5000)}\n\n${'b'.repeat(6000)}`), 'a'.repeat(5000));
+});
+
+test('partial and refused responses never become successes and expose only safe failure enums', async () => {
+  const savedWarn = console.warn;
+  const diagnostics: unknown[][] = [];
+  console.warn = (...args) => { diagnostics.push(args); };
+  const cases = [
+    { data: { status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' }, output: [{ content: [{ type: 'output_text', text: 'Une phrase complète, mais un résultat incomplet.' }] }] }, reason: 'incomplete', incompleteReason: 'max_output_tokens' },
+    { data: { status: 'incomplete', incomplete_details: { reason: 'content_filter' }, output: [] }, reason: 'incomplete', incompleteReason: 'content_filter' },
+    { data: { status: 'incomplete', incomplete_details: { reason: 'private token and birth details' }, output: [] }, reason: 'incomplete', incompleteReason: 'OTHER' },
+    { data: { status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Une phrase.' }, { type: 'refusal', refusal: 'private details' }] }] }, reason: 'refusal' },
+    { data: { status: 'private token and birth details', output: [] }, reason: 'empty' },
+  ];
+  try {
+    for (const fixture of cases) {
+      let failure: unknown;
+      const reply = await requestOracleConclusion(parseOracleConclusionInput({ consent: true, readings: [reading] }), {
+        env: { OPENAI_API_KEY: 'test-not-secret' }, onFailure: value => { failure = value; },
+        fetchImpl: (async () => Response.json(fixture.data)) as typeof fetch,
+      });
+      assert.equal(reply, null);
+      const detail = failure as { reason: string; incompleteReason?: string; durationMs: number };
+      assert.equal(detail.reason, fixture.reason);
+      assert.equal(detail.incompleteReason, fixture.incompleteReason);
+      assert.ok(Number.isFinite(detail.durationMs));
+    }
+  } finally { console.warn = savedWarn; }
+  for (const sensitive of ['private', 'test-not-secret', reading.question]) assert.equal(JSON.stringify(diagnostics).includes(sensitive), false);
 });
 
 test('even the longest accepted text finishes with free choice and an optional action under 800 words', async () => {
@@ -255,8 +323,46 @@ test('the route refuses invalid consent and origin and retains local readings on
     const unavailable = await POST(request(payload));
     assert.equal(unavailable.status, 503);
     assert.equal(unavailable.headers.get('cache-control'), 'no-store');
-    assert.equal((await unavailable.json()).mode, 'unavailable');
+    const body = await unavailable.json();
+    assert.equal(body.mode, 'unavailable');
+    assert.equal(body.reason, 'configuration');
   } finally { restore(); }
+});
+
+test('the route reports distinct safe provider failures without returning provider messages or partial text', async () => {
+  const restore = isolateProviderEnvironment();
+  const savedFetch = globalThis.fetch;
+  const savedWarn = console.warn;
+  const diagnostics: unknown[][] = [];
+  console.warn = (...args) => { diagnostics.push(args); };
+  process.env.OPENAI_API_KEY = 'test-not-secret';
+  const fixtures = [
+    { reason: 'auth', response: () => new Response('private provider account and test-not-secret', { status: 401 }) },
+    { reason: 'quota', response: () => Response.json({ error: { code: 'quota_for_entity_exceeded', message: 'private billing' } }, { status: 429 }) },
+    { reason: 'http', response: () => Response.json({ error: { message: 'private question and birth date' } }, { status: 500 }) },
+    { reason: 'incomplete', response: () => Response.json({ status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' }, output: [{ content: [{ type: 'output_text', text: 'private unfinished generated text' }] }] }) },
+    { reason: 'empty', response: () => Response.json({ status: 'completed', output: [] }) },
+    { reason: 'timeout', response: () => { throw new DOMException('private timeout and test-not-secret', 'TimeoutError'); } },
+  ];
+  try {
+    for (const [index, fixture] of fixtures.entries()) {
+      globalThis.fetch = (async () => fixture.response()) as typeof fetch;
+      const response = await POST(request({ consent: true, readings: [reading] }, { 'x-forwarded-for': `198.51.100.${140 + index}` }));
+      assert.equal(response.status, 503);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      const body = await response.json();
+      assert.equal(body.mode, 'unavailable');
+      assert.equal(body.reason, fixture.reason);
+      assert.ok(typeof body.message === 'string' && body.message.length > 30);
+      assert.equal(body.reply, undefined);
+      assert.equal(JSON.stringify(body).includes('private'), false);
+      assert.equal(JSON.stringify(body).includes('test-not-secret'), false);
+      assert.equal(JSON.stringify(body).includes(reading.question), false);
+    }
+  } finally { globalThis.fetch = savedFetch; console.warn = savedWarn; restore(); }
+  assert.equal(diagnostics.length, fixtures.length);
+  assert.equal(JSON.stringify(diagnostics).includes('private'), false);
+  assert.equal(JSON.stringify(diagnostics).includes('test-not-secret'), false);
 });
 
 test('the real route translates calculation errors and enforces three requests per ten minutes', async () => {

@@ -1,7 +1,7 @@
 /** Ephemeral synthesis of recomputed sky positions and validated tarot readings. */
 import { z } from 'zod';
 import corpus from '@/data/tarot-oracle-cards.json';
-import { isTarotOracleAvailable, isTarotOracleOriginAllowed, requestSymbolicVision } from '@/lib/tarot-oracle';
+import { isTarotOracleAvailable, isTarotOracleOriginAllowed, requestSymbolicVision, type SymbolicVisionFailure } from '@/lib/tarot-oracle';
 import astroEngine from '../../public/tarot-reader/astro-engine.js';
 import astroMeanings from '../../public/tarot-reader/astro-meanings.js';
 
@@ -221,21 +221,49 @@ Règles impératives :
 - Les questions de santé, droit et finances restent des réflexions générales qui invitent à vérifier les faits auprès d’un professionnel compétent. Aucun diagnostic, pronostic, investissement, décision juridique ou conseil risqué. Aucune décision importante ne doit reposer uniquement sur cette lecture.
 - Préserve explicitement le libre arbitre : les choix de la personne et les circonstances peuvent changer l’avenir. Propose une action simple et facultative, sans obligation, souffle retenu, substance ou promesse.
 
-Réponse : texte brut, sans HTML, Markdown, liens ou titre de marketing, en quelques paragraphes. Environ 500 à 700 mots, maximum 760 mots avant la formule de clôture ajoutée par le site. Commence par une formulation qui indique clairement que la lecture est symbolique et incertaine. Fais ressentir le fil général, explique les rapprochements et les différences, puis donne une piste facultative à vérifier dans la vie réelle. Ne recopie pas les données techniques ni tout l’inventaire des positions.`;
+Réponse : texte brut, sans HTML, Markdown, liens ou titre de marketing, en quelques paragraphes. Vise 500 à 650 mots pour conserver une marge, maximum 760 mots avant la formule de clôture ajoutée par le site. Commence par une formulation qui indique clairement que la lecture est symbolique et incertaine. Fais ressentir le fil général, explique les rapprochements et les différences, puis donne une piste facultative à vérifier dans la vie réelle. Ne recopie pas les données techniques ni tout l’inventaire des positions.`;
 
 export const ORACLE_CONCLUSION_CLOSING = 'Cette lecture reste symbolique : aucune prédiction n’est certaine. Vous gardez votre libre arbitre : vos choix et les circonstances peuvent changer l’avenir. Si vous le souhaitez, notez un petit pas que vous pourriez essayer aujourd’hui.';
 
+/** Keep complete prose units when a completed provider reply exceeds display limits. */
+export function fitOracleConclusionReply(reply: string): string | null {
+  const clean = reply.trim();
+  const words = [...clean.matchAll(/\S+/gu)];
+  if (clean.length <= 10750 && words.length <= 760) return clean || null;
+  const ceiling = Math.min(10750, words.length > 760 ? words[759].index! + words[759][0].length : clean.length);
+  const prefix = clean.slice(0, ceiling);
+  let boundary = 0;
+  // Paragraph breaks and sentence punctuation provide safe stopping points.
+  // Never cut in a word or present an unfinished sentence as completed prose.
+  for (const match of prefix.matchAll(/\n\s*\n/gu)) boundary = Math.max(boundary, match.index!);
+  for (const match of prefix.matchAll(/[.!?…]["'»”’)\]]*(?=\s|$)/gu)) {
+    const end = match.index! + match[0].length;
+    // A punctuation mark at the prefix edge counts only when it is also a
+    // real boundary in the original text, rather than the middle of a token.
+    if (end < prefix.length || end === clean.length || /\s/u.test(clean[end] || '')) boundary = Math.max(boundary, end);
+  }
+  return boundary ? prefix.slice(0, boundary).trim() || null : null;
+}
+
 export async function requestOracleConclusion(
   input: OracleConclusionInput,
-  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request } = {},
+  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request; onFailure?: (failure: SymbolicVisionFailure) => void } = {},
 ): Promise<string | null> {
+  const startedAt = Date.now();
   if (!isTarotOracleAvailable(options.env || process.env, options.request)) return null;
   const reply = await requestSymbolicVision({
     instructions: ORACLE_CONCLUSION_GUIDE, prompt: buildOracleConclusionPrompt(input),
-    maxOutputTokens: 3500, maxWords: 760, maxCharacters: 10750, timeoutMs: 45000,
+    maxOutputTokens: 6000, maxWords: 1200, maxCharacters: 18000, timeoutMs: 45000,
     feature: 'oracle-conclusion', quiet: true,
   }, options);
   if (!reply) return null;
-  const complete = `${reply}\n\n${ORACLE_CONCLUSION_CLOSING}`;
+  const fitted = fitOracleConclusionReply(reply);
+  if (!fitted) {
+    const failure: SymbolicVisionFailure = { reason: 'output_limit', durationMs: Math.max(0, Date.now() - startedAt), providerStatus: 'completed' };
+    console.warn('ORACLE_CONCLUSION', failure);
+    options.onFailure?.(failure);
+    return null;
+  }
+  const complete = `${fitted}\n\n${ORACLE_CONCLUSION_CLOSING}`;
   return complete.length <= 11000 && complete.split(/\s+/u).length <= 800 ? complete : null;
 }
