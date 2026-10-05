@@ -187,18 +187,52 @@ function providerErrorCode(data: unknown): string {
   return 'OTHER';
 }
 
+export type SymbolicVisionFailureReason = 'auth' | 'quota' | 'http' | 'timeout' | 'error' | 'incomplete' | 'refusal' | 'empty' | 'output_limit';
+type SafeProviderStatus = 'completed' | 'incomplete' | 'failed' | 'cancelled' | 'in_progress' | 'queued' | 'OTHER';
+export type SymbolicVisionFailure = {
+  reason: SymbolicVisionFailureReason;
+  durationMs: number;
+  httpStatus?: number;
+  providerStatus?: SafeProviderStatus;
+  incompleteReason?: 'max_output_tokens' | 'content_filter' | 'OTHER';
+};
+const safeProviderStatuses = new Set(['completed', 'incomplete', 'failed', 'cancelled', 'in_progress', 'queued']);
+function safeProviderStatus(data: unknown): SafeProviderStatus {
+  const status = data && typeof data === 'object' ? (data as { status?: unknown }).status : undefined;
+  return typeof status === 'string' && safeProviderStatuses.has(status) ? status as SafeProviderStatus : 'OTHER';
+}
+function incompleteReason(data: unknown): SymbolicVisionFailure['incompleteReason'] {
+  const details = data && typeof data === 'object' ? (data as { incomplete_details?: unknown }).incomplete_details : undefined;
+  const reason = details && typeof details === 'object' ? (details as { reason?: unknown }).reason : undefined;
+  return reason === 'max_output_tokens' || reason === 'content_filter' ? reason : 'OTHER';
+}
+function hasRefusal(data: unknown): boolean {
+  const output = data && typeof data === 'object' ? (data as { output?: unknown }).output : undefined;
+  return Array.isArray(output) && output.some(item => item && typeof item === 'object' &&
+    Array.isArray(item.content) && item.content.some((part: { type?: unknown }) => part?.type === 'refusal'));
+}
+
 export async function requestSymbolicVision(
   settings: {
     instructions: string; prompt: string; maxOutputTokens: number; maxWords: number;
     maxCharacters: number; timeoutMs: number; feature: 'tarot-oracle' | 'oracle-conclusion';
     quiet?: boolean;
   },
-  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request } = {},
+  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request; onFailure?: (failure: SymbolicVisionFailure) => void } = {},
 ): Promise<string | null> {
   const provider = oracleProvider(options.env || process.env, options.request);
   if (!provider) return null;
   const diagnostic = (detail: Record<string, unknown>) => {
     if (!settings.quiet) console.warn('TAROT_ORACLE', detail);
+  };
+  const startedAt = Date.now();
+  const fail = (reason: SymbolicVisionFailureReason, detail: Omit<SymbolicVisionFailure, 'reason' | 'durationMs'> = {}) => {
+    const failure: SymbolicVisionFailure = { reason, durationMs: Math.max(0, Date.now() - startedAt), ...detail };
+    // These fields are all local numbers or fixed enums. Never log provider
+    // messages, generated text, request data, headers, account IDs or tokens.
+    if (settings.feature === 'oracle-conclusion') console.warn('ORACLE_CONCLUSION', failure);
+    options.onFailure?.(failure);
+    return null;
   };
   try {
     const response = await (options.fetchImpl || fetch)(provider.endpoint, {
@@ -218,15 +252,27 @@ export async function requestSymbolicVision(
       let providerCode = 'OTHER';
       try { providerCode = providerErrorCode(await response.json()); } catch { /* Non-JSON errors remain opaque. */ }
       diagnostic({ code: 'PROVIDER_HTTP', status: response.status, providerCode });
-      return null;
+      return fail(response.status === 401 || response.status === 403 ? 'auth'
+        : response.status === 402 || response.status === 429 ? 'quota' : 'http', { httpStatus: response.status });
     }
-    const reply = extractSymbolicVisionReply(await response.json(), settings);
-    if (!reply) diagnostic({ code: 'PROVIDER_OUTPUT' });
+    const data: unknown = await response.json();
+    const reply = extractSymbolicVisionReply(data, settings);
+    if (!reply || (settings.feature === 'oracle-conclusion' && hasRefusal(data))) {
+      diagnostic({ code: 'PROVIDER_OUTPUT' });
+      const providerStatus = safeProviderStatus(data);
+      if (providerStatus === 'incomplete') return fail('incomplete', { providerStatus, incompleteReason: incompleteReason(data) });
+      if (providerStatus !== 'OTHER' && providerStatus !== 'completed') return fail('error', { providerStatus });
+      if (hasRefusal(data)) return fail('refusal', { providerStatus });
+      // An unbounded extraction is used only to distinguish a size rejection
+      // from missing text; it is neither returned, logged nor persisted.
+      const present = extractSymbolicVisionReply(data, { maxWords: Infinity, maxCharacters: Infinity });
+      return fail(present ? 'output_limit' : 'empty', { providerStatus });
+    }
     return reply;
   } catch (error) {
     const timedOut = error instanceof Error && ['AbortError', 'TimeoutError'].includes(error.name);
     diagnostic({ code: timedOut ? 'PROVIDER_TIMEOUT' : 'PROVIDER_ERROR' });
-    return null;
+    return fail(timedOut ? 'timeout' : 'error');
   }
 }
 

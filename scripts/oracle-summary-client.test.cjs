@@ -321,3 +321,32 @@ test('rate limits and invalid requests produce a French explanation without fabr
     assert.match(page.element('summary-status').textContent, status === 429 ? /récemment/ : status === 400 ? /Vérifiez/ : /indisponible/);
   }
 });
+
+test('provider errors explain the failure, preserve readings and allow a retry without exposing server details', async () => {
+  for (const [reason, expected] of [['timeout', /trop de temps/], ['incomplete', /pas terminé/], ['auth', /indisponible/], ['quota', /limite temporaire/], ['http', /pas pu répondre/], ['output_limit', /adaptée/], ['refusal', /cette demande/], ['empty', /utilisable/], ['unknown-private-value', /indisponible/]]) {
+    const page = await setup({reading: completeReading('draw-1')});
+    await page.consent(true); const pending = page.request();
+    page.posts[0].resolve(response({mode: 'unavailable', reason, message: 'PRIVATE_SERVER_DETAIL', reply: 'NOT_A_CONCLUSION'}, 503));
+    await pending;
+    assert.match(page.element('summary-status').textContent, expected);
+    assert.equal(page.element('summary-status').textContent.includes('PRIVATE_SERVER_DETAIL'), false);
+    assert.equal(page.element('summary-result').hidden, true);
+    assert.equal(page.element('summary-request').disabled, false);
+    assert.equal(page.saved().readings[0].drawId, 'draw-1');
+    const retry = page.request();
+    await page.finish(page.posts[1], 'Une nouvelle conclusion symbolique.'); await retry;
+    assert.equal(page.element('summary-result').hidden, false);
+  }
+});
+
+test('network timeouts leave an understandable message and retain the selection for another attempt', async () => {
+  const page = await setup({reading: completeReading('draw-1')});
+  await page.consent(true); const pending = page.request();
+  for (const callback of page.timers.values()) callback();
+  page.posts[0].reject(new DOMException('PRIVATE_NETWORK_ERROR', 'AbortError'));
+  await pending;
+  assert.match(page.element('summary-status').textContent, /trop de temps/);
+  assert.equal(page.element('summary-request').disabled, false);
+  assert.equal(page.saved().readings.length, 1);
+  assert.equal(page.element('summary-result').hidden, true);
+});
