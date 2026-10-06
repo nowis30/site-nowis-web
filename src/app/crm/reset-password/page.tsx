@@ -1,21 +1,20 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, Suspense, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function CrmResetPasswordPage() {
-  const [token, setToken] = useState('');
+  return <Suspense fallback={<p role="status">Validation du lien de réinitialisation…</p>}><CrmResetPasswordContent /></Suspense>;
+}
+
+function CrmResetPasswordContent() {
+  const token = useSearchParams().get('token')?.trim() || '';
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    setToken(params.get('token') || '');
-  }, []);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();

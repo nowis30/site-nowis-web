@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, CheckSquare, Mail, NotebookPen, Paperclip, Receipt, User2 } from 'lucide-react';
 import type { ContactWorkspaceProps } from './workspace/types';
@@ -32,13 +32,14 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get('tab');
   const initialTab = TABS.some((item) => item.id === requestedTab) ? requestedTab as (typeof TABS)[number]['id'] : 'summary';
-  const [tab, setTab] = useState<(typeof TABS)[number]['id']>(initialTab);
+  const [tabSelection, setTabSelection] = useState({ requestedTab, tab: initialTab });
+  if (tabSelection.requestedTab !== requestedTab) setTabSelection({ requestedTab, tab: initialTab });
+  const tab = tabSelection.requestedTab === requestedTab ? tabSelection.tab : initialTab;
+  function setTab(nextTab: (typeof TABS)[number]['id']) {
+    setTabSelection({ requestedTab, tab: nextTab });
+  }
   const [action, setAction] = useState<ContactActionType | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
-    setTab(initialTab);
-  }, [initialTab]);
 
   const stats = useMemo(() => ([
     { label: 'Tâches ouvertes', value: tasks.filter((item) => item.status !== 'DONE').length },
@@ -63,7 +64,8 @@ export function ContactWorkspace({ contact, tasks, appointments, invoices, files
       throw new Error(payload?.error || 'Impossible d\'activer le mode client');
     }
 
-    window.location.assign('/client/dashboard');
+    router.push('/client/dashboard');
+    router.refresh();
   }
 
   return (

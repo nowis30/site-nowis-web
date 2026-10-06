@@ -29,16 +29,13 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
   // Debounce : attendre 350 ms après la dernière frappe avant de lancer la recherche
   useEffect(() => {
     const cleaned = query.trim();
-    if (cleaned.length < 2) {
-      setResults([]);
-      setShowResults(false);
-      return;
-    }
+    if (cleaned.length < 2) return;
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/crm/search?q=${encodeURIComponent(cleaned)}`, { cache: 'no-store' });
+        const response = await fetch(`/api/crm/search?q=${encodeURIComponent(cleaned)}`, { cache: 'no-store', signal: controller.signal });
         const data = await response.json();
-        if (response.ok) {
+        if (response.ok && !controller.signal.aborted) {
           setResults(data.items ?? []);
           setShowResults(true);
         }
@@ -46,7 +43,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
         // Ignorer les erreurs réseau silencieuses
       }
     }, 350);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); controller.abort(); };
   }, [query]);
 
   // Fermer les résultats au clic extérieur
@@ -72,7 +69,8 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
 
   function handleSearchChange(value: string) {
     setQuery(value);
-    if (value.trim().length < 2) setShowResults(false);
+    setShowResults(false);
+    if (value.trim().length < 2) setResults([]);
   }
 
   return (

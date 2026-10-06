@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
 
 type SongRequestItem = {
@@ -56,7 +56,7 @@ function getSongRequestEmptyText(status: 'ALL' | SongRequestItem['status']) {
 export function SongRequestsPage({ items }: SongRequestsPageProps) {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<'ALL' | SongRequestItem['status']>('ALL');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pageDraft, setCurrentPage] = useState(1);
   const PAGE_SIZE = 20;
 
   const filteredItems = useMemo(() => {
@@ -77,14 +77,11 @@ export function SongRequestsPage({ items }: SongRequestsPageProps) {
   }, [items, query, status]);
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const currentPage = Math.min(pageDraft, totalPages);
   const paginatedItems = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredItems.slice(start, start + PAGE_SIZE);
   }, [filteredItems, currentPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query, status]);
 
   const emptyText = getSongRequestEmptyText(status);
 
@@ -100,14 +97,14 @@ export function SongRequestsPage({ items }: SongRequestsPageProps) {
       <div className="grid gap-3 md:grid-cols-3">
         <input
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => { setQuery(event.target.value); setCurrentPage(1); }}
           placeholder="Rechercher nom, email, occasion..."
           className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 md:col-span-2"
         />
 
         <select
           value={status}
-          onChange={(event) => setStatus(event.target.value as 'ALL' | SongRequestItem['status'])}
+          onChange={(event) => { setStatus(event.target.value as 'ALL' | SongRequestItem['status']); setCurrentPage(1); }}
           className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
         >
           <option value="ALL">Tous les statuts</option>
@@ -217,7 +214,7 @@ export function SongRequestsPage({ items }: SongRequestsPageProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
             className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
           >
@@ -225,7 +222,7 @@ export function SongRequestsPage({ items }: SongRequestsPageProps) {
           </button>
           <button
             type="button"
-            onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage >= totalPages}
             className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
           >

@@ -170,19 +170,16 @@ export function CrmCleanupPage() {
   const [confirmDelete, setConfirmDelete] = useState<{ url: string; label: string; method: string } | null>(null);
   const [activeSection, setActiveSection] = useState<CleanupSection>('song');
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/crm/cleanup');
+  const load = useCallback(() => {
+    return fetch('/api/crm/cleanup').then(async (res) => {
       if (!res.ok) throw new Error('Erreur lors du chargement.');
       const json = await res.json() as CleanupData;
       setData(json);
-    } catch (err) {
+    }).catch((err) => {
       setError(err instanceof Error ? err.message : 'Erreur inconnue.');
-    } finally {
+    }).finally(() => {
       setLoading(false);
-    }
+    });
   }, []);
 
   useEffect(() => { void load(); }, [load]);
@@ -194,6 +191,8 @@ export function CrmCleanupPage() {
       const res = await fetch(url, { method });
       const json = await res.json().catch(() => null) as { error?: string } | null;
       if (!res.ok) throw new Error(json?.error ?? 'Action échouée.');
+      setLoading(true);
+      setError(null);
       await load();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Erreur.');

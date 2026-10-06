@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface CrudState<T> {
   items: T[];
@@ -9,48 +9,19 @@ interface CrudState<T> {
 }
 
 export function useCrudResource<T>(endpoint: string, search: string) {
-  const [state, setState] = useState<CrudState<T>>({
-    items: [],
-    loading: true,
-    error: null,
-  });
-
-  const query = useMemo(() => {
-    const params = new URLSearchParams();
-    if (search.trim()) params.set('q', search.trim());
-    return params.toString();
-  }, [search]);
-
-  const load = useCallback(async () => {
-    try {
-      setState((previous) => ({ ...previous, loading: true, error: null }));
-      const response = await fetch(`${endpoint}${query ? `?${query}` : ''}`, { cache: 'no-store' });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur de chargement');
-      }
-      setState({ items: data.items as T[], loading: false, error: null });
-    } catch (error) {
-      setState({ items: [], loading: false, error: error instanceof Error ? error.message : 'Erreur inconnue' });
-    }
-  }, [endpoint, query]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  return {
-    ...state,
-    reload: load,
-  };
+  return useCrudResourceWithParams<T>(endpoint, search);
 }
 
 export function useCrudResourceWithParams<T>(endpoint: string, search: string, queryParams?: Record<string, string | undefined>) {
-  const [state, setState] = useState<CrudState<T>>({
+  const [state, setState] = useState<CrudState<T> & { url: string | null }>({
     items: [],
     loading: true,
     error: null,
+    url: null,
   });
+  const generation = useRef(0);
+  const mounted = useRef(false);
+  const activeUrl = useRef<string | null>(null);
 
   const query = useMemo(() => {
     const params = new URLSearchParams();
@@ -65,27 +36,44 @@ export function useCrudResourceWithParams<T>(endpoint: string, search: string, q
     return params.toString();
   }, [search, queryParams]);
 
+  const url = `${endpoint}${query ? `?${query}` : ''}`;
   const load = useCallback(async () => {
+    const request = ++generation.current;
     try {
-      setState((previous) => ({ ...previous, loading: true, error: null }));
-      const response = await fetch(`${endpoint}${query ? `?${query}` : ''}`, { cache: 'no-store' });
+      const response = await fetch(url, { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || 'Erreur de chargement');
       }
-      setState({ items: data.items as T[], loading: false, error: null });
+      return { request, state: { url, items: data.items as T[], loading: false, error: null } };
     } catch (error) {
-      setState({ items: [], loading: false, error: error instanceof Error ? error.message : 'Erreur inconnue' });
+      return { request, state: { url, items: [] as T[], loading: false, error: error instanceof Error ? error.message : 'Erreur inconnue' } };
     }
-  }, [endpoint, query]);
+  }, [url]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let active = true;
+    mounted.current = true;
+    activeUrl.current = url;
+    void load().then((result) => {
+      if (active && result.request === generation.current) setState(result.state);
+    });
+    return () => { active = false; mounted.current = false; };
+  }, [load, url]);
 
+  const reload = useCallback(async () => {
+    if (!mounted.current || activeUrl.current !== url) return;
+    setState((previous) => ({ ...previous, url, loading: true, error: null }));
+    const result = await load();
+    if (mounted.current && activeUrl.current === url && result.request === generation.current) setState(result.state);
+  }, [load, url]);
+
+  const loading = state.url !== url || state.loading;
   return {
-    ...state,
-    reload: load,
+    items: state.url === url ? state.items : [],
+    loading,
+    error: loading ? null : state.error,
+    reload,
   };
 }
 

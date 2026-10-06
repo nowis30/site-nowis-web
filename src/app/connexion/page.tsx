@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
 import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
@@ -38,23 +38,20 @@ const externalErrorMessages: Record<string, string> = {
 };
 
 export default function ConnexionPage() {
+  return <Suspense fallback={<p role="status">Chargement de la connexion…</p>}><ConnexionContent /></Suspense>;
+}
+
+function ConnexionContent() {
   const router = useRouter();
+  const params = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [externalErrorCode, setExternalErrorCode] = useState<string | null>(null);
-  const [nextPath, setNextPath] = useState('/client/dashboard');
-  const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    setExternalErrorCode(params.get('error'));
-    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
-    setVerificationSent(params.get('verification') === 'sent');
-  }, []);
+  const externalErrorCode = params.get('error');
+  const nextPath = sanitizeNextPath(params.get('next'), '/client/dashboard');
+  const verificationSent = params.get('verification') === 'sent';
 
   const externalErrorMessage = externalErrorCode ? externalErrorMessages[externalErrorCode] ?? null : null;
 

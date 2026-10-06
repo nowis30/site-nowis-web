@@ -64,26 +64,28 @@ export function SiteAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [quota, setQuota] = useState<AssistantQuota | null>(null);
-  const [quotaLoading, setQuotaLoading] = useState(false);
+  const [lastQuota, setQuota] = useState<AssistantQuota | null>(null);
+  const [completedQuotaRequest, setCompletedQuotaRequest] = useState<string | null>(null);
   const [quotaRefresh, setQuotaRefresh] = useState(0);
-  const [chatError, setChatError] = useState<string | null>(null);
-  const [authRequired, setAuthRequired] = useState(false);
+  const [lastChatError, setChatError] = useState<string | null>(null);
+  const [lastAuthRequired, setAuthRequired] = useState(false);
   const [idea, setIdea] = useState('');
   const [visitorEmail, setVisitorEmail] = useState('');
   const [ideaStatus, setIdeaStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const logRef = useRef<HTMLDivElement>(null);
   const requestInFlight = useRef(false);
 
+  const quotaRequest = JSON.stringify([user?.id, pathname, quotaRefresh]);
+  const quotaLoading = open && completedQuotaRequest !== quotaRequest;
+  const quota = quotaLoading ? null : lastQuota;
+  const chatError = quotaLoading ? null : lastChatError;
+  const authRequired = !quotaLoading && lastAuthRequired;
   const dailyLimitReached = quota?.remaining === 0;
   const loginHref = buildAuthRedirect(sanitizeNextPath(pathname, '/'));
 
   useEffect(() => {
     if (!open) return;
     const controller = new AbortController();
-    setQuotaLoading(true);
-    setQuota(null);
-    setChatError(null);
 
     async function refreshQuota() {
       try {
@@ -94,6 +96,8 @@ export function SiteAssistant() {
         });
         const data = (await response.json()) as ChatResponse;
         if (controller.signal.aborted) return;
+        setQuota(null);
+        setChatError(null);
         if (!response.ok && data.code === 'AUTH_REQUIRED') {
           setAuthRequired(true);
           setChatError('Connectez-vous pour utiliser vos 20 commandes par jour.');
@@ -108,16 +112,17 @@ export function SiteAssistant() {
         setQuota(currentQuota);
       } catch {
         if (!controller.signal.aborted) {
+          setQuota(null);
           setChatError('Le compteur est indisponible. Votre prochaine question sera vérifiée par le serveur.');
         }
       } finally {
-        if (!controller.signal.aborted) setQuotaLoading(false);
+        if (!controller.signal.aborted) setCompletedQuotaRequest(quotaRequest);
       }
     }
 
     void refreshQuota();
     return () => controller.abort();
-  }, [open, user?.id, pathname, quotaRefresh]);
+  }, [open, quotaRequest]);
 
   useEffect(() => {
     if (!open || !quota) return;
@@ -247,7 +252,10 @@ export function SiteAssistant() {
     <>
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          if (!open) setQuotaRefresh((value) => value + 1);
+          setOpen((value) => !value);
+        }}
         className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-[150] inline-flex min-h-12 items-center gap-2 rounded-full border border-[rgba(124,78,46,0.18)] bg-[color:var(--site-heading)] px-4 py-3 text-sm font-semibold text-[#fffdf9] shadow-[0_18px_48px_rgba(72,43,24,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(72,43,24,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
         aria-expanded={open}
         aria-controls="nowis-site-assistant"

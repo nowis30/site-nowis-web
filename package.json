@@ -1,6 +1,7 @@
 {
   "name": "nowis-app",
   "version": "1.0.0",
+  "packageManager": "npm@11.21.0",
   "description": "NOWIS - Création de contenu IA (T-shirts, Musique Suno, Vidéos Revide.ai)",
   "scripts": {
     "dev": "next dev",
@@ -12,8 +13,8 @@
     "type-check": "next typegen && tsc --noEmit",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "npm run test:security-audit && npm run test:contact-route-security && npm run test:billing-profile-security && npm run test:document-numbers && npm run test:song-request-quote-guards && npm run test:paypal-integration && npm run test:crm-task-automation && npm run test:document-categories && npm run test:client-documents-security && npm run test:invoice-business-rules && npm run test:appointment-business-rules && npm run test:rental-links-ui",
-    "test:security-audit": "node --test scripts/build-database-isolation.test.cjs scripts/account-verification-ui.test.cjs scripts/crm-mfa-ui.test.cjs && node --import tsx --test scripts/site-assistant-security.test.ts scripts/site-feedback-security.test.ts scripts/auth-session-security.test.ts scripts/auth-routes-security.test.ts scripts/calendly-webhook-security.test.ts scripts/legacy-client-portal-security.test.ts scripts/listing-access-security.test.ts scripts/client-registration-security.test.ts scripts/client-dossier-isolation.test.ts scripts/google-link-security.test.ts scripts/file-upload-security.test.ts scripts/health-response-security.test.ts scripts/security-migrations.test.ts scripts/persistent-auth-security.test.ts scripts/public-document-security.test.ts scripts/ai-command-quota-security.test.ts scripts/tarot-oracle.test.ts scripts/oracle-conclusion.test.ts scripts/login-redirect-security.test.ts scripts/public-link-key-security.test.ts scripts/storage-paths.test.ts scripts/crm-mfa-transport-security.test.ts scripts/legacy-upload-security.test.ts",
-    "test:public-media": "node --import tsx --test scripts/album-playback.test.ts scripts/radio-session.test.ts scripts/radio-shuffle.test.ts && tsx scripts/public-conversion.test.ts && node --test scripts/tarot-oracle-client.test.cjs scripts/oracle-summary-client.test.cjs",
+    "test:security-audit": "node --test scripts/build-database-isolation.test.cjs scripts/account-verification-ui.test.cjs scripts/crm-mfa-ui.test.cjs scripts/auth-client-store.test.cjs scripts/ui-state-regressions.test.cjs scripts/braces-security.test.cjs scripts/eslint-plugin-compat.test.cjs && node --import tsx --test scripts/site-assistant-security.test.ts scripts/site-feedback-security.test.ts scripts/auth-session-security.test.ts scripts/auth-routes-security.test.ts scripts/calendly-webhook-security.test.ts scripts/legacy-client-portal-security.test.ts scripts/listing-access-security.test.ts scripts/client-registration-security.test.ts scripts/client-dossier-isolation.test.ts scripts/google-link-security.test.ts scripts/file-upload-security.test.ts scripts/health-response-security.test.ts scripts/security-migrations.test.ts scripts/persistent-auth-security.test.ts scripts/public-document-security.test.ts scripts/ai-command-quota-security.test.ts scripts/tarot-oracle.test.ts scripts/oracle-conclusion.test.ts scripts/login-redirect-security.test.ts scripts/public-link-key-security.test.ts scripts/storage-paths.test.ts scripts/crm-mfa-transport-security.test.ts scripts/legacy-upload-security.test.ts",
+    "test:public-media": "node --import tsx --test scripts/album-playback.test.ts scripts/radio-session.test.ts scripts/radio-shuffle.test.ts && tsx scripts/public-conversion.test.ts && node --test scripts/tarot-oracle-client.test.cjs scripts/oracle-summary-client.test.cjs scripts/astro-engine.test.cjs scripts/astro-ui-client.test.cjs",
     "test:security-postgres": "tsx scripts/security-postgres-integration.ts",
     "test:contact-route-security": "tsx scripts/contact-route-security.test.ts",
     "test:billing-profile-security": "tsx scripts/billing-profile-security.test.ts",
@@ -83,6 +84,10 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "braces": "file:vendor/braces",
+    "eslint-plugin-import": "file:vendor/eslint-plugin-import-compat",
+    "eslint-plugin-jsx-a11y": "file:vendor/eslint-plugin-jsx-a11y-compat",
+    "eslint-plugin-react": "file:vendor/eslint-plugin-react-compat",
     "@eslint/compat": "2.1.1",
     "@electric-sql/pglite": "^0.5.8",
     "@eslint/eslintrc": "^3.3.3",
@@ -100,10 +105,25 @@
     "tsx": "4.23.15",
     "typescript": "5.9.3"
   },
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "overrides": {
-    "@prisma/config": { "deepmerge-ts": "8.0.2" },
+    "braces": "$braces",
+    "eslint-plugin-import": "$eslint-plugin-import",
+    "eslint-plugin-jsx-a11y": "$eslint-plugin-jsx-a11y",
+    "eslint-plugin-react": "$eslint-plugin-react",
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.2"
+    },
     "postcss": "$postcss",
     "postcss-selector-parser": "7.1.6"
+  },
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true,
+    "esbuild@0.28.2": true,
+    "unrs-resolver@1.12.2": true
   }
 }

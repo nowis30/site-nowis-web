@@ -26,7 +26,6 @@ function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(_request: NextRequest, _ctx: { params: Promise<{ id: string }> }) {
   return NextResponse.json(
     {

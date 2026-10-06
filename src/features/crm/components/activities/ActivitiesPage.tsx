@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { Activity, Plus, Filter, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -34,8 +34,19 @@ const TYPE_COLORS: Record<string, string> = {
   TASK: 'border-l-indigo-500',
 };
 
-function formatRelative(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
+function subscribeClock(onChange: () => void) {
+  const timer = window.setInterval(onChange, 60_000);
+  return () => window.clearInterval(timer);
+}
+
+function getMinuteSnapshot() {
+  return Math.floor(Date.now() / 60_000) * 60_000;
+}
+
+function getServerClockSnapshot() { return null; }
+
+function formatRelative(iso: string, now: number) {
+  const diff = now - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'À l\'instant';
   if (mins < 60) return `Il y a ${mins} min`;
@@ -55,11 +66,7 @@ function formatStableDate(iso: string) {
 
 function ActivityTimelineItem({ activity, onDelete }: { activity: ActivityItem; onDelete: () => void }) {
   const [deleting, setDeleting] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const now = useSyncExternalStore<number | null>(subscribeClock, getMinuteSnapshot, getServerClockSnapshot);
 
   async function deleteActivity() {
     if (!confirm('Supprimer cette activité ?')) return;
@@ -80,7 +87,7 @@ function ActivityTimelineItem({ activity, onDelete }: { activity: ActivityItem; 
                 {TYPE_LABELS[activity.type] ?? activity.type}
               </span>
               <span className="text-xs text-slate-600">·</span>
-              <span className="text-xs text-slate-500">{mounted ? formatRelative(activity.createdAt) : formatStableDate(activity.createdAt)}</span>
+              <span className="text-xs text-slate-500">{now !== null ? formatRelative(activity.createdAt, now) : formatStableDate(activity.createdAt)}</span>
             </div>
             {activity.relatedUrl ? (
               <Link href={activity.relatedUrl} className="mt-0.5 inline-block text-sm font-medium text-primary-300 hover:text-primary-200">

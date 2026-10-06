@@ -1,4 +1,3 @@
-/* eslint-disable */
 const PAC_DIRS = [
   { x: 0, y: -1, name: 'up' },
   { x: 0, y: 1, name: 'down' },

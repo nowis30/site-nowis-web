@@ -1,4 +1,3 @@
-/* eslint-disable */
 const SOL_SUITS = ['♠', '♥', '♦', '♣'];
 const SOL_STATS_KEY = 'nowis:solitaire:stats';
 const solRank = (rank) => rank === 1 ? 'A' : rank === 11 ? 'J' : rank === 12 ? 'Q' : rank === 13 ? 'K' : String(rank);

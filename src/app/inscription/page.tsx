@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
 import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
@@ -26,7 +26,12 @@ interface RegistrationResponse {
 }
 
 export default function InscriptionPage() {
+  return <Suspense fallback={<p role="status">Chargement de l’inscription…</p>}><InscriptionContent /></Suspense>;
+}
+
+function InscriptionContent() {
   const router = useRouter();
+  const params = useSearchParams();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -34,13 +39,7 @@ export default function InscriptionPage() {
   const [error, setError] = useState<string | null>(null);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [nextPath, setNextPath] = useState('/client/dashboard');
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
-  }, []);
+  const nextPath = sanitizeNextPath(params.get('next'), '/client/dashboard');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

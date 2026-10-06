@@ -1,9 +1,11 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { SongRequestsPage } from '@/features/crm/components/song-requests/SongRequestsPage';
+import type { ComponentProps } from 'react';
 
 export default async function CrmSongRequestsPage() {
   await requireCrmSession();
+  let mappedItems: ComponentProps<typeof SongRequestsPage>['items'];
 
   try {
     const items = await prisma.songRequest.findMany({
@@ -16,7 +18,7 @@ export default async function CrmSongRequestsPage() {
       take: 200,
     });
 
-    const mappedItems = items.map((item) => {
+    mappedItems = items.map((item) => {
       if (!item.contact) {
         console.error('[SONG_REQUESTS_PAGE] Missing contact for song request:', item.id);
         return null;
@@ -40,9 +42,9 @@ export default async function CrmSongRequestsPage() {
       };
     }).filter((item): item is NonNullable<typeof item> => item !== null);
 
-    return <SongRequestsPage items={mappedItems} />;
   } catch (error) {
     console.error('[SONG_REQUESTS_PAGE_ERROR]', error);
     throw error;
   }
+  return <SongRequestsPage items={mappedItems} />;
 }

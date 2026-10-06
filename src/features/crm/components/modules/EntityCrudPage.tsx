@@ -128,7 +128,7 @@ export function EntityCrudPage({
     ...(hasWorkshopStatusFilter ? { status: workshopStatus } : {}),
     ...(hasWorkshopStatusFilter && workshopCategory !== 'ALL' ? { category: workshopCategory } : {}),
   });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pageDraft, setCurrentPage] = useState(1);
 
   const [formValues, setFormValues] = useState<Record<string, unknown>>(defaultValues);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -175,18 +175,11 @@ export function EntityCrudPage({
   }, [fields, sourceData]);
 
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const currentPage = Math.min(pageDraft, totalPages);
   const paginatedItems = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return items.slice(start, start + PAGE_SIZE);
   }, [items, currentPage, PAGE_SIZE]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, view, workshopStatus, workshopCategory]);
-
-  useEffect(() => {
-    setCurrentPage((previous) => Math.min(previous, totalPages));
-  }, [totalPages]);
 
   function applyAutofillForWorkshopOrganization(previous: Record<string, unknown>, organizationId: string) {
     if (endpoint !== '/api/crm/workshop-requests' || !organizationId) return previous;
@@ -349,7 +342,7 @@ export function EntityCrudPage({
           {hasLifecycleView ? (
             <select
               value={view}
-              onChange={(event) => setView(event.target.value as 'active' | 'archived' | 'deleted')}
+              onChange={(event) => { setView(event.target.value as 'active' | 'archived' | 'deleted'); setCurrentPage(1); }}
               className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
             >
               <option value="active">Actifs</option>
@@ -361,7 +354,7 @@ export function EntityCrudPage({
             <>
               <select
                 value={workshopStatus}
-                onChange={(event) => setWorkshopStatus(event.target.value)}
+                onChange={(event) => { setWorkshopStatus(event.target.value); setCurrentPage(1); }}
                 className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
               >
                 <option value="ACTIFS">Actives</option>
@@ -373,7 +366,7 @@ export function EntityCrudPage({
               </select>
               <select
                 value={workshopCategory}
-                onChange={(event) => setWorkshopCategory(event.target.value)}
+                onChange={(event) => { setWorkshopCategory(event.target.value); setCurrentPage(1); }}
                 className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200"
               >
                 <option value="ALL">Toutes categories</option>
@@ -385,7 +378,7 @@ export function EntityCrudPage({
               </select>
             </>
           ) : null}
-          <SearchBar value={search} onChange={setSearch} />
+          <SearchBar value={search} onChange={(value) => { setSearch(value); setCurrentPage(1); }} />
         </div>
       </div>
 
@@ -663,7 +656,7 @@ export function EntityCrudPage({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
                 className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
               >
@@ -674,7 +667,7 @@ export function EntityCrudPage({
               </span>
               <button
                 type="button"
-                onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage >= totalPages}
                 className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
               >

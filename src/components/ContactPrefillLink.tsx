@@ -18,23 +18,25 @@ export function ContactPrefillLink({
   onClick,
 }: ContactPrefillLinkProps) {
   const { user } = useAuth();
+  const name = user?.name;
+  const email = user?.email;
 
   const resolvedHref = useMemo(() => {
     const [pathname, hash = ''] = href.split('#');
     const [basePath, search = ''] = pathname.split('?');
     const params = new URLSearchParams(search);
 
-    if (user?.name && !params.has('name')) {
-      params.set('name', user.name);
+    if (name && !params.has('name')) {
+      params.set('name', name);
     }
 
-    if (user?.email && !params.has('email')) {
-      params.set('email', user.email);
+    if (email && !params.has('email')) {
+      params.set('email', email);
     }
 
     const query = params.toString();
     return `${basePath}${query ? `?${query}` : ''}${hash ? `#${hash}` : ''}`;
-  }, [href, user?.email, user?.name]);
+  }, [href, email, name]);
 
   return (
     <Link href={resolvedHref} className={className} onClick={onClick}>

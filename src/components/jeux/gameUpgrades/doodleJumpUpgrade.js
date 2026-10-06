@@ -1,4 +1,3 @@
-/* eslint-disable */
 const DOODLE_W = 480;
 const DOODLE_H = 680;
 const DOODLE_BEST_KEY = 'nowis:doodle-jump:best';

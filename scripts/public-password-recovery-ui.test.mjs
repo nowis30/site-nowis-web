@@ -32,7 +32,8 @@ test('reset-password form documents the complete password policy and valid link 
   assert.match(resetSource, /minLength=\{8\}/);
   assert.match(resetSource, /autoComplete="new-password"/);
   assert.match(resetSource, /aria-describedby="password-requirements"/);
-  assert.match(resetSource, /token === null/);
+  assert.match(resetSource, /Suspense fallback=/);
+  assert.match(resetSource, /useSearchParams\(\)\.get\('token'\)/);
   assert.match(resetSource, /token === ''/);
   assert.match(resetSource, /Demander un nouveau lien/);
 });

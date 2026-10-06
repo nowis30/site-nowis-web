@@ -19,26 +19,34 @@ export function RadioComments({ displayName = '' }: { displayName?: string }) {
   const [formError, setFormError] = useState('');
   const [notice, setNotice] = useState('');
   const [posting, setPosting] = useState(false);
-  const [name, setName] = useState(displayName);
+  const [nameDraft, setNameDraft] = useState({ displayName, value: displayName });
+  const name = nameDraft.displayName === displayName ? nameDraft.value : displayName;
   const [message, setMessage] = useState('');
   const [trackId, setTrackId] = useState('');
   const [openOlder, setOpenOlder] = useState(false);
   const pageGeneration = useRef(0);
-  useEffect(() => { setName(displayName); }, [displayName]);
-  const loadLatest = useCallback(async () => {
+  const loadLatest = useCallback((signal?: AbortSignal) => {
     const generation = ++pageGeneration.current;
-    setLoading(true); setLoadError('');
-    setLoadingOlder(false);
-    try {
-      const response = await fetch('/api/radio/comments', { cache: 'no-store' });
+    return fetch('/api/radio/comments', { cache: 'no-store', signal }).then(async (response) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
-      if (generation !== pageGeneration.current) return;
+      if (signal?.aborted || generation !== pageGeneration.current) return;
       setLatest((data as CommentPage).comments); setCursor(data.nextCursor); setOlder([]); setOpenOlder(false);
-    } catch (err) { if (generation === pageGeneration.current) setLoadError(err instanceof Error ? err.message : 'Impossible de charger les commentaires.'); }
-    finally { if (generation === pageGeneration.current) setLoading(false); }
+    }).catch((err) => {
+      if (!signal?.aborted && generation === pageGeneration.current) setLoadError(err instanceof Error ? err.message : 'Impossible de charger les commentaires.');
+    }).finally(() => {
+      if (!signal?.aborted && generation === pageGeneration.current) setLoading(false);
+    });
   }, []);
-  useEffect(() => { void loadLatest(); }, [loadLatest]);
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadLatest(controller.signal);
+    return () => controller.abort();
+  }, [loadLatest]);
+  function refreshLatest() {
+    setLoading(true); setLoadError(''); setLoadingOlder(false);
+    return loadLatest();
+  }
   async function loadOlder() {
     if (!cursor || loadingOlder) return;
     const generation = pageGeneration.current;
@@ -65,7 +73,7 @@ export function RadioComments({ displayName = '' }: { displayName?: string }) {
       if (!response.ok) throw new Error(data.message);
       setMessage(''); setNotice('Votre commentaire est publié. Merci de partager votre écoute !');
       setLatest(previous => [data.comment, ...previous].slice(0, 5));
-      await loadLatest();
+      await refreshLatest();
     } catch (err) { setFormError(err instanceof Error ? err.message : 'Le commentaire n’a pas été publié. Vérifiez votre connexion.'); }
     finally { setPosting(false); }
   }
@@ -77,7 +85,7 @@ export function RadioComments({ displayName = '' }: { displayName?: string }) {
     <div className="nr-section-heading"><div><p className="nm-eyebrow">Entre nous, en musique</p><h2 id="radio-comments-title">Quelle chanson<br /><em>vous touche ?</em></h2></div><p>Un coup de cœur, un souvenir, un refrain à réécouter… Laissez quelques mots à Nowis et aux autres auditeurs.</p></div>
     <div className="nr-comments-grid"><form className="nr-form" onSubmit={submit}>
       <h3>Laisser un commentaire</h3>
-      <label htmlFor="comment-name">Prénom ou pseudo</label><input id="comment-name" value={name} onChange={event => setName(event.target.value)} autoComplete="nickname" required minLength={2} maxLength={80} />
+      <label htmlFor="comment-name">Prénom ou pseudo</label><input id="comment-name" value={name} onChange={event => setNameDraft({ displayName, value: event.target.value })} autoComplete="nickname" required minLength={2} maxLength={80} />
       <label htmlFor="comment-track">De quelle chanson parlez-vous ? <span className="nm-fine">(facultatif)</span></label><select id="comment-track" value={trackId} onChange={event => setTrackId(event.target.value)}><option value="">La musique de Nowis en général</option>{tracks.map(track => <option key={track.id} value={track.id}>{track.title}</option>)}</select>
       {currentRadioTrack && <button className="nr-text-button" type="button" onClick={() => setTrackId(currentRadioTrack.id)}>Choisir le titre en cours : {currentRadioTrack.title}</button>}
       <label htmlFor="comment-message">Votre commentaire</label><textarea id="comment-message" rows={5} required minLength={3} maxLength={1200} value={message} onChange={event => setMessage(event.target.value)} aria-describedby="comment-public" />
@@ -93,7 +101,7 @@ export function RadioComments({ displayName = '' }: { displayName?: string }) {
         const open = event.currentTarget.open; setOpenOlder(open);
         if (open && !older.length && cursor && !loadingOlder) void loadOlder();
       }}><summary>Voir les commentaires précédents</summary><div className="nr-older-scroll" tabIndex={0} aria-label="Anciens commentaires"><ul>{older.map(renderComment)}</ul></div>{cursor && <button type="button" className="cta-secondary" disabled={loadingOlder} onClick={() => void loadOlder()}>{loadingOlder ? 'Chargement…' : 'Afficher cinq commentaires de plus'}</button>}</details>}
-      {loadError && <div role="alert"><p className="nr-error">{loadError}</p><button type="button" className="nr-text-button" onClick={() => void (openOlder ? loadOlder() : loadLatest())}>Réessayer</button></div>}
+      {loadError && <div role="alert"><p className="nr-error">{loadError}</p><button type="button" className="nr-text-button" onClick={() => void (openOlder ? loadOlder() : refreshLatest())}>Réessayer</button></div>}
     </div></div>
   </section>;
 }

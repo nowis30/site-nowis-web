@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { StatusBadge } from '@/features/crm/components/shared/StatusBadge';
 
 type AppointmentItem = {
@@ -41,57 +41,45 @@ export function AppointmentSelector({
   placeholder = 'Chercher par titre...',
 }: AppointmentSelectorProps) {
   const [query, setQuery] = useState('');
-  const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState<{ key: string; items: AppointmentItem[] } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [manualId, setManualId] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectLoading, setSelectLoading] = useState(false);
 
-  const search = useCallback(
-    async (searchQuery: string) => {
-      if (searchQuery.length < 1 && !onlyUnlinked) {
-        setAppointments([]);
-        return;
-      }
+  const params = new URLSearchParams();
+  if (query.length >= 2) params.set('q', query);
+  if (contactId) params.set('contactId', contactId);
+  if (organizationId) params.set('organizationId', organizationId);
+  if (workshopRequestId) params.set('workshopRequestId', workshopRequestId);
+  if (songRequestId) params.set('songRequestId', songRequestId);
+  if (onlyUnlinked) params.set('onlyUnlinked', 'true');
+  const url = `/api/crm/appointments/search?${params}`;
+  const excludedTypeKey = JSON.stringify(excludeTypes);
+  const searchKey = JSON.stringify([url, excludedTypeKey]);
+  const searchEnabled = query.length >= 1 || onlyUnlinked;
+  const searching = searchEnabled && searchResult?.key !== searchKey;
+  const appointments = searchEnabled && searchResult?.key === searchKey ? searchResult.items : [];
 
-      setSearching(true);
-      try {
-        const params = new URLSearchParams();
-        if (searchQuery.length >= 2) params.append('q', searchQuery);
-        if (contactId) params.append('contactId', contactId);
-        if (organizationId) params.append('organizationId', organizationId);
-        if (workshopRequestId) params.append('workshopRequestId', workshopRequestId);
-        if (songRequestId) params.append('songRequestId', songRequestId);
-        if (onlyUnlinked) params.append('onlyUnlinked', 'true');
-
-        const response = await fetch(`/api/crm/appointments/search?${params.toString()}`);
-        if (!response.ok) throw new Error('Recherche échouée');
-
-        const data = (await response.json()) as { items: AppointmentItem[] };
-        setAppointments(
-          data.items.filter((apt) => !excludeTypes.includes(apt.type))
-        );
-      } catch (error) {
-        console.error('Search error:', error);
-        setAppointments([]);
-      } finally {
-        setSearching(false);
-      }
-    },
-    [contactId, organizationId, workshopRequestId, songRequestId, onlyUnlinked, excludeTypes]
-  );
-
-  // Auto-search on component load or when filters change
   useEffect(() => {
-    search(query);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contactId, organizationId, workshopRequestId, songRequestId, onlyUnlinked]);
+    if (!searchEnabled) return;
+    const controller = new AbortController();
+    const excluded: string[] = JSON.parse(excludedTypeKey);
+    void fetch(url, { signal: controller.signal }).then(async (response) => {
+      if (!response.ok) throw new Error('Recherche échouée');
+      const data = (await response.json()) as { items: AppointmentItem[] };
+      if (!controller.signal.aborted) {
+        setSearchResult({ key: searchKey, items: data.items.filter((apt) => !excluded.includes(apt.type)) });
+      }
+    }).catch(() => {
+      if (!controller.signal.aborted) setSearchResult({ key: searchKey, items: [] });
+    });
+    return () => controller.abort();
+  }, [url, excludedTypeKey, searchEnabled, searchKey]);
 
   const handleSearch = (value: string) => {
     setQuery(value);
-    search(value);
   };
 
   const handleSelectAppointment = async (appointmentId: string) => {

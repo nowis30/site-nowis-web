@@ -125,7 +125,7 @@ export function SongRequestForm({ defaultFullName, defaultEmail, defaultPhone }:
       const data = (await response.json().catch(() => null)) as SongRequestCreateResponse | null;
 
       if (response.status === 401 && typeof data?.loginUrl === 'string') {
-        window.location.href = data.loginUrl;
+        router.push(data.loginUrl);
         return;
       }
 

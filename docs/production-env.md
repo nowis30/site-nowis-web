@@ -56,7 +56,7 @@ Les anciennes variables de secours `CRM_ALLOW_EMERGENCY_LOGIN` et `CRM_DEMO_PASS
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Requis pour la connexion Google. Configurer séparément les URI de callback autorisées chez Google pour production et environnement de test. |
 | `NEXT_PUBLIC_RENTALS_URL` | Destination du service de logements externe ; conserver la séparation actuelle de ce domaine métier. |
 
-La callback Google du portail utilise `/api/client-auth/google/callback`. La table OAuth doit être migrée : son absence ne permet pas une liaison automatique dégradée. Une première liaison à un compte déjà existant exige la preuve de session correspondante selon les règles du serveur ; ne fusionner aucun dossier sur la seule base d'un courriel déclaré. Les comptes portail historiques doivent prouver leur courriel avant de reprendre une connexion par mot de passe. Consulter les impacts détaillés dans la procédure de livraison.
+L'URI de retour Google émise par le portail utilise `/api/auth/callback/google`, qui redirige vers `/api/client-auth/google/callback`. Autoriser chez Google l'URI complète réellement émise, avec la base d'URL de l'environnement visé. La table OAuth doit être migrée : son absence ne permet pas une liaison automatique dégradée. Une première liaison à un compte déjà existant exige la preuve de session correspondante selon les règles du serveur ; ne fusionner aucun dossier sur la seule base d'un courriel déclaré. Les comptes portail historiques doivent prouver leur courriel avant de reprendre une connexion par mot de passe. Consulter les impacts détaillés dans la procédure de livraison.
 
 ## Stockage S3 et fichiers historiques
 

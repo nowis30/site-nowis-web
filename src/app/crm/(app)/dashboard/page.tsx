@@ -5,9 +5,7 @@ import { DashboardUploader } from "@/features/crm/components/shared/DashboardUpl
 import { StatusBadge } from "@/features/crm/components/shared/StatusBadge";
 import { Calendar, CheckSquare, FileText, Activity, AlertCircle, Clock, User } from "lucide-react";
 
-export default async function CrmDashboardPage() {
-  const session = await requireCrmSession();
-
+async function loadDashboardData() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
@@ -101,6 +99,23 @@ export default async function CrmDashboardPage() {
     dbUnavailable = true;
     console.error('[CRM_DASHBOARD_DB_UNAVAILABLE]', error);
   }
+
+  return {
+    contacts, openCases, closedCasesCount, recentCases, todayAppointments,
+    overdueTasks, recentActivities, pendingInvoices, overdueInvoices,
+    newContactsThisMonth, openPortalNotifications, clientFollowUpTasks,
+    followUpContacts, dbUnavailable,
+  };
+}
+
+export default async function CrmDashboardPage() {
+  const session = await requireCrmSession();
+  const {
+    contacts, openCases, closedCasesCount, recentCases, todayAppointments,
+    overdueTasks, recentActivities, pendingInvoices, overdueInvoices,
+    newContactsThisMonth, openPortalNotifications, clientFollowUpTasks,
+    followUpContacts, dbUnavailable,
+  } = await loadDashboardData();
 
   if (dbUnavailable) {
     return (
