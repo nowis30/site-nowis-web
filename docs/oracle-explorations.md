@@ -6,7 +6,7 @@ Inventaire consulté le 6 octobre 2026 : https://www.evozen.fr/astrologie-et-hor
 
 | Domaine | Lecture NOWIS | Méthode et limites |
 | --- | --- | --- |
-| Tarot de Marseille | Tirages existants de 1 à 5 cartes, question et position | Corpus existant ; réflexion contextualisée, pas de résultat certain |
+| Tarot de Marseille | Tirages existants de 2 à 5 cartes, question et position | Corpus existant ; réflexion contextualisée, pas de résultat certain |
 | Belline | 53 définitions, tirage simple, trois cartes, relation, célibat, croix | Textes originaux en français simple, chaque fiche cite sa source ; positions NOWIS explicitement distinguées |
 | Numérologie | Chemin de vie, expression, aspirations, personnalité, année/mois/jour personnels | Convention pythagoricienne A–Z ; accents normalisés ; Y vocalique au choix ; maîtres 11/22/33 préservés hors cycles personnels |
 | Prénoms | Deux nombres et leurs significations à comparer | Pas de pourcentage, de verdict amoureux ou de sentiments attribués à autrui |
