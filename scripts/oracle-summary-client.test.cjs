@@ -131,7 +131,7 @@ test('the submitted snapshot contains only the authorized inputs, in draw and ca
   const storage = new Map([['nowis-oracle-carnet-v1', JSON.stringify({journal: 'PRIVATE_DIARY'})]]);
   const page = await setup({storage});
   let conclusionScrolls = 0;
-  page.window.addEventListener('oracle:scroll-summary', () => conclusionScrolls++);
+  page.window.addEventListener('oracle:scroll-summary-result', () => conclusionScrolls++);
   await page.setReading(completeReading('draw-1', {question: '  Première question  ', answers: {situation: 'Situation', goal: 'Comprendre', feeling: 'serein', blocker: 'aucun', journal: 'PRIVATE_ANSWER_FIELD'}}));
   await page.setReading(completeReading('draw-2', {question: 'Seconde question', spread: '2', cardIds: ['major-3', 'major-2'], revealed: [0, 1], journal: 'PRIVATE_READING_FIELD'}));
   await page.setAstrology(completeAstrology({journal: 'PRIVATE_ASTRO_FIELD', positions: [{fake: true}], providerKey: 'PRIVATE_PROVIDER_FIELD', disambiguation: ''}));

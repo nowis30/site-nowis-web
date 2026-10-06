@@ -52,15 +52,27 @@ export function TarotReader() {
       'oracle:scroll-ritual': 'oracle-ritual',
       'oracle:scroll-result': 'astro-result',
       'oracle:scroll-summary': 'summary-section',
+      'oracle:scroll-summary-result': 'summary-result',
     } as const;
-    const scrollSection = (id: string) => requestAnimationFrame(() => {
-        const target = document.getElementById(id);
-        if (!target || target.hidden) return;
-        measure();
-        const headerHeight = header?.getBoundingClientRect().height ?? 0;
-        const top = window.scrollY + element.getBoundingClientRect().top + target.getBoundingClientRect().top - headerHeight - 20;
-        window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    let scrollFrame: number | null = null;
+    const scrollSection = (id: string) => {
+      if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
+      measure();
+      // Apply the iframe height before scrolling, so the parent does not
+      // clamp the destination to its previous, shorter document height.
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = requestAnimationFrame(() => {
+          scrollFrame = null;
+          const target = document.getElementById(id);
+          if (!target || target.hidden) return;
+          let offset = 0;
+          for (let ancestor: HTMLElement | null = target; ancestor; ancestor = ancestor.offsetParent as HTMLElement | null) offset += ancestor.offsetTop;
+          const headerHeight = header?.getBoundingClientRect().height ?? 0;
+          const top = window.scrollY + element.getBoundingClientRect().top + offset - (document.scrollingElement?.scrollTop ?? 0) - headerHeight - 20;
+          window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+        });
       });
+    };
     const sectionScrollers = Object.entries(scrollTargets).map(([event, id]) => {
       const handler = () => scrollSection(id);
       readerWindow?.addEventListener(event, handler);
@@ -76,6 +88,7 @@ export function TarotReader() {
     placeDialog();
 
     cleanup.current = () => {
+      if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
       observer.disconnect();
       dialogObserver.disconnect();
       headerObserver.disconnect();

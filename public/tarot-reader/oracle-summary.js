@@ -217,8 +217,8 @@
       });
       $('summary-result').replaceChildren(...paragraphs); $('summary-result').hidden = false;
       $('summary-status').textContent = 'Conclusion IA générée pour les éléments retenus. Ces pistes restent à rapprocher de votre vécu; vos choix vous appartiennent.';
-      window.dispatchEvent(new Event('oracle:scroll-summary'));
-      if(window.parent&&window.parent!==window&&window.parent.postMessage)window.parent.postMessage({type:'nowis-reader-scroll',target:'summary-section'},location.origin);
+      window.dispatchEvent(new Event('oracle:scroll-summary-result'));
+      if(window.parent&&window.parent!==window&&window.parent.postMessage)window.parent.postMessage({type:'nowis-reader-scroll',target:'summary-result'},location.origin);
     } catch {
       if (version === requestVersion) $('summary-status').textContent = requestController.signal.aborted
         ? failureMessages.timeout
