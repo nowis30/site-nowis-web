@@ -50,6 +50,8 @@ async function setup({available = true, storage = new Map(), reading = emptyRead
   const window = new Target();
   window.TAROT_SESSION = {getReading: () => state.reading};
   window.ASTRO_SESSION = {getContext: () => state.astrology};
+  let explorations = {};
+  window.EXPLORE_SESSION = {getContext:()=>plain(explorations),set:(value)=>{explorations=plain(value);window.dispatchEvent(new Event('explore:changed'));},clear:()=>{explorations={};window.dispatchEvent(new Event('explore:changed'));}};
   const calls = [];
   const posts = [];
   const timers = new Map();
@@ -89,6 +91,25 @@ async function setup({available = true, storage = new Map(), reading = emptyRead
     }
   };
 }
+
+test('explorations alone require consent, stay out of storage and invalidate stale replies', async()=>{
+  const page=await setup();
+  const value={numerology:{birthDate:'1980-10-22',date:'2026-10-06',name:'Fiction Exemple'}};
+  page.window.EXPLORE_SESSION.set(value);
+  assert.equal(page.element('summary-request').disabled,true);
+  assert.ok(page.element('summary-explore-status').textContent.includes('Numérologie'));
+  await page.consent(true);
+  const pending=page.request();
+  const request=page.posts[0];
+  assert.deepEqual(JSON.parse(request.options.body).explorations,value);
+  assert.ok(!JSON.stringify(page.saved()).includes('Fiction'));
+  page.window.EXPLORE_SESSION.clear();
+  assert.equal(request.options.signal.aborted,true);
+  assert.equal(page.element('summary-consent').checked,false);
+  await page.finish(request);await pending;
+  assert.equal(page.element('summary-result').hidden,true);
+  assert.equal(page.element('summary-request').disabled,true);
+});
 
 test('loading performs only a capability GET, and consent cannot authorize empty or partly revealed input', async () => {
   const page = await setup();
@@ -325,6 +346,35 @@ test('rate limits and invalid requests produce a French explanation without fabr
 });
 
 const dailyQuota = remaining => ({limit:20,remaining,resetAt:new Date(Date.now()+3600000).toISOString(),timeZone:'America/Toronto'});
+
+test('an exploration alone cannot send private inputs while authentication is required', async () => {
+  const page = await setup({capability: {available: false, reason: 'AUTH_REQUIRED', quota: null}});
+  page.window.EXPLORE_SESSION.set({names: {a: 'PRIVATE_FIRST_NAME', b: 'PRIVATE_SECOND_NAME'}});
+  await page.consent(true);
+  await page.request();
+  assert.equal(page.element('summary-request').disabled, true);
+  assert.equal(page.element('summary-ai-login').hidden, false);
+  assert.equal(page.posts.length, 0);
+  assert.equal(page.calls.length, 1);
+  assert.equal(page.calls[0].options.body, undefined);
+  assert.equal(JSON.stringify(page.saved()).includes('PRIVATE_'), false);
+});
+
+test('an exploration alone respects quota exhaustion shared by another AI feature', async () => {
+  const page = await setup({capability: {available: true, reason: null, quota: dailyQuota(20)}});
+  page.window.EXPLORE_SESSION.set({names: {a: 'PRIVATE_FIRST_NAME', b: 'PRIVATE_SECOND_NAME'}});
+  await page.consent(true);
+  assert.equal(page.element('summary-request').disabled, false);
+  const event = new Event('nowis:ai-quota');
+  event.quota = dailyQuota(0);
+  page.window.dispatchEvent(event);
+  await page.request();
+  assert.equal(page.element('summary-request').disabled, true);
+  assert.match(page.element('summary-ai-quota').textContent, /0 commande/);
+  assert.equal(page.posts.length, 0);
+  assert.equal(page.calls.length, 1);
+  assert.equal(JSON.stringify(page.saved()).includes('PRIVATE_'), false);
+});
 
 test('anonymous conclusion retains the selection and offers a local top-level login without sending it', async () => {
   const page=await setup({reading:completeReading('draw-1'),astrology:completeAstrology(),capability:{available:false,reason:'AUTH_REQUIRED',quota:null}});

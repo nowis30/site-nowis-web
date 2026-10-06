@@ -318,7 +318,7 @@
     return { natal, forecast, transits: compareTransits(natal, forecast), warnings, location: { latitude: input.latitude, longitude: input.longitude, timeZone: input.timeZone }, methodology: { zodiac: 'tropical', coordinates: 'géocentriques, écliptique vraie de date', houseSystem: 'Maisons égales de 30° à partir de l’ascendant', forecastTime: '12:00 dans le fuseau choisi pour le lieu de naissance', engine: 'Astronomy Engine', localTimeRules: 'Données historiques IANA fournies par Intl dans le navigateur', aspectOrbs: ASPECTS.map(aspect => ({ angle: aspect.angle, maxOrb: aspect.maxOrb })), scientificNote: 'Les positions célestes sont calculées. Leur interprétation astrologique est symbolique et ne constitue pas une prédiction établie.' } };
   }
 
-  const api = Object.freeze({ calculate, resolveLocalTime, signPosition, angularDistance, houseFor, AstroInputError, signs: SIGNS.slice(), elements: ELEMENTS.slice(), bodies: BODIES.slice() });
+  const api = Object.freeze({ calculate, resolveLocalTime, signPosition, angularDistance, houseFor, planetaryPositions, chartAngles, AstroInputError, signs: SIGNS.slice(), elements: ELEMENTS.slice(), bodies: BODIES.slice() });
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ASTRO_ENGINE = api;
 })(typeof window !== 'undefined' ? window : globalThis, typeof module === 'object' && module.exports ? require('./vendor/astronomy.node.js') : null);

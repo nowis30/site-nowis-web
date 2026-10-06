@@ -115,6 +115,10 @@
     const sun = result.natal.planets.find(p=>p.id==='Sun'), moon = result.natal.planets.find(p=>p.id==='Moon');
     const keys = [bodyMeaning(sun),bodyMeaning(moon)];
     $('astro-key-meanings').innerHTML = keys.map(item => detail(item.title,`<p class="astro-position">${esc(item.position)}</p>${item.html}`,true)).join('') + (result.natal.ascendant ? (()=>{const item=bodyMeaning(result.natal.ascendant,'ascendant');return detail(item.title,`<p class="astro-position">${esc(item.position)}</p>${item.html}`,true);})() : '<article class="astro-unavailable"><h4>Ascendant non calculé</h4><p>'+esc(result.natal.anglesUnavailableReason)+'</p></article>');
+    if (result.natal.ascendant) {
+      const descendant=engine.signPosition(result.natal.ascendant.longitude+180), sign=meanings.signs[descendant.signIndex];
+      $('astro-key-meanings').innerHTML+=detail('Descendant en '+descendant.sign,`<p class="astro-position">${esc(descendant.degreeText)} ${esc(descendant.sign)} · opposé à l’ascendant</p><p>Le descendant se trouve sur l’horizon ouest et ouvre la septième maison. Dans cette tradition, il invite à explorer les attentes envers les autres, les accords et les relations durables. Il ne désigne pas un partenaire idéal et ne prédit pas votre vie amoureuse.</p><p>${esc(sign.meaning)}</p><p>Piste NOWIS : quelle qualité recherchez-vous dans une relation, et comment pouvez-vous aussi la développer vous-même ?</p><a class="astro-source" href="https://www.astro.com/astrowiki/en/Descendant" target="_blank" rel="noopener noreferrer">Source : Astrodienst — Descendant ↗</a>${source(sign)}`,true);
+    }
     const all = result.natal.planets.filter(p=>!['Sun','Moon'].includes(p.id)).map(p=>bodyMeaning(p));
     if (result.natal.midheaven) all.push(bodyMeaning(result.natal.midheaven,'midheaven'));
     $('astro-planet-meanings').innerHTML = all.map(item=>detail(item.title,`<p class="astro-position">${esc(item.position)}</p>${item.html}`)).join('');
