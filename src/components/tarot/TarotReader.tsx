@@ -53,6 +53,12 @@ export function TarotReader() {
       'oracle:scroll-result': 'astro-result',
       'oracle:scroll-summary': 'summary-section',
       'oracle:scroll-summary-result': 'summary-result',
+      'oracle:scroll-numbers-result': 'numbers-result',
+      'oracle:scroll-names-result': 'names-result',
+      'oracle:scroll-couple-result': 'couple-result',
+      'oracle:scroll-moon-result': 'moon-result',
+      'oracle:scroll-cycles-result': 'cycles-result',
+      'oracle:scroll-belline-result': 'belline-result',
     } as const;
     let scrollFrame: number | null = null;
     const scrollSection = (id: string) => {

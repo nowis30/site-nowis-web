@@ -5,14 +5,14 @@ import { ShareMenu } from '@/components/radio/ShareMenu';
 const tarotDestinations = [{
   id: 'tarot',
   label: 'la page Tarot',
-  title: 'Oracle NOWIS · Tarot et carte du ciel',
+  title: 'Oracle NOWIS · Tarot, astrologie et numérologie',
   url: 'https://nowis.store/tarot',
-  text: 'Explorez votre carte du ciel, le rôle des quatre éléments et vos tirages de tarot avec l’Oracle NOWIS. Des pistes symboliques, un avenir qui reste ouvert.',
+  text: 'Explorez les tarots, votre carte du ciel, les nombres et vos relations avec l’Oracle NOWIS. Des lectures sourcées et symboliques, un avenir qui reste ouvert.',
 }] as const;
 
 export const metadata = buildMetadata({
-  title: 'Oracle NOWIS · Tarot et carte du ciel',
-  description: 'Calculez votre carte du ciel avec votre naissance, comprenez les planètes et les quatre éléments, puis réunissez les transits et plusieurs tirages dans une conclusion IA facultative. Vos choix restent libres.',
+  title: 'Oracle NOWIS · Tarot, astrologie et numérologie',
+  description: 'Tarot de Marseille, Belline, carte du ciel, numérologie, relations et cycles lunaires : des lectures expliquées et sourcées, réunies dans une conclusion IA facultative. Vos choix restent libres.',
   path: '/tarot',
 });
 

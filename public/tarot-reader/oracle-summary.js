@@ -26,6 +26,7 @@
   let readings = [];
   let dismissedDrawIds = [];
   let astrology = null;
+  let explorations = {};
   let available = false;
   let busy = false;
   let requestVersion = 0;
@@ -95,7 +96,7 @@
   persist(); // Replace malformed or extra stored fields with the bounded whitelist.
 
   function syncButton() {
-    $('summary-request').disabled = !available || busy || (!readings.length && !astrology) || !$('summary-consent').checked;
+    $('summary-request').disabled = !available || busy || (!readings.length && !astrology && !Object.keys(explorations).length) || !$('summary-consent').checked;
     $('summary-clear').disabled = !readings.length;
   }
 
@@ -131,6 +132,10 @@
     $('summary-astro-status').textContent = astrology
       ? 'La carte du ciel et la date choisie seront prises en compte dans la conclusion.'
       : 'Aucune carte du ciel complète n’est retenue. La conclusion peut utiliser vos tirages seuls.';
+    if ($('summary-explore-status')) {
+      const labels = {numerology:'Numérologie',names:'Prénoms',couple:'Deux ciels',moon:'Lune',solar:'Retour solaire',yearly:'Panorama annuel',belline:'Belline'};
+      $('summary-explore-status').textContent = Object.keys(explorations).length ? 'Autres lectures retenues : '+Object.keys(explorations).map(key=>labels[key]||key).join(', ')+'.' : 'Aucune autre exploration retenue.';
+    }
     syncButton();
   }
 
@@ -143,6 +148,7 @@
       persist();
     }
     astrology = cleanAstrology(window.ASTRO_SESSION?.getContext?.());
+    explorations = window.EXPLORE_SESSION?.getContext?.() || {};
     if (changed) {
       changedSinceLoad = true;
       invalidate('Vos éléments de lecture ont changé. Vérifiez la sélection et donnez à nouveau votre accord pour régénérer la conclusion.');
@@ -166,6 +172,8 @@
   $('summary-clear').addEventListener('click', () => { if (readings.length) dismiss(readings.map(reading => reading.drawId)); });
   window.addEventListener('tarot:changed', () => synchronize(true));
   window.addEventListener('astro:changed', () => synchronize(true));
+  window.addEventListener('explore:changed', () => synchronize(true));
+  $('summary-explore-clear')?.addEventListener('click', () => window.EXPLORE_SESSION?.clear());
   $('summary-consent').addEventListener('change', () => {
     if (!$('summary-consent').checked) invalidate('Votre accord a été retiré. Aucun nouvel envoi ne sera effectué sans votre accord.');
     else syncButton();
@@ -177,6 +185,7 @@
       readings: readings.map(reading => ({question: reading.question, answers: {...reading.answers}, spread: reading.spread, cardIds: [...reading.cardIds]}))
     };
     if (astrology) payload.astrology = {...astrology};
+    if (Object.keys(explorations).length) payload.explorations = explorations;
     return payload;
   }
 
@@ -188,7 +197,7 @@
   }
 
   $('summary-request').addEventListener('click', async () => {
-    if (!available || busy || (!readings.length && !astrology) || !$('summary-consent').checked) return;
+    if (!available || busy || (!readings.length && !astrology && !Object.keys(explorations).length) || !$('summary-consent').checked) return;
     const payload = requestPayload();
     const submittedSignature = JSON.stringify(payload);
     const version = ++requestVersion;

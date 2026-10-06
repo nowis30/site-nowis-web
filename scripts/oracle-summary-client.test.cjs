@@ -49,6 +49,8 @@ async function setup({available = true, storage = new Map(), reading = emptyRead
   const window = new Target();
   window.TAROT_SESSION = {getReading: () => state.reading};
   window.ASTRO_SESSION = {getContext: () => state.astrology};
+  let explorations = {};
+  window.EXPLORE_SESSION = {getContext:()=>plain(explorations),set:(value)=>{explorations=plain(value);window.dispatchEvent(new Event('explore:changed'));},clear:()=>{explorations={};window.dispatchEvent(new Event('explore:changed'));}};
   const calls = [];
   const posts = [];
   const timers = new Map();
@@ -87,6 +89,25 @@ async function setup({available = true, storage = new Map(), reading = emptyRead
     }
   };
 }
+
+test('explorations alone require consent, stay out of storage and invalidate stale replies', async()=>{
+  const page=await setup();
+  const value={numerology:{birthDate:'1980-10-22',date:'2026-10-06',name:'Fiction Exemple'}};
+  page.window.EXPLORE_SESSION.set(value);
+  assert.equal(page.element('summary-request').disabled,true);
+  assert.ok(page.element('summary-explore-status').textContent.includes('Numérologie'));
+  await page.consent(true);
+  const pending=page.request();
+  const request=page.posts[0];
+  assert.deepEqual(JSON.parse(request.options.body).explorations,value);
+  assert.ok(!JSON.stringify(page.saved()).includes('Fiction'));
+  page.window.EXPLORE_SESSION.clear();
+  assert.equal(request.options.signal.aborted,true);
+  assert.equal(page.element('summary-consent').checked,false);
+  await page.finish(request);await pending;
+  assert.equal(page.element('summary-result').hidden,true);
+  assert.equal(page.element('summary-request').disabled,true);
+});
 
 test('loading performs only a capability GET, and consent cannot authorize empty or partly revealed input', async () => {
   const page = await setup();

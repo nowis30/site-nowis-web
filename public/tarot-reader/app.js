@@ -166,16 +166,14 @@
   }));
   $('deck').addEventListener('change',resetDraw);
   function setView(view) {
-    const dictionary=view==='dictionary',sky=view==='astro';$('reading-view').hidden=dictionary||sky;$('dictionary-view').hidden=!dictionary;
-    if($('astro-view'))$('astro-view').hidden=!sky;
-    if($('oracle-ritual'))$('oracle-ritual').hidden=sky;
-    $('tab-reading').setAttribute('aria-pressed',String(!dictionary&&!sky));$('tab-dictionary').setAttribute('aria-pressed',String(dictionary));
-    $('tab-astro')?.setAttribute('aria-pressed',String(sky));
+    ['reading','dictionary','astro','explore'].forEach(key=>{if($(key+'-view'))$(key+'-view').hidden=key!==view; $('tab-'+key)?.setAttribute('aria-pressed',String(key===view));});
+    if($('oracle-ritual'))$('oracle-ritual').hidden=view!=='reading';
   }
   window.ORACLE_VIEW=Object.freeze({show:setView});
   $('tab-reading').addEventListener('click',()=>setView('reading'));
   $('tab-dictionary').addEventListener('click',()=>setView('dictionary'));
   $('tab-astro')?.addEventListener('click',()=>setView('astro'));
+  $('tab-explore')?.addEventListener('click',()=>setView('explore'));
   function notifyParentScroll(target) {
     if(window.parent&&window.parent!==window&&window.parent.postMessage)window.parent.postMessage({type:'nowis-reader-scroll',target},location.origin);
   }
