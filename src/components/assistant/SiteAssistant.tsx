@@ -1,13 +1,46 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Bot, Compass, Lightbulb, Send, X } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { buildAuthRedirect, sanitizeNextPath } from '@/lib/safe-next';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
 };
+
+type AssistantQuota = {
+  limit: number;
+  remaining: number;
+  resetAt: string;
+  timeZone: string;
+};
+
+type ChatResponse = {
+  reply?: string;
+  error?: string;
+  code?: string;
+  quota?: AssistantQuota;
+};
+
+const dailyLimitMessage =
+  'Vous avez atteint la limite de 20 commandes pour aujourd’hui. Vous pourrez envoyer une nouvelle question à minuit, heure de Toronto. Les raccourcis restent disponibles.';
+
+function readQuota(value: AssistantQuota | undefined): AssistantQuota | null {
+  if (
+    !value ||
+    value.limit !== 20 ||
+    !Number.isInteger(value.remaining) ||
+    value.remaining < 0 ||
+    value.remaining > value.limit ||
+    !Number.isFinite(Date.parse(value.resetAt)) ||
+    value.timeZone !== 'America/Toronto'
+  ) return null;
+  return value;
+}
 
 const quickLinks = [
   { label: 'Découvrir les ateliers', href: '/ateliers' },
@@ -24,15 +57,89 @@ const initialMessage: ChatMessage = {
 };
 
 export function SiteAssistant() {
+  const { user } = useAuth();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [ideaMode, setIdeaMode] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [quota, setQuota] = useState<AssistantQuota | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(false);
+  const [quotaRefresh, setQuotaRefresh] = useState(0);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [authRequired, setAuthRequired] = useState(false);
   const [idea, setIdea] = useState('');
   const [visitorEmail, setVisitorEmail] = useState('');
   const [ideaStatus, setIdeaStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const logRef = useRef<HTMLDivElement>(null);
+  const requestInFlight = useRef(false);
+
+  const dailyLimitReached = quota?.remaining === 0;
+  const loginHref = buildAuthRedirect(sanitizeNextPath(pathname, '/'));
+
+  useEffect(() => {
+    if (!open) return;
+    const controller = new AbortController();
+    setQuotaLoading(true);
+    setQuota(null);
+    setChatError(null);
+
+    async function refreshQuota() {
+      try {
+        const response = await fetch('/api/site-assistant/chat', {
+          cache: 'no-store',
+          credentials: 'same-origin',
+          signal: controller.signal,
+        });
+        const data = (await response.json()) as ChatResponse;
+        if (controller.signal.aborted) return;
+        if (!response.ok && data.code === 'AUTH_REQUIRED') {
+          setAuthRequired(true);
+          setChatError('Connectez-vous pour utiliser vos 20 commandes par jour.');
+          return;
+        }
+        const currentQuota = readQuota(data.quota);
+        if (!response.ok || !currentQuota) {
+          setChatError(data.error || 'Le compteur est indisponible. Votre prochaine question sera vérifiée par le serveur.');
+          return;
+        }
+        setAuthRequired(false);
+        setQuota(currentQuota);
+      } catch {
+        if (!controller.signal.aborted) {
+          setChatError('Le compteur est indisponible. Votre prochaine question sera vérifiée par le serveur.');
+        }
+      } finally {
+        if (!controller.signal.aborted) setQuotaLoading(false);
+      }
+    }
+
+    void refreshQuota();
+    return () => controller.abort();
+  }, [open, user?.id, pathname, quotaRefresh]);
+
+  useEffect(() => {
+    if (!open || !quota) return;
+    const delay = Math.max(0, Date.parse(quota.resetAt) - Date.now());
+    const timer = window.setTimeout(() => setQuotaRefresh((value) => value + 1), delay + 100);
+    return () => window.clearTimeout(timer);
+  }, [open, quota]);
+
+  useEffect(() => {
+    if (!open) return;
+    function refreshOnReturn() {
+      if (document.visibilityState === 'visible' && !requestInFlight.current) {
+        setQuotaRefresh((value) => value + 1);
+      }
+    }
+    window.addEventListener('focus', refreshOnReturn);
+    document.addEventListener('visibilitychange', refreshOnReturn);
+    return () => {
+      window.removeEventListener('focus', refreshOnReturn);
+      document.removeEventListener('visibilitychange', refreshOnReturn);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -50,40 +157,63 @@ export function SiteAssistant() {
   async function sendMessage(event: React.FormEvent) {
     event.preventDefault();
     const content = input.trim();
-    if (!content || loading) return;
+    if (!content || loading || quotaLoading || dailyLimitReached || authRequired) return;
 
     const nextMessages = [...messages, { role: 'user' as const, content }];
     setMessages(nextMessages);
     setInput('');
     setLoading(true);
+    requestInFlight.current = true;
+    setChatError(null);
 
     try {
+      const requestBody = {
+        messages: nextMessages.slice(-8).map((message) => ({
+          ...message,
+          content: message.content.slice(0, 1200),
+        })),
+        pathname: window.location.pathname,
+      };
+      // Bound UTF-8 bytes as well as characters, preserving the latest question.
+      while (
+        requestBody.messages.length > 1 &&
+        new TextEncoder().encode(JSON.stringify(requestBody)).byteLength > 16_384
+      ) {
+        requestBody.messages.shift();
+      }
       const response = await fetch('/api/site-assistant/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages, pathname: window.location.pathname }),
+        credentials: 'same-origin',
+        body: JSON.stringify(requestBody),
       });
-      const data = (await response.json()) as { reply?: string };
+      const data = (await response.json()) as ChatResponse;
+      const currentQuota = readQuota(data.quota);
+      if (currentQuota) setQuota(currentQuota);
+      if (!response.ok) {
+        if (data.code === 'AUTH_REQUIRED') {
+          setAuthRequired(true);
+          setQuota(null);
+        }
+        setChatError(data.code === 'ASSISTANT_DAILY_LIMIT' ? dailyLimitMessage : data.error || 'Votre question n’a pas pu être traitée. Vous pouvez réessayer ou utiliser les raccourcis.');
+        return;
+      }
+      if (!data.reply?.trim()) {
+        setChatError('Le service n’a pas fourni de réponse. Vous pouvez réessayer ou utiliser les raccourcis.');
+        return;
+      }
       setMessages((current) => [
         ...current,
         {
           role: 'assistant',
-          content:
-            data.reply ||
-            'Je peux toujours vous guider avec les raccourcis ci-dessous. Pour une demande précise, la page Contact est aussi disponible.',
+          content: data.reply!,
         },
       ]);
     } catch {
-      setMessages((current) => [
-        ...current,
-        {
-          role: 'assistant',
-          content:
-            'Je n’arrive pas à joindre le service IA pour le moment. Les raccourcis de navigation restent disponibles.',
-        },
-      ]);
+      setChatError('Je n’arrive pas à joindre le service IA pour le moment. Les raccourcis de navigation restent disponibles.');
     } finally {
       setLoading(false);
+      requestInFlight.current = false;
     }
   }
 
@@ -258,6 +388,24 @@ export function SiteAssistant() {
               </div>
 
               <div className="border-t border-[rgba(124,78,46,0.1)] bg-[#fffaf5] p-3">
+                <p className="mb-2 text-xs leading-4 text-[color:var(--site-muted)]" role="status" aria-live="polite">
+                  20 commandes par jour par compte connecté. Remise à zéro à minuit (heure de Toronto).
+                  {quotaLoading ? ' Vérification du compteur…' : quota ? ` ${quota.remaining} commande${quota.remaining > 1 ? 's' : ''} restante${quota.remaining > 1 ? 's' : ''}.` : ''}
+                </p>
+                {dailyLimitReached || chatError ? (
+                  <p className="mb-3 rounded-xl bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900" role="alert">
+                    {dailyLimitReached ? dailyLimitMessage : chatError}
+                  </p>
+                ) : null}
+                {authRequired ? (
+                  <Link
+                    href={loginHref}
+                    onClick={() => setOpen(false)}
+                    className="mb-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[color:var(--site-heading)] px-3 text-sm font-semibold text-[#fffdf9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
+                  >
+                    Se connecter pour poser une question
+                  </Link>
+                ) : null}
                 <div className="mb-3 grid grid-cols-2 gap-2" aria-label="Raccourcis de navigation">
                   {quickLinks.map((link) => (
                     <Link
@@ -287,12 +435,13 @@ export function SiteAssistant() {
                     }}
                     rows={1}
                     maxLength={1000}
+                    disabled={loading || quotaLoading || dailyLimitReached || authRequired}
                     placeholder="Où puis-je trouver…?"
                     className="min-h-12 max-h-28 flex-1 resize-none rounded-2xl border border-[rgba(124,78,46,0.24)] bg-white px-4 py-3 text-base text-[color:var(--site-heading)] outline-none placeholder:text-[#76675b] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20"
                   />
                   <button
                     type="submit"
-                    disabled={!input.trim() || loading}
+                    disabled={!input.trim() || loading || quotaLoading || dailyLimitReached || authRequired}
                     className="grid min-h-12 min-w-12 place-items-center rounded-2xl bg-[color:var(--site-heading)] text-[#fffdf9] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)] focus-visible:ring-offset-2"
                     aria-label="Envoyer la question"
                   >

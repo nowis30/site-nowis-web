@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { submitSongRequestFromWebsite } from '@/lib/actions/song-request';
+import { SongRequestSessionError, submitSongRequestFromWebsite } from '@/lib/actions/song-request';
 import { buildClientPortalUrl } from '@/lib/client-portal';
 import { SongRequestInput, songRequestPortalInputSchema } from '@/lib/validators/song-request';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
@@ -89,6 +89,9 @@ export async function POST(request: NextRequest) {
       request,
     );
   } catch (error) {
+    if (error instanceof SongRequestSessionError) {
+      return applyCorsHeaders(NextResponse.json({ error: 'Session client invalide. Reconnectez-vous.', code: 'AUTH_REQUIRED' }, { status: 401 }), request);
+    }
     if (error instanceof z.ZodError) {
       return applyCorsHeaders(
         NextResponse.json(

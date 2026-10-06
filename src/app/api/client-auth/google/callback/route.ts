@@ -12,7 +12,8 @@ import {
   readCookieValue,
   sanitizeGoogleNextPath,
 } from '@/features/client-portal/auth/google';
-import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
+import { createClientPortalSessionCookie, getClientPortalSessionFromCookieHeader, signClientPortalSession } from '@/features/client-portal/auth/session';
+import { canLinkExistingGoogleUser } from '@/features/client-portal/auth/google-link-security';
 import { isClientBillingComplete } from '@/lib/client-billing';
 import { sendPortalEventNotificationEmail } from '@/lib/email-service';
 
@@ -71,6 +72,7 @@ export async function GET(request: NextRequest) {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   const cookieHeader = request.headers.get('cookie');
+  const currentPortalSession = getClientPortalSessionFromCookieHeader(cookieHeader || undefined);
   const stateCookie = readCookieValue(cookieHeader, CLIENT_GOOGLE_STATE_COOKIE_NAME);
   const nextCookieValue = readCookieValue(cookieHeader, CLIENT_GOOGLE_NEXT_COOKIE_NAME);
   let nextPath = '/client/dashboard';
@@ -165,6 +167,7 @@ export async function GET(request: NextRequest) {
           billingState: string | null;
           billingPostalCode: string | null;
           billingCountry: string | null;
+          deletedAt: Date | null;
         } | null;
       };
     } | null = null;
@@ -198,14 +201,14 @@ export async function GET(request: NextRequest) {
       if (linkedAccount) {
         const linkedUser = linkedAccount.user;
 
-        if (linkedUser.role !== UserRole.PORTAL_USER || !linkedUser.isActive) {
+        if (linkedUser.role !== UserRole.PORTAL_USER || !linkedUser.isActive || linkedUser.contact?.deletedAt) {
           throw new Error('GOOGLE_ROLE_MISMATCH');
         }
 
         let contact = linkedUser.contact;
         if (!contact) {
           const existingContact = await tx.contact.findFirst({
-            where: { email: { equals: email, mode: 'insensitive' } },
+            where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
           });
 
           contact = existingContact
@@ -296,12 +299,18 @@ export async function GET(request: NextRequest) {
         throw new Error('GOOGLE_ACCOUNT_DISABLED');
       }
 
+      // Do not silently merge a verified Google identity into an unverified password signup.
+      // The existing account must already be authenticated in this browser and match its dossier.
+      if (existingUser && !canLinkExistingGoogleUser(existingUser, currentPortalSession)) {
+        throw new Error('GOOGLE_LINK_LOGIN_REQUIRED');
+      }
+
       let user = existingUser;
       let contact = existingUser?.contact || null;
 
       if (!user) {
         const existingContact = await tx.contact.findFirst({
-          where: { email: { equals: email, mode: 'insensitive' } },
+          where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
         });
 
         contact = existingContact
@@ -370,7 +379,7 @@ export async function GET(request: NextRequest) {
       } else {
         if (!contact) {
           const existingContact = await tx.contact.findFirst({
-            where: { email: { equals: email, mode: 'insensitive' } },
+            where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
           });
 
           contact = existingContact
@@ -500,6 +509,8 @@ export async function GET(request: NextRequest) {
         ? 'google-role-mismatch'
         : error instanceof Error && error.message === 'GOOGLE_ACCOUNT_DISABLED'
           ? 'google-account-disabled'
+          : error instanceof Error && error.message === 'GOOGLE_LINK_LOGIN_REQUIRED'
+            ? 'google-link-login-required'
           : error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002'
             ? 'google-account-conflict'
             : 'google-auth-failed';

@@ -30,7 +30,10 @@ const nextConfig = {
         hostname: '**.public.blob.vercel-storage.com',
       },
     ],
-    unoptimized: false,
+    // Disable the vulnerable AVIF decoding path in this unsupported Next.js 14 release.
+    // GHSA-2xp9-vwfh-vxw4: https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4
+    // Re-enable only after migrating to a supported, patched Next.js release.
+    unoptimized: true,
   },
   // Proxy /games/* and /audio/* vers S3 (évite les problèmes cross-origin dans les iframes)
   rewrites: async () => {

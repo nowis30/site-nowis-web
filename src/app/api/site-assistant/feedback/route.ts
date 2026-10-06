@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendEmail } from '@/lib/email-service';
+import { consumeContactRateLimit } from '@/lib/contact-rate-limit';
+import { getTrustedClientIp } from '@/lib/trusted-client-ip';
+import { publicInquiryOriginAllowed, readPublicInquiryBody } from '@/lib/public-inquiry-security';
+import { createHash } from 'node:crypto';
 
 export const runtime = 'nodejs';
 
@@ -11,11 +15,6 @@ const feedbackSchema = z.object({
   website: z.string().max(0).optional(),
 });
 
-type RateEntry = { count: number; resetAt: number };
-const globalRateStore = globalThis as typeof globalThis & { __nowisFeedbackRate?: Map<string, RateEntry> };
-const rateStore = globalRateStore.__nowisFeedbackRate || new Map<string, RateEntry>();
-globalRateStore.__nowisFeedbackRate = rateStore;
-
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, '&amp;')
@@ -25,26 +24,20 @@ function escapeHtml(value: string) {
     .replace(/'/g, '&#039;');
 }
 
-function getClientKey(request: Request) {
-  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  return forwarded || request.headers.get('x-real-ip') || 'anonymous';
-}
-
-function isRateLimited(key: string) {
-  const now = Date.now();
-  const existing = rateStore.get(key);
-  if (!existing || existing.resetAt <= now) {
-    rateStore.set(key, { count: 1, resetAt: now + 60 * 60 * 1000 });
-    return false;
-  }
-  if (existing.count >= 5) return true;
-  existing.count += 1;
-  return false;
-}
-
 export async function POST(request: Request) {
+  if (!publicInquiryOriginAllowed(request.headers.get('origin')) || request.headers.get('sec-fetch-site') === 'cross-site') {
+    return NextResponse.json({ error: 'Cette demande doit provenir du site NOWIS.' }, { status: 403 });
+  }
+  if (request.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() !== 'application/json') {
+    return NextResponse.json({ error: 'Format de demande invalide.' }, { status: 415 });
+  }
+  let input: unknown;
+  try { input = JSON.parse(await readPublicInquiryBody(request)); }
+  catch (error) {
+    return NextResponse.json({ error: 'Suggestion invalide ou trop longue.' }, { status: error instanceof RangeError ? 413 : 400 });
+  }
   try {
-    const parsed = feedbackSchema.safeParse(await request.json());
+    const parsed = feedbackSchema.safeParse(input);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Suggestion invalide.' }, { status: 400 });
     }
@@ -53,9 +46,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    const key = getClientKey(request);
-    if (isRateLimited(key)) {
-      return NextResponse.json({ error: 'Trop de suggestions. Réessayez plus tard.' }, { status: 429 });
+    const key = createHash('sha256').update(getTrustedClientIp(request.headers) || 'unknown').digest('hex');
+    const limit = await consumeContactRateLimit({ scope: 'site-assistant:feedback', identifier: key, max: 5, windowMs: 60 * 60 * 1000 });
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Trop de suggestions. Réessayez plus tard.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds), 'Cache-Control': 'no-store' } });
     }
 
     const recipient =
@@ -95,13 +90,13 @@ export async function POST(request: Request) {
     });
 
     if (!result.success) {
-      console.error('Site feedback email failed:', result.error);
+      console.error('[SITE_FEEDBACK] Email unavailable');
       return NextResponse.json({ error: 'Courriel non disponible.' }, { status: 503 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Site feedback error:', error);
-    return NextResponse.json({ error: 'Impossible d’envoyer la suggestion.' }, { status: 500 });
+    console.error('[SITE_FEEDBACK] Service unavailable');
+    return NextResponse.json({ error: 'Impossible d’envoyer la suggestion.' }, { status: 503 });
   }
 }

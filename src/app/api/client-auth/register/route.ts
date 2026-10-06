@@ -3,12 +3,15 @@ import { Prisma, UserRole } from '@prisma/client';
 import { ZodError } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
-import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
+import { createClientPortalSessionCookie, getClientPortalSessionFromCookieHeader, signClientPortalSession } from '@/features/client-portal/auth/session';
+import { hasVerifiedContactRegistration } from '@/features/client-portal/auth/registration-security';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
 import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
 import { sanitizeNextPath } from '@/lib/safe-next';
 import { ensureCrmTask } from '@/features/crm/server/task-automation';
 import { sendPortalEventNotificationEmail } from '@/lib/email-service';
+
+class ContactEmailVerificationRequired extends Error {}
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,11 +55,18 @@ export async function POST(request: NextRequest) {
     }
 
     const passwordHash = await hashPassword(payload.password);
+    const verifiedSession = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') || undefined);
 
     const result = await prisma.$transaction(async (tx) => {
       const existingContact = await tx.contact.findFirst({
         where: { email: { equals: email, mode: 'insensitive' } },
       });
+
+      // An email address in a public signup is not proof of ownership of the existing CRM dossier.
+      // A secure emailed login link or verified Google login provides the matching portal session.
+      if (existingContact && !hasVerifiedContactRegistration(existingContact, verifiedSession)) {
+        throw new ContactEmailVerificationRequired();
+      }
 
       const baseNotes = [
         existingContact?.notes?.trim(),
@@ -168,6 +178,16 @@ export async function POST(request: NextRequest) {
     response.headers.append('Set-Cookie', createClientPortalSessionCookie(sessionToken));
     return response;
   } catch (error) {
+    if (error instanceof ContactEmailVerificationRequired) {
+      return NextResponse.json(
+        {
+          error: 'Cette adresse est déjà liée à un dossier client. Ouvrez le lien sécurisé envoyé par courriel avant de définir votre mot de passe. Vous pouvez aussi utiliser Google pour accéder au portail.',
+          code: 'EMAIL_VERIFICATION_REQUIRED',
+          suggestedAction: 'request-link',
+        },
+        { status: 403, headers: { 'Cache-Control': 'no-store' } },
+      );
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json(
         { error: 'Un compte existe deja avec cet email.', code: 'EMAIL_EXISTS', suggestedAction: 'login' },

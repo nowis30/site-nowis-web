@@ -33,6 +33,7 @@ const externalErrorMessages: Record<string, string> = {
   'google-role-mismatch': 'Cette adresse est déjà utilisée pour un compte interne. Utilisez la connexion CRM.',
   'google-account-disabled': 'Ce compte est désactivé. Contactez le support.',
   'google-account-conflict': 'Un conflit de connexion Google est survenu. Contactez le support.',
+  'google-link-login-required': 'Un accès existe déjà pour cette adresse. Connectez-vous d’abord à ce compte avec votre mot de passe, puis revenez ici pour associer Google. Si vous ne l’avez pas créé, utilisez « Mot de passe oublié » ou contactez NOWIS.',
 };
 
 export default function ConnexionPage() {

@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       name: true,
-      email: true,
       rating: true,
       comment: true,
       context: true,

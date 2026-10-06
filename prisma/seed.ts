@@ -4,6 +4,14 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Ce seed destructif est réservé au développement.');
+  }
+  const demoPassword = process.env.CRM_SEED_PASSWORD?.trim();
+  if (!demoPassword || demoPassword.length < 12 || Buffer.byteLength(demoPassword, 'utf8') > 72) {
+    throw new Error('Définissez CRM_SEED_PASSWORD avec 12 caractères minimum et 72 octets maximum avant le seed de développement.');
+  }
+
   await prisma.songRequest.deleteMany();
   await prisma.activity.deleteMany();
   await prisma.appointment.deleteMany();
@@ -17,7 +25,6 @@ async function main() {
   await prisma.contact.deleteMany();
   await prisma.user.deleteMany();
 
-  const demoPassword = '4667@Nowis';
   const passwordHash = await bcrypt.hash(demoPassword, 10);
 
   const admin = await prisma.user.create({
@@ -299,7 +306,6 @@ async function main() {
 
   console.log('Seed generated successfully');
   console.log('Demo accounts: admin@crm.local, assistant@crm.local, client@crm.local');
-  console.log(`Demo password: ${demoPassword}`);
 }
 
 main()

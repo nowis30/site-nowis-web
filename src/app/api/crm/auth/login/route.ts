@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { createHash } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { buildErrorPayload, ensureAuthConfig, logApiDiagnostic } from '@/lib/api-diagnostics';
 import { prisma } from '@/lib/prisma';
 import { createCrmOtpCookie, createCrmSessionCookie, signCrmOtpToken, signCrmToken } from '@/features/crm/auth/session';
 import { generateSmsOtpCode, getCrmOtpTargetPhone, sendSmsMessage } from '@/lib/sms';
+import { consumeContactRateLimit } from '@/lib/contact-rate-limit';
+import { getTrustedClientIp } from '@/lib/trusted-client-ip';
 
 function errorResponse(
   code: 'DB_INIT' | 'DB_SCHEMA' | 'CONFIG_MISSING' | 'AUTH_FAIL' | 'USER_DATA_INVALID' | 'UNKNOWN',
@@ -60,6 +63,21 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return errorResponse('UNKNOWN', 'Email and password are required', 400);
+    }
+
+    const accountLimit = await consumeContactRateLimit({
+      scope: 'crm:login:account', identifier: createHash('sha256').update(email).digest('hex'),
+      max: 10, windowMs: 15 * 60 * 1000,
+    });
+    const ipLimit = accountLimit.allowed ? await consumeContactRateLimit({
+      scope: 'crm:login:ip', identifier: createHash('sha256').update(getTrustedClientIp(request.headers) || 'unknown').digest('hex'),
+      max: 30, windowMs: 15 * 60 * 1000,
+    }) : accountLimit;
+    if (!accountLimit.allowed || !ipLimit.allowed) {
+      const blocked = !accountLimit.allowed ? accountLimit : ipLimit;
+      return NextResponse.json(buildErrorPayload('AUTH_FAIL', 'Trop de tentatives. Réessayez dans quelques minutes.'), {
+        status: 429, headers: { 'Retry-After': String(blocked.retryAfterSeconds), 'Cache-Control': 'no-store' },
+      });
     }
 
     let user;

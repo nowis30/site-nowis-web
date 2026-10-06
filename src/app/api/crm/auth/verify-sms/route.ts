@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
+import { consumeContactRateLimit } from '@/lib/contact-rate-limit';
 import {
   createCrmSessionCookie,
   clearCrmOtpCookie,
   getOtpTokenFromCookie,
   signCrmToken,
   verifyCrmOtpToken,
+  matchesCrmOtpCode,
 } from '@/features/crm/auth/session';
 
 export async function POST(request: NextRequest) {
@@ -12,7 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const code = String(body?.code || '').trim();
 
-    if (!code) {
+    if (!/^\d{6}$/.test(code)) {
       return NextResponse.json({ error: 'Code SMS requis' }, { status: 400 });
     }
 
@@ -26,7 +29,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session OTP invalide ou expirée.' }, { status: 401 });
     }
 
-    if (otpPayload.otpCode !== code) {
+    const attempts = await consumeContactRateLimit({
+      scope: 'crm:otp', identifier: createHash('sha256').update(otpPayload.sub).digest('hex'),
+      max: 5, windowMs: 10 * 60 * 1000,
+    });
+    if (!attempts.allowed) {
+      return NextResponse.json({ error: 'Trop de tentatives de code SMS. Réessayez dans quelques minutes.' }, {
+        status: 429, headers: { 'Retry-After': String(attempts.retryAfterSeconds), 'Cache-Control': 'no-store' },
+      });
+    }
+
+    if (!matchesCrmOtpCode(otpPayload, code)) {
       return NextResponse.json({ error: 'Code SMS invalide' }, { status: 401 });
     }
 
@@ -50,7 +63,9 @@ export async function POST(request: NextRequest) {
     response.headers.append('Set-Cookie', clearCrmOtpCookie());
     return response;
   } catch (error) {
-    console.error('crm auth verify-sms error', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    console.error('crm auth verify-sms error', error instanceof Error ? error.name : 'UnknownError');
+    return NextResponse.json({ error: 'Vérification momentanément indisponible. Réessayez plus tard.' }, {
+      status: 503, headers: { 'Cache-Control': 'no-store' },
+    });
   }
 }

@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!user) {
+    if (!user || user.contact?.deletedAt) {
       return errorResponse('AUTH_FAIL', 'Invalid credentials', 401);
     }
 

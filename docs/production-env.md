@@ -67,6 +67,8 @@ Ce document liste les variables utiles pour mettre le CRM en production sans cha
 
 ## Variables de depannage a eviter en production
 
+`CRM_SEED_PASSWORD` sert uniquement au seed de développement, doit avoir au moins 12 caractères et au plus 72 octets, et n'est jamais affiché dans les logs. Le seed supprime les données existantes et refuse de s'exécuter avec `NODE_ENV=production`.
+
 | Variable | Statut | Ou la mettre | Role | Danger | Exemple |
 |---|---|---|---|---|---|
 | `CRM_ALLOW_EMERGENCY_LOGIN` | A laisser `false` ou absent | Vercel / Render | Autorise le fallback d'urgence CRM | Active un bypass si la base est indisponible | `false` |

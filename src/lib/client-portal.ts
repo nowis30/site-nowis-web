@@ -10,7 +10,7 @@ export interface ClientPortalTokenPayload {
 function getClientPortalSecret() {
   const secret = process.env.CLIENT_PORTAL_JWT_SECRET || process.env.JWT_SECRET;
   if (process.env.NODE_ENV === 'production' && !secret) {
-    console.warn('[Portal Legacy] Secrets JWT manquants en production. Fallback temporaire active.');
+    throw new Error('CLIENT_PORTAL_JWT_SECRET ou JWT_SECRET manquant en production.');
   }
   return secret || 'dev-only-portal-secret-must-change';
 }
@@ -36,8 +36,15 @@ export function signClientPortalToken(payload: Omit<ClientPortalTokenPayload, 's
 
 export function verifyClientPortalToken(token: string): ClientPortalTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalTokenPayload;
-    return decoded.scope === 'song-request-portal' ? decoded : null;
+    const decoded = jwt.verify(token, getClientPortalSecret(), { algorithms: ['HS256'] });
+    if (typeof decoded === 'string' || decoded.scope !== 'song-request-portal' ||
+      typeof decoded.contactId !== 'string' || !decoded.contactId.trim() ||
+      typeof decoded.email !== 'string' || !decoded.email.trim() ||
+      typeof decoded.fullName !== 'string' || !decoded.fullName.trim() ||
+      typeof decoded.exp !== 'number') {
+      return null;
+    }
+    return decoded as ClientPortalTokenPayload;
   } catch {
     return null;
   }

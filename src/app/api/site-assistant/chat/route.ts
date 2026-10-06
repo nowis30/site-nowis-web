@@ -1,11 +1,8 @@
-import { NextResponse } from 'next/server';
+import { createAssistantHandlers } from '@/lib/site-assistant-handler';
+import { getAssistantIdentity } from '@/lib/site-assistant-identity';
+import { consumeAssistantQuota, readAssistantQuota } from '@/lib/site-assistant-quota';
 
 export const runtime = 'nodejs';
-
-type IncomingMessage = {
-  role?: unknown;
-  content?: unknown;
-};
 
 type AIResponse = {
   output?: Array<{
@@ -113,40 +110,9 @@ async function requestAI(options: { transcript: string; pathname: string }) {
   return extractText(data) || null;
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as { messages?: IncomingMessage[]; pathname?: unknown };
-    const cleanMessages = Array.isArray(body.messages)
-      ? body.messages
-          .slice(-8)
-          .map((message) => ({
-            role: message.role === 'assistant' ? 'assistant' : 'user',
-            content: typeof message.content === 'string' ? message.content.trim().slice(0, 1200) : '',
-          }))
-          .filter((message) => message.content.length > 0)
-      : [];
+const handlers = createAssistantHandlers({ identity: getAssistantIdentity, read: readAssistantQuota,
+  consume: consumeAssistantQuota, reply: requestAI, fallback: fallbackReply });
 
-    const latestUserMessage = [...cleanMessages].reverse().find((message) => message.role === 'user')?.content || '';
-    if (!latestUserMessage) {
-      return NextResponse.json({ error: 'Message requis.' }, { status: 400 });
-    }
-
-    const pathname = typeof body.pathname === 'string' ? body.pathname.slice(0, 160) : '/';
-    const transcript = cleanMessages
-      .map((message) => `${message.role === 'assistant' ? 'Assistant' : 'Visiteur'}: ${message.content}`)
-      .join('\n');
-
-    const reply = await requestAI({ transcript, pathname });
-    if (reply) {
-      return NextResponse.json({ reply, mode: 'ai' });
-    }
-
-    return NextResponse.json({ reply: fallbackReply(latestUserMessage), mode: 'navigation' });
-  } catch (error) {
-    console.error('Site assistant error:', error);
-    return NextResponse.json(
-      { reply: 'Je peux toujours vous aider avec les raccourcis de navigation sous la conversation.', mode: 'navigation' },
-      { status: 200 },
-    );
-  }
-}
+export const dynamic = 'force-dynamic';
+export const GET = handlers.GET;
+export const POST = handlers.POST;

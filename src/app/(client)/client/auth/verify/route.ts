@@ -13,23 +13,24 @@ export async function GET(request: NextRequest) {
   // Vérifier que le contact existe encore et n'est pas archivé
   const contact = await prisma.contact.findUnique({
     where: { id: payload.contactId },
-    select: { id: true, email: true },
+    select: { id: true, email: true, fullName: true, deletedAt: true, userAccount: { select: { isActive: true } } },
   });
 
-  if (!contact) {
+  if (!contact || contact.deletedAt || contact.userAccount?.isActive === false || contact.email?.trim().toLowerCase() !== payload.email.trim().toLowerCase()) {
     return NextResponse.redirect(new URL('/connexion?error=account-not-found', request.url));
   }
 
   const sessionToken = signClientPortalSession({
     contactId: payload.contactId,
     tenantId: payload.tenantId,
-    email: payload.email,
-    fullName: payload.fullName,
+    email: contact.email,
+    fullName: contact.fullName,
   });
 
   return NextResponse.redirect(new URL('/client/dashboard', request.url), {
     headers: {
       'Set-Cookie': createClientPortalSessionCookie(sessionToken),
+      'Cache-Control': 'no-store',
     },
   });
 }

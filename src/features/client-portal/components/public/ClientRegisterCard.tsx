@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { LockKeyhole, Mail, MapPin, MessageSquare, Phone, ShieldCheck, User2 } from 'lucide-react';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
+import { ExistingContactVerification } from '@/features/client-portal/components/ExistingContactVerification';
 
 export function ClientRegisterCard() {
   const router = useRouter();
@@ -20,9 +21,11 @@ export function ClientRegisterCard() {
   const [error, setError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
   const [suggestLogin, setSuggestLogin] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
   function updateField(name: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
+    if (name === 'email') setVerificationEmail(null);
   }
 
   async function submit(event: React.FormEvent) {
@@ -30,6 +33,7 @@ export function ClientRegisterCard() {
     setError(null);
     setConfirmation(null);
     setSuggestLogin(false);
+    setVerificationEmail(null);
 
     const parsed = clientRegisterSchema.safeParse(form);
     if (!parsed.success) {
@@ -46,6 +50,10 @@ export function ClientRegisterCard() {
       });
       const data = await response.json();
       if (!response.ok) {
+        if (response.status === 403 && data.code === 'EMAIL_VERIFICATION_REQUIRED') {
+          setVerificationEmail(parsed.data.email);
+          return;
+        }
         if (response.status === 409) {
           setSuggestLogin(true);
         }
@@ -129,6 +137,11 @@ export function ClientRegisterCard() {
 
           {confirmation ? <p className="md:col-span-2 rounded-xl border border-emerald-800/60 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200">{confirmation}</p> : null}
           {error ? <p className="md:col-span-2 rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-200">{error}</p> : null}
+          {verificationEmail ? (
+            <div className="md:col-span-2">
+              <ExistingContactVerification key={verificationEmail} email={verificationEmail} appearance="dark" />
+            </div>
+          ) : null}
           {suggestLogin ? (
             <p className="md:col-span-2 text-sm text-slate-300">
               Un compte existe deja avec cet email. <Link href="/client" className="font-semibold text-primary-300 hover:text-primary-200">Connectez-vous ici</Link>.
