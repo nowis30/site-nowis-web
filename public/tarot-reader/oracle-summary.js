@@ -190,9 +190,9 @@
   }
 
   function limitReply(value) {
-    let reply = value.trim().slice(0, 11000);
+    let reply = value.trim().slice(0, 24000);
     const words = [...reply.matchAll(/\S+/g)];
-    if (words.length > 800) reply = reply.slice(0, words[799].index + words[799][0].length);
+    if (words.length > 1600) reply = reply.slice(0, words[1599].index + words[1599][0].length);
     return reply;
   }
 
