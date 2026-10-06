@@ -1,3 +1,5 @@
+import { RevokePublicLinkForm } from '@/components/files/RevokePublicLinkForm';
+import { SecurityDiagnostics } from '@/components/files/SecurityDiagnostics';
 import { Prisma } from '@prisma/client';
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
@@ -6,7 +8,7 @@ import { BillingProfileManager } from '@/features/crm/components/settings/Billin
 import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
 export default async function SettingsPage() {
-  await requireCrmSession();
+  const session = await requireCrmSession();
 
   const billingProfile = await getBillingIssuerSnapshot();
 
@@ -47,6 +49,8 @@ export default async function SettingsPage() {
       />
 
       <WorkshopAvailabilityManager initialItems={items} />
+      {session.role === 'ADMIN' && <RevokePublicLinkForm />}
+      {session.role === 'ADMIN' && <SecurityDiagnostics />}
     </section>
   );
 }

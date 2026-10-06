@@ -1,3 +1,4 @@
+import { createPayPalWebhookReceipts } from '@/lib/server/paypal-webhook-receipts';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   extractPayPalInvoiceIdFromWebhookEvent,
@@ -45,6 +46,7 @@ export async function handlePayPalWebhookRequest(
     verifySignature?: typeof verifyPayPalWebhookSignature;
     extractInvoiceId?: typeof extractPayPalInvoiceIdFromWebhookEvent;
     syncStatus?: typeof syncPayPalInvoiceStatusByPayPalInvoiceId;
+    receipts?: ReturnType<typeof createPayPalWebhookReceipts>;
   } = {},
 ) {
   const verifySignature = deps.verifySignature ?? verifyPayPalWebhookSignature;
@@ -78,10 +80,16 @@ export async function handlePayPalWebhookRequest(
       return NextResponse.json({ ok: true, ignored: true, reason: 'missing_paypal_invoice_id' });
     }
 
-    await syncStatus(paypalInvoiceId, {
-      webhookEventType: eventType,
-      markWebhookAt: true,
-    });
+    const eventId = verification.event.id;
+    if (typeof eventId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(eventId)) return NextResponse.json({ error: 'Événement PayPal invalide.' }, { status: 400 });
+    const receipts = deps.receipts ?? createPayPalWebhookReceipts();
+    const claim = await receipts.claim(eventId);
+    if (claim.state === 'completed') return NextResponse.json({ ok: true, duplicate: true });
+    if (claim.state === 'pending') return NextResponse.json({ error: 'Événement déjà en cours. Réessayez.' }, { status: 503, headers: { 'Retry-After': '60' } });
+    try {
+      await syncStatus(paypalInvoiceId, { webhookEventType: eventType, markWebhookAt: true });
+      await receipts.complete(claim.owner);
+    } catch (error) { await receipts.release(claim.owner).catch(() => undefined); throw error; }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

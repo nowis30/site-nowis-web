@@ -79,7 +79,7 @@ test('HTTP file finalization is single-use, copies a checked staging version and
   const grants = new Map<string, any>();
   const copied: any[] = [], deleted: string[] = [];
   const finalBytes = new Map<string, string>();
-  let creates = 0, copyFails = false, stagedBytes = 'original-file';
+  let creates = 0, copyFails = false, stagedBytes = 'original-file', inspectedBytes = '%PDF-1.7\nend';
   let currentDocument: any = null;
   Object.assign(process.env, env);
   try {
@@ -109,8 +109,11 @@ test('HTTP file finalization is single-use, copies a checked staging version and
         finalBytes.set(command.input.Key, stagedBytes); return { CopyObjectResult: { ETag: '"checked-etag"' } };
       }
       if (command instanceof DeleteObjectCommand) { deleted.push(command.input.Key); finalBytes.delete(command.input.Key); return {}; }
-      if (command instanceof GetObjectCommand) return { ContentType: 'application/pdf', ContentLength: 12,
-        Body: { transformToWebStream: () => new ReadableStream({ start(controller) { controller.enqueue(Buffer.from('hello world!')); controller.close(); } }) } };
+      if (command instanceof GetObjectCommand) {
+        if (command.input.Range === 'bytes=0-4095') assert.equal(command.input.IfMatch, '"checked-etag"');
+        return { ContentType: 'application/pdf', ContentLength: 12,
+          Body: { transformToWebStream: () => new ReadableStream({ start(controller) { controller.enqueue(Buffer.from(inspectedBytes)); controller.close(); } }) } };
+      }
       throw new Error('Unexpected storage operation');
     }) as typeof originalSend;
     const session = await signClientPortalSession({ contactId, tenantId: null, email: 'owner@example.test', fullName: 'Owner' });
@@ -146,6 +149,13 @@ test('HTTP file finalization is single-use, copies a checked staging version and
     assert.ok(deleted.includes(copied[1].Key));
     assert.equal(deleted.includes(finalKey), false);
     assert.equal((await POST(request({ ...nextDescriptor, uploadIntent: nextIntent }))).status, 403);
+    const invalidDescriptor = { ...descriptor, storageKey: `client-files/${contactId}/staging/2026/10/invalid-content.pdf` };
+    const invalidIntent = await issueFileUploadIntent(actor, invalidDescriptor);
+    inspectedBytes = '<html>unsafe';
+    assert.equal((await POST(request({ ...invalidDescriptor, uploadIntent: invalidIntent }))).status, 400);
+    assert.equal(copied.length, 2, 'Mislabeled content is rejected before any copy or document creation');
+    assert.equal(creates, 1);
+    inspectedBytes = '%PDF-1.7\nend';
     const { GET: download } = await import('../src/app/api/client-portal/file-documents/[id]/download/route');
     const { DELETE: remove } = await import('../src/app/api/client-portal/file-documents/[id]/route');
     const fileRequest = (method = 'GET') => new NextRequest('https://nowis.store/api/client-portal/file-documents/isolated-doc/download',

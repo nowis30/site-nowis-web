@@ -13,6 +13,7 @@ import { CookieBanner } from '@/components/CookieBanner';
 import { ConsentGoogleTags } from '@/components/analytics/ConsentGoogleTags';
 import { buildMetadata } from '@/lib/seo';
 import { buildOrganizationSchema } from '@/lib/structured-data';
+import { PrivateNavigationBoundary } from '@/components/PrivateNavigationBoundary';
 
 const bodyFont = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
 const displayFont = Alfa_Slab_One({ subsets: ['latin'], weight: '400', variable: '--font-display', display: 'swap' });
@@ -49,10 +50,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       </head>
       <body className="bg-[#fcf7f1] text-[color:var(--site-text)] font-sans">
+        <PrivateNavigationBoundary>
         <UnregisterServiceWorker />
         <AuthProvider><RadioProvider><AppLayout>{children}</AppLayout></RadioProvider></AuthProvider>
         <ConsentGoogleTags measurementId={ga4MeasurementId} adsId={googleAdsId} />
         <CookieBanner />
+        </PrivateNavigationBoundary>
       </body>
     </html>
   );

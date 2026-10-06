@@ -1,3 +1,4 @@
+import { isPublicLinkRevoked } from '@/lib/public-link-revocation';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import {
@@ -18,6 +19,7 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ toke
           contact: {
             select: {
               id: true,
+              deletedAt: true,
               fullName: true,
               email: true,
               phone: true,
@@ -33,6 +35,7 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ toke
             contact: {
               select: {
                 id: true,
+              deletedAt: true,
                 fullName: true,
                 email: true,
                 phone: true,
@@ -64,6 +67,9 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ toke
   ) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });
   }
+
+  if (await isPublicLinkRevoked(params.token)) return NextResponse.json({ error: 'Lien invalide ou expiré.' }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
+  if (item.deletedAt || item.contact.deletedAt) return NextResponse.json({ error: 'Facture introuvable.' }, { status: 404 });
 
   return NextResponse.json({
     item: {

@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { S3Client, PutObjectCommand, CopyObjectCommand, DeleteObjectCommand, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { sanitizeFileBaseName } from '@/lib/file-documents';
+import { assertFileContentSignature } from '@/lib/file-content-signature';
 
 function requireEnv(name: string) {
   const value = process.env[name];
@@ -169,6 +170,26 @@ export async function finalizeUploadedFile(file: { storageKey: string; originalN
   const etag = await assertStoredObjectMetadata(file.storageKey, file);
   if (!etag) throw new Error('Fichier invalide: version stockage indisponible.');
   const bucket = requireEnv('S3_BUCKET');
+  // Pin the inspected bytes and the later copy to the same S3 object version.
+  const inspected = await getS3Client().send(new GetObjectCommand({ Bucket: bucket, Key: file.storageKey, Range: 'bytes=0-4095', IfMatch: etag }), { abortSignal: AbortSignal.timeout(10_000) });
+  const stream = inspected.Body?.transformToWebStream() as ReadableStream<Uint8Array> | undefined;
+  if (!stream) throw new Error('FILE_CONTENT_UNAVAILABLE');
+  const reader = stream.getReader();
+  const bytes = new Uint8Array(4096);
+  let length = 0;
+  let expired = false;
+  const timer = setTimeout(() => { expired = true; void reader.cancel().catch(() => undefined); }, 10_000);
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (expired) throw new Error('FILE_INSPECTION_TIMEOUT');
+      if (part.done) break;
+      if (length + part.value.length > bytes.length) throw new Error('FILE_INSPECTION_TOO_LARGE');
+      bytes.set(part.value, length); length += part.value.length;
+    }
+    if (length !== Math.min(file.size, bytes.length)) throw new Error('FILE_INSPECTION_INCOMPLETE');
+    assertFileContentSignature(bytes.subarray(0, length), file.mimeType);
+  } finally { clearTimeout(timer); void reader.cancel().catch(() => undefined); reader.releaseLock(); }
   const finalKey = buildStorageKey(folder, file.originalName);
   try {
     await getS3Client().send(new CopyObjectCommand({ Bucket: bucket, Key: finalKey,
@@ -192,6 +213,7 @@ export async function storeFileInPersistentStorage(file: File, options?: { folde
   const key = buildStorageKey(folder, file.name || 'file');
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  assertFileContentSignature(buffer.subarray(0, 4096), file.type);
 
   await getS3Client().send(
     new PutObjectCommand({
@@ -199,7 +221,7 @@ export async function storeFileInPersistentStorage(file: File, options?: { folde
       Key: key,
       Body: buffer,
       ContentType: file.type || 'application/octet-stream',
-      ContentDisposition: `inline; filename="${sanitizeFileBaseName(file.name || 'file')}"`,
+      ContentDisposition: `attachment; filename="${sanitizeFileBaseName(file.name || 'file')}"`,
     }),
   );
 

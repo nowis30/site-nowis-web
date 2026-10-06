@@ -53,7 +53,8 @@ test('legacy uploads authorize and bound real multipart bytes before persistent 
     }
     const multipart=(type='application/pdf',bytes=12,file=true)=>{
       const data=new FormData();
-      data.append('file',file?new File([new Uint8Array(bytes)],'sample.pdf',{type}):'not-a-file');
+      const content = new Uint8Array(bytes); content.set(Buffer.from('%PDF-1.7').subarray(0, bytes));
+      data.append('file',file?new File([content],'sample.pdf',{type}):'not-a-file');
       return data;
     };
     const largeStream=()=>new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new Uint8Array(MAX_UPLOAD_BODY_BYTES));controller.enqueue(new Uint8Array(1));controller.close();}});

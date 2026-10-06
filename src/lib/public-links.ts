@@ -104,13 +104,15 @@ export function signCompactPublicInvoiceToken(input: {
 }
 
 export function parseCompactPublicInvoiceToken(token: string): CompactPublicInvoiceToken | null {
+  if (token.length > 256) return null;
   const [version, invoiceNumber, expiry, signature, ...extra] = token.split('.');
   if (version !== COMPACT_INVOICE_LINK_VERSION || !invoiceNumber || !expiry || !signature || extra.length > 0) {
     return null;
   }
 
   const expiresAt = Number.parseInt(expiry, 36);
-  if (!Number.isFinite(expiresAt) || expiresAt <= 0) {
+  if (!Number.isSafeInteger(expiresAt) || expiresAt <= 0 || expiresAt.toString(36) !== expiry
+    || !/^[A-Za-z0-9_-]{24}$/.test(signature) || !/^[A-Za-z0-9_-]{1,120}$/.test(invoiceNumber)) {
     return null;
   }
 

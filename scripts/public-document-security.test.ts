@@ -11,6 +11,8 @@ import { isClientVisibleStoredFile, toClientFileDto } from '../src/features/clie
 import { toClientWorkshopDto } from '../src/features/client-portal/workshops/client-workshop-dto';
 
 test('public invoice and quote DTOs expose customer fields only and keep internal notes, staff IDs and archive metadata private', async () => {
+  const oldGrant = prisma.authGrant.findUnique;
+  prisma.authGrant.findUnique = (async () => null) as typeof oldGrant;
   const oldSecret = process.env.PUBLIC_LINKS_JWT_SECRET;
   const oldInvoice = prisma.invoice.findUnique, oldQuote = prisma.commercialQuote.findUnique;
   process.env.PUBLIC_LINKS_JWT_SECRET = 'isolated-public-documents-secret';
@@ -50,6 +52,7 @@ test('public invoice and quote DTOs expose customer fields only and keep interna
       assert.equal(response.status, 409, status);
     }
   } finally {
+    prisma.authGrant.findUnique = oldGrant;
     prisma.invoice.findUnique = oldInvoice; prisma.commercialQuote.findUnique = oldQuote;
     if (oldSecret === undefined) delete process.env.PUBLIC_LINKS_JWT_SECRET; else process.env.PUBLIC_LINKS_JWT_SECRET = oldSecret;
     await prisma.$disconnect();

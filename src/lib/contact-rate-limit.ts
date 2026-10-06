@@ -152,7 +152,7 @@ export function createContactRateLimiter(consumeFn: ConsumeFn = consumeContactRa
 
     // Nettoyage opportuniste des anciennes entrees sans impact utilisateur.
     if (Math.random() < 0.02) {
-      await prisma.apiRateLimit.deleteMany({ where: { resetAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } } }).catch(() => undefined);
+      await prisma.apiRateLimit.deleteMany({ where: { scope: { not: 'paypal:webhook-receipt' }, resetAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } } }).catch(() => undefined);
     }
 
     return { allowed: true };

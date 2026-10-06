@@ -156,14 +156,14 @@ const nextConfig = {
         value: [
           "default-src 'self'",
           process.env.NODE_ENV === 'production'
-            ? "script-src 'self' 'unsafe-inline'"
-            : "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            ? "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com"
+            : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https:",
           "font-src 'self' data:",
-          "frame-src 'self' https://www.youtube.com https://youtube.com https://nowis-crm-files.s3.us-east-1.amazonaws.com",
+          "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://nowis-crm-files.s3.us-east-1.amazonaws.com https://calendar.google.com https://calendly.com https://village-ia.vercel.app",
           "frame-ancestors 'self'",
-          "connect-src 'self' https:",
+          "connect-src 'self' https://nowis-crm-files.s3.us-east-1.amazonaws.com https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net",
           "media-src 'self' blob: https: https://nowis-crm-files.s3.us-east-1.amazonaws.com",
           "worker-src 'self' blob:",
           "manifest-src 'self'",

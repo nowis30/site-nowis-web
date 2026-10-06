@@ -1,3 +1,5 @@
+// CSP nonces require rendering private HTML for each request.
+export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { getClientPortalSessionServer } from '@/features/client-portal/auth/session';
 import { ClientPortalShell } from '@/features/client-portal/components/ClientPortalShell';

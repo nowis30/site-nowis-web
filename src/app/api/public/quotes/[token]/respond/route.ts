@@ -1,3 +1,4 @@
+import { isPublicLinkRevoked } from '@/lib/public-link-revocation';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPublicQuoteToken } from '@/lib/public-links';
@@ -13,6 +14,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ toke
   if (!decoded) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });
   }
+  if (await isPublicLinkRevoked(params.token)) return NextResponse.json({ error: 'Lien invalide ou expiré.' }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
 
   const body = (await request.json().catch(() => ({}))) as { action?: string };
   const action = (body.action || '').toLowerCase();

@@ -1,3 +1,4 @@
+import { FileContentTypeError } from '@/lib/file-content-signature';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { S3ServiceException } from '@aws-sdk/client-s3';
@@ -203,6 +204,7 @@ export async function POST(request: NextRequest) {
     if (uncommittedStorageKey) await deleteFileFromPersistentStorage(uncommittedStorageKey).catch(() => undefined);
     const securityError = authRequestErrorResponse(error);
     if (securityError) return securityError;
+    if (error instanceof FileContentTypeError) return NextResponse.json({ error: error.message }, { status: 400 });
     if (error instanceof InvalidUploadIntent) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

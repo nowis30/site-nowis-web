@@ -1,3 +1,4 @@
+import { FileContentTypeError } from '@/lib/file-content-signature';
 export const MAX_UPLOAD_FILE_BYTES = 10 * 1024 * 1024;
 export const MAX_UPLOAD_BODY_BYTES = MAX_UPLOAD_FILE_BYTES + 64 * 1024;
 
@@ -78,6 +79,7 @@ export async function readBoundedUploadFormData(request: Request): Promise<FormD
 }
 
 export function legacyUploadError(error: unknown): {status: number; message: string} {
+  if (error instanceof FileContentTypeError) return { status: 400, message: error.message };
   if (error instanceof UploadBodyError) return {status:error.status, message:error.message};
   // The file validator has fixed messages; never expose a storage/provider error.
   if (error instanceof Error && error.message.startsWith('Type de fichier non accepte.')) {

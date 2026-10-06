@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCookieConsent } from '@/components/privacy/useCookieConsent';
 import '@/lib/tracking/google';
+import { isPrivatePagePath } from '@/lib/private-page-path';
 
 export function ConsentGoogleTags({ measurementId, adsId }: { measurementId: string; adsId: string }) {
   const consent = useCookieConsent();
@@ -12,6 +13,7 @@ export function ConsentGoogleTags({ measurementId, adsId }: { measurementId: str
   const gaId = /^G-[A-Z0-9]+$/.test(measurementId) ? measurementId : '';
   const advertisingId = /^AW-\d+$/.test(adsId) ? adsId : '';
   useEffect(() => {
+    if (!pathname || isPrivatePagePath(pathname)) return;
     const analytics = !!consent?.analytics && !!gaId;
     const advertising = !!consent?.advertising && !!advertisingId;
     if (!analytics && !advertising) return;
@@ -42,7 +44,7 @@ export function ConsentGoogleTags({ measurementId, adsId }: { measurementId: str
       script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(analytics ? gaId : advertisingId)}`;
       document.head.appendChild(script);
     }
-    const publicPage = pathname && !/^\/(crm|client|api|connexion|inscription)(\/|$)/.test(pathname);
+    const publicPage = !isPrivatePagePath(pathname);
     if (analytics && publicPage && lastPage.current !== pathname) {
       window.gtag('event', 'page_view', { send_to: gaId, page_path: pathname, page_location: `${window.location.origin}${pathname}` });
       lastPage.current = pathname;

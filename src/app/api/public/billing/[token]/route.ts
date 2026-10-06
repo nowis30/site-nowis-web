@@ -1,3 +1,4 @@
+import { isPublicLinkRevoked } from '@/lib/public-link-revocation';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -34,6 +35,7 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ toke
   if (!decoded) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });
   }
+  if (await isPublicLinkRevoked(params.token)) return NextResponse.json({ error: 'Lien invalide ou expiré.' }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
 
   const contact = await prisma.contact.findUnique({
     where: { id: decoded.contactId },
@@ -71,6 +73,7 @@ export async function PATCH(request: NextRequest, props: { params: Promise<{ tok
   if (!decoded) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });
   }
+  if (await isPublicLinkRevoked(params.token)) return NextResponse.json({ error: 'Lien invalide ou expiré.' }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
 
   try {
     const payload = updateSchema.parse(await request.json());
