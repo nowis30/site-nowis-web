@@ -12,6 +12,23 @@ const astroEngine = require('../public/tarot-reader/astro-engine.js');
 const reading = { question: 'Quelle direction donner à mon projet ?', spread: '3', cardIds: ['major-1', 'major-17', 'coupes-13'] };
 const astrology = { birthDate: '1990-05-17', birthTime: '08:23', unknownTime: false, latitude: 45.5088, longitude: -73.5878, timeZone: 'America/Toronto', forecastDate: '2026-10-04', placeName: 'Montréal, lieu déclaré' };
 const payload = { consent: true, readings: [reading], astrology };
+test('new explorations are recomputed and raw names and birth data stay out of provider context',()=>{
+  const parsed=parseOracleConclusionInput({consent:true,explorations:{
+    numerology:{birthDate:'1980-10-22',date:'2026-10-06',name:'Nicholas Evan Smith'},
+    names:{a:'Camille',b:'Alexis'},couple:{a:astrology,b:{...astrology,birthDate:'1992-07-08'}},
+    moon:{date:'2026-10-06'},solar:{input:astrology,year:2027},
+    belline:{question:'Comment dialoguer ?',spread:'three',cardIds:[8,26,36]}
+  }});
+  const result=buildOracleConclusionContext(parsed), json=JSON.stringify(result);
+  for(const privateValue of ['Nicholas','Camille','Alexis','1980-10-22',astrology.birthDate,astrology.birthTime,String(astrology.latitude),String(astrology.longitude),astrology.placeName])assert.ok(!json.includes(privateValue),privateValue);
+  assert.equal(result.explorations?.numerologie!==undefined,true);
+  assert.ok(json.includes('Pensée Amitié'));
+});
+test('explorations reject fabricated results, unsupported cards and invalid dates',()=>{
+  for(const explorations of [{invented:{}},{numerology:{birthDate:'1990-01-01',date:'2026-10-06',result:8}},{belline:{question:'',spread:'three',cardIds:[0,1,99]}},{belline:{question:'',spread:'three',cardIds:[1,1,2]}},{belline:{question:'',spread:'cross',cardIds:[1,2,3]}}])assert.throws(()=>parseOracleConclusionInput({consent:true,explorations}));
+  for(const explorations of [{numerology:{birthDate:'2023-02-29',date:'2026-10-06'}},{names:{a:'<script>',b:'Alexis'}},{solar:{input:{...astrology,unknownTime:true},year:2027}}])assert.throws(()=>buildOracleConclusionContext(parseOracleConclusionInput({consent:true,explorations})),OracleConclusionRequestError);
+  assert.throws(()=>parseOracleConclusionInput({consent:true,explorations:{}}));
+});
 const localUrl = 'http://localhost:3008/api/tarot/conclusion';
 function request(body: unknown, extra: Record<string, string> = {}) {
   return new Request(localUrl, { method: 'POST', headers: { origin: 'http://localhost:3008', 'content-type': 'application/json', 'sec-fetch-site': 'same-origin', ...extra }, body: JSON.stringify(body) });
