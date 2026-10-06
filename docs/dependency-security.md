@@ -42,7 +42,7 @@ Les racines Turbopack et du traçage de fichiers sont fixées au projet. Une dir
 | `npm 11.21.0 ls --all` après cette installation | Réussi, aucune dépendance invalide ou extraneous. |
 | Validation du schéma et génération Prisma | Réussies, sans migration ni connexion à une base réelle. |
 | `npm run type-check` | Réussi. |
-| `npm run lint` | Les avertissements des sources ont été corrigés; la passe globale finale figure dans le rapport de livraison. Les règles configurées restent actives. |
+| `npm run lint` | Réussi sur 664 fichiers : zéro erreur et zéro avertissement. Les règles configurées restent actives. |
 | `npm run build` | Réussi; 239 pages statiques générées, aucun avertissement de `require` dynamique ou de compilation. |
 | Fork `braces` et adaptateurs ESLint | Huit tests réussis, dont 121 cas upstream et 26 fixtures de compatibilité `braces`. |
 | Astronomie navigateur/serveur | 25 tests réussis, dont des fixtures NASA/JPL et USNO indépendantes. |

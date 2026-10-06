@@ -39,7 +39,7 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install locked project dependencies
-        run: npm ci
+        run: npx --yes npm@11.21.0 ci
       - name: Generate client and prepare disposable test database
         run: npx prisma generate && npx prisma db push
       - name: Type check and focused security tests

@@ -43,7 +43,7 @@ jobs:
           node-version: 24
           cache: npm
       - name: Install locked dependencies
-        run: npm ci
+        run: npx --yes npm@11.21.0 ci
       - name: Generate the database client
         run: npm run prisma:generate
       - name: Apply migrations to the disposable database only
@@ -56,7 +56,7 @@ jobs:
         run: npm test && npm run test:public-media
       - name: Verify actual Prisma authentication and concurrent quota
         run: npm run test:security-postgres
-      - name: Reject known production dependency vulnerabilities
-        run: npm audit --omit=dev --audit-level=low
+      - name: Reject known dependency vulnerabilities at every severity
+        run: npx --yes npm@11.21.0 audit --audit-level=low
       - name: Build without production credentials or automatic database changes
         run: npm run build
