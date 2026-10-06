@@ -13,8 +13,8 @@ const radioContact = '11111111-1111-4111-8111-111111111111';
 const privateContact = '22222222-2222-4222-8222-222222222222';
 const radioUser = '33333333-3333-4333-8333-333333333333';
 const organizationId = '44444444-4444-4444-8444-444444444444';
-process.env.JWT_SECRET = 'test-only-dossier-isolation-server-key';
-process.env.CLIENT_PORTAL_JWT_SECRET = 'test-only-dossier-isolation-portal-key';
+const fixtureOrigin = 'https://dossier-isolation.example.test';
+const fixtureEnvNames = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'NEXT_PUBLIC_SITE_URL', 'APP_URL', 'JWT_SECRET', 'CLIENT_PORTAL_JWT_SECRET'] as const;
 
 const workshopInput = {
   organizationName: 'Organisation Test', contactName: 'Radio member', role: 'Coordination', email,
@@ -91,23 +91,28 @@ async function withDatabase(run: (state: any) => Promise<void>, options: { users
     }
   }
   (prisma as any).$transaction = async (callback: any) => callback(db);
-  const envNames = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'];
-  const oldEnv = envNames.map(name => [name, process.env[name]]);
-  for (const name of envNames) delete process.env[name];
+  const oldEnv = fixtureEnvNames.map(name => [name, process.env[name]] as const);
+  for (const name of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS']) delete process.env[name];
+  // Test origins and signing keys are scoped to this mock database. Inherited
+  // CI localhost origins must not change which security boundary this test covers.
+  process.env.NEXT_PUBLIC_SITE_URL = fixtureOrigin;
+  process.env.APP_URL = fixtureOrigin;
+  process.env.JWT_SECRET = 'test-only-dossier-isolation-server-key';
+  process.env.CLIENT_PORTAL_JWT_SECRET = 'test-only-dossier-isolation-portal-key';
   try { await run({ contacts, users, org, links, writes, events, tasks }); }
   finally {
     (prisma as any).$transaction = originalTransaction;
     for (const [delegate, method, value] of originals) delegate[method] = value;
-    for (const [name, value] of oldEnv) { if (value === undefined) delete process.env[name!]; else process.env[name!] = value; }
+    for (const [name, value] of oldEnv) { if (value === undefined) delete process.env[name]; else process.env[name] = value; }
   }
 }
 
-async function request(pathname: string, body: unknown, dossier = radioContact) {
+async function request(pathname: string, body: unknown, dossier = radioContact, origin = fixtureOrigin) {
   let token: string;
   try { token = await signClientPortalSession({ contactId: dossier, email, fullName: 'Radio member', tenantId: null }); }
   catch { token = 'pre-migration-invalid-token'; }
-  return new NextRequest(`https://nowis.store${pathname}`, { method: 'POST', headers: {
-    cookie: `nowis_client_session=${token}`, origin: 'https://nowis.store', 'content-type': 'application/json',
+  return new NextRequest(`${fixtureOrigin}${pathname}`, { method: 'POST', headers: {
+    cookie: `nowis_client_session=${token}`, origin, 'content-type': 'application/json',
   }, body: JSON.stringify(body) });
 }
 
@@ -139,6 +144,37 @@ test('both contact endpoints attach messages only to the signed dossier when two
       assert.equal(state.events.filter((row: any) => row.contactId).every((row: any) => row.contactId === radioContact), true);
     });
   }
+});
+
+test('authenticated dossier forms reject foreign origins before business writes', async () => {
+  for (const [path, handler, body] of [
+    ['/api/workshop-requests', workshop, workshopInput],
+    ['/api/contact', contact, { name: 'Radio member', message: 'A sufficiently long contact message.', serviceType: 'autre' }],
+    ['/api/site/contact', siteContact, { fullName: 'Radio member', message: 'A sufficiently long contact message.' }],
+  ] as const) {
+    await withDatabase(async state => {
+      const response = await handler(await request(path, body, radioContact, 'https://foreign-origin.example.test'));
+      assert.equal(response.status, 403);
+      assert.equal(typeof (await response.json()).error, 'string');
+      assert.equal(state.writes.length, 0);
+      assert.equal(state.events.length, 0);
+      assert.equal(state.tasks.length, 0);
+    });
+  }
+});
+
+test('mock dossier fixture restores inherited environment after success and failure', async () => {
+  const inherited = fixtureEnvNames.map(name => [name, process.env[name]] as const);
+  const assertRestored = () => {
+    for (const [name, value] of inherited) assert.equal(process.env[name], value, `Environment restored: ${name}`);
+  };
+  await withDatabase(async () => {
+    assert.equal(process.env.NEXT_PUBLIC_SITE_URL, fixtureOrigin);
+    assert.equal(process.env.APP_URL, fixtureOrigin);
+  });
+  assertRestored();
+  await assert.rejects(withDatabase(async () => { throw new Error('Intentional fixture failure'); }), /Intentional fixture failure/);
+  assertRestored();
 });
 
 test('verified magic-link clients sharing an email with another account can submit without moving that password account', async () => {
