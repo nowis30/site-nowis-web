@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getRadioUser, radioError, radioJson } from '@/lib/radio-api';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const shareId = z.string().uuid().parse(params.id);
     const user = await getRadioUser(request);

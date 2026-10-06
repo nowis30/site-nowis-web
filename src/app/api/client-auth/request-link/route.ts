@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
+import { readAuthJson, limitAuth, authRequestErrorResponse } from '@/lib/auth-request-security';
 import { sendEmail } from '@/lib/email-service';
 import { buildClientPortalMagicLink, signClientPortalMagicLink } from '@/features/client-portal/auth/session';
 import { escapeHtml } from '@/lib/contact-request-security';
@@ -12,27 +12,14 @@ const requestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = requestSchema.parse(await request.json());
+    const payload = requestSchema.parse(await readAuthJson(request));
     const email = payload.email.toLowerCase();
-    const clientIp = getRequestClientIp(request.headers);
-    const limiter = consumeRateLimit(
-      `client-magic-link:${sanitizeRateLimitIdentifier(clientIp)}:${sanitizeRateLimitIdentifier(email)}`,
-      5,
-      15 * 60 * 1000,
-    );
+    await limitAuth(request, 'magic', email, 5);
 
-    if (!limiter.allowed) {
-      return NextResponse.json(
-        { error: 'Trop de demandes de lien. Réessayez dans quelques minutes.' },
-        {
-          status: 429,
-          headers: { 'Retry-After': String(limiter.retryAfterSeconds), 'Cache-Control': 'no-store' },
-        },
-      );
-    }
-
-    const contact = await prisma.contact.findFirst({
-      where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
+    const account = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } },
+      select: { contactId: true, role: true, isActive: true } });
+    const contact = account && (account.role !== 'PORTAL_USER' || !account.isActive) ? null : await prisma.contact.findFirst({
+      where: { ...(account ? { id: account.contactId || '00000000-0000-4000-8000-000000000000' } : {}), email: { equals: email, mode: 'insensitive' }, deletedAt: null },
       select: {
         id: true,
         fullName: true,
@@ -42,7 +29,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (contact?.email && contact.userAccount?.isActive !== false) {
-      const token = signClientPortalMagicLink({
+      const token = await signClientPortalMagicLink({
         contactId: contact.id,
         tenantId: null,
         email: contact.email,
@@ -50,7 +37,7 @@ export async function POST(request: NextRequest) {
       });
 
       const link = buildClientPortalMagicLink(token, request.nextUrl.origin);
-      await sendEmail({
+      const sent = await sendEmail({
         to: contact.email,
         subject: 'Connexion à votre portail client Nowis',
         html: `
@@ -65,6 +52,7 @@ export async function POST(request: NextRequest) {
           </div>
         `,
       });
+      if (!sent.success) throw new Error('AUTH_EMAIL_UNAVAILABLE');
     }
 
     return NextResponse.json(
@@ -72,6 +60,8 @@ export async function POST(request: NextRequest) {
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
     }

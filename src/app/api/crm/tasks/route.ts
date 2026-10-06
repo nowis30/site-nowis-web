@@ -23,7 +23,7 @@ const taskTypeFilterSchema = z.enum([
 ]);
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'tasks', 'read');
+  const guard = await requireApiPermission(request, 'tasks', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'tasks', 'create');
+  const guard = await requireApiPermission(request, 'tasks', 'create');
   if (guard.error) return guard.error;
 
   try {

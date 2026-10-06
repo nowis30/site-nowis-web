@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -20,7 +21,9 @@ function normalizeOptionalString(value?: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
   if (!session) {
     return NextResponse.json({ error: 'Session client invalide' }, { status: 401 });

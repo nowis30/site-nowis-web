@@ -27,7 +27,7 @@ function normalizeOptionalString(value?: string) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function POST(_request: NextRequest, _ctx: { params: { id: string } }) {
+export async function POST(_request: NextRequest, _ctx: { params: Promise<{ id: string }> }) {
   return NextResponse.json(
     {
       error:
@@ -40,7 +40,7 @@ export async function POST(_request: NextRequest, _ctx: { params: { id: string }
 
 // Kept for reference — replaced by POST above which enforces the booking-link rule.
 async function _disabledManualWorkshopAppointmentCreate(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'appointments', 'create');
+  const guard = await requireApiPermission(request, 'appointments', 'create');
   if (guard.error) return guard.error;
 
   try {
@@ -157,8 +157,9 @@ async function _disabledManualWorkshopAppointmentCreate(request: NextRequest, { 
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'appointments', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'appointments', 'update');
   if (guard.error) return guard.error;
 
   try {

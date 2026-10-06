@@ -5,10 +5,11 @@ import { InvoiceDetailPage } from '@/features/crm/components/invoices/InvoiceDet
 import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function ClientPortalInvoiceDetailPage({ params }: PageProps) {
+export default async function ClientPortalInvoiceDetailPage(props: PageProps) {
+  const params = await props.params;
   const session = await requireClientPortalSession();
   const invoice = await prisma.invoice.findFirst({
     where: { id: params.id, contactId: session.contactId },

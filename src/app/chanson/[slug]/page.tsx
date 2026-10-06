@@ -8,7 +8,7 @@ import { buildMetadata, extractYouTubeVideoId } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-type PageProps = { params: { slug: string } };
+type PageProps = { params: Promise<{ slug: string }> };
 
 function formatPublishedAt(value?: string | null) {
   if (!value) return null;
@@ -27,7 +27,8 @@ function toAbsoluteImageUrl(image: string) {
   return `https://nowis.store${image.startsWith('/') ? image : `/${image}`}`;
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata(props: PageProps) {
+  const params = await props.params;
   const song = await getSongBySlug(params.slug);
 
   if (!song) {
@@ -49,7 +50,8 @@ export async function generateMetadata({ params }: PageProps) {
   });
 }
 
-export default async function ChansonPage({ params }: PageProps) {
+export default async function ChansonPage(props: PageProps) {
+  const params = await props.params;
   const song = await getSongBySlug(params.slug);
   if (!song) notFound();
 

@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto';
 import { sanitizeNextPath } from '@/lib/safe-next';
+import { publicInquiryOriginAllowed } from '@/lib/public-inquiry-security';
+import { readNamedCookie } from '@/lib/auth-grants';
 
 export const CLIENT_GOOGLE_STATE_COOKIE_NAME = 'nowis_client_google_state';
 export const CLIENT_GOOGLE_NEXT_COOKIE_NAME = 'nowis_client_google_next';
@@ -14,7 +16,7 @@ export function getGoogleAuthBaseUrl(origin?: string) {
       process.env.NEXTAUTH_URL ||
       process.env.NEXT_PUBLIC_SITE_URL ||
       process.env.NEXT_PUBLIC_DOMAIN ||
-      origin ||
+      (origin && publicInquiryOriginAllowed(origin) ? origin : undefined) ||
       'http://localhost:3000',
   );
 }
@@ -64,10 +66,7 @@ export function buildGoogleAuthorizationUrl(options: {
 }
 
 export function readCookieValue(cookieHeader: string | null, cookieName: string) {
-  if (!cookieHeader) return null;
-  const escaped = cookieName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = cookieHeader.match(new RegExp(`${escaped}=([^;]+)`));
-  return match?.[1] ?? null;
+  return readNamedCookie(cookieHeader, cookieName);
 }
 
 export function createGoogleOauthState() {

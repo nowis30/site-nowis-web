@@ -3,8 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { logCleanupActivity } from '@/lib/cleanup-actions';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'workshopRequests', 'update');
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'workshopRequests', 'update');
   if (guard.error) return guard.error;
 
   const item = await prisma.workshopRequest.findUnique({

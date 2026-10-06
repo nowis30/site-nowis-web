@@ -6,7 +6,7 @@ import { ClientFileUploadForm, ClientPortalDeleteFileButton } from '@/features/c
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
 
 interface PageProps {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -76,8 +76,9 @@ function isPdfFile(mimeType: string | null | undefined, fileName: string) {
   return (mimeType || '').includes('pdf') || normalizedName.endsWith('.pdf');
 }
 
-export default async function ClientPortalPage({ params }: PageProps) {
-  const session = verifyClientPortalToken(params.token);
+export default async function ClientPortalPage(props: PageProps) {
+  const params = await props.params;
+  const session = await verifyClientPortalToken(params.token);
 
   if (!session) {
     return (

@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation';
 
-type PageProps = { params: { slug: string } };
+type PageProps = { params: Promise<{ slug: string }> };
 
 export const dynamic = 'force-dynamic';
 
-export default function MusiqueSongRedirectPage({ params }: PageProps) {
+export default async function MusiqueSongRedirectPage(props: PageProps) {
+  const params = await props.params;
   redirect(`/chanson/${params.slug}`);
 }

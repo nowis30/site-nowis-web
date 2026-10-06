@@ -2,7 +2,8 @@
 import { getListingBySlug, upsertListing, deleteListing } from '@/lib/db';
 import { canManageListing, getListingUser, resolveListingStatus } from '@/lib/listing-access';
 
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const listing = await getListingBySlug(params.slug);
   if (!listing || (listing.status !== 'approved' && !canManageListing(await getListingUser(request.headers.get('cookie')), listing))) {
     return NextResponse.json({ error: 'Logement introuvable.' }, { status: 404 });
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
   return NextResponse.json({ listing }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const user = await getListingUser(request.headers.get('cookie'));
   if (!user) {
     return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 });
@@ -62,7 +64,8 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
   return NextResponse.json({ listing: updated });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   try {
     const user = await getListingUser(request.headers.get('cookie'));
     if (!user) {

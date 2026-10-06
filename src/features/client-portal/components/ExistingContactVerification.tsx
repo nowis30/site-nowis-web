@@ -5,9 +5,11 @@ import { useState } from 'react';
 export function ExistingContactVerification({
   email,
   appearance = 'light',
+  purpose = 'registration',
 }: {
   email: string;
   appearance?: 'light' | 'dark';
+  purpose?: 'registration' | 'login';
 }) {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function ExistingContactVerification({
     <div className={`rounded-xl border px-4 py-3 text-sm leading-6 ${dark ? 'border-amber-800/60 bg-amber-950/30 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
       <p>
         Pour protéger votre dossier, vérifiez d’abord l’adresse <strong>{email}</strong> avec un lien reçu par courriel.
-        Ouvrez ce lien pour accéder à votre dossier, puis revenez sur ce formulaire si vous souhaitez définir un mot de passe.
+        {purpose === 'login' ? ' Ouvrez ce lien pour vous connecter. Pour définir ou modifier un mot de passe, utilisez « Mot de passe oublié ».' : ' Ouvrez ce lien pour accéder à votre dossier, puis revenez sur ce formulaire si vous souhaitez définir un mot de passe.'}
       </p>
       {status === 'sent' ? (
         <p className="mt-2 font-medium" role="status">

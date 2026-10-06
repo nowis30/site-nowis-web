@@ -10,10 +10,11 @@ function formatDate(value: Date | null | undefined) {
 }
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function CaseDetailPage({ params }: PageProps) {
+export default async function CaseDetailPage(props: PageProps) {
+  const params = await props.params;
   await requireCrmSession();
 
   const item = await prisma.caseRecord.findUnique({

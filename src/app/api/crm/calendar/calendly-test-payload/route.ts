@@ -19,7 +19,7 @@ function buildSyntheticExternalEventId(email: string, startAtIso: string, worksh
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireCalendarAdminAccess(request, 'update');
+  const guard = await requireCalendarAdminAccess(request, 'update');
   if (guard.error) return guard.error;
 
   let parsed: z.infer<typeof payloadSchema>;

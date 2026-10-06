@@ -28,7 +28,8 @@ function normalizeOptional(value?: string | null) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-export async function GET(_request: NextRequest, { params }: { params: { token: string } }) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const decoded = verifyPublicBillingToken(params.token);
   if (!decoded) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });
@@ -64,7 +65,8 @@ export async function GET(_request: NextRequest, { params }: { params: { token: 
   return NextResponse.json({ item: contact });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { token: string } }) {
+export async function PATCH(request: NextRequest, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const decoded = verifyPublicBillingToken(params.token);
   if (!decoded) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });

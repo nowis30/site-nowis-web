@@ -1,9 +1,9 @@
 import { randomInt } from 'crypto';
 
 function getTwilioConfig() {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromPhone = process.env.TWILIO_FROM_PHONE;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
+  const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
+  const fromPhone = process.env.TWILIO_FROM_PHONE?.trim();
 
   if (!accountSid || !authToken || !fromPhone) {
     return null;
@@ -14,6 +14,10 @@ function getTwilioConfig() {
 
 export function getCrmOtpTargetPhone() {
   return String(process.env.CRM_OTP_PHONE || '').trim();
+}
+
+export function isCrmSmsConfigured() {
+  return Boolean(getCrmOtpTargetPhone() && getTwilioConfig());
 }
 
 export function generateSmsOtpCode() {
@@ -44,12 +48,13 @@ export async function sendSmsMessage(to: string, message: string) {
       },
       body,
       cache: 'no-store',
+      signal: AbortSignal.timeout(10_000),
     },
   );
 
   if (!response.ok) {
-    const details = await response.text();
-    throw new Error(`Twilio send failed (${response.status}): ${details}`);
+    // Provider error bodies can contain submitted phone numbers and message text.
+    throw new Error(`SMS delivery failed (${response.status})`);
   }
 
   return response.json();

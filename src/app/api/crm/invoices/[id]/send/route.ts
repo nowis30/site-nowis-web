@@ -66,8 +66,9 @@ function sanitizeFromName(value: string) {
   return value.replace(/[<>\r\n]/g, ' ').replace(/\s+/g, ' ').trim() || 'NOWIS';
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'update');
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'update');
   if (guard.error) return guard.error;
 
   let payload: z.infer<typeof sendInvoiceSchema> = {};
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
   }
 
-  const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || (await getBillingIssuerSnapshot());
   const customerProfile = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
   const recipientEmail = customerProfile.email || invoice.contact.email;
   const senderEmail = businessProfile.email?.trim() || '';

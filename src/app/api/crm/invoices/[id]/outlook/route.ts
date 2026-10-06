@@ -34,8 +34,9 @@ function isMobileRequest(request: NextRequest) {
   return /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'read');
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'read');
   if (guard.error) return guard.error;
 
   const invoice = await prisma.invoice.findUnique({
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Facture introuvable.' }, { status: 404 });
   }
 
-  const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || (await getBillingIssuerSnapshot());
   const customerProfile = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
   const recipientEmail = customerProfile.email || invoice.contact.email;
   const senderEmail = businessProfile.email?.trim();

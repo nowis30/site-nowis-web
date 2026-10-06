@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -77,8 +78,9 @@ function toClientSongRequest(item: {
   };
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const item = await prisma.songRequest.findUnique({
@@ -110,8 +112,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   return NextResponse.json({ item: toClientSongRequest(item), canEdit });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const current = await prisma.songRequest.findUnique({
@@ -181,8 +186,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   return NextResponse.json({ item: toClientSongRequest(item) });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const current = await prisma.songRequest.findUnique({

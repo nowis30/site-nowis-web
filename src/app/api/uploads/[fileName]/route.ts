@@ -12,7 +12,8 @@ const contentTypes: Record<string, string> = {
   '.webp': 'image/webp',
 };
 
-export async function GET(request: NextRequest, { params }: { params: { fileName: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ fileName: string }> }) {
+  const params = await props.params;
   try {
     if (isUsingDefaultPublicUploadsDir()) {
       return NextResponse.redirect(

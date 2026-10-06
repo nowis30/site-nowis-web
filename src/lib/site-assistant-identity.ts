@@ -4,17 +4,17 @@ import { getUserById } from '@/lib/db';
 import { prisma } from '@/lib/prisma';
 import { CLIENT_PORTAL_COOKIE_NAME, verifyClientPortalSession } from '@/features/client-portal/auth/session';
 import { CRM_COOKIE_NAME, verifyCrmToken } from '@/features/crm/auth/session';
+import { readNamedCookie } from '@/lib/auth-grants';
 
 function cookieValue(header: string, name: string) {
-  const value = header.split(';').map(part => part.trim()).find(part => part.startsWith(`${name}=`));
-  return value?.slice(name.length + 1);
+  return readNamedCookie(header, name);
 }
 
 /** Only signed sessions plus persisted active identities can select an account counter. */
 export async function getAssistantIdentity(request: Request): Promise<string | null> {
   const cookies = request.headers.get('cookie') || '';
   const portalToken = cookieValue(cookies, CLIENT_PORTAL_COOKIE_NAME);
-  const portal = portalToken ? verifyClientPortalSession(portalToken) : null;
+  const portal = portalToken ? await verifyClientPortalSession(portalToken) : null;
   if (portal && z.string().uuid().safeParse(portal.contactId).success && typeof portal.email === 'string') {
     const user = await prisma.user.findFirst({
       where: { contactId: portal.contactId, email: portal.email, role: 'PORTAL_USER', isActive: true,
@@ -30,7 +30,7 @@ export async function getAssistantIdentity(request: Request): Promise<string | n
   }
 
   const crmToken = cookieValue(cookies, CRM_COOKIE_NAME);
-  const crm = crmToken ? verifyCrmToken(crmToken) : null;
+  const crm = crmToken ? await verifyCrmToken(crmToken) : null;
   if (crm && z.string().uuid().safeParse(crm.sub).success) {
     const user = await prisma.user.findFirst({
       where: { id: crm.sub, email: crm.email, role: crm.role, isActive: true },
@@ -40,7 +40,7 @@ export async function getAssistantIdentity(request: Request): Promise<string | n
   }
 
   const legacyToken = cookieValue(cookies, 'nowis_session');
-  const legacy = legacyToken ? verifyToken(legacyToken) : null;
+  const legacy = legacyToken ? await verifyToken(legacyToken) : null;
   if (legacy) {
     const user = await getUserById(legacy.sub);
     if (user && user.email === legacy.email && user.role === legacy.role) return `legacy-user:${user.id}`;

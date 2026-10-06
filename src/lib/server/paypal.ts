@@ -851,27 +851,27 @@ function mapPayPalStatus(paypalStatus: string | null) {
     return { paypalStatus: null, paymentStatus: 'unpaid', crmStatus: null as InvoiceStatus | null };
   }
 
-  if (normalized.includes('REFUND')) {
-    return { paypalStatus: normalized, paymentStatus: 'refunded', crmStatus: null as InvoiceStatus | null };
+  if (['REFUNDED', 'PARTIALLY_REFUNDED', 'MARKED_AS_REFUNDED', 'REFUNDED_EXTERNAL'].includes(normalized)) {
+    return { paypalStatus: normalized, paymentStatus: 'refunded', crmStatus: InvoiceStatus.SENT };
   }
 
-  if (normalized.includes('PAID')) {
+  if (['PAID', 'MARKED_AS_PAID', 'PAID_EXTERNAL'].includes(normalized)) {
     return { paypalStatus: normalized, paymentStatus: 'paid', crmStatus: InvoiceStatus.PAID };
   }
 
-  if (normalized.includes('PARTIALLY_PAID')) {
+  if (normalized === 'PARTIALLY_PAID') {
     return { paypalStatus: normalized, paymentStatus: 'partial', crmStatus: InvoiceStatus.SENT };
   }
 
-  if (normalized.includes('CANCEL')) {
+  if (['CANCELLED', 'AUTO_CANCELLED'].includes(normalized)) {
     return { paypalStatus: normalized, paymentStatus: 'cancelled', crmStatus: InvoiceStatus.CANCELLED };
   }
 
-  if (normalized.includes('SENT') || normalized.includes('SCHEDULED')) {
+  if (['SENT', 'SCHEDULED', 'UNPAID', 'PAYMENT_PENDING', 'SHARED'].includes(normalized)) {
     return { paypalStatus: normalized, paymentStatus: 'unpaid', crmStatus: InvoiceStatus.SENT };
   }
 
-  if (normalized.includes('DRAFT')) {
+  if (normalized === 'DRAFT') {
     return { paypalStatus: normalized, paymentStatus: 'unpaid', crmStatus: InvoiceStatus.DRAFT };
   }
 
@@ -930,6 +930,7 @@ export async function getPayPalAccessToken() {
   const config = getPayPalConfig();
   const credentials = Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
   const response = await fetch(`${getPayPalBaseUrl()}/v1/oauth2/token`, {
+    signal: AbortSignal.timeout(15_000),
     method: 'POST',
     headers: {
       Authorization: `Basic ${credentials}`,
@@ -1021,6 +1022,7 @@ export async function reuseExistingPayPalInvoiceIfPresent<T>(params: {
 
 export function derivePayPalInvoiceSyncUpdate(params: {
   invoice: {
+    amount: Prisma.Decimal;
     status: InvoiceStatus;
     paymentCurrency: string | null;
     paymentAmount: Prisma.Decimal | null;
@@ -1038,12 +1040,33 @@ export function derivePayPalInvoiceSyncUpdate(params: {
   const detail = asRecord(params.payload.detail);
   const detailAmount = asRecord(detail.amount);
   const paymentAmountValue = readString(amount.value) || readString(detailAmount.value);
+  const remoteCurrency = (readString(amount.currency_code) || readString(detail.currency_code))?.toUpperCase();
+  const expectedCurrency = (params.invoice.paymentCurrency || trimToNull(process.env.PAYPAL_CURRENCY) || 'CAD').toUpperCase();
   const paymentCurrency =
-    readString(amount.currency_code) ||
-    readString(detail.currency_code) ||
+    remoteCurrency ||
     params.invoice.paymentCurrency ||
     trimToNull(process.env.PAYPAL_CURRENCY) ||
     'CAD';
+
+  // The signed webhook triggers a fresh lookup at PayPal. A remote PAID state
+  // can settle only the same amount and currency as this persisted CRM invoice.
+  if (paidNow) {
+    const remoteAmount = paymentAmountValue && /^\d+(?:\.\d+)?$/.test(paymentAmountValue)
+      ? new Prisma.Decimal(paymentAmountValue) : null;
+    if (!remoteAmount?.isFinite() || !remoteAmount.isPositive()
+      || !remoteAmount.equals(params.invoice.amount) || remoteCurrency !== expectedCurrency) {
+      throw new Error('Paiement PayPal incohérent: le montant ou la devise ne correspond pas à la facture CRM.');
+    }
+    const paidAmount = asRecord(asRecord(params.payload.payments).paid_amount);
+    if (Object.keys(paidAmount).length > 0) {
+      const paidValue = readString(paidAmount.value);
+      const paidCurrency = readString(paidAmount.currency_code)?.toUpperCase();
+      const actualPaid = paidValue && /^\d+(?:\.\d+)?$/.test(paidValue) ? new Prisma.Decimal(paidValue) : null;
+      if (!actualPaid?.isFinite() || actualPaid.lessThan(remoteAmount) || paidCurrency !== expectedCurrency) {
+        throw new Error('Paiement PayPal incomplet: le montant reçu ne couvre pas la facture CRM.');
+      }
+    }
+  }
 
   return {
     paypalInvoiceUrl: extractPayPalInvoiceUrl(params.payload) || params.invoice.paypalInvoiceUrl,
@@ -1483,10 +1506,14 @@ export async function syncPayPalInvoiceStatusByPayPalInvoiceId(paypalInvoiceId: 
   });
   const mapped = mapPayPalStatus(extractPayPalStatus(payload));
 
-  const updated = await prisma.invoice.update({
-    where: { id: invoice.id },
+  const result = await prisma.invoice.updateMany({
+    where: { id: invoice.id, updatedAt: invoice.updatedAt, paypalInvoiceId },
     data: syncUpdate,
   });
+  const updated = await prisma.invoice.findUnique({ where: { id: invoice.id } });
+  if (!updated) throw new Error('Facture CRM introuvable.');
+  // A concurrent payment/refund/CRM edit wins over this older remote lookup.
+  if (result.count !== 1) return toSyncSummary(updated);
 
   const label = options?.webhookEventType === 'INVOICING.INVOICE.PAID'
     ? 'Paiement PayPal confirme'
@@ -1698,6 +1725,7 @@ export async function verifyPayPalWebhookSignature(request: NextRequest, rawBody
   const event = JSON.parse(bodyText) as Record<string, unknown>;
   const token = await getPayPalAccessToken();
   const response = await fetch(`${getPayPalBaseUrl()}/v1/notifications/verify-webhook-signature`, {
+    signal: AbortSignal.timeout(15_000),
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

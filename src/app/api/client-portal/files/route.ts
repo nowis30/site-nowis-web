@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -11,6 +12,8 @@ const DOCUMENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
     const [{ verifyClientPortalToken }, { getClientPortalSessionFromCookieHeader }, { persistUploadedFile }] = await Promise.all([
       import('@/lib/client-portal'),
@@ -25,8 +28,8 @@ export async function POST(request: NextRequest) {
     const documentType = DOCUMENT_TYPE_LABELS[documentTypeRaw] ? documentTypeRaw : 'AUTRE';
     const file = formData.get('file');
 
-    const cookieSession = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
-    const tokenSession = token ? verifyClientPortalToken(token) : null;
+    const cookieSession = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const tokenSession = token ? await verifyClientPortalToken(token) : null;
     const session = cookieSession || tokenSession;
 
     if (!session) {

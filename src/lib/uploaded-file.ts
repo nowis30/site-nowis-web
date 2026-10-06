@@ -38,7 +38,11 @@ export async function persistUploadedFile(file: File) {
 export async function deleteStoredFileByUrl(fileUrl: string) {
   try {
     const storageKey = tryExtractStorageKeyFromUrl(fileUrl);
-    if (!storageKey) return false;
+    // A CRM Document URL is editable. Never let it select unrelated public media
+    // or a path that can be interpreted differently by an object-store proxy.
+    if (!storageKey || !/^(legacy-uploads|crm-files|client-files)\//.test(storageKey)
+      || /[\\%?#\u0000-\u001f\u007f]/.test(storageKey)
+      || storageKey.split('/').some(part => !part || part === '.' || part === '..')) return false;
     await deleteFileFromPersistentStorage(storageKey);
     return true;
   } catch {

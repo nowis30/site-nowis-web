@@ -15,7 +15,7 @@ Le modèle du Gateway peut être remplacé avec `SITE_ASSISTANT_MODEL`. Le modè
 
 ## Limite de 20 commandes par jour
 
-Chaque question soumise à `POST /api/site-assistant/chat` compte comme une commande. La limite est de **20 commandes par jour civil**, avec remise à zéro à **minuit dans le fuseau `America/Toronto`** (y compris les changements d’heure). La navigation par les raccourcis et le formulaire « Mon idée » ne consomment pas ce quota de questions.
+Chaque question soumise à `POST /api/site-assistant/chat`, vision demandée à `POST /api/tarot/oracle` ou conclusion demandée à `POST /api/tarot/conclusion` compte comme une commande. Ces trois routes utilisent **le même compteur par compte**, limité à **20 commandes par jour civil**, avec remise à zéro à **minuit dans le fuseau `America/Toronto`** (y compris les changements d’heure). La navigation par les raccourcis, le formulaire « Mon idée » et les lectures symboliques locales du tarot ne consomment pas ce quota.
 
 Le serveur réserve une commande dans un compteur persistant avant tout appel au fournisseur IA. Plusieurs requêtes simultanées partagent le même compteur : seules les vingt premières réservations du jour peuvent réussir. Une commande réservée reste comptée même si le fournisseur échoue ensuite, afin qu’un échec ne permette pas de multiplier les appels facturables. Le repli de navigation déterministe suit la même limite. Si le stockage du compteur est indisponible, le serveur refuse la demande et n’appelle pas le fournisseur.
 
@@ -28,6 +28,8 @@ Effacer le stockage du navigateur, changer d’adresse IP ou de VPN, modifier le
 Quand les vingt commandes sont épuisées, l’API renvoie HTTP `429` avec `code: "ASSISTANT_DAILY_LIMIT"` et le quota; aucun appel IA n’est effectué. Le champ et l’envoi sont désactivés, avec un message indiquant la reprise à minuit, heure de Toronto. Les raccourcis restent disponibles. La désactivation dans l’interface est un confort : le blocage obligatoire reste côté serveur. Les erreurs de l’API apparaissent clairement, sans être présentées comme une réponse réussie ni renvoyées comme historique IA.
 
 Les requêtes de conversation sont limitées à huit messages récents, avec au plus 1 200 caractères par message et 16 384 octets UTF-8 pour le corps JSON. L’interface conserve la dernière question et réduit l’historique transmis si nécessaire. Le rendu des réponses reste du texte React, sans interprétation HTML.
+
+Les deux statuts `GET /api/tarot/oracle` et `GET /api/tarot/conclusion` retournent le quota sans transmettre une question, un tirage ou des informations de naissance. Sans compte connecté, ils renvoient `available: false`, `reason: "AUTH_REQUIRED"` et un lien local vers `/connexion?next=%2Ftarot`; leurs `POST` refusent HTTP `401`. Le tarot affiche le compteur partagé, la connexion nécessaire à l’IA et la reprise après minuit quand il est épuisé. Le lien sort de l’iframe pour ouvrir la page de connexion. Toute demande IA exige toujours l’accord explicite existant; relire le statut ou réinitialiser le quota n’envoie aucun élément de lecture. Les cartes, la lecture astrologique locale et le carnet restent utilisables sans connexion.
 
 ## Idées d’amélioration
 

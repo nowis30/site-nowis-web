@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
 import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
 import { sanitizeNextPath } from '@/lib/safe-next';
+import { ExistingContactVerification } from '@/features/client-portal/components/ExistingContactVerification';
 
 const inputClassName =
   'mt-2 block min-h-12 w-full rounded-xl border border-[color:var(--site-border)] bg-white px-4 py-3 text-base text-[color:var(--site-heading)] shadow-sm outline-none transition placeholder:text-[#827468] focus:border-[color:var(--site-accent)] focus:ring-2 focus:ring-[color:var(--site-accent)]/20';
@@ -44,12 +45,15 @@ export default function ConnexionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [externalErrorCode, setExternalErrorCode] = useState<string | null>(null);
   const [nextPath, setNextPath] = useState('/client/dashboard');
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     setExternalErrorCode(params.get('error'));
     setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
+    setVerificationSent(params.get('verification') === 'sent');
   }, []);
 
   const externalErrorMessage = externalErrorCode ? externalErrorMessages[externalErrorCode] ?? null : null;
@@ -57,6 +61,7 @@ export default function ConnexionPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setVerificationEmail(null);
     setIsSubmitting(true);
 
     try {
@@ -67,6 +72,7 @@ export default function ConnexionPage() {
       });
       const data = await readApiJson(response);
       if (!response.ok) {
+        if (data.code === 'EMAIL_VERIFICATION_REQUIRED') setVerificationEmail(email.trim().toLowerCase());
         throw new Error(getApiErrorMessage(data, 'Impossible de se connecter.'));
       }
       router.replace(data.redirectTo || '/client/dashboard');
@@ -147,6 +153,11 @@ export default function ConnexionPage() {
                 {externalErrorMessage}
               </div>
             ) : null}
+            {verificationSent ? (
+              <p role="status" className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
+                Consultez votre courriel pour activer votre compte et définir votre mot de passe. Le lien expire dans 30 minutes. Vérifiez aussi les courriels indésirables.
+              </p>
+            ) : null}
 
             <div className="mt-5">
               <GoogleClientAuthCard
@@ -214,11 +225,19 @@ export default function ConnexionPage() {
                     {error}
                   </div>
                 ) : null}
+                {verificationEmail ? <ExistingContactVerification key={verificationEmail} email={verificationEmail} purpose="login" /> : null}
 
                 <Button type="submit" className="min-h-12 w-full" disabled={isSubmitting}>
                   {isSubmitting ? 'Connexion en cours…' : 'Se connecter'}
                 </Button>
               </form>
+            </details>
+            <details className="mt-5 rounded-[1.35rem] border border-[color:var(--site-border)] bg-white/80 p-4 sm:p-5">
+              <summary className="min-h-11 cursor-pointer font-semibold text-[color:var(--site-heading)]">Recevoir un lien de connexion par courriel</summary>
+              <label className="mt-4 block text-sm font-semibold">Adresse e-mail
+                <input type="email" value={email} onChange={event => setEmail(event.target.value)} autoComplete="email" className={inputClassName} />
+              </label>
+              {email.trim() && <div className="mt-4"><ExistingContactVerification key={email.trim().toLowerCase()} email={email.trim().toLowerCase()} purpose="login" /></div>}
             </details>
 
             <p className="mt-6 text-sm leading-6 text-[color:var(--site-muted)]">

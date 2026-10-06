@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { issueAuthGrant, verifyAuthGrant, readNamedCookie } from '@/lib/auth-grants';
+import { getAuthSigningSecret } from '@/lib/auth-signing-secret';
 
 export const CRM_COOKIE_NAME = 'crm_session';
 export const CRM_OTP_COOKIE_NAME = 'crm_otp';
@@ -13,6 +15,8 @@ export interface CrmTokenPayload {
   role: CrmRole;
   email: string;
   fullName: string;
+  authVersion?: number;
+  authIdentityHash?: string;
 }
 
 interface CrmOtpInput extends CrmTokenPayload {
@@ -45,31 +49,17 @@ export function matchesCrmOtpCode(payload: CrmOtpPayload, code: string) {
 }
 
 function getJwtSecret() {
-  const secret = process.env.JWT_SECRET?.trim();
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('[CRM] JWT_SECRET manquante en production. Configurez la variable d\'environnement JWT_SECRET.');
-    }
-    return 'dev-only-secret-must-change-before-prod';
-  }
-  return secret;
+  return getAuthSigningSecret(['JWT_SECRET'], 'dev-only-secret-must-change-before-prod');
 }
 
-export function signCrmToken(payload: CrmTokenPayload): string {
-  return jwt.sign({ ...payload, scope: 'crm-session' }, getJwtSecret(), { algorithm: 'HS256', expiresIn: '30d' });
+export async function signCrmToken(payload: CrmTokenPayload): Promise<string> {
+  return issueAuthGrant({ ...payload, scope: 'crm-session' }, getJwtSecret(), 30 * 86400);
 }
 
-export function verifyCrmToken(token: string): CrmTokenPayload | null {
-  try {
-    const decoded = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] });
-    // Preserve regular pre-upgrade sessions while refusing OTP and other token purposes.
-    if (typeof decoded === 'string' || !hasCrmIdentity(decoded)
-      || (decoded.scope !== undefined && decoded.scope !== 'crm-session')
-      || decoded.otpCode !== undefined || decoded.otpVerifier !== undefined) return null;
-    return { sub: decoded.sub, role: decoded.role, email: decoded.email, fullName: decoded.fullName };
-  } catch {
-    return null;
-  }
+export async function verifyCrmToken(token: string): Promise<CrmTokenPayload | null> {
+  const decoded = await verifyAuthGrant(token, 'crm-session', getJwtSecret());
+  if (!decoded || !hasCrmIdentity(decoded) || decoded.otpCode !== undefined || decoded.otpVerifier !== undefined) return null;
+  return { sub: decoded.sub, role: decoded.role, email: decoded.email, fullName: decoded.fullName, authVersion: decoded.authVersion, authIdentityHash: decoded.authIdentityHash };
 }
 
 export function createCrmSessionCookie(token: string): string {
@@ -95,40 +85,31 @@ export function clearCrmOtpCookie(): string {
 }
 
 export function getTokenFromCookie(cookie?: string): string | null {
-  if (!cookie) return null;
-  const match = cookie.match(new RegExp(`(?:^|;\\s*)${CRM_COOKIE_NAME}=([^;]+)`));
-  return match ? match[1] : null;
+  return readNamedCookie(cookie, CRM_COOKIE_NAME);
 }
 
 export function getOtpTokenFromCookie(cookie?: string): string | null {
-  if (!cookie) return null;
-  const match = cookie.match(new RegExp(`(?:^|;\\s*)${CRM_OTP_COOKIE_NAME}=([^;]+)`));
-  return match ? match[1] : null;
+  return readNamedCookie(cookie, CRM_OTP_COOKIE_NAME);
 }
 
-export function getCrmSessionFromCookieHeader(cookie?: string): CrmTokenPayload | null {
+export async function getCrmSessionFromCookieHeader(cookie?: string): Promise<CrmTokenPayload | null> {
   const token = getTokenFromCookie(cookie);
   if (!token) return null;
   return verifyCrmToken(token);
 }
 
-export function signCrmOtpToken({ otpCode, ...identity }: CrmOtpInput): string {
+export async function signCrmOtpToken({ otpCode, ...identity }: CrmOtpInput): Promise<string> {
   const nonce = randomUUID();
-  return jwt.sign({ ...identity, scope: 'crm-otp', nonce, otpVerifier: otpVerifier({ ...identity, nonce }, otpCode) },
-    getJwtSecret(), { algorithm: 'HS256', expiresIn: '10m' });
+  return issueAuthGrant({ ...identity, scope: 'crm-otp', nonce, otpVerifier: otpVerifier({ ...identity, nonce }, otpCode) }, getJwtSecret(), 600);
 }
 
-export function verifyCrmOtpToken(token: string): CrmOtpPayload | null {
-  try {
-    const decoded = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] });
-    if (typeof decoded === 'string' || !hasCrmIdentity(decoded) || decoded.scope !== 'crm-otp'
+export async function verifyCrmOtpToken(token: string): Promise<CrmOtpPayload | null> {
+    const decoded = await verifyAuthGrant(token, 'crm-otp', getJwtSecret());
+    if (!decoded || !hasCrmIdentity(decoded) || decoded.scope !== 'crm-otp'
       || typeof decoded.nonce !== 'string' || !decoded.nonce
       || typeof decoded.otpVerifier !== 'string' || !/^[a-f0-9]{64}$/.test(decoded.otpVerifier)
       || decoded.otpCode !== undefined) return null;
     return decoded as CrmOtpPayload;
-  } catch {
-    return null;
-  }
 }
 
 export async function getCrmSessionServer(): Promise<CrmTokenPayload | null> {

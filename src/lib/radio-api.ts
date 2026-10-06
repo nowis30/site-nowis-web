@@ -61,7 +61,7 @@ export async function limitRadio(request: NextRequest, scope: 'radio:comment' | 
 }
 export async function getRadioUser(request: NextRequest) {
   const token = request.cookies.get(CLIENT_PORTAL_COOKIE_NAME)?.value;
-  const session = token ? verifyClientPortalSession(token) : null;
+  const session = token ? await verifyClientPortalSession(token) : null;
   if (!session || !z.string().uuid().safeParse(session.contactId).success) return null;
   return prisma.user.findFirst({ where: { contactId: session.contactId, email: session.email, role: 'PORTAL_USER',
     isActive: true, contact: { deletedAt: null } }, select: { id: true, fullName: true } });

@@ -6,36 +6,17 @@ import { verifyClientPortalToken } from '@/lib/client-portal';
 import { canClientAccessFileDocument } from '@/features/client-portal/documents/security';
 import { getObjectForProxy } from '@/lib/file-storage';
 import { sanitizeFileBaseName } from '@/lib/file-documents';
-import { resolveClientMediaKind } from '@/features/client-portal/documents/media';
-
-const AUDIO_EXTENSIONS = ['.mp3', '.m4a', '.wav', '.aac', '.ogg'];
-const INLINE_MIME_PREFIXES = ['audio/', 'video/', 'image/'];
-
-function isAudioFileName(value: string) {
-  const name = value.toLowerCase();
-  return AUDIO_EXTENSIONS.some((ext) => name.endsWith(ext));
-}
-
-function shouldInlinePreview(params: { mimeType?: string | null; originalName?: string | null }) {
-  const mimeType = (params.mimeType || '').toLowerCase();
-  if (INLINE_MIME_PREFIXES.some((prefix) => mimeType.startsWith(prefix))) return true;
-  if (mimeType.includes('pdf')) return true;
-
-  const mediaKind = resolveClientMediaKind({ mimeType: params.mimeType, originalName: params.originalName });
-  return mediaKind === 'audio' || mediaKind === 'video';
-}
+import { canClientAccessStoredDocumentKey } from '@/lib/file-upload-intent';
 
 function isSafeInternalApiPath(path: string) {
   return path.startsWith('/api/client-portal/') && !path.startsWith('/api/client-portal/file-documents/');
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const cookieSession = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const cookieSession = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   const legacyToken = request.nextUrl.searchParams.get('token') || '';
-  const tokenSession = legacyToken ? verifyClientPortalToken(legacyToken) : null;
+  const tokenSession = legacyToken ? await verifyClientPortalToken(legacyToken) : null;
   const sessionContactId = cookieSession?.contactId || tokenSession?.contactId || null;
 
   if (!sessionContactId) {
@@ -60,7 +41,8 @@ export async function GET(
     },
   });
 
-  if (!doc || !canClientAccessFileDocument({
+  if (!doc || !canClientAccessStoredDocumentKey(doc.storageKey, sessionContactId)
+    || !canClientAccessFileDocument({
     sessionContactId,
     visibility: doc.visibility,
     category: doc.category,
@@ -76,9 +58,6 @@ export async function GET(
 
   try {
     const range = request.headers.get('range');
-    const isAudio = doc.mimeType?.startsWith('audio/') || isAudioFileName(doc.originalName || '');
-    const inlinePreview = shouldInlinePreview({ mimeType: doc.mimeType, originalName: doc.originalName });
-
     const { body, contentType, contentLength, contentRange, acceptRanges, status } =
       await getObjectForProxy(doc.storageKey, range ?? undefined);
 
@@ -93,9 +72,11 @@ export async function GET(
     headers.set('Accept-Ranges', acceptRanges ?? 'bytes');
     headers.set(
       'Content-Disposition',
-      `${inlinePreview ? 'inline' : 'attachment'}; filename="${sanitizeFileBaseName(doc.originalName || 'file')}"`,
+      `attachment; filename="${sanitizeFileBaseName(doc.originalName || 'file')}"`,
     );
-    headers.set('Cache-Control', 'private, max-age=300');
+    headers.set('Cache-Control', 'private, no-store');
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('Content-Security-Policy', "sandbox; default-src 'none'");
 
     return new NextResponse(body, { status, headers });
   } catch (error) {

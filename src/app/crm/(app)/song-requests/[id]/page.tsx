@@ -4,13 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { SongRequestDetailPage } from '@/features/crm/components/song-requests/SongRequestDetailPage';
 import { buildClientPortalUrl, signClientPortalToken } from '@/lib/client-portal';
+import { getClientPortalBaseUrl } from '@/features/client-portal/auth/session';
 import { LinkedDocumentsPanel } from '@/features/crm/components/documents/LinkedDocumentsPanel';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function CrmSongRequestDetailPage({ params }: PageProps) {
+export default async function CrmSongRequestDetailPage(props: PageProps) {
+  const params = await props.params;
   const session = await requireCrmSession();
 
   const item = await prisma.songRequest.findUnique({
@@ -77,11 +79,15 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
       })
     : [];
 
-  const clientPortalToken = signClientPortalToken({
-    contactId: String(song.contact.id),
-    email: song.email,
-    fullName: song.fullName,
-  });
+  let clientPortalUrl = `${getClientPortalBaseUrl()}/connexion`;
+  try {
+    const clientPortalToken = await signClientPortalToken({ contactId: String(song.contact.id), email: song.email, fullName: song.fullName });
+    clientPortalUrl = buildClientPortalUrl(clientPortalToken);
+  } catch (error) {
+    // Keep staff management available for pending/disabled/archived accounts.
+    // The public login page authorizes nothing and cannot expose their dossier.
+    if (!(error instanceof Error) || error.message !== 'AUTH_IDENTITY_UNAVAILABLE') throw error;
+  }
 
   const linkedDocuments = await prisma.fileDocument.findMany({
     where: {
@@ -203,7 +209,7 @@ export default async function CrmSongRequestDetailPage({ params }: PageProps) {
           createdAt: file.createdAt.toISOString(),
         })),
       }}
-        clientPortalUrl={buildClientPortalUrl(clientPortalToken)}
+        clientPortalUrl={clientPortalUrl}
         canCreateCommercialQuote={can(session.role, 'commercialQuotes', 'create')}
         canCreateInvoice={can(session.role, 'invoices', 'create')}
       />

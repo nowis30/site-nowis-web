@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
@@ -87,8 +88,10 @@ function buildEmailPayload(input: {
 }
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
     if (!session) {
       return NextResponse.json(
         {

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { disconnectCalendarConnection, getCalendarConnectionById, recordCalendarActivity } from '@/lib/calendar/service';
 import { requireCalendarAdminAccess } from '@/lib/calendar/oauth-routes';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireCalendarAdminAccess(request, 'update');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireCalendarAdminAccess(request, 'update');
   if (guard.error) return guard.error;
 
   const existing = await getCalendarConnectionById(params.id);

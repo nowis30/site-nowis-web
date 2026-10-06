@@ -1,7 +1,9 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { toClientWorkshopDto } from '@/features/client-portal/workshops/client-workshop-dto';
 
 const clientWorkshopPatchSchema = z.object({
   title: z.string().trim().min(3).max(180).optional(),
@@ -58,17 +60,21 @@ async function loadOwnedWorkshop(sessionContactId: string, id: string) {
   });
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const item = await loadOwnedWorkshop(session.contactId, params.id);
   if (!item) return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
-  return NextResponse.json({ item, canEdit: CLIENT_EDITABLE_STATUSES.has(item.status) });
+  return NextResponse.json({ item: toClientWorkshopDto(item), canEdit: CLIENT_EDITABLE_STATUSES.has(item.status) }, { headers: { 'Cache-Control': 'private, no-store' } });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const item = await loadOwnedWorkshop(session.contactId, params.id);
@@ -116,11 +122,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     },
   }).catch(() => undefined);
 
-  return NextResponse.json({ item: updated });
+  return NextResponse.json({ item: toClientWorkshopDto(updated) }, { headers: { 'Cache-Control': 'private, no-store' } });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const item = await loadOwnedWorkshop(session.contactId, params.id);

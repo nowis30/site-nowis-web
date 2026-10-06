@@ -6,17 +6,19 @@ import { POST as verifySms } from '@/app/api/crm/auth/verify-sms/route';
 import { POST as login } from '@/app/api/crm/auth/login/route';
 import { GET as getReviews } from '@/app/api/reviews/route';
 import { signCrmOtpToken, verifyCrmToken } from '@/features/crm/auth/session';
+import { adminId, withAuthDatabase } from './auth-test-database';
 
 process.env.JWT_SECRET = 'test-only-auth-routes-key-with-adequate-length';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
-const identity = { sub: 'crm-user-a', role: 'ADMIN' as const, email: 'admin@example.test', fullName: 'Admin A' };
+const identity = { sub: adminId, role: 'ADMIN' as const, email: 'admin@example.test', fullName: 'Admin Test' };
 
 function otpRequest(challenge: string, code: string) {
   return new NextRequest('https://nowis.store/api/crm/auth/verify-sms', { method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: `crm_otp=${challenge}` }, body: JSON.stringify({ code }) });
+    headers: { Origin: 'https://nowis.store', 'Content-Type': 'application/json', Cookie: `crm_otp=${challenge}` }, body: JSON.stringify({ code }) });
 }
 
 test('SMS endpoint requires the code, gives a session only after validation, persists account attempts across fresh challenges and fails closed', async () => {
+  await withAuthDatabase(async () => {
   const originalTransaction = prisma.$transaction;
   const records = new Map<string, any>();
   let unavailable = false;
@@ -34,17 +36,19 @@ test('SMS endpoint requires the code, gives a session only after validation, per
     } });
   };
   try {
-    const first = signCrmOtpToken({ ...identity, otpCode: '123456' });
+    const first = await signCrmOtpToken({ ...identity, otpCode: '123456' });
     assert.equal((await verifySms(otpRequest(first, '000000'))).status, 401);
     const correct = await verifySms(otpRequest(first, '123456'));
     assert.equal(correct.status, 200);
     const session = correct.headers.get('set-cookie')?.match(/crm_session=([^;]+)/)?.[1];
     assert.ok(session);
-    assert.equal(verifyCrmToken(session)?.sub, identity.sub);
-    assert.equal((await verifySms(otpRequest(first, '654321'))).status, 401);
-    assert.equal((await verifySms(otpRequest(first, '654321'))).status, 401);
-    assert.equal((await verifySms(otpRequest(first, '654321'))).status, 401);
-    const renewed = signCrmOtpToken({ ...identity, otpCode: '654321' });
+    assert.equal((await verifyCrmToken(session))?.sub, identity.sub);
+    assert.equal((await verifySms(otpRequest(first, '123456'))).status, 401);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const next = await signCrmOtpToken({ ...identity, otpCode: '654321' });
+      assert.equal((await verifySms(otpRequest(next, '000000'))).status, 401);
+    }
+    const renewed = await signCrmOtpToken({ ...identity, otpCode: '654321' });
     const blocked = await verifySms(otpRequest(renewed, '654321'));
     assert.equal(blocked.status, 429);
     assert.ok(Number(blocked.headers.get('retry-after')) > 0);
@@ -54,6 +58,7 @@ test('SMS endpoint requires the code, gives a session only after validation, per
     assert.equal(failed.status, 503);
     assert.equal(failed.headers.get('set-cookie'), null);
   } finally { (prisma as any).$transaction = originalTransaction; }
+  });
 });
 
 test('CRM login consults persistent account quota before password checking', async () => {
@@ -61,12 +66,13 @@ test('CRM login consults persistent account quota before password checking', asy
   const originalFind = prisma.user.findUnique;
   let queriedAccount = false;
   (prisma as any).$transaction = async (run: any) => run({ apiRateLimit: {
-    findUnique: async () => ({ id: 'existing', count: 10, resetAt: new Date(Date.now() + 60_000) }),
+    findUnique: async ({ where }: any) => ({ id: 'existing', count: where.scope_identifier_windowStart.scope === 'crm:login:account' ? 10 : 0, resetAt: new Date(Date.now() + 60_000) }),
+    update: async () => ({ count: 1, resetAt: new Date(Date.now() + 60_000) }),
   } });
   (prisma.user as any).findUnique = async () => { queriedAccount = true; return null; };
   try {
     const request = new NextRequest('https://nowis.store/api/crm/auth/login', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: identity.email, password: 'any' }) });
+      headers: { Origin: 'https://nowis.store', 'Content-Type': 'application/json' }, body: JSON.stringify({ email: identity.email, password: 'any' }) });
     const response = await login(request);
     assert.equal(response.status, 429);
     assert.equal(response.headers.get('set-cookie'), null);

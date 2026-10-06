@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ user: null });
   }
 
-  const payload = verifyToken(token);
+  const payload = await verifyToken(token);
   if (!payload) {
     return NextResponse.json({ user: null });
   }

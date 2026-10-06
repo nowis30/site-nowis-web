@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 
 type BillingPayload = {
   id: string;
@@ -54,7 +54,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export default function PublicBillingPage({ params }: { params: { token: string } }) {
+export default function PublicBillingPage(props: { params: Promise<{ token: string }> }) {
+  const params = use(props.params);
   const [item, setItem] = useState<BillingPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

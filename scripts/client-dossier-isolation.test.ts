@@ -44,20 +44,25 @@ function matches(row: any, where: any): boolean {
 async function withDatabase(run: (state: any) => Promise<void>, options: { users?: boolean; deleted?: boolean } = {}) {
   // Older CRM victim record appears first, reproducing the real ambiguity of OR id/email searches.
   const contacts: any[] = [
-    { id: privateContact, email, fullName: 'Private CRM client', type: 'CLIENT', phone: 'private-phone', source: 'CRM', tags: [], notes: 'Private notes', deletedAt: null },
-    { id: radioContact, email, fullName: 'Radio member', type: 'PARTICIPANT', phone: null, source: 'radio', tags: [], notes: null, deletedAt: options.deleted ? new Date() : null },
+    { id: privateContact, email, fullName: 'Private CRM client', type: 'CLIENT', phone: 'private-phone', source: 'CRM', tags: [], notes: 'Private notes', authVersion: 0, deletedAt: null },
+    { id: radioContact, email, fullName: 'Radio member', type: 'PARTICIPANT', phone: null, source: 'radio', tags: [], notes: null, authVersion: 0, deletedAt: options.deleted ? new Date() : null },
   ];
-  const users: any[] = options.users === false ? [] : [{ id: radioUser, contactId: radioContact, email, role: 'PORTAL_USER', isActive: true }];
+  const users: any[] = options.users === false ? [] : [{ id: radioUser, contactId: radioContact, email, role: 'PORTAL_USER', isActive: true, authVersion: 0, passwordHash: 'test-placeholder', emailVerifiedAt: new Date('2026-01-01') }];
   const org = { id: organizationId, name: 'Organisation Test', city: 'Drummondville', email: 'private-org@example.test', phone: 'private-org-phone', status: 'CLIENT' };
   const links: any[] = [{ id: 'private-org-link', organizationId, contactId: privateContact, email, fullName: 'Private CRM client' }];
+  const grants = new Map<string, any>();
   const writes: any[] = [];
   const events: any[] = [];
   const tasks: any[] = [];
   const makeRecord = (kind: string) => async ({ data }: any) => { const row = { id: `${kind}-${events.length + 1}`, ...data }; events.push({ kind, ...row }); return row; };
   const db: any = {
+    authGrant: {
+      create: async ({ data }: any) => { const row = { usedAt: null, revokedAt: null, ...data }; grants.set(row.tokenHash, row); return row; },
+      findUnique: async ({ where }: any) => grants.get(where.tokenHash) || null,
+    },
     contact: {
       findFirst: async ({ where }: any) => contacts.find(row => matches(row, where)) || null,
-      findUnique: async ({ where }: any) => contacts.find(row => matches(row, where)) || null,
+      findUnique: async ({ where }: any) => { const row = contacts.find(row => matches(row, where)); return row ? { ...row, userAccount: users.find(user => user.contactId === row.id) || null } : null; },
       update: async ({ where, data }: any) => { writes.push({ kind: 'contact', id: where.id }); const row = contacts.find(value => value.id === where.id); Object.assign(row, data); return row; },
       create: async () => { throw new Error('Authenticated forms must not create a fallback dossier'); },
     },
@@ -97,8 +102,10 @@ async function withDatabase(run: (state: any) => Promise<void>, options: { users
   }
 }
 
-function request(pathname: string, body: unknown, dossier = radioContact) {
-  const token = signClientPortalSession({ contactId: dossier, email, fullName: 'Radio member', tenantId: null });
+async function request(pathname: string, body: unknown, dossier = radioContact) {
+  let token: string;
+  try { token = await signClientPortalSession({ contactId: dossier, email, fullName: 'Radio member', tenantId: null }); }
+  catch { token = 'pre-migration-invalid-token'; }
   return new NextRequest(`https://nowis.store${pathname}`, { method: 'POST', headers: {
     cookie: `nowis_client_session=${token}`, origin: 'https://nowis.store', 'content-type': 'application/json',
   }, body: JSON.stringify(body) });
@@ -106,7 +113,7 @@ function request(pathname: string, body: unknown, dossier = radioContact) {
 
 test('radio account cannot adopt an older CRM dossier sharing its declared email via an atelier request', async () => {
   await withDatabase(async state => {
-    const response = await workshop(request('/api/workshop-requests', workshopInput));
+    const response = await workshop(await request('/api/workshop-requests', workshopInput));
     assert.equal(response.status, 201);
     assert.equal((await response.json()).contactId, radioContact);
     assert.equal(state.contacts[0].fullName, 'Private CRM client');
@@ -125,7 +132,7 @@ test('both contact endpoints attach messages only to the signed dossier when two
     ['/api/site/contact', siteContact, { fullName: 'Radio member', message: 'A sufficiently long contact message.' }],
   ] as const) {
     await withDatabase(async state => {
-      const response = await handler(request(path, body));
+      const response = await handler(await request(path, body));
       assert.equal(response.status, 200);
       assert.equal((await response.json()).contactId, radioContact);
       assert.equal(state.contacts[0].fullName, 'Private CRM client');
@@ -136,7 +143,7 @@ test('both contact endpoints attach messages only to the signed dossier when two
 
 test('verified magic-link clients sharing an email with another account can submit without moving that password account', async () => {
   await withDatabase(async state => {
-    const response = await workshop(request('/api/workshop-requests', workshopInput, privateContact));
+    const response = await workshop(await request('/api/workshop-requests', workshopInput, privateContact));
     assert.equal(response.status, 201);
     assert.equal((await response.json()).contactId, privateContact);
     assert.equal(state.users[0].contactId, radioContact);
@@ -154,7 +161,7 @@ test('verified magic-link clients sharing an email with another account can subm
 test('normal account and magic-link dossier without a User still create songs and ateliers successfully', async () => {
   for (const users of [true, false]) {
     await withDatabase(async state => {
-      const response = await workshop(request('/api/workshop-requests', workshopInput));
+      const response = await workshop(await request('/api/workshop-requests', workshopInput));
       assert.equal(response.status, 201);
       assert.equal(state.users[0].contactId, radioContact);
     }, { users });
@@ -175,7 +182,7 @@ test('deleted or missing signed dossier is rejected before business writes; emai
       ['/api/site/contact', siteContact, { fullName: 'Radio member', message: 'A sufficiently long contact message.' }],
     ] as const) {
       await withDatabase(async state => {
-        assert.equal((await handler(request(path, body, dossier))).status, 401);
+        assert.equal((await handler(await request(path, body, dossier))).status, 401);
         assert.equal(state.writes.length, 0); assert.equal(state.events.length, 0);
       }, { deleted: true });
     }

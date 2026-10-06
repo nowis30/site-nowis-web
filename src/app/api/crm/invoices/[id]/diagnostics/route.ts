@@ -5,8 +5,8 @@ import { getPayPalDiagnostics } from '@/lib/server/paypal';
 
 export const runtime = 'nodejs';
 
-function ensureAdmin(request: NextRequest) {
-  const guard = requireApiPermission(request, 'invoices', 'read');
+async function ensureAdmin(request: NextRequest) {
+  const guard = await requireApiPermission(request, 'invoices', 'read');
   if (guard.error) return { error: guard.error, session: null as null };
   if (guard.session.role !== 'ADMIN') {
     return {
@@ -17,8 +17,9 @@ function ensureAdmin(request: NextRequest) {
   return { error: null, session: guard.session };
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const admin = ensureAdmin(request);
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const admin = await ensureAdmin(request);
   if (admin.error) return admin.error;
 
   const invoice = await prisma.invoice.findUnique({

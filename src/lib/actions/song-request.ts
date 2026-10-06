@@ -102,6 +102,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
           passwordHash: throwawayPasswordHash,
           role: UserRole.PORTAL_USER,
           isActive: true,
+          emailVerifiedAt: new Date(),
           contactId: contact.id,
         },
         select: { id: true, contactId: true },
@@ -140,11 +141,11 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
       },
     });
 
-    const clientPortalToken = signClientPortalToken({
+    const clientPortalToken = await signClientPortalToken({
       contactId: contact.id,
       email: normalizedEmail,
       fullName: contact.fullName,
-    });
+    }, tx);
     const clientPortalPath = buildClientPortalPath(clientPortalToken);
 
     const summary = buildSongRequestSummary(input, songRequest.id, clientPortalPath);

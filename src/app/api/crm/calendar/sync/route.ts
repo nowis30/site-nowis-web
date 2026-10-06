@@ -8,7 +8,7 @@ const syncSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const guard = requireCalendarAdminAccess(request, 'update');
+  const guard = await requireCalendarAdminAccess(request, 'update');
   if (guard.error) return guard.error;
 
   try {

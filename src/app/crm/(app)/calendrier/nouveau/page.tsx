@@ -3,7 +3,10 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { CalendarCreateAppointmentPage } from '@/features/crm/components/calendar/CalendarCreateAppointmentPage';
 
-export default async function NewCalendarAppointmentPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
+export default async function NewCalendarAppointmentPage(
+  props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }
+) {
+  const searchParams = await props.searchParams;
   await requireCrmSession();
 
   const date = typeof searchParams?.date === 'string' ? searchParams.date : undefined;

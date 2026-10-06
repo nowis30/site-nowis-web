@@ -7,7 +7,7 @@ import { appointmentInputSchema, normalizeOptionalString } from '@/features/crm/
 import { createExternalCalendarEvent, recordCalendarActivity } from '@/lib/calendar/service';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'appointments', 'read');
+  const guard = await requireApiPermission(request, 'appointments', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
@@ -54,7 +54,7 @@ export async function POST(_request: NextRequest) {
 
 // Kept for reference — replaced by POST above which enforces the booking-link rule.
 async function _disabledManualAppointmentCreate(request: NextRequest) {
-  const guard = requireApiPermission(request, 'appointments', 'create');
+  const guard = await requireApiPermission(request, 'appointments', 'create');
   if (guard.error) return guard.error;
 
   try {

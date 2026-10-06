@@ -59,7 +59,8 @@ export function ClientRegisterCard() {
         }
         throw new Error(data.error || 'Inscription impossible.');
       }
-      setConfirmation(data.message || 'Compte cree avec succes. Redirection en cours...');
+      setConfirmation(data.message || (data.verificationRequired ? 'Vérifiez votre courriel pour activer votre compte et définir votre mot de passe.' : 'Compte cree avec succes. Redirection en cours...'));
+      if (data.verificationRequired) setForm(current => ({ ...current, password: '' }));
       router.push(data.redirectTo || '/client/dashboard');
       router.refresh();
     } catch (err) {
@@ -135,7 +136,7 @@ export function ClientRegisterCard() {
             </div>
           </label>
 
-          {confirmation ? <p className="md:col-span-2 rounded-xl border border-emerald-800/60 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200">{confirmation}</p> : null}
+          {confirmation ? <p role="status" className="md:col-span-2 rounded-xl border border-emerald-800/60 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200">{confirmation}</p> : null}
           {error ? <p className="md:col-span-2 rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-200">{error}</p> : null}
           {verificationEmail ? (
             <div className="md:col-span-2">

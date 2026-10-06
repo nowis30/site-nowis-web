@@ -12,6 +12,7 @@ import { getAssistantIdentity } from '@/lib/site-assistant-identity';
 import { prisma } from '@/lib/prisma';
 import { signClientPortalSession } from '@/features/client-portal/auth/session';
 import { signCrmToken, signCrmOtpToken } from '@/features/crm/auth/session';
+import { withAuthDatabase } from './auth-test-database';
 
 const directory = mkdtempSync(path.join(tmpdir(), 'nowis-quota-test-'));
 let pg: PGlite;
@@ -141,37 +142,29 @@ test('trusted IP cannot be selected through arbitrary forwarding headers', () =>
   assert.equal(getTrustedClientIp(new Headers({ 'x-vercel-forwarded-for': '1.2.3.4' }), { NODE_ENV: 'production' } as NodeJS.ProcessEnv), null);
 });
 
-test('real signed identity ignores client ids, rejects OTP/inactive accounts and unifies portal/CRM contact', async () => {
+test('real signed identity ignores client ids, rejects OTP/inactive accounts and retains the contact quota on promotion to CRM', async () => {
   const secretBefore = process.env.JWT_SECRET;
   const portalBefore = process.env.CLIENT_PORTAL_JWT_SECRET;
   process.env.JWT_SECRET = 'test-only-identity-secret';
   process.env.CLIENT_PORTAL_JWT_SECRET = 'test-only-portal-secret';
-  const userFind = prisma.user.findFirst;
-  const contactFind = prisma.contact.findFirst;
-  const contactId = '11111111-1111-4111-8111-111111111111';
-  const userId = '22222222-2222-4222-8222-222222222222';
-  let active = true;
-  prisma.user.findFirst = (async (args: any) => {
-    assert.equal(args.where.isActive, true);
-    return active ? { id: userId, contactId, contact: { deletedAt: null } } : null;
-  }) as typeof userFind;
-  prisma.contact.findFirst = (async () => ({ id: contactId, userAccount: { isActive: active } })) as typeof contactFind;
-  const portal = signClientPortalSession({ contactId, tenantId: null, email: 'test@example.com', fullName: 'Test' });
-  const crmPayload = { sub: userId, role: 'ADMIN' as const, email: 'test@example.com', fullName: 'Test' };
-  const session = signCrmToken(crmPayload);
-  const otp = signCrmOtpToken({ ...crmPayload, otpCode: '123456' });
   const withCookie = (cookie: string) => new Request('https://nowis.store/api/site-assistant/chat?userId=forged', { headers: { cookie } });
   try {
-    assert.equal(await getAssistantIdentity(withCookie(`nowis_client_session=${portal}`)), `contact:${contactId}`);
-    assert.equal(await getAssistantIdentity(withCookie(`crm_session=${session}`)), `contact:${contactId}`);
-    assert.equal(await getAssistantIdentity(withCookie(`crm_session=${otp}`)), null);
-    assert.equal(await getAssistantIdentity(withCookie(`prefix_nowis_client_session=${portal}`)), null);
-    active = false;
-    assert.equal(await getAssistantIdentity(withCookie(`nowis_client_session=${portal}`)), null);
-    assert.equal(await getAssistantIdentity(withCookie(`crm_session=${session}`)), null);
+    await withAuthDatabase(async state => {
+      const portal = await signClientPortalSession({ contactId: state.contact.id, tenantId: null, email: state.portal.email, fullName: state.portal.fullName });
+      assert.equal(await getAssistantIdentity(withCookie(`nowis_client_session=${portal}`)), `contact:${state.contact.id}`);
+      assert.equal(await getAssistantIdentity(withCookie(`prefix_nowis_client_session=${portal}`)), null);
+      assert.equal(await getAssistantIdentity(withCookie(`nowis_client_session=${portal}; nowis_client_session=${portal}`)), null);
+      state.portal.role = 'ADMIN'; state.portal.authVersion++;
+      const crmPayload = { sub: state.portal.id, role: 'ADMIN' as const, email: state.portal.email, fullName: state.portal.fullName };
+      const session = await signCrmToken(crmPayload);
+      const otp = await signCrmOtpToken({ ...crmPayload, otpCode: '123456' });
+      assert.equal(await getAssistantIdentity(withCookie(`crm_session=${session}`)), `contact:${state.contact.id}`);
+      assert.equal(await getAssistantIdentity(withCookie(`crm_session=${otp}`)), null);
+      assert.equal(await getAssistantIdentity(withCookie(`nowis_client_session=${portal}`)), null);
+      state.portal.isActive = false;
+      assert.equal(await getAssistantIdentity(withCookie(`crm_session=${session}`)), null);
+    });
   } finally {
-    prisma.user.findFirst = userFind;
-    prisma.contact.findFirst = contactFind;
     if (secretBefore === undefined) delete process.env.JWT_SECRET; else process.env.JWT_SECRET = secretBefore;
     if (portalBefore === undefined) delete process.env.CLIENT_PORTAL_JWT_SECRET; else process.env.CLIENT_PORTAL_JWT_SECRET = portalBefore;
   }

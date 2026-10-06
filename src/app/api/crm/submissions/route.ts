@@ -5,7 +5,7 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 const ALLOWED_STATUSES = new Set(['NOUVEAU', 'LU', 'TRAITE', 'ARCHIVE', 'SUPPRIME']);
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'activities', 'read');
+  const guard = await requireApiPermission(request, 'activities', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();

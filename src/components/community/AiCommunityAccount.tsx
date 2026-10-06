@@ -9,6 +9,7 @@ export function AiCommunityAccount() {
   const [register, setRegister] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [confirmation, setConfirmation] = useState('');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,6 +20,7 @@ export function AiCommunityAccount() {
 
     setBusy(true);
     setError('');
+    setConfirmation('');
     try {
       const response = await fetch(register ? '/api/radio/account' : '/api/client-auth/login', {
         method: 'POST',
@@ -27,9 +29,13 @@ export function AiCommunityAccount() {
           ? { fullName: form.get('fullName'), email, password, website: form.get('website') || '' }
           : { email, password, next: '/communaute-ia/profil' }),
       });
-      const data = await response.json().catch(() => null) as { message?: string; error?: string } | null;
+      const data = await response.json().catch(() => null) as { message?: string; error?: string; verificationRequired?: boolean; redirectTo?: string } | null;
       if (!response.ok) throw new Error(data?.message || data?.error || 'Impossible de continuer.');
-      router.push('/communaute-ia/profil');
+      if (data?.verificationRequired) {
+        setConfirmation(data.message || 'Vérifiez votre courriel pour activer votre compte et définir votre mot de passe.');
+        return;
+      }
+      router.push(data?.redirectTo || '/communaute-ia/profil');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Vérifiez vos informations.');
@@ -77,10 +83,12 @@ export function AiCommunityAccount() {
         {register ? <p className="mt-2 text-xs text-[color:var(--site-muted)]">8 caractères minimum, avec majuscule, minuscule et chiffre.</p> : null}
         <label className="hidden" aria-hidden="true">Site web<input name="website" tabIndex={-1} autoComplete="off" /></label>
         {error ? <p className="mt-4 text-sm text-red-700" role="alert">{error}</p> : null}
+        {confirmation ? <p className="mt-4 text-sm text-[color:var(--site-muted)]" role="status">{confirmation} Vous pouvez continuer à parcourir la communauté.</p> : null}
         <button className="cta-primary mt-5 w-full justify-center" disabled={busy}>
           {busy ? 'Un instant…' : register ? 'Créer mon compte artiste' : 'Me connecter'}
         </button>
       </form>
+      <p className="mt-4 text-center"><Link className="nm-text-link" href="/connexion?next=/communaute-ia/profil">Recevoir un lien de connexion par courriel</Link></p>
 
       <p className="mt-5 text-center text-sm text-[color:var(--site-muted)]">
         Vous pouvez aussi utiliser <Link className="nm-text-link" href="/connexion?next=/communaute-ia/profil">la connexion Google ou votre compte client Nowis</Link>.

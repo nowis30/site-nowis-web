@@ -2,11 +2,12 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { InvoicesPage } from '@/features/crm/components/invoices/InvoicesPage';
 
-export default async function CrmInvoicesPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function CrmInvoicesPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   await requireCrmSession();
 
   const songRequestId = typeof searchParams?.songRequestId === 'string' ? searchParams.songRequestId : undefined;

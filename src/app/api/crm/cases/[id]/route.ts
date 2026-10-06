@@ -4,11 +4,12 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { caseInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'cases', 'read');
+export async function GET(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'cases', 'read');
   if (guard.error) return guard.error;
   const item = await prisma.caseRecord.findUnique({
     where: { id: params.id },
@@ -18,8 +19,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   return NextResponse.json({ item });
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'cases', 'update');
+export async function PUT(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'cases', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -44,8 +46,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'cases', 'delete');
+export async function DELETE(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'cases', 'delete');
   if (guard.error) return guard.error;
 
   try {

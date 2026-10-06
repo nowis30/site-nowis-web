@@ -3,7 +3,7 @@ import { UserRole } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/email-service';
-import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
+import { readAuthJson, limitAuth, authRequestErrorResponse } from '@/lib/auth-request-security';
 import { buildPasswordResetLink, createPasswordResetToken, getPasswordResetExpiryDate } from '@/lib/password-reset';
 
 const requestSchema = z.object({
@@ -12,25 +12,10 @@ const requestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = requestSchema.parse(await request.json());
+    const payload = requestSchema.parse(await readAuthJson(request));
     const email = payload.email;
 
-    const clientIp = getRequestClientIp(request.headers);
-    const limiter = consumeRateLimit(
-      `crm-forgot-password:${sanitizeRateLimitIdentifier(clientIp)}:${sanitizeRateLimitIdentifier(email)}`,
-      5,
-      15 * 60 * 1000,
-    );
-
-    if (!limiter.allowed) {
-      return NextResponse.json(
-        { error: 'Trop de demandes. Réessayez dans quelques minutes.' },
-        {
-          status: 429,
-          headers: { 'Retry-After': String(limiter.retryAfterSeconds), 'Cache-Control': 'no-store' },
-        },
-      );
-    }
+    await limitAuth(request, 'crm-forgot', email, 5);
 
     const user = await prisma.user.findFirst({
       where: {
@@ -38,10 +23,10 @@ export async function POST(request: NextRequest) {
         role: { in: [UserRole.ADMIN, UserRole.ASSISTANT] },
         isActive: true,
       },
-      select: { id: true, fullName: true, email: true },
+      select: { id: true, fullName: true, email: true, authVersion: true, emailVerifiedAt: true, contact: { select: { deletedAt: true } } },
     });
 
-    if (user) {
+    if (user && !user.contact?.deletedAt) {
       const { token, tokenHash } = createPasswordResetToken();
       const expiresAt = getPasswordResetExpiryDate(30);
 
@@ -55,6 +40,7 @@ export async function POST(request: NextRequest) {
         prisma.passwordResetToken.create({
           data: {
             userId: user.id,
+            authVersion: user.authVersion,
             scope: 'crm',
             tokenHash,
             expiresAt,
@@ -64,7 +50,7 @@ export async function POST(request: NextRequest) {
 
       const resetLink = buildPasswordResetLink('crm', token, request.nextUrl.origin);
 
-      await sendEmail({
+      const sent = await sendEmail({
         to: user.email,
         subject: 'Réinitialisation de votre mot de passe CRM Nowis',
         html: `
@@ -79,6 +65,7 @@ export async function POST(request: NextRequest) {
           </div>
         `,
       });
+      if (!sent.success) throw new Error('AUTH_EMAIL_UNAVAILABLE');
     }
 
     return NextResponse.json(
@@ -86,6 +73,8 @@ export async function POST(request: NextRequest) {
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Email invalide.' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
     }

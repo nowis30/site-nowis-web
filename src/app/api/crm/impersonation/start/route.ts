@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCrmSessionFromCookieHeader } from '@/features/crm/auth/session';
 import {
@@ -7,7 +8,9 @@ import {
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
-  const session = getCrmSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const session = await getCrmSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) {
     return NextResponse.json({ error: 'Session CRM invalide' }, { status: 401 });
   }
@@ -32,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Contact introuvable' }, { status: 404 });
   }
 
-  const token = signClientPortalImpersonation({
+  const token = await signClientPortalImpersonation({
     adminId: session.sub,
     adminRole: 'ADMIN',
     contactId: contact.id,

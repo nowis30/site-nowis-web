@@ -8,10 +8,11 @@ import { getPayPalDiagnostics } from '@/lib/server/paypal';
 import { LinkedDocumentsPanel } from '@/features/crm/components/documents/LinkedDocumentsPanel';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function CrmInvoiceDetailRoute({ params }: PageProps) {
+export default async function CrmInvoiceDetailRoute(props: PageProps) {
+  const params = await props.params;
   await requireCrmSession();
 
   const paypalConfigured = getPayPalDiagnostics().configured;

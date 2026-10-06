@@ -21,5 +21,6 @@ export function getStoredUploadUrl(fileName: string): string {
 }
 
 export function isUsingDefaultPublicUploadsDir(): boolean {
-  return path.resolve(getUploadsDirectory()) === path.resolve(DEFAULT_UPLOADS_DIR);
+  // This only compares path strings; it does not read from either directory.
+  return path.resolve(/* turbopackIgnore: true */ getUploadsDirectory()) === path.resolve(DEFAULT_UPLOADS_DIR);
 }

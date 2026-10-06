@@ -9,7 +9,7 @@ function normalizeOptionalString(value?: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'organizations', 'read');
+  const guard = await requireApiPermission(request, 'organizations', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'organizations', 'create');
+  const guard = await requireApiPermission(request, 'organizations', 'create');
   if (guard.error) return guard.error;
 
   try {

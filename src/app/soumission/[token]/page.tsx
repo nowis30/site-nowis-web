@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, use } from 'react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -119,7 +119,8 @@ function StatusBadge({ status }: { status: string }) {
 
 // ─── Page principale ──────────────────────────────────────────────────────────
 
-export default function PublicQuotePage({ params }: { params: { token: string } }) {
+export default function PublicQuotePage(props: { params: Promise<{ token: string }> }) {
+  const params = use(props.params);
   const [item, setItem] = useState<QuotePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);

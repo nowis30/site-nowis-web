@@ -16,6 +16,7 @@ import { createClientPortalSessionCookie, getClientPortalSessionFromCookieHeader
 import { canLinkExistingGoogleUser } from '@/features/client-portal/auth/google-link-security';
 import { isClientBillingComplete } from '@/lib/client-billing';
 import { sendPortalEventNotificationEmail } from '@/lib/email-service';
+import { adoptVerifiedPortalUser } from '@/lib/verified-account';
 
 interface GoogleTokenResponse {
   access_token?: string;
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   const cookieHeader = request.headers.get('cookie');
-  const currentPortalSession = getClientPortalSessionFromCookieHeader(cookieHeader || undefined);
+  const currentPortalSession = await getClientPortalSessionFromCookieHeader(cookieHeader || undefined);
   const stateCookie = readCookieValue(cookieHeader, CLIENT_GOOGLE_STATE_COOKIE_NAME);
   const nextCookieValue = readCookieValue(cookieHeader, CLIENT_GOOGLE_NEXT_COOKIE_NAME);
   let nextPath = '/client/dashboard';
@@ -144,13 +145,14 @@ export async function GET(request: NextRequest) {
     // Probe the OAuth table BEFORE starting a transaction.
     // Inside a Postgres transaction, any thrown error puts the transaction in
     // "aborted" state — subsequent queries fail even if the error was caught in JS.
-    let oauthTableMissing = false;
+    const oauthTableMissing = false;
     let linkedAccount: {
       id: string;
       user: {
         id: string;
         role: UserRole;
         isActive: boolean;
+        emailVerifiedAt: Date | null;
         contact: {
           id: string;
           fullName: string;
@@ -190,7 +192,7 @@ export async function GET(request: NextRequest) {
       });
     } catch (error) {
       if (isMissingOauthTableError(error)) {
-        oauthTableMissing = true;
+        throw new Error('GOOGLE_AUTH_STORAGE_UNAVAILABLE');
       } else {
         throw error;
       }
@@ -199,7 +201,9 @@ export async function GET(request: NextRequest) {
     const result = await prisma.$transaction(async (tx) => {
 
       if (linkedAccount) {
-        const linkedUser = linkedAccount.user;
+        const linkedUser = await tx.user.findUnique({ where: { id: linkedAccount.user.id }, include: { contact: true } });
+        if (!linkedUser || !linkedUser.contact || linkedUser.contact.deletedAt) throw new Error('GOOGLE_ACCOUNT_DISABLED');
+        if (!linkedUser.emailVerifiedAt) await adoptVerifiedPortalUser(tx, linkedUser.id);
 
         if (linkedUser.role !== UserRole.PORTAL_USER || !linkedUser.isActive || linkedUser.contact?.deletedAt) {
           throw new Error('GOOGLE_ROLE_MISMATCH');
@@ -256,12 +260,11 @@ export async function GET(request: NextRequest) {
         }
 
         if (!oauthTableMissing) {
-          await tx.clientOAuthAccount.update({
-            where: { id: linkedAccount.id },
-            data: {
-              email,
-              name: fullName,
-              image: profile.picture || null,
+          await tx.clientOAuthAccount.upsert({
+            where: { userId_provider: { userId: linkedUser.id, provider: 'google' } },
+            create: { userId: linkedUser.id, provider: 'google', providerAccountId, email, name: fullName, image: profile.picture || null },
+            update: {
+              providerAccountId, email, name: fullName, image: profile.picture || null,
             },
           });
         }
@@ -270,6 +273,7 @@ export async function GET(request: NextRequest) {
           contact,
           email,
           fullName,
+          authVersion: (await tx.user.findUniqueOrThrow({ where: { id: linkedUser.id } })).authVersion,
           createdNewUser: false,
           billingIncomplete: needsBillingCompletion({
             fullName,
@@ -299,12 +303,15 @@ export async function GET(request: NextRequest) {
         throw new Error('GOOGLE_ACCOUNT_DISABLED');
       }
 
-      // Do not silently merge a verified Google identity into an unverified password signup.
-      // The existing account must already be authenticated in this browser and match its dossier.
-      if (existingUser && !canLinkExistingGoogleUser(existingUser, currentPortalSession)) {
+      // Verified password accounts require their own session before adding a
+      // provider. Pending signups can be adopted only by proved email ownership;
+      // adoption below destroys previous passwords, grants and provider bindings.
+      if (existingUser?.emailVerifiedAt && !canLinkExistingGoogleUser(existingUser, currentPortalSession)) {
         throw new Error('GOOGLE_LINK_LOGIN_REQUIRED');
       }
 
+      if (existingUser && (!existingUser.contact || existingUser.contact.deletedAt)) throw new Error('GOOGLE_ACCOUNT_DISABLED');
+      if (existingUser && !existingUser.emailVerifiedAt) await adoptVerifiedPortalUser(tx, existingUser.id);
       let user = existingUser;
       let contact = existingUser?.contact || null;
 
@@ -342,6 +349,7 @@ export async function GET(request: NextRequest) {
             passwordHash: generatedPassword,
             role: UserRole.PORTAL_USER,
             isActive: true,
+            emailVerifiedAt: new Date(),
             contactId: contact.id,
           },
           include: { contact: true },
@@ -452,6 +460,7 @@ export async function GET(request: NextRequest) {
         contact: contact!,
         email,
         fullName,
+        authVersion: (await tx.user.findUniqueOrThrow({ where: { id: user.id } })).authVersion,
         createdNewUser: !existingUser,
         billingIncomplete: needsBillingCompletion({
           fullName,
@@ -485,11 +494,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const sessionToken = signClientPortalSession({
+    const sessionToken = await signClientPortalSession({
       contactId: result.contact.id,
       tenantId: null,
       email: result.email,
       fullName: result.fullName,
+      authVersion: result.authVersion,
     });
 
     const targetPath = result.billingIncomplete

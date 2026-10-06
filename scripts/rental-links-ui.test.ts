@@ -15,39 +15,34 @@ const headerSource = readFileSync(headerPath, 'utf8');
 const homeSource = readFileSync(homePath, 'utf8');
 const footerSource = readFileSync(footerPath, 'utf8');
 const envSource = readFileSync(envExamplePath, 'utf8');
+const explorerSource = readFileSync(join(repoRoot, 'src/app/explorer/page.tsx'), 'utf8');
 
-test('Header contains desktop rental button before portail client and secure external attributes', () => {
-  assert.match(headerSource, /Logements a louer/);
-  assert.match(headerSource, /target="_blank"/);
-  assert.match(headerSource, /rel="noopener noreferrer"/);
-  const rentalsIndex = headerSource.indexOf('Logements a louer');
-  const portalIndex = headerSource.indexOf('Portail client');
-  assert.ok(rentalsIndex > -1 && portalIndex > -1 && rentalsIndex < portalIndex, 'Le bouton logements doit apparaitre avant Portail client.');
+test('Current desktop navigation retains Explorer access to the rental service', () => {
+  assert.match(headerSource, /label: 'Explorer', href: '\/explorer'/);
+  assert.match(headerSource, /nm-desktop-nav/);
+  assert.match(headerSource, /primary\.map/);
 });
 
-test('Header contains mobile full-width rental button', () => {
-  assert.match(headerSource, /Voir les logements a louer/);
-  assert.match(headerSource, /w-full/);
-  assert.match(headerSource, /setIsMenuOpen\(false\)/);
+test('The mobile menu retains the same navigation and closes on selection', () => {
+  assert.match(headerSource, /id="mobile-main-menu"/);
+  assert.match(headerSource, /setOpen\(false\)/);
+  assert.equal((headerSource.match(/primary\.map/g) ?? []).length, 2);
 });
 
-test('Home screen contains prominent rental feature block', () => {
-  assert.match(homeSource, /Nouveau service/);
-  assert.match(homeSource, /Vous cherchez un logement\?/);
-  assert.match(homeSource, /Voir les logements disponibles/);
-  assert.match(homeSource, /Service offert par Simon Morin — Agent de location/);
+test('Home screen retains the album and the current Explorer route', () => {
+  assert.match(homeSource, /href="\/album"/);
+  assert.match(homeSource, /href="\/explorer"/);
 });
 
-test('Home screen primary actions include external rental action card', () => {
-  assert.match(homeSource, /title: 'Logements a louer'/);
-  assert.match(homeSource, /external: true/);
-  assert.match(homeSource, /trackRentalClick\('home_card'\)/);
-  assert.match(homeSource, /target="_blank"/);
-  assert.match(homeSource, /rel="noopener noreferrer"/);
+test('Explorer exposes the rental destination with safe new-tab attributes', () => {
+  assert.match(explorerSource, /Logements à louer/);
+  assert.match(explorerSource, /href=\{rentalsPublicUrl\}/);
+  assert.match(explorerSource, /target="_blank"/);
+  assert.match(explorerSource, /rel="noopener noreferrer"/);
 });
 
 test('Footer contains rental links and keeps legal links unchanged', () => {
-  assert.match(footerSource, /Logements a louer/);
+  assert.match(footerSource, /Logements à louer/);
   assert.match(footerSource, /Voir les logements disponibles →/);
   assert.match(footerSource, /target="_blank"/);
   assert.match(footerSource, /rel="noopener noreferrer"/);
@@ -73,6 +68,10 @@ test('Rentals URL constant supports default and custom domain', async () => {
     mod.resolveRentalsPublicUrl('https://logements.nowis.store'),
     'https://logements.nowis.store',
   );
+  for (const unsafe of ['javascript:alert(1)', 'data:text/html,<script>', 'http://example.com', '//evil.test', '/connexion', 'https://user:pass@example.com']) {
+    assert.equal(mod.resolveRentalsPublicUrl(unsafe), mod.resolveRentalsPublicUrl(undefined));
+  }
+  assert.equal(mod.resolveRentalsPublicUrl('  https://logements.nowis.store  '), 'https://logements.nowis.store');
 });
 
 test('Client portal link remains present', () => {

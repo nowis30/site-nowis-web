@@ -5,16 +5,17 @@ import { GameDetailScreen } from '@/components/jeux/GameDetailScreen';
 import { findGameBySlug, gameCatalog } from '@/components/jeux/gameCatalog';
 
 type GamePageProps = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 export function generateStaticParams() {
   return gameCatalog.map((game) => ({ slug: game.slug }));
 }
 
-export function generateMetadata({ params }: GamePageProps): Metadata {
+export async function generateMetadata(props: GamePageProps): Promise<Metadata> {
+  const params = await props.params;
   const game = findGameBySlug(params.slug);
 
   if (!game) {
@@ -35,7 +36,8 @@ export function generateMetadata({ params }: GamePageProps): Metadata {
   });
 }
 
-export default function GamePage({ params }: GamePageProps) {
+export default async function GamePage(props: GamePageProps) {
+  const params = await props.params;
   const game = findGameBySlug(params.slug);
 
   if (!game) {

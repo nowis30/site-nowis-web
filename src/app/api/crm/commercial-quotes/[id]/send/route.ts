@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { assertCanSendQuoteForSongRequest, SongRequestQuoteGuardError } from '@/features/crm/server/song-request-quote-guards';
 
-function ensureAdmin(request: NextRequest) {
-  const guard = requireApiPermission(request, 'commercialQuotes', 'update');
+async function ensureAdmin(request: NextRequest) {
+  const guard = await requireApiPermission(request, 'commercialQuotes', 'update');
   if (guard.error) return { error: guard.error, session: null as null };
   if (guard.session.role !== 'ADMIN') {
     return {
@@ -15,8 +15,9 @@ function ensureAdmin(request: NextRequest) {
   return { error: null, session: guard.session };
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const admin = ensureAdmin(request);
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const admin = await ensureAdmin(request);
   if (admin.error) return admin.error;
 
   const quote = await prisma.commercialQuote.findUnique({ where: { id: params.id } });

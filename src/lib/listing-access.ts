@@ -4,7 +4,7 @@ import { getUserById } from '@/lib/db';
 
 export async function getListingUser(cookie: string | null): Promise<User | null> {
   const token = getTokenFromCookie(cookie || undefined);
-  const payload = token ? verifyToken(token) : null;
+  const payload = token ? await verifyToken(token) : null;
   if (!payload) return null;
   // Use the current persisted identity and role; deleted users and stale roles cannot mutate listings.
   return (await getUserById(payload.sub)) || null;

@@ -14,7 +14,7 @@ import { formRegistry } from '@/features/client-portal/forms/form-registry';
  * Utilisé par un chatbot/assistant pour guider le client dans ses demandes.
  */
 export async function GET(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(
+  const session = await getClientPortalSessionFromCookieHeader(
     request.headers.get('cookie') ?? undefined
   );
   if (!session) {

@@ -11,8 +11,10 @@ import {
   reuseExistingPayPalInvoiceIfPresent,
   serializePayPalApiError,
   validatePayPalInvoicePreconditions,
+  syncPayPalInvoiceStatusByPayPalInvoiceId,
 } from '@/lib/server/paypal';
-import { handlePayPalWebhookRequest } from '@/lib/server/paypal-webhook';
+import { prisma } from '@/lib/prisma';
+import { handlePayPalWebhookRequest, PAYPAL_MAX_WEBHOOK_BODY_BYTES } from '@/lib/server/paypal-webhook';
 import {
   buildPayPalAddressFromBilling,
   normalizePayPalCountryCode,
@@ -207,6 +209,7 @@ test('validatePayPalInvoicePreconditions bloque email manquant, montant nul et d
 test('webhook PAID met Invoice.status a PAID', () => {
   const update = derivePayPalInvoiceSyncUpdate({
     invoice: {
+      amount: new Prisma.Decimal('125.00'),
       status: InvoiceStatus.SENT,
       paymentCurrency: 'CAD',
       paymentAmount: new Prisma.Decimal('125.00'),
@@ -231,6 +234,101 @@ test('webhook PAID met Invoice.status a PAID', () => {
   assert.ok(update.paypalLastWebhookAt instanceof Date);
 });
 
+test('PayPal exact statuses never treat UNPAID, partial, refunded or unknown states as a full payment', () => {
+  const invoice = { amount: new Prisma.Decimal('125.00'), status: InvoiceStatus.SENT, paymentCurrency: 'CAD',
+    paymentAmount: null, paypalInvoiceUrl: null, paypalPaidAt: null, paypalLastWebhookAt: null };
+  for (const [status, paymentStatus, crmStatus] of [
+    ['UNPAID', 'unpaid', InvoiceStatus.SENT],
+    ['PARTIALLY_PAID', 'partial', InvoiceStatus.SENT],
+    ['PAYMENT_PENDING', 'unpaid', InvoiceStatus.SENT],
+    ['REFUNDED', 'refunded', InvoiceStatus.SENT],
+    ['PARTIALLY_REFUNDED', 'refunded', InvoiceStatus.SENT],
+    ['CANCELLED', 'cancelled', InvoiceStatus.CANCELLED],
+    ['UNKNOWN_PAID_STATE', 'unpaid', InvoiceStatus.SENT],
+  ] as const) {
+    const update = derivePayPalInvoiceSyncUpdate({ invoice, payload: { status, amount: { value: '125.00', currency_code: 'CAD' } } });
+    assert.equal(update.paymentStatus, paymentStatus, status);
+    assert.equal(update.status, crmStatus, status);
+    assert.equal(update.paypalPaidAt, null, status);
+  }
+  const refunded = derivePayPalInvoiceSyncUpdate({ invoice: { ...invoice, status: InvoiceStatus.PAID }, payload: { status: 'REFUNDED' } });
+  assert.equal(refunded.status, InvoiceStatus.SENT);
+});
+
+test('PayPal PAID requires the persisted amount and currency and sufficient reported payments', () => {
+  const invoice = { amount: new Prisma.Decimal('125.00'), status: InvoiceStatus.SENT, paymentCurrency: 'CAD',
+    paymentAmount: null, paypalInvoiceUrl: null, paypalPaidAt: null, paypalLastWebhookAt: null };
+  for (const amount of [
+    { value: '1.00', currency_code: 'CAD' },
+    { value: '125.00', currency_code: 'USD' },
+    { value: '-125.00', currency_code: 'CAD' },
+    { value: 'Infinity', currency_code: 'CAD' },
+    { value: '125.00' },
+    {},
+  ]) assert.throws(() => derivePayPalInvoiceSyncUpdate({ invoice, payload: { status: 'PAID', amount } }), /incohérent/);
+  const amount = { value: '125.00', currency_code: 'CAD' };
+  assert.throws(() => derivePayPalInvoiceSyncUpdate({ invoice, payload: { status: 'PAID', amount,
+    payments: { paid_amount: { value: '25.00', currency_code: 'CAD' } } } }), /incomplet/);
+  assert.throws(() => derivePayPalInvoiceSyncUpdate({ invoice, payload: { status: 'PAID', amount,
+    payments: { paid_amount: { value: '125.00', currency_code: 'USD' } } } }), /incomplet/);
+  for (const status of ['PAID', 'MARKED_AS_PAID', 'PAID_EXTERNAL']) {
+    const update = derivePayPalInvoiceSyncUpdate({ invoice, payload: { status, amount,
+      payments: { paid_amount: amount } } });
+    assert.equal(update.status, InvoiceStatus.PAID);
+    assert.equal(update.paymentStatus, 'paid');
+  }
+});
+
+test('an older concurrent PayPal lookup cannot overwrite a newer refund or CRM edit', async () => {
+  const env = { PAYPAL_CLIENT_ID: 'isolated-id', PAYPAL_CLIENT_SECRET: 'isolated-key', PAYPAL_CURRENCY: 'CAD', PAYPAL_ENV: 'sandbox' };
+  const previousEnv = Object.fromEntries(Object.keys(env).map(name => [name, process.env[name]]));
+  const previousFetch = globalThis.fetch;
+  const originalFirst = prisma.invoice.findFirst, originalUnique = prisma.invoice.findUnique, originalUpdate = prisma.invoice.updateMany;
+  const originalActivity = prisma.activity.create;
+  const initialDate = new Date('2026-10-05T12:00:00Z');
+  let stored: any = { id: 'isolated-invoice', number: 'ISOLATED-001', contactId: 'isolated-contact', amount: new Prisma.Decimal(125),
+    paypalInvoiceId: 'INV2-ISOLATED', paypalInvoiceUrl: null, paypalSentAt: null, paypalStatus: 'PAID', paypalPaidAt: initialDate,
+    paypalLastWebhookAt: null, paymentStatus: 'paid', paymentProvider: 'PAYPAL', paymentAmount: new Prisma.Decimal(125),
+    paymentCurrency: 'CAD', status: InvoiceStatus.PAID, updatedAt: initialDate };
+  let releaseOlder: () => void = () => {}, sawOlder: () => void = () => {};
+  const olderWait = new Promise<void>(resolve => { releaseOlder = resolve; });
+  const olderStarted = new Promise<void>(resolve => { sawOlder = resolve; });
+  let remoteLookups = 0, successfulUpdates = 0, activities = 0;
+  Object.assign(process.env, env);
+  try {
+    prisma.invoice.findFirst = (async () => ({ ...stored })) as typeof originalFirst;
+    prisma.invoice.findUnique = (async () => ({ ...stored })) as typeof originalUnique;
+    prisma.invoice.updateMany = (async ({ where, data }: any) => {
+      if (where.updatedAt.getTime() !== stored.updatedAt.getTime()) return { count: 0 };
+      stored = { ...stored, ...data, updatedAt: new Date(initialDate.getTime() + 1000) };
+      successfulUpdates += 1; return { count: 1 };
+    }) as typeof originalUpdate;
+    prisma.activity.create = (async () => { activities += 1; return {}; }) as typeof originalActivity;
+    globalThis.fetch = (async (input: any) => {
+      const url = String(input);
+      if (url.endsWith('/v1/oauth2/token')) return Response.json({ access_token: 'isolated-access-token' });
+      assert.match(url, /\/v2\/invoicing\/invoices\/INV2-ISOLATED$/);
+      const position = ++remoteLookups;
+      if (position === 1) { sawOlder(); await olderWait; }
+      return Response.json({ status: position === 1 ? 'PAID' : 'REFUNDED', amount: { value: '125.00', currency_code: 'CAD' } });
+    }) as typeof globalThis.fetch;
+    const older = syncPayPalInvoiceStatusByPayPalInvoiceId('INV2-ISOLATED');
+    await olderStarted;
+    const current = await syncPayPalInvoiceStatusByPayPalInvoiceId('INV2-ISOLATED');
+    assert.equal(current.paymentStatus, 'refunded');
+    releaseOlder();
+    assert.equal((await older).paymentStatus, 'refunded');
+    assert.equal(stored.status, InvoiceStatus.SENT);
+    assert.equal(successfulUpdates, 1);
+    assert.equal(activities, 1);
+  } finally {
+    releaseOlder(); globalThis.fetch = previousFetch;
+    prisma.invoice.findFirst = originalFirst; prisma.invoice.findUnique = originalUnique; prisma.invoice.updateMany = originalUpdate; prisma.activity.create = originalActivity;
+    for (const [name, value] of Object.entries(previousEnv)) { if (value === undefined) delete process.env[name]; else process.env[name] = value; }
+    await prisma.$disconnect();
+  }
+});
+
 test('webhook avec mauvaise signature est refuse', async () => {
   const request = new NextRequest('https://nowis.store/api/paypal/webhook', {
     method: 'POST',
@@ -245,6 +343,32 @@ test('webhook avec mauvaise signature est refuse', async () => {
   assert.equal(response.status, 400);
   const body = await response.json();
   assert.equal(body.error, 'Signature PayPal invalide.');
+});
+
+test('PayPal webhook rejects unbounded, unsigned and malformed bodies before provider verification', async () => {
+  const headers = { 'content-type': 'application/json', 'paypal-transmission-id': 'isolated-id',
+    'paypal-transmission-time': '2026-10-05T12:00:00Z', 'paypal-cert-url': 'https://api.paypal.com/v1/notifications/certs/isolated',
+    'paypal-auth-algo': 'SHA256withRSA', 'paypal-transmission-sig': 'isolated-signature' };
+  let verifications = 0;
+  const verifySignature = async () => { verifications += 1; return { isValid: true, event: { event_type: 'INVOICING.INVOICE.PAID' } }; };
+  for (const [body, extraHeaders, status] of [
+    ['x'.repeat(PAYPAL_MAX_WEBHOOK_BODY_BYTES + 1), headers, 413],
+    ['{}', { ...headers, 'content-length': String(PAYPAL_MAX_WEBHOOK_BODY_BYTES + 1) }, 413],
+    ['{}', { 'content-type': 'application/json' }, 400],
+    ['not JSON', headers, 400],
+    ['null', headers, 400],
+    ['[]', headers, 400],
+  ] as const) {
+    const request = new NextRequest('https://nowis.store/api/paypal/webhook', { method: 'POST', headers: extraHeaders, body });
+    assert.equal((await handlePayPalWebhookRequest(request, { verifySignature })).status, status);
+  }
+  assert.equal(verifications, 0);
+  const request = () => new NextRequest('https://nowis.store/api/paypal/webhook', { method: 'POST', headers, body: '{}' });
+  const invalid = await handlePayPalWebhookRequest(request(), { verifySignature: async () => ({ isValid: false, event: {} }) });
+  assert.equal(invalid.status, 400);
+  const failed = await handlePayPalWebhookRequest(request(), { verifySignature: async () => { throw new Error('private-provider-detail'); } });
+  assert.equal(failed.status, 503);
+  assert.doesNotMatch(await failed.text(), /private-provider-detail/);
 });
 
 test('buildPayPalAddressFromBilling produit une adresse ISO PayPal', () => {

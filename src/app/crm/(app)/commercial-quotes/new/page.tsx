@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { CommercialQuoteEditorPage } from '@/features/crm/components/commercial-quotes/CommercialQuoteEditorPage';
 import { getCommercialQuoteEditorOptions, getCommercialQuoteTaxRates } from '@/features/crm/components/commercial-quotes/server-data';
 
-export default async function CrmCommercialQuoteNewPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function CrmCommercialQuoteNewPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   await requireCrmSession();
 
   const contactId = typeof searchParams?.contactId === 'string' ? searchParams.contactId : '';

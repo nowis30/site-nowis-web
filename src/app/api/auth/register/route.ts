@@ -4,6 +4,7 @@ import { hashPassword, signToken, createSessionCookie } from '@/lib/auth';
 import { getUserByEmail, upsertUser } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') return NextResponse.json({ error: 'Cet accès historique nécessite une migration et une validation de l’adresse courriel. Utilisez le portail client sécurisé.', code: 'LEGACY_AUTH_DISABLED' }, { status: 410, headers: { 'Cache-Control': 'no-store' } });
   try {
     const body = await request.json();
     const { name, email, password } = body;
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     await upsertUser(user);
 
-    const token = signToken(user);
+    const token = await signToken(user);
     const response = NextResponse.json({ ok: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
     response.headers.set('Set-Cookie', createSessionCookie(token));
     return response;

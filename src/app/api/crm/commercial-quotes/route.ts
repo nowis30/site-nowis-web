@@ -68,8 +68,8 @@ async function resolveCustomerSnapshot(contactId?: string | null, organizationId
   return null;
 }
 
-function ensureAdmin(request: NextRequest, action: 'read' | 'create') {
-  const guard = requireApiPermission(request, 'commercialQuotes', action);
+async function ensureAdmin(request: NextRequest, action: 'read' | 'create') {
+  const guard = await requireApiPermission(request, 'commercialQuotes', action);
   if (guard.error) return { error: guard.error, session: null as null };
   if (guard.session.role !== 'ADMIN') {
     return {
@@ -81,7 +81,7 @@ function ensureAdmin(request: NextRequest, action: 'read' | 'create') {
 }
 
 export async function GET(request: NextRequest) {
-  const admin = ensureAdmin(request, 'read');
+  const admin = await ensureAdmin(request, 'read');
   if (admin.error) return admin.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const admin = ensureAdmin(request, 'create');
+  const admin = await ensureAdmin(request, 'create');
   if (admin.error) return admin.error;
 
   try {

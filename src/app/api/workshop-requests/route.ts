@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 ﻿import { randomBytes } from 'crypto';
 import { Prisma, UserRole } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,9 +17,11 @@ function normalizeOptionalString(value?: string) {
 class SessionContactUnavailable extends Error {}
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
     // ── Auth guard (hard block) ───────────────────────────────────────────────
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
     if (!session) {
       return NextResponse.json(
         {
@@ -91,6 +94,7 @@ export async function POST(request: NextRequest) {
         where: {
           role: UserRole.PORTAL_USER,
           isActive: true,
+          emailVerifiedAt: new Date(),
           email: { equals: sessionEmail, mode: 'insensitive' },
           contactId: contact.id,
         },

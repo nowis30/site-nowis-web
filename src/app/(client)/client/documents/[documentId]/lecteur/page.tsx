@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { createPresignedDownloadUrl } from '@/lib/file-storage';
+import { canClientAccessStoredDocumentKey } from '@/lib/file-upload-intent';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { canClientAccessFileDocument } from '@/features/client-portal/documents/security';
 import { resolveClientMediaKind } from '@/features/client-portal/documents/media';
@@ -36,7 +36,7 @@ export default async function ClientDocumentReaderPage({ params }: ReaderPagePro
     },
   });
 
-  if (!document || !canClientAccessFileDocument({
+  if (!document || !canClientAccessStoredDocumentKey(document.storageKey, session.contactId) || !canClientAccessFileDocument({
     sessionContactId: session.contactId,
     visibility: document.visibility,
     category: document.category,
@@ -63,19 +63,8 @@ export default async function ClientDocumentReaderPage({ params }: ReaderPagePro
 
   const mediaKind = resolveClientMediaKind({ mimeType: document.mimeType, originalName: document.originalName });
 
-  let playbackUrl: string | null = null;
-  try {
-    playbackUrl = await createPresignedDownloadUrl(document.storageKey, {
-      disposition: 'inline',
-      fileName: document.originalName,
-      expiresInSeconds: 300,
-      responseContentType: document.mimeType || undefined,
-    });
-  } catch {
-    playbackUrl = null;
-  }
-
   const downloadUrl = `/api/client-portal/file-documents/${document.id}/download`;
+  const playbackUrl = downloadUrl;
 
   return (
     <section className="space-y-6">

@@ -1,18 +1,13 @@
-import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { CRM_COOKIE_NAME, verifyCrmToken } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
+import { issueAuthGrant, verifyAuthGrant, readNamedCookie } from '@/lib/auth-grants';
+import { publicInquiryOriginAllowed } from '@/lib/public-inquiry-security';
+import { getAuthSigningSecret } from '@/lib/auth-signing-secret';
 
 function getClientPortalSecret() {
-  const secret = process.env.CLIENT_PORTAL_JWT_SECRET || process.env.JWT_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('[Portal] Secrets JWT portail manquants en production. Configurez CLIENT_PORTAL_JWT_SECRET ou JWT_SECRET.');
-    }
-    return 'dev-only-portal-secret-must-change';
-  }
-  return secret;
+  return getAuthSigningSecret(['CLIENT_PORTAL_JWT_SECRET', 'JWT_SECRET'], 'dev-only-portal-secret-must-change');
 }
 
 export const CLIENT_PORTAL_COOKIE_NAME = 'nowis_client_session';
@@ -26,6 +21,9 @@ export interface ClientPortalSessionPayload {
   tenantId: string | null;
   email: string;
   fullName: string;
+  authVersion?: number | null;
+  authUserId?: string | null;
+  contactVersion?: number;
 }
 
 export interface ClientPortalImpersonationPayload {
@@ -50,6 +48,9 @@ interface ClientPortalMagicLinkPayload {
   tenantId: string | null;
   email: string;
   fullName: string;
+  authVersion?: number | null;
+  authUserId?: string | null;
+  contactVersion?: number;
 }
 
 function trimTrailingSlash(value: string) {
@@ -58,56 +59,41 @@ function trimTrailingSlash(value: string) {
 
 export function getClientPortalBaseUrl(origin?: string) {
   return trimTrailingSlash(
-    origin ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
       process.env.NEXT_PUBLIC_DOMAIN ||
+      (origin && publicInquiryOriginAllowed(origin) ? origin : undefined) ||
       'http://localhost:3000',
   );
 }
 
-export function signClientPortalSession(payload: Omit<ClientPortalSessionPayload, 'scope' | 'role'>) {
-  return jwt.sign({ ...payload, scope: 'client-dashboard', role: 'CLIENT' }, getClientPortalSecret(), {
-    expiresIn: '14d',
-  });
+export async function signClientPortalSession(payload: Omit<ClientPortalSessionPayload, 'scope' | 'role'>) {
+  return issueAuthGrant({ ...payload, scope: 'client-dashboard', role: 'CLIENT' }, getClientPortalSecret(), 14 * 86400);
 }
 
-export function signClientPortalImpersonation(payload: Omit<ClientPortalImpersonationPayload, 'scope'>) {
-  return jwt.sign({ ...payload, scope: 'client-impersonation' }, getClientPortalSecret(), {
-    expiresIn: '12h',
-  });
+export async function signClientPortalImpersonation(payload: Omit<ClientPortalImpersonationPayload, 'scope'>) {
+  return issueAuthGrant({ ...payload, scope: 'client-impersonation' }, getClientPortalSecret(), 12 * 3600);
 }
 
-export function verifyClientPortalSession(token: string) {
-  try {
-    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalSessionPayload;
-    return decoded.scope === 'client-dashboard' && decoded.role === 'CLIENT' ? decoded : null;
-  } catch {
-    return null;
-  }
+export async function verifyClientPortalSession(token: string): Promise<ClientPortalSessionPayload | null> {
+  const decoded = await verifyAuthGrant(token, 'client-dashboard', getClientPortalSecret());
+  return decoded?.role === 'CLIENT' ? decoded as unknown as ClientPortalSessionPayload : null;
 }
 
-export function verifyClientPortalImpersonation(token: string) {
-  try {
-    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalImpersonationPayload;
-    return decoded.scope === 'client-impersonation' && decoded.adminRole === 'ADMIN' ? decoded : null;
-  } catch {
-    return null;
-  }
+export async function verifyClientPortalImpersonation(token: string): Promise<ClientPortalImpersonationPayload | null> {
+  const decoded = await verifyAuthGrant(token, 'client-impersonation', getClientPortalSecret());
+  return decoded?.adminRole === 'ADMIN' ? decoded as unknown as ClientPortalImpersonationPayload : null;
 }
 
-export function signClientPortalMagicLink(payload: Omit<ClientPortalMagicLinkPayload, 'scope'>) {
-  return jwt.sign({ ...payload, scope: 'client-login' }, getClientPortalSecret(), {
-    expiresIn: '20m',
-  });
+export async function signClientPortalMagicLink(payload: Omit<ClientPortalMagicLinkPayload, 'scope'>) {
+  const contact = await prisma.contact.findUnique({ where: { id: payload.contactId }, include: { userAccount: true } });
+  if (!contact || contact.deletedAt) throw new Error('AUTH_IDENTITY_UNAVAILABLE');
+  return issueAuthGrant({ ...payload, scope: 'client-login', authVersion: contact.userAccount?.authVersion ?? null,
+    authUserId: contact.userAccount?.id ?? null, contactVersion: contact.authVersion }, getClientPortalSecret(), 20 * 60);
 }
 
-export function verifyClientPortalMagicLink(token: string) {
-  try {
-    const decoded = jwt.verify(token, getClientPortalSecret()) as ClientPortalMagicLinkPayload;
-    return decoded.scope === 'client-login' ? decoded : null;
-  } catch {
-    return null;
-  }
+export async function verifyClientPortalMagicLink(token: string): Promise<ClientPortalMagicLinkPayload | null> {
+  const decoded = await verifyAuthGrant(token, 'client-login', getClientPortalSecret());
+  return decoded as unknown as ClientPortalMagicLinkPayload | null;
 }
 
 export function createClientPortalSessionCookie(token: string) {
@@ -132,21 +118,20 @@ export function clearClientPortalImpersonationCookie() {
   return `${CLIENT_PORTAL_IMPERSONATION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0;${isProd ? ' Secure;' : ''}`;
 }
 
-export function getClientPortalSessionFromCookieHeader(cookie?: string) {
-  if (!cookie) return null;
-  const match = cookie.match(new RegExp(`${CLIENT_PORTAL_COOKIE_NAME}=([^;]+)`));
-  return match ? verifyClientPortalSession(match[1]) : null;
+export async function getClientPortalSessionFromCookieHeader(cookie?: string) {
+  const token = readNamedCookie(cookie, CLIENT_PORTAL_COOKIE_NAME);
+  return token ? verifyClientPortalSession(token) : null;
 }
 
 export async function getClientPortalSessionServer() {
   const cookieStore = await cookies();
 
   const crmToken = cookieStore.get(CRM_COOKIE_NAME)?.value;
-  const crmSession = crmToken ? verifyCrmToken(crmToken) : null;
+  const crmSession = crmToken ? await verifyCrmToken(crmToken) : null;
   const impersonationToken = cookieStore.get(CLIENT_PORTAL_IMPERSONATION_COOKIE_NAME)?.value;
 
   if (crmSession?.role === 'ADMIN' && impersonationToken) {
-    const impersonation = verifyClientPortalImpersonation(impersonationToken);
+    const impersonation = await verifyClientPortalImpersonation(impersonationToken);
     if (impersonation && impersonation.adminId === crmSession.sub) {
       const contact = await prisma.contact.findUnique({
         where: { id: impersonation.contactId },
@@ -154,10 +139,11 @@ export async function getClientPortalSessionServer() {
           id: true,
           fullName: true,
           email: true,
+          deletedAt: true,
         },
       });
 
-      if (contact) {
+      if (contact && !contact.deletedAt) {
         return {
           scope: 'client-dashboard',
           role: 'CLIENT',
@@ -177,7 +163,7 @@ export async function getClientPortalSessionServer() {
 
   const token = cookieStore.get(CLIENT_PORTAL_COOKIE_NAME)?.value;
   if (!token) return null;
-  const session = verifyClientPortalSession(token);
+  const session = await verifyClientPortalSession(token);
   if (!session) return null;
   return { ...session, impersonation: null };
 }

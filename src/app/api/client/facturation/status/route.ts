@@ -8,7 +8,7 @@ function unauthorized() {
 }
 
 export async function GET(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const contact = await prisma.contact.findUnique({

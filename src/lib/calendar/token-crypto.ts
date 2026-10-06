@@ -1,14 +1,8 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { getAuthSigningSecret } from '@/lib/auth-signing-secret';
 
 function getCalendarEncryptionSecret() {
-  const value = process.env.CALENDAR_TOKEN_ENCRYPTION_KEY?.trim();
-  if (value) return value;
-
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('CALENDAR_TOKEN_ENCRYPTION_KEY manquante en production.');
-  }
-
-  return 'dev-calendar-token-encryption-key-change-me';
+  return getAuthSigningSecret(['CALENDAR_TOKEN_ENCRYPTION_KEY'], 'dev-calendar-token-encryption-key-change-me');
 }
 
 function getEncryptionKey() {

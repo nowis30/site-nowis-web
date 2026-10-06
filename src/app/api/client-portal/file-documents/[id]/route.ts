@@ -3,56 +3,72 @@ import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { canClientAccessFileDocument } from '@/features/client-portal/documents/security';
 import { deleteFileFromPersistentStorage } from '@/lib/file-storage';
+import { canClientDeleteStoredDocument } from '@/lib/file-upload-intent';
+import { authOriginError } from '@/lib/auth-request-security';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
-  if (!session) {
-    return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-  }
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  try {
+    const params = await props.params;
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    if (!session) {
+      return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+    }
 
-  const item = await prisma.fileDocument.findUnique({
-    where: { id: params.id },
-    select: {
-      id: true,
-      visibility: true,
-      category: true,
-      contactId: true,
-      songRequestId: true,
-      originalName: true,
-      storageKey: true,
-      songRequest: { select: { contactId: true } },
-      workshopRequest: { select: { contactId: true, clientId: true } },
-      invoice: { select: { contactId: true } },
-      commercialQuote: { select: { contactId: true } },
-    },
-  });
+    const item = await prisma.fileDocument.findUnique({
+      where: { id: params.id },
+      select: {
+        id: true,
+        visibility: true,
+        category: true,
+        contactId: true,
+        songRequestId: true,
+        originalName: true,
+        storageKey: true,
+        uploadedByUserId: true,
+        invoiceId: true,
+        commercialQuoteId: true,
+        songRequest: { select: { contactId: true } },
+        workshopRequest: { select: { contactId: true, clientId: true } },
+        invoice: { select: { contactId: true } },
+        commercialQuote: { select: { contactId: true } },
+      },
+    });
 
-  if (!item || !canClientAccessFileDocument({
-    sessionContactId: session.contactId,
-    visibility: item.visibility,
-    category: item.category,
-    contactId: item.contactId,
-    songRequestContactId: item.songRequest?.contactId,
-    workshopRequestContactId: item.workshopRequest?.contactId,
-    workshopRequestClientId: item.workshopRequest?.clientId,
-    invoiceContactId: item.invoice?.contactId,
-    commercialQuoteContactId: item.commercialQuote?.contactId,
-  })) {
-    return NextResponse.json({ error: 'Fichier introuvable' }, { status: 404 });
-  }
-
-  await prisma.fileDocument.delete({ where: { id: item.id } });
-  await deleteFileFromPersistentStorage(item.storageKey).catch(() => null);
-
-  await prisma.activity.create({
-    data: {
-      type: 'FILE',
-      title: 'Fichier supprime',
-      description: `Nom: ${item.originalName}\nSuppression par le client.`,
+    if (!item || !canClientAccessFileDocument({
+      sessionContactId: session.contactId,
+      visibility: item.visibility,
+      category: item.category,
       contactId: item.contactId,
-      songRequestId: item.songRequestId,
-    },
-  });
+      songRequestContactId: item.songRequest?.contactId,
+      workshopRequestContactId: item.workshopRequest?.contactId,
+      workshopRequestClientId: item.workshopRequest?.clientId,
+      invoiceContactId: item.invoice?.contactId,
+      commercialQuoteContactId: item.commercialQuote?.contactId,
+    })) {
+      return NextResponse.json({ error: 'Fichier introuvable' }, { status: 404 });
+    }
 
-  return NextResponse.json({ ok: true });
+    if (!canClientDeleteStoredDocument(item, session.contactId)) {
+      return NextResponse.json({ error: 'Seuls les fichiers que vous avez déposés peuvent être supprimés.' }, { status: 403 });
+    }
+
+    await prisma.fileDocument.delete({ where: { id: item.id } });
+    await deleteFileFromPersistentStorage(item.storageKey).catch(() => null);
+
+    await prisma.activity.create({
+      data: {
+        type: 'FILE',
+        title: 'Fichier supprime',
+        description: `Nom: ${item.originalName}\nSuppression par le client.`,
+        contactId: item.contactId,
+        songRequestId: item.songRequestId,
+      },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: 'Suppression momentanément indisponible.' }, { status: 503 });
+  }
 }

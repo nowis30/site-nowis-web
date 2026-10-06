@@ -5,9 +5,9 @@ import { NotificationStatusButton } from '@/features/crm/components/notification
 import { getPortalNotificationHref, getPortalNotificationLabel } from '@/lib/portal-notifications';
 
 interface PageProps {
-  searchParams?: {
+  searchParams?: Promise<{
     status?: string;
-  };
+  }>;
 }
 
 function formatDateTime(value: Date) {
@@ -17,7 +17,8 @@ function formatDateTime(value: Date) {
   }).format(value);
 }
 
-export default async function CrmNotificationsPage({ searchParams }: PageProps) {
+export default async function CrmNotificationsPage(props: PageProps) {
+  const searchParams = await props.searchParams;
   await requireCrmSession();
 
   const status = searchParams?.status === 'handled' ? 'handled' : searchParams?.status === 'all' ? 'all' : 'open';

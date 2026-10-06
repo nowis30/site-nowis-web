@@ -80,7 +80,7 @@ function inferBookingProvider(input: { explicitProvider?: string; bookingUrl?: s
 }
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'workshopRequests', 'read');
+  const guard = await requireApiPermission(request, 'workshopRequests', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'workshopRequests', 'create');
+  const guard = await requireApiPermission(request, 'workshopRequests', 'create');
   if (guard.error) return guard.error;
 
   try {

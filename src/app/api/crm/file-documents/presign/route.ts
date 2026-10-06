@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { createPresignedUploadUrl } from '@/lib/file-storage';
 import { validateUploadDescriptor } from '@/lib/validators/file-document';
+import { getUploadFolder, issueFileUploadIntent } from '@/lib/file-upload-intent';
+import { consumeContactRateLimit } from '@/lib/contact-rate-limit';
+import { readAuthJson, authRequestErrorResponse } from '@/lib/auth-request-security';
 
 const presignSchema = z.object({
   fileName: z.string().trim().min(1).max(240),
@@ -12,12 +15,14 @@ const presignSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'documents', 'create');
-  if (guard.error) return guard.error;
-
   try {
-    const payload = presignSchema.parse(await request.json());
+    const payload = presignSchema.parse(await readAuthJson(request));
+    const guard = await requireApiPermission(request, 'documents', 'create');
+    if (guard.error) return guard.error;
     validateUploadDescriptor({ mimeType: payload.mimeType, size: payload.size });
+    const limit = await consumeContactRateLimit({ scope: 'file-upload:crm', identifier: guard.session.sub, max: 120, windowMs: 60 * 60 * 1000 });
+    if (!limit.allowed) return NextResponse.json({ error: 'Trop de dépôts de fichiers. Réessayez dans une heure.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } });
 
     const intent = await createPresignedUploadUrl(
       {
@@ -26,7 +31,7 @@ export async function POST(request: NextRequest) {
         size: payload.size,
       },
       {
-        folder: payload.folder || 'crm-files',
+        folder: `${getUploadFolder({ actorType: 'crm', actorId: guard.session.sub })}/staging`,
       },
     );
 
@@ -39,9 +44,12 @@ export async function POST(request: NextRequest) {
         originalName: intent.originalName,
         mimeType: intent.mimeType,
         size: intent.size,
+        uploadIntent: await issueFileUploadIntent({ actorType: 'crm', actorId: guard.session.sub }, intent),
       },
     });
   } catch (error) {
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation invalide', details: error.issues }, { status: 400 });
     }
@@ -56,13 +64,12 @@ export async function POST(request: NextRequest) {
           {
             error: 'Configuration stockage incomplète sur le serveur.',
             code: 'STORAGE_CONFIG_MISSING',
-            detail: error.message,
           },
           { status: 503 },
         );
       }
     }
 
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Generation URL upload impossible' }, { status: 500 });
+    return NextResponse.json({ error: 'Préparation du dépôt temporairement indisponible.' }, { status: 503 });
   }
 }

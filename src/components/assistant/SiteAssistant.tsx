@@ -389,7 +389,7 @@ export function SiteAssistant() {
 
               <div className="border-t border-[rgba(124,78,46,0.1)] bg-[#fffaf5] p-3">
                 <p className="mb-2 text-xs leading-4 text-[color:var(--site-muted)]" role="status" aria-live="polite">
-                  20 commandes par jour par compte connecté. Remise à zéro à minuit (heure de Toronto).
+                  20 commandes IA par jour par compte connecté, partagées avec la vision et la conclusion du tarot. Remise à zéro à minuit (heure de Toronto).
                   {quotaLoading ? ' Vérification du compteur…' : quota ? ` ${quota.remaining} commande${quota.remaining > 1 ? 's' : ''} restante${quota.remaining > 1 ? 's' : ''}.` : ''}
                 </p>
                 {dailyLimitReached || chatError ? (

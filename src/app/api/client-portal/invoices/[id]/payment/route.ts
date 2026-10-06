@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyClientPortalToken } from '@/lib/client-portal';
@@ -6,14 +7,17 @@ import { sendPortalEventNotificationEmail } from '@/lib/email-service';
 
 export const runtime = 'nodejs';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
   try {
     const formData = await request.formData();
     const token = request.nextUrl.searchParams.get('token') || String(formData.get('token') || '');
     const message = String(formData.get('message') || '').trim();
     const file = formData.get('file');
 
-    const session = verifyClientPortalToken(token);
+    const session = await verifyClientPortalToken(token);
     if (!session) {
       return NextResponse.json({ error: 'Lien client invalide' }, { status: 401 });
     }

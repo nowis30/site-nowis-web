@@ -6,11 +6,12 @@ import { ClientBillingForm } from '@/features/client-portal/components/ClientBil
 import { prisma } from '@/lib/prisma';
 import { sanitizeNextPath } from '@/lib/safe-next';
 
-export default async function ClientFacturationPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function ClientFacturationPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await requireClientPortalSession();
   const nextUrl = typeof searchParams?.next === 'string'
     ? sanitizeNextPath(searchParams.next, '/client/dashboard')

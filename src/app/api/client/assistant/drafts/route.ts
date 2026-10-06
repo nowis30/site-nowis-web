@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
@@ -26,7 +27,9 @@ const RequestBodySchema = z.object({
 void FORM_IDS_TUPLE;
 
 export async function POST(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const session = await getClientPortalSessionFromCookieHeader(
     request.headers.get('cookie') ?? undefined
   );
   if (!session) {

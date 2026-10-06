@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 
 type InvoicePayload = {
   id: string;
@@ -40,7 +40,8 @@ function formatMoney(value: string | number | null, currency = 'CAD') {
   return new Intl.NumberFormat('fr-CA', { style: 'currency', currency }).format(Number(value));
 }
 
-export default function PublicInvoicePage({ params }: { params: { token: string } }) {
+export default function PublicInvoicePage(props: { params: Promise<{ token: string }> }) {
+  const params = use(props.params);
   const [item, setItem] = useState<InvoicePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

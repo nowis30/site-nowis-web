@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { getAuthSigningSecret } from '@/lib/auth-signing-secret';
 
 export type PublicQuoteTokenPayload = {
   scope: 'public-quote';
@@ -30,10 +31,8 @@ export type CompactPublicInvoiceToken = {
 const COMPACT_INVOICE_LINK_VERSION = 'i1';
 
 function getPublicLinksSecret() {
-  const secret = process.env.PUBLIC_LINKS_JWT_SECRET || process.env.CLIENT_PORTAL_JWT_SECRET || process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('PUBLIC_LINKS_JWT_SECRET manquant.');
-  }
+  const secret = getAuthSigningSecret(['PUBLIC_LINKS_JWT_SECRET', 'CLIENT_PORTAL_JWT_SECRET', 'JWT_SECRET'], '');
+  if (!secret) throw new Error('PUBLIC_LINKS_JWT_SECRET manquant.');
   return secret;
 }
 
@@ -46,13 +45,13 @@ export function signPublicQuoteToken(input: { quoteId: string; contactId?: strin
       contactId: input.contactId || null,
     } satisfies PublicQuoteTokenPayload,
     getPublicLinksSecret(),
-    { expiresIn },
+    { expiresIn, algorithm: 'HS256' },
   );
 }
 
 export function verifyPublicQuoteToken(token: string): PublicQuoteTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, getPublicLinksSecret()) as PublicQuoteTokenPayload;
+    const decoded = jwt.verify(token, getPublicLinksSecret(), { algorithms: ['HS256'] }) as PublicQuoteTokenPayload;
     return decoded.scope === 'public-quote' ? decoded : null;
   } catch {
     return null;
@@ -74,13 +73,13 @@ export function signPublicInvoiceToken(input: {
       serviceType: input.serviceType,
     } satisfies PublicInvoiceTokenPayload,
     getPublicLinksSecret(),
-    { expiresIn },
+    { expiresIn, algorithm: 'HS256' },
   );
 }
 
 export function verifyPublicInvoiceToken(token: string): PublicInvoiceTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, getPublicLinksSecret()) as PublicInvoiceTokenPayload;
+    const decoded = jwt.verify(token, getPublicLinksSecret(), { algorithms: ['HS256'] }) as PublicInvoiceTokenPayload;
     return decoded.scope === 'public-invoice' ? decoded : null;
   } catch {
     return null;
@@ -154,13 +153,13 @@ export function signPublicBillingToken(input: {
       quoteId: input.quoteId,
     } satisfies PublicBillingTokenPayload,
     getPublicLinksSecret(),
-    { expiresIn },
+    { expiresIn, algorithm: 'HS256' },
   );
 }
 
 export function verifyPublicBillingToken(token: string): PublicBillingTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, getPublicLinksSecret()) as PublicBillingTokenPayload;
+    const decoded = jwt.verify(token, getPublicLinksSecret(), { algorithms: ['HS256'] }) as PublicBillingTokenPayload;
     return decoded.scope === 'public-billing' ? decoded : null;
   } catch {
     return null;

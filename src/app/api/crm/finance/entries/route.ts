@@ -34,7 +34,7 @@ const entrySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'finance', 'create');
+  const guard = await requireApiPermission(request, 'finance', 'create');
   if (guard.error) return guard.error;
 
   try {
@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'finance', 'read');
+  const guard = await requireApiPermission(request, 'finance', 'read');
   if (guard.error) return guard.error;
 
   const kind = request.nextUrl.searchParams.get('kind');

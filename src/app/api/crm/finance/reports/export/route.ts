@@ -11,7 +11,7 @@ function toCsvValue(value: string | number | null | undefined) {
 }
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'finance', 'read');
+  const guard = await requireApiPermission(request, 'finance', 'read');
   if (guard.error) return guard.error;
 
   const scope = request.nextUrl.searchParams.get('scope') || 'quarter';

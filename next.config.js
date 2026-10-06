@@ -19,20 +19,21 @@ const retiredServiceRedirects = [
 const nextConfig = {
   // Output config for Vercel
   output: 'standalone',
+  turbopack: { root: __dirname },
+  outputFileTracingRoot: __dirname,
   // Security hardening
   poweredByHeader: false,
   // Optimize images
   images: {
-    domains: ['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'localhost', '127.0.0.1', 'nowis.store', 'nowis-admin.vercel.app', 'nowis-crm-files.s3.us-east-1.amazonaws.com'],
     remotePatterns: [
+      ...['via.placeholder.com', 'i.ytimg.com', 'img.youtube.com', 'i.scdn.co', 'mosaic.scdn.co', 'nowis.store', 'nowis-admin.vercel.app', 'nowis-crm-files.s3.us-east-1.amazonaws.com'].map((hostname) => ({ protocol: 'https', hostname })),
+      ...(process.env.NODE_ENV === 'production' ? [] : ['localhost', '127.0.0.1'].map((hostname) => ({ protocol: 'http', hostname }))),
       {
         protocol: 'https',
         hostname: '**.public.blob.vercel-storage.com',
       },
     ],
-    // Disable the vulnerable AVIF decoding path in this unsupported Next.js 14 release.
-    // GHSA-2xp9-vwfh-vxw4: https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4
-    // Re-enable only after migrating to a supported, patched Next.js release.
+    // Preserve direct image delivery and keep the image-fetching endpoint disabled.
     unoptimized: true,
   },
   // Proxy /games/* and /audio/* vers S3 (évite les problèmes cross-origin dans les iframes)
@@ -180,6 +181,13 @@ const nextConfig = {
         source: '/(.*)',
         headers: securityHeaders,
       },
+      ...['/facture/:path*', '/soumission/:path*', '/facturation/:path*'].map((source) => ({
+        source,
+        headers: [
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+          { key: 'Cache-Control', value: 'private, no-store' },
+        ],
+      })),
       {
         // Service worker must not be cached
         source: '/sw.js',

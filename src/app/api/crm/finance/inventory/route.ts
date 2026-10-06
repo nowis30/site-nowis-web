@@ -66,7 +66,7 @@ async function buildSku(tx: Prisma.TransactionClient, requestedSku: string | nul
 }
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'finance', 'read');
+  const guard = await requireApiPermission(request, 'finance', 'read');
   if (guard.error) return guard.error;
 
   const items = await prisma.financeInventoryItem.findMany({
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'finance', 'create');
+  const guard = await requireApiPermission(request, 'finance', 'create');
   if (guard.error) return guard.error;
 
   try {
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const guard = requireApiPermission(request, 'finance', 'update');
+  const guard = await requireApiPermission(request, 'finance', 'update');
   if (guard.error) return guard.error;
 
   try {

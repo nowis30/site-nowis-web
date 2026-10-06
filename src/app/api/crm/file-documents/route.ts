@@ -4,8 +4,10 @@ import { S3ServiceException } from '@aws-sdk/client-s3';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { FILE_VISIBILITY_DB } from '@/lib/file-documents';
-import { assertStoredObjectMetadata } from '@/lib/file-storage';
+import { finalizeUploadedFile, deleteFileFromPersistentStorage } from '@/lib/file-storage';
+import { InvalidUploadIntent, verifyFileUploadIntent, claimFileUploadIntent, getUploadFolder } from '@/lib/file-upload-intent';
 import { getDefaultCategoryForUpload, resolveDocumentCategory } from '@/features/documents/document-categories';
+import { readAuthJson, authRequestErrorResponse } from '@/lib/auth-request-security';
 
 const finalizeUploadSchema = z.object({
   contactId: z.string().uuid().optional(),
@@ -14,6 +16,7 @@ const finalizeUploadSchema = z.object({
   category: z.string().trim().max(80).optional(),
   visibility: z.enum(['admin_only', 'client_visible']).default('client_visible'),
   file: z.object({
+    uploadIntent: z.string().min(20).max(4000),
     storageKey: z.string().trim().min(8).max(500),
     url: z.string().url(),
     filename: z.string().trim().min(1).max(240),
@@ -30,7 +33,7 @@ const querySchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'documents', 'read');
+  const guard = await requireApiPermission(request, 'documents', 'read');
   if (guard.error) return guard.error;
 
   const parsedQuery = querySchema.safeParse({
@@ -60,23 +63,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'documents', 'create');
-  if (guard.error) return guard.error;
-
+  let uncommittedStorageKey: string | null = null;
   try {
-    const contentType = request.headers.get('content-type') || '';
-
-    if (!contentType.includes('application/json')) {
-      return NextResponse.json(
-        {
-          error: 'Upload direct requis. Merci de mettre a jour l application puis reessayer.',
-          hint: 'Le client doit utiliser /presign puis un PUT direct vers le stockage.',
-        },
-        { status: 415 },
-      );
-    }
-
-    const payload = finalizeUploadSchema.parse(await request.json());
+    const payload = finalizeUploadSchema.parse(await readAuthJson(request));
+    const guard = await requireApiPermission(request, 'documents', 'create');
+    if (guard.error) return guard.error;
+    const uploadActor = { actorType: 'crm' as const, actorId: guard.session.sub };
+    verifyFileUploadIntent(payload.file.uploadIntent, uploadActor, payload.file);
     let contactId = payload.contactId ?? null;
 
     if (payload.songRequestId) {
@@ -114,10 +107,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await assertStoredObjectMetadata(payload.file.storageKey, {
-      mimeType: payload.file.mimeType,
-      size: payload.file.size,
-    });
+    await claimFileUploadIntent(payload.file.uploadIntent, uploadActor, payload.file);
+    const storedFile = await finalizeUploadedFile(payload.file, getUploadFolder(uploadActor));
+    uncommittedStorageKey = storedFile.storageKey;
 
     const dbVisibility = FILE_VISIBILITY_DB[payload.visibility];
     const categoryResolution = resolveDocumentCategory({
@@ -148,18 +140,19 @@ export async function POST(request: NextRequest) {
         songRequestId: payload.songRequestId ?? null,
         workshopRequestId: payload.workshopRequestId ?? null,
         uploadedByUserId: guard.session.sub,
-        filename: payload.file.filename,
+        filename: storedFile.filename,
         originalName: payload.file.originalName,
         mimeType: payload.file.mimeType,
         size: payload.file.size,
-        storageKey: payload.file.storageKey,
-        url: payload.file.url,
+        storageKey: storedFile.storageKey,
+        url: storedFile.url,
         category: persistedCategory,
         visibility: dbVisibility,
       },
       include: { uploadedByUser: { select: { id: true, fullName: true } } },
     });
 
+    uncommittedStorageKey = null;
     await prisma.activity.create({
       data: {
         type: 'FILE',
@@ -183,6 +176,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
+    if (uncommittedStorageKey) await deleteFileFromPersistentStorage(uncommittedStorageKey).catch(() => undefined);
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
+    if (error instanceof InvalidUploadIntent) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation invalide', details: error.issues }, { status: 400 });
     }
@@ -201,11 +200,14 @@ export async function POST(request: NextRequest) {
           { status: 503 },
         );
       }
-      console.error('[CRM_FILE_DOCUMENT_POST] S3 error', error.name, status, error.message);
-      return NextResponse.json({ error: `Erreur stockage (${error.name})` }, { status: 502 });
+      if (status === 412 || error.name === 'PreconditionFailed') {
+        return NextResponse.json({ error: 'Le fichier a changé pendant le dépôt. Préparez à nouveau le fichier.' }, { status: 409 });
+      }
+      console.error('[CRM_FILE_DOCUMENT_POST] S3 error', error.name, status);
+      return NextResponse.json({ error: 'Stockage momentanément indisponible.' }, { status: 502 });
     }
 
-    console.error('[CRM_FILE_DOCUMENT_POST]', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Upload impossible' }, { status: 500 });
+    console.error('[CRM_FILE_DOCUMENT_POST]', error instanceof Error ? error.name : 'UnknownError');
+    return NextResponse.json({ error: 'Dépôt impossible. Réessayez avec un nouveau fichier.' }, { status: 503 });
   }
 }

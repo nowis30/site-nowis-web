@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { SongRequestSessionError, submitSongRequestFromWebsite } from '@/lib/actions/song-request';
@@ -12,9 +13,11 @@ function compact(value?: string | null) {
 }
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
     const body = await request.json();
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
     if (!session) {
       return applyCorsHeaders(

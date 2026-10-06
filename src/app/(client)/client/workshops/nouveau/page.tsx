@@ -10,11 +10,12 @@ const GROUP_TYPES = new Set(['AINES_RESIDENCE', 'ECOLE', 'ENTREPRISE', 'COMMUNAU
 const backLinkClassName =
   'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-primary-500/50 hover:bg-primary-500/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 motion-reduce:transition-none sm:w-auto';
 
-export default async function NouvelleDemandeAtelierPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function NouvelleDemandeAtelierPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await requireClientPortalSession();
   const groupTypeParam = typeof searchParams?.groupType === 'string' ? searchParams.groupType : '';
   const initialGroupType = GROUP_TYPES.has(groupTypeParam) ? groupTypeParam : 'ECOLE';

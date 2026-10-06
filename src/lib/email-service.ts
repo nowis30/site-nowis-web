@@ -66,8 +66,8 @@ export async function sendCaseCreatedEmail(caseTitle: string, recipient: string,
         <h2>Nouveau dossier</h2>
         <p>Un nouveau dossier a été créé :</p>
         <ul>
-          <li><strong>Titre :</strong> ${caseTitle}</li>
-          <li><strong>Référence :</strong> ${referenceCode}</li>
+          <li><strong>Titre :</strong> ${escapeHtml(caseTitle)}</li>
+          <li><strong>Référence :</strong> ${escapeHtml(referenceCode)}</li>
         </ul>
         <p><a href="https://app.nowis.store/crm/cases" style="background: #3b82f6; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Voir le dossier</a></p>
         <hr style="border: none; border-top: 1px solid #e5e7eb;" />
@@ -92,9 +92,9 @@ export async function sendMaintenanceAlertEmail(title: string, recipient: string
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: ${priorityColor}; color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
           <h2 style="margin: 0; font-size: 18px;">Ticket de maintenance</h2>
-          <p style="margin: 5px 0 0 0;">Priorité: <strong>${priority}</strong></p>
+          <p style="margin: 5px 0 0 0;">Priorité: <strong>${escapeHtml(priority)}</strong></p>
         </div>
-        <p><strong>${title}</strong></p>
+        <p><strong>${escapeHtml(title)}</strong></p>
         <p><a href="https://app.nowis.store/crm/dashboard" style="background: ${priorityColor}; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Voir le CRM</a></p>
         <hr style="border: none; border-top: 1px solid #e5e7eb;" />
         <p style="font-size: 12px; color: #6b7280;">CRM NOWIS</p>

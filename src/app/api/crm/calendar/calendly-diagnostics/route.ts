@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireCalendarAdminAccess } from '@/lib/calendar/oauth-routes';
 
 export async function GET(request: NextRequest) {
-  const guard = requireCalendarAdminAccess(request, 'read');
+  const guard = await requireCalendarAdminAccess(request, 'read');
   if (guard.error) return guard.error;
 
   const now = new Date();

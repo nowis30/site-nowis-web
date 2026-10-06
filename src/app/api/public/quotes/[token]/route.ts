@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPublicQuoteToken } from '@/lib/public-links';
 
-export async function GET(_request: NextRequest, { params }: { params: { token: string } }) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const decoded = verifyPublicQuoteToken(params.token);
   if (!decoded) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });
@@ -27,16 +28,25 @@ export async function GET(_request: NextRequest, { params }: { params: { token: 
 
   return NextResponse.json({
     item: {
-      ...item,
+      quoteNumber: item.quoteNumber,
+      title: item.title,
+      description: item.description,
+      status: item.status,
+      currency: item.currency,
+      validUntil: item.validUntil,
+      contact: item.contact ? { fullName: item.contact.fullName, email: item.contact.email } : null,
+      convertedToInvoice: item.convertedToInvoice ? { number: item.convertedToInvoice.number, status: item.convertedToInvoice.status } : null,
       subtotal: item.subtotal.toString(),
       taxAmount: item.taxAmount.toString(),
       totalAmount: item.totalAmount.toString(),
       lines: item.lines.map((line) => ({
-        ...line,
+        id: line.id,
+        title: line.title,
+        description: line.description,
         quantity: line.quantity.toString(),
         unitPrice: line.unitPrice.toString(),
         subtotal: line.subtotal.toString(),
       })),
     },
-  });
+  }, { headers: { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' } });
 }

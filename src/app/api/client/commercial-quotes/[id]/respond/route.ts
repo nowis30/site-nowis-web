@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -11,8 +12,11 @@ const respondSchema = z.object({
 
 const RESPONDABLE_STATUSES = new Set(['DRAFT', 'SENT'] as const);
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) {
     return NextResponse.json({ error: 'Session client invalide.' }, { status: 401 });
   }
