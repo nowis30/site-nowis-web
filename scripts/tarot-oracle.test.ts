@@ -1,3 +1,4 @@
+import { AI_AGENT_BOUNDARIES } from '@/lib/ai-provider-security';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
@@ -122,7 +123,7 @@ test('runtime OIDC is used only on Vercel, only for the current request and neve
     const body = JSON.parse(String(init?.body));
     assert.equal(body.model, 'openai/test-runtime-model');
     assert.deepEqual(body.input, [{ type: 'message', role: 'user', content: buildTarotOraclePrompt(parseTarotOracleInput(payload)) }]);
-    assert.equal(body.instructions, TAROT_ORACLE_GUIDE);
+    assert.equal(body.instructions, TAROT_ORACLE_GUIDE + AI_AGENT_BOUNDARIES);
     assert.equal(String(init?.body).includes('test-runtime-oidc-not-secret'), false);
     return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Une vision symbolique.' }] }] });
   }) as typeof fetch });
@@ -188,7 +189,7 @@ test('real-provider adapter sends only the permitted context, with non-storage a
     assert.equal(body.input[0].type, 'message');
     assert.equal(body.input[0].role, 'user');
     assert.match(body.input[0].content, /"carte":"Le Bateleur"/);
-    assert.equal(body.instructions, TAROT_ORACLE_GUIDE);
+    assert.equal(body.instructions, TAROT_ORACLE_GUIDE + AI_AGENT_BOUNDARIES);
     return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Dans cette vision symbolique, votre projet offre des pistes à explorer.' }] }] });
   }) as typeof fetch;
   const reply = await requestTarotOracleVision(input, { env: { AI_GATEWAY_API_KEY: 'test-not-secret', OPENAI_API_KEY: 'unused-not-secret', SITE_ASSISTANT_MODEL: 'openai/test-model' }, fetchImpl: mockFetch });

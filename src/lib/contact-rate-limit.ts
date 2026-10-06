@@ -5,7 +5,7 @@ import { getTrustedClientIp } from '@/lib/trusted-client-ip';
 const USER_LIMIT = { scope: 'contact:user', max: 5, windowMs: 10 * 60 * 1000 } as const;
 const IP_LIMIT = { scope: 'contact:ip', max: 20, windowMs: 60 * 60 * 1000 } as const;
 
-type RateLimitScope = typeof USER_LIMIT.scope | typeof IP_LIMIT.scope | 'radio:comment' | 'radio:register' | 'radio:favorite' | 'ai-music:share' | 'ai-music:comment' | 'crm:login:account' | 'crm:login:ip' | 'crm:otp' | 'site-assistant:feedback' | 'auth:account' | 'auth:ip' | 'file-upload:client' | 'file-upload:crm';
+type RateLimitScope = typeof USER_LIMIT.scope | typeof IP_LIMIT.scope | 'radio:comment' | 'radio:register' | 'radio:favorite' | 'ai-music:share' | 'ai-music:comment' | 'crm:login:account' | 'crm:login:ip' | 'crm:otp' | 'site-assistant:feedback' | 'auth:account' | 'auth:ip' | 'file-upload:client' | 'file-upload:crm' | 'ai-command:burst' | 'ai-command:global';
 
 type ConsumeArgs = {
   scope: RateLimitScope;

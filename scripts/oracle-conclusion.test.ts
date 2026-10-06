@@ -1,3 +1,4 @@
+import { AI_AGENT_BOUNDARIES } from '@/lib/ai-provider-security';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -246,7 +247,7 @@ test('provider adapter sends one ephemeral request with server calculations and 
     assert.equal(body.model, 'openai/test-conclusion');
     assert.equal(body.store, false);
     assert.equal(body.max_output_tokens, 8000);
-    assert.equal(body.instructions, ORACLE_CONCLUSION_GUIDE);
+    assert.equal(body.instructions, ORACLE_CONCLUSION_GUIDE + AI_AGENT_BOUNDARIES);
     assert.equal(body.input.length, 1);
     assert.equal(body.input[0].role, 'user');
     assert.equal(body.input[0].content, buildOracleConclusionPrompt(input));

@@ -1,17 +1,11 @@
+import { createSiteAssistantProvider } from '@/lib/site-assistant-provider';
+import { aiAbuseLimits } from '@/lib/ai-abuse-limits';
 import { createAssistantHandlers } from '@/lib/site-assistant-handler';
 import { getAssistantIdentity } from '@/lib/site-assistant-identity';
 import { consumeAssistantQuota, readAssistantQuota } from '@/lib/site-assistant-quota';
 
 export const runtime = 'nodejs';
 
-type AIResponse = {
-  output?: Array<{
-    content?: Array<{
-      type?: string;
-      text?: string;
-    }>;
-  }>;
-};
 
 const SITE_GUIDE = `
 Tu es l’assistant officiel du site Création NOWIS. Tu réponds en français québécois clair, bref, accueillant et concret.
@@ -57,61 +51,10 @@ function fallbackReply(message: string) {
   return 'Je peux vous guider vers les services, les créations, les ateliers, les chansons personnalisées, les jeux, les tarifs ou la page Contact. Vous pouvez aussi utiliser les raccourcis sous la conversation.';
 }
 
-function extractText(data: AIResponse) {
-  for (const item of data.output || []) {
-    for (const part of item.content || []) {
-      if (part.type === 'output_text' && typeof part.text === 'string' && part.text.trim()) {
-        return part.text.trim();
-      }
-    }
-  }
-  return '';
-}
-
-async function requestAI(options: { transcript: string; pathname: string }) {
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY?.trim() || process.env.VERCEL_OIDC_TOKEN?.trim();
-  const openAIKey = process.env.OPENAI_API_KEY?.trim();
-
-  const endpoint = gatewayToken
-    ? 'https://ai-gateway.vercel.sh/v1/responses'
-    : openAIKey
-      ? 'https://api.openai.com/v1/responses'
-      : null;
-  const token = gatewayToken || openAIKey;
-
-  if (!endpoint || !token) return null;
-
-  const model = gatewayToken
-    ? process.env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.6-luna'
-    : process.env.OPENAI_MODEL?.trim() || 'gpt-5.6-luna';
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...(gatewayToken ? { 'ai-reporting-tags': 'feature:site-assistant' } : {}),
-    },
-    body: JSON.stringify({
-      model,
-      instructions: SITE_GUIDE,
-      input: `Page actuelle : ${options.pathname}\n\nConversation récente :\n${options.transcript}`,
-      max_output_tokens: 450,
-    }),
-    signal: AbortSignal.timeout(12000),
-  });
-
-  if (!response.ok) {
-    console.error('Site assistant AI error:', response.status);
-    return null;
-  }
-
-  const data = (await response.json()) as AIResponse;
-  return extractText(data) || null;
-}
+const requestAI = createSiteAssistantProvider(SITE_GUIDE);
 
 const handlers = createAssistantHandlers({ identity: getAssistantIdentity, read: readAssistantQuota,
-  consume: consumeAssistantQuota, reply: requestAI, fallback: fallbackReply });
+  consume: consumeAssistantQuota, burst: aiAbuseLimits.burst, global: aiAbuseLimits.global, reply: requestAI, fallback: fallbackReply });
 
 export const dynamic = 'force-dynamic';
 export const GET = handlers.GET;

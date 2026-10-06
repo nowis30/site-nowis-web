@@ -1,3 +1,4 @@
+import { AI_AGENT_BOUNDARIES, containsAiCredential, isTextOnlyAiResponse, readBoundedAiJson, safeAiText } from '@/lib/ai-provider-security';
 /** Server-side symbolic writing. No transcript, answer or provider token is persisted. */
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
@@ -150,7 +151,7 @@ export function buildTarotOraclePrompt(input: TarotOracleInput): string {
 
 /** Refuse missing/incomplete provider output; never turn the local text into an AI result. */
 export function extractSymbolicVisionReply(data: unknown, limits: { maxWords: number; maxCharacters: number }): string | null {
-  if (!data || typeof data !== 'object') return null;
+  if (!isTextOnlyAiResponse(data)) return null;
   const response = data as { status?: unknown; output?: unknown };
   if (response.status && response.status !== 'completed') return null;
   if (!Array.isArray(response.output)) return null;
@@ -161,9 +162,7 @@ export function extractSymbolicVisionReply(data: unknown, limits: { maxWords: nu
       if (part?.type === 'output_text' && typeof part.text === 'string') parts.push(part.text);
     }
   }
-  const reply = parts.join('\n\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim();
-  if (!reply || reply.length > limits.maxCharacters || reply.split(/\s+/u).length > limits.maxWords) return null;
-  return reply;
+  return safeAiText(parts.join('\n\n'), limits);
 }
 
 export function extractTarotOracleReply(data: unknown): string | null {
@@ -221,7 +220,7 @@ export async function requestSymbolicVision(
   options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request; onFailure?: (failure: SymbolicVisionFailure) => void } = {},
 ): Promise<string | null> {
   const provider = oracleProvider(options.env || process.env, options.request);
-  if (!provider) return null;
+  if (!provider || containsAiCredential(settings.prompt)) return null;
   const diagnostic = (detail: Record<string, unknown>) => {
     if (!settings.quiet) console.warn('TAROT_ORACLE', detail);
   };
@@ -235,6 +234,7 @@ export async function requestSymbolicVision(
     return null;
   };
   try {
+    const signal = AbortSignal.timeout(settings.timeoutMs);
     const response = await (options.fetchImpl || fetch)(provider.endpoint, {
       method: 'POST',
       headers: {
@@ -242,20 +242,20 @@ export async function requestSymbolicVision(
         ...(provider.gateway ? { 'ai-reporting-tags': `feature:${settings.feature}` } : {}),
       },
       body: JSON.stringify({
-        model: provider.model, instructions: settings.instructions,
+        model: provider.model, instructions: settings.instructions + AI_AGENT_BOUNDARIES,
         input: [{ type: 'message', role: 'user', content: settings.prompt }],
-        max_output_tokens: settings.maxOutputTokens, store: false,
+        max_output_tokens: settings.maxOutputTokens, store: false, tools: [], tool_choice: 'none',
       }),
-      signal: AbortSignal.timeout(settings.timeoutMs),
+      signal, redirect: 'error', cache: 'no-store',
     });
     if (!response.ok) {
       let providerCode = 'OTHER';
-      try { providerCode = providerErrorCode(await response.json()); } catch { /* Non-JSON errors remain opaque. */ }
+      try { providerCode = providerErrorCode(await readBoundedAiJson(response, signal)); } catch { /* Non-JSON errors remain opaque. */ }
       diagnostic({ code: 'PROVIDER_HTTP', status: response.status, providerCode });
       return fail(response.status === 401 || response.status === 403 ? 'auth'
         : response.status === 402 || response.status === 429 ? 'quota' : 'http', { httpStatus: response.status });
     }
-    const data: unknown = await response.json();
+    const data: unknown = await readBoundedAiJson(response, signal);
     const reply = extractSymbolicVisionReply(data, settings);
     if (!reply || (settings.feature === 'oracle-conclusion' && hasRefusal(data))) {
       diagnostic({ code: 'PROVIDER_OUTPUT' });

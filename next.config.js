@@ -181,7 +181,14 @@ const nextConfig = {
         source: '/(.*)',
         headers: securityHeaders,
       },
-      ...['/facture/:path*', '/soumission/:path*', '/facturation/:path*'].map((source) => ({
+      // Responses may contain account data or document capabilities. Never let
+      // browsers or shared proxies retain them, including authentication errors.
+      ...[
+        '/facture/:path*', '/soumission/:path*', '/facturation/:path*',
+        '/crm/:path*', '/client/:path*',
+        '/api/crm/:path*', '/api/client/:path*', '/api/client-portal/:path*',
+        '/api/client-auth/:path*', '/api/auth/:path*', '/api/public/:path*',
+      ].map((source) => ({
         source,
         headers: [
           { key: 'Referrer-Policy', value: 'no-referrer' },
