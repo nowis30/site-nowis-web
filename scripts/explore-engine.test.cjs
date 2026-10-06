@@ -1,10 +1,45 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const vm=require('node:vm');
 const engine=require('../public/tarot-reader/explore-engine.js');
 const sky=require('../public/tarot-reader/astro-engine.js');
 const belline=require('../public/tarot-reader/belline-data.js');
 const numbers=require('../public/tarot-reader/numerology-meanings.js');
 const birth={birthDate:'1990-01-15',birthTime:'10:30',latitude:45.5088,longitude:-73.5878,timeZone:'America/Toronto',forecastDate:'2026-10-06'};
+
+test('real browser and Node engines agree without network or storage for every exploration calculation',()=>{
+ const calls=[];
+ const context=vm.createContext({
+  window:{},Intl,Date,
+  fetch:()=>{calls.push('fetch');throw new Error('Calculations must remain local');},
+  localStorage:{getItem:()=>{calls.push('storage');throw new Error('Calculations must remain ephemeral');}},
+ });
+ // Run the actual browser distribution and both global-script entry points;
+ // do not inject the CommonJS engine into the browser or mock its calculations.
+ for(const file of ['vendor/astronomy.browser.min.js','astro-engine.js','explore-engine.js']){
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../public/tarot-reader',file),'utf8'),context,{filename:file});
+ }
+ const browser=context.window.ORACLE_EXPLORE;
+ const plain=value=>JSON.parse(JSON.stringify(value));
+ const cases=[
+  ['dateParts',['2024-02-29']],
+  ['reduce',[75]],
+  ['letters',['Cœur Ægir']],
+  ['nameNumber',['Lynn','vowels',true]],
+  ['numerology',[{birthDate:'1980-10-22',date:'2026-10-06',name:'Éléonore',yVowel:true}]],
+  ...['1900-01-15','2000-02-29','2026-10-06','2100-12-01'].map(date=>['moon',[date]]),
+  ['solarReturn',[birth,2027]],
+  ['solarReturn',[{...birth,birthDate:'2000-02-29'},2027]],
+  ['synastry',[birth,{...birth,birthDate:'1992-07-08',birthTime:'13:20'}]],
+  ['synastry',[{...birth,unknownTime:true},{...birth,birthDate:'1992-07-08',birthTime:'13:20'}]],
+ ];
+ for(const [method,args] of cases){
+  assert.deepEqual(plain(browser[method](...args)),plain(engine[method](...args)),`${method} ${JSON.stringify(args)}`);
+ }
+ assert.deepEqual(calls,[]);
+});
 test('published numerology examples reproduce the documented methods',()=>{
  assert.equal(engine.numerology({birthDate:'1980-10-22',date:'2020-03-16'}).life.value,5);
  assert.deepEqual(engine.nameNumber('NICHOLAS EVAN SMITH').steps,[75,12,3]);

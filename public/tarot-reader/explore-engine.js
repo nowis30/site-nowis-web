@@ -1,6 +1,6 @@
 (function(root, factory) {
   'use strict';
-  const api = factory(typeof module === 'object' && module.exports ? require('./astro-engine.js') : root.ASTRO_ENGINE, typeof module === 'object' && module.exports ? require('./vendor/astronomy.browser.min.js') : root.Astronomy);
+  const api = factory(typeof module === 'object' && module.exports ? require('./astro-engine.js') : root.ASTRO_ENGINE, typeof module === 'object' && module.exports ? require('./vendor/astronomy.node.js') : root.Astronomy);
   if (typeof module === 'object' && module.exports) module.exports = api; else root.ORACLE_EXPLORE = api;
 })(typeof window !== 'undefined' ? window : globalThis, function(sky, astronomy) {
   'use strict';
