@@ -312,7 +312,7 @@ test('a response arriving after timeout remains invisible even if the transport 
   assert.equal(page.element('summary-result').children.length, 0);
 });
 
-test('AI text is rendered only as plain paragraphs and bounded to 11000 characters and 800 words', async () => {
+test('AI text is rendered only as plain paragraphs and bounded to 24000 characters and 1600 words', async () => {
   const page = await setup({reading: completeReading('draw-1')});
   await page.consent(true);
   let pending = page.request();
@@ -323,13 +323,13 @@ test('AI text is rendered only as plain paragraphs and bounded to 11000 characte
   assert.equal(result.innerHTMLWrites.length, 0);
   assert.ok(result.children.every(child => child.innerHTMLWrites.length === 0));
   pending = page.request();
-  await page.finish(page.posts[1], Array.from({length: 1200}, (_, index) => `mot${index}`).join(' ')); await pending;
+  await page.finish(page.posts[1], Array.from({length: 2000}, (_, index) => `mot${index}`).join(' ')); await pending;
   let rendered = result.children.map(child => child.textContent).join('\n');
-  assert.equal(rendered.split(/\s+/).length, 800);
+  assert.equal(rendered.split(/\s+/).length, 1600);
   pending = page.request();
-  await page.finish(page.posts[2], 'a'.repeat(12000)); await pending;
+  await page.finish(page.posts[2], 'a'.repeat(25000)); await pending;
   rendered = result.children.map(child => child.textContent).join('\n');
-  assert.equal(rendered.length, 11000);
+  assert.equal(rendered.length, 24000);
 });
 
 test('rate limits and invalid requests produce a French explanation without fabricating a conclusion', async () => {
