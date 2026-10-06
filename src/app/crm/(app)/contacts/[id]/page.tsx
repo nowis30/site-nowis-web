@@ -6,7 +6,7 @@ import { TimelineItem } from '@/components/crm/timeline';
 import { ActivityType, Prisma } from '@prisma/client';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 const LEGACY_TASK_MARKER_REGEX = /\n\n\[[a-z-]+:[0-9a-f-]{36}\]\s*$/i;
@@ -20,7 +20,8 @@ function stripLegacyMessageTaskMeta(description: string | null | undefined) {
   return cleanedDescription || null;
 }
 
-export default async function ContactDetailPage({ params }: PageProps) {
+export default async function ContactDetailPage(props: PageProps) {
+  const params = await props.params;
   const session = await requireCrmSession();
 
   const activityKindMap: Record<ActivityType, TimelineItem['kind']> = {

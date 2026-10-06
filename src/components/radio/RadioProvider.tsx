@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Pause, Play, SkipForward, X } from 'lucide-react';
 import { buildRadioQueue, buildSelectionQueue, type PlaySelectionOptions } from '@/lib/radio-queue';
-import { parseRadioSession, RADIO_SESSION_KEY } from '@/lib/radio-session';
+import { parseRadioSession, RADIO_SESSION_KEY, type RadioSession } from '@/lib/radio-session';
 import radioTracks from '@/data/radio-tracks.json';
 import albumTracks from '@/data/album-tracks.json';
 import { ShareMenu } from './ShareMenu';
@@ -12,6 +12,19 @@ import { ShareMenu } from './ShareMenu';
 type AudioTrack = { id: string; title: string; src: string; sunoUrl?: string };
 const tracks: AudioTrack[] = [...radioTracks, ...albumTracks];
 const catalog = JSON.stringify(tracks.map(({ id, src }) => [id, src]));
+let initialBrowserSession: RadioSession | null | undefined;
+
+// This is a bootstrap snapshot, not the changing playback position. A full reload
+// starts a new store; writing progress must never restore over active playback.
+function getInitialRadioSession() {
+  if (initialBrowserSession === undefined) {
+    try { initialBrowserSession = parseRadioSession(sessionStorage.getItem(RADIO_SESSION_KEY), catalog, tracks.length); }
+    catch { initialBrowserSession = null; }
+  }
+  return initialBrowserSession;
+}
+function getServerRadioSession() { return null; }
+function subscribeInitialRadioSession() { return () => {}; }
 
 type RadioState = {
   track: AudioTrack | null;
@@ -41,13 +54,16 @@ export function useRadio() {
 }
 
 export function RadioProvider({ children }: { children: ReactNode }) {
+  const savedSession = useSyncExternalStore(subscribeInitialRadioSession, getInitialRadioSession, getServerRadioSession);
   const audio = useRef<HTMLAudioElement>(null);
   const queue = useRef<number[]>([]);
   const current = useRef(-1);
   const selection = useRef<number[] | null>(null);
-  const [selectionSize, setSelectionSize] = useState(0);
+  const [selectionSizeDraft, setSelectionSize] = useState<number | null>(null);
+  const selectionSize = selectionSizeDraft ?? savedSession?.selection?.length ?? 0;
   const selectionName = useRef('');
-  const [selectionLabel, setSelectionLabel] = useState('');
+  const [selectionLabelDraft, setSelectionLabel] = useState<string | null>(null);
+  const selectionLabel = selectionLabelDraft ?? (savedSession?.selection ? savedSession.selectionLabel || 'Ma sélection' : '');
   const operation = useRef(0);
   const failed = useRef(new Set<number>());
   const wantsPlayback = useRef(false);
@@ -56,12 +72,14 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const lastSavedSecond = useRef(-1);
   const [index, setIndex] = useState(-1);
   // The selected song survives closing the dock and a paused session restore.
-  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedIndexDraft, setSelectedIndex] = useState<number | null>(null);
+  const selectedIndex = selectedIndexDraft ?? savedSession?.current ?? -1;
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [volume, updateVolume] = useState(0.7);
-  const [positionInCycle, setPositionInCycle] = useState(0);
+  const [positionDraft, setPositionInCycle] = useState<number | null>(null);
+  const positionInCycle = positionDraft ?? (savedSession ? (savedSession.selection?.length ?? radioTracks.length) - savedSession.queue.length : 0);
 
   function saveSession() {
     if (current.current < 0) return;
@@ -229,22 +247,15 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const element = audio.current;
     if (element) element.volume = 0.7;
-    try {
-      const saved = parseRadioSession(sessionStorage.getItem(RADIO_SESSION_KEY), catalog, tracks.length);
-      if (saved) {
-        queue.current = saved.queue;
-        current.current = saved.current;
-        setSelectedIndex(saved.current);
-        resumePosition.current = saved.position;
-        selection.current = saved.selection ?? null;
-        setSelectionSize(saved.selection?.length ?? 0);
-        setPositionInCycle((saved.selection?.length ?? radioTracks.length) - saved.queue.length);
-        selectionName.current = saved.selection ? saved.selectionLabel || 'Ma sélection' : '';
-        setSelectionLabel(selectionName.current);
-      }
-    } catch { /* Storage is optional. Never autoplay on reload. */ }
+    if (savedSession) {
+      queue.current = [...savedSession.queue];
+      current.current = savedSession.current;
+      resumePosition.current = savedSession.position;
+      selection.current = savedSession.selection ? [...savedSession.selection] : null;
+      selectionName.current = savedSession.selection ? savedSession.selectionLabel || 'Ma sélection' : '';
+    }
     return () => { element?.pause(); };
-  }, []);
+  }, [savedSession]);
 
   useEffect(() => {
     document.body.classList.toggle('nowis-radio-active', index >= 0);

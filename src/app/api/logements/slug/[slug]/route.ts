@@ -1,24 +1,19 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { getTokenFromCookie, verifyToken } from '@/lib/auth';
 import { getListingBySlug, upsertListing, deleteListing } from '@/lib/db';
+import { canManageListing, getListingUser, resolveListingStatus } from '@/lib/listing-access';
 
-function ensureAuth(request: NextRequest) {
-  const cookie = request.headers.get('cookie') ?? undefined;
-  const token = getTokenFromCookie(cookie);
-  if (!token) return null;
-  return verifyToken(token);
-}
-
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const listing = await getListingBySlug(params.slug);
-  if (!listing) {
+  if (!listing || (listing.status !== 'approved' && !canManageListing(await getListingUser(request.headers.get('cookie')), listing))) {
     return NextResponse.json({ error: 'Logement introuvable.' }, { status: 404 });
   }
-  return NextResponse.json({ listing });
+  return NextResponse.json({ listing }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { slug: string } }) {
-  const user = ensureAuth(request);
+export async function PUT(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
+  const user = await getListingUser(request.headers.get('cookie'));
   if (!user) {
     return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 });
   }
@@ -28,7 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     return NextResponse.json({ error: 'Logement introuvable.' }, { status: 404 });
   }
 
-  if (listing.ownerId !== user.sub) {
+  if (!canManageListing(user, listing)) {
     return NextResponse.json({ error: 'Accès refusé.' }, { status: 403 });
   }
 
@@ -61,10 +56,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     images: Array.isArray(body.images)
       ? (body.images as unknown[]).filter((i) => typeof i === 'string') as string[]
       : listing.images,
-    status:
-      typeof body.status === 'string' && ['draft', 'pending', 'approved', 'rejected'].includes(body.status)
-        ? body.status
-        : listing.status,
+    status: resolveListingStatus(body.status ?? listing.status, user),
     updatedAt: now,
   };
 
@@ -72,9 +64,10 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
   return NextResponse.json({ listing: updated });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   try {
-    const user = ensureAuth(request);
+    const user = await getListingUser(request.headers.get('cookie'));
     if (!user) {
       return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 });
     }
@@ -84,7 +77,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
       return NextResponse.json({ error: 'Logement introuvable.' }, { status: 404 });
     }
 
-    if (listing.ownerId !== user.sub) {
+    if (!canManageListing(user, listing)) {
       return NextResponse.json({ error: 'Accès refusé.' }, { status: 403 });
     }
 

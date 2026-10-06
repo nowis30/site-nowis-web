@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { crmSongRequestPatchSchema } from '@/lib/validators/song-request';
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'songRequests', 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'songRequests', 'read');
   if (guard.error) return guard.error;
 
   const item = await prisma.songRequest.findUnique({
@@ -42,8 +43,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   return NextResponse.json({ item });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'songRequests', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'songRequests', 'update');
   if (guard.error) return guard.error;
 
   const payload = crmSongRequestPatchSchema.parse(await request.json());

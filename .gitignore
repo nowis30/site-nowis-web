@@ -17,6 +17,7 @@ Thumbs.db
 ### Env / Secrets
 .env
 .env.*
+!.env.example
 *.keystore
 
 ### Media files (heavy)

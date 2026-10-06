@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'invoices', 'read');
+  const guard = await requireApiPermission(request, 'invoices', 'read');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

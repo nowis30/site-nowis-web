@@ -1,0 +1,62 @@
+name: Security and regression checks
+on:
+  pull_request:
+  push:
+    branches: [main, codex/security-agent-daily-quota]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  isolated-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: nowis_security_ci
+          POSTGRES_PASSWORD: isolated-test-password
+          POSTGRES_DB: nowis_security_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nowis_security_ci -d nowis_security_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://nowis_security_ci:isolated-test-password@127.0.0.1:5432/nowis_security_ci?sslmode=disable
+      NOWIS_ISOLATED_SECURITY_DB: "true"
+      JWT_SECRET: isolated-ci-only-crm-session-key-with-at-least-32-characters
+      CLIENT_PORTAL_JWT_SECRET: isolated-ci-only-portal-session-key-with-at-least-32-characters
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      APP_URL: http://127.0.0.1:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install locked dependencies
+        run: npx --yes npm@11.21.0 ci
+      - name: Generate the database client
+        run: npm run prisma:generate
+      - name: Apply migrations to the disposable database only
+        run: |
+          node -e "const u=new URL(process.env.DATABASE_URL); if(process.env.NOWIS_ISOLATED_SECURITY_DB!=='true'||u.hostname!=='127.0.0.1'||u.pathname!=='/nowis_security_ci'||u.username!=='nowis_security_ci') process.exit(1);"
+          npm run prisma:migrate:deploy
+      - name: Check types and lint
+        run: npm run type-check && npm run lint
+      - name: Security and business regressions
+        run: npm test && npm run test:public-media
+      - name: Verify actual Prisma authentication and concurrent quota
+        run: npm run test:security-postgres
+      - name: Reject known dependency vulnerabilities at every severity
+        run: npx --yes npm@11.21.0 audit --audit-level=low
+      - name: Build without production credentials or automatic database changes
+        run: npm run build

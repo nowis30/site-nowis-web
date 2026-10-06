@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { verifyClientPortalToken } from '@/lib/client-portal';
@@ -7,9 +8,11 @@ const clientTaskSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
     const payload = clientTaskSchema.parse(await request.json());
-    const session = verifyClientPortalToken(payload.token);
+    const session = await verifyClientPortalToken(payload.token);
 
     if (!session) {
       return NextResponse.json({ error: 'Lien client invalide' }, { status: 401 });

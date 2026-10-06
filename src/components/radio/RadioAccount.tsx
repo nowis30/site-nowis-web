@@ -8,11 +8,12 @@ export function RadioAccount() {
   const [register, setRegister] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [confirmation, setConfirmation] = useState('');
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
     const form = new FormData(event.currentTarget);
-    setBusy(true); setError('');
+    setBusy(true); setError(''); setConfirmation('');
     try {
       const email = String(form.get('email') || '');
       const password = String(form.get('password') || '');
@@ -22,8 +23,12 @@ export function RadioAccount() {
           : { email, password, next: '/radio#mes-favoris' }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(!register && response.status === 401 ? 'Courriel ou mot de passe incorrect.' : data.message || 'Impossible de continuer. Réessayez.');
-      router.push('/radio#mes-favoris'); router.refresh();
+      if (!response.ok) throw new Error(data.error || data.message || (!register && response.status === 401 ? 'Courriel ou mot de passe incorrect.' : 'Impossible de continuer. Réessayez.'));
+      if (data.verificationRequired) {
+        setConfirmation(data.message || 'Vérifiez votre courriel pour activer votre compte et définir votre mot de passe.');
+        return;
+      }
+      router.push(data.redirectTo || '/radio#mes-favoris'); router.refresh();
     } catch (err) { setError(err instanceof Error ? err.message : 'Vérifiez votre connexion et réessayez.'); }
     finally { setBusy(false); }
   }
@@ -39,9 +44,11 @@ export function RadioAccount() {
       {register && <p id="radio-password-help" className="nm-fine">Au moins 8 caractères, avec une majuscule, une minuscule et un chiffre. Votre courriel reste privé.</p>}
       <div className="nr-honeypot" aria-hidden="true"><label>Site web<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       {error && <p role="alert" className="nr-error">{error}</p>}
+      {confirmation && <p role="status" className="nm-fine">{confirmation} Vous pouvez continuer à écouter la radio.</p>}
       <button className="cta-primary" disabled={busy}>{busy ? 'Un instant…' : register ? 'Créer mon compte gratuit' : 'Me connecter'}</button>
     </form>
     {!register && <Link className="nm-text-link" href="/mot-de-passe-oublie">Mot de passe oublié ?</Link>}
+    <Link className="nm-text-link" href="/connexion?next=%2Fradio%23mes-favoris">Recevoir un lien de connexion par courriel</Link>
     <p className="nm-fine">Déjà un compte client Nowis ? Utilisez le même courriel et mot de passe. <Link href="/confidentialite">Confidentialité</Link></p>
   </section>;
 }

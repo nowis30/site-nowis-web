@@ -13,7 +13,8 @@ export const metadata = buildMetadata({
   description: 'Un anniversaire, un amour, un hommage : découvrez les chansons de Nowis, les formules et racontez votre idée sans compte ni paiement.',
   path: '/commander-une-chanson', keywords: ['chanson personnalisée Québec', 'chanson cadeau', 'Nowis Morin'],
 });
-export default async function CommanderUneChansonPage({searchParams}: {searchParams?: {occasion?: string | string[]}}) {
+export default async function CommanderUneChansonPage(props: {searchParams?: Promise<{occasion?: string | string[]}>}) {
+  const searchParams = await props.searchParams;
   const occasion = songOccasions.find(item => item.id === searchParams?.occasion);
   const payload = await getAdminRuntimePayload();
   const hero = getAdminSection(getAdminPage(payload, 'commander-une-chanson'), 'song.hero');

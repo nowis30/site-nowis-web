@@ -46,7 +46,8 @@ function buildTelHref(phone: string) {
   return `tel:${phone.replace(/\s+/g, '')}`;
 }
 
-export default async function OrganizationDetailPage({ params }: { params: { id: string } }) {
+export default async function OrganizationDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   await requireCrmSession();
 
   let item: OrganizationDetailRecord | null = null;

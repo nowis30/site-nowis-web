@@ -4,7 +4,7 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { crmSongRequestListQuerySchema } from '@/lib/validators/song-request';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'songRequests', 'read');
+  const guard = await requireApiPermission(request, 'songRequests', 'read');
   if (guard.error) return guard.error;
 
   const parsed = crmSongRequestListQuerySchema.parse({

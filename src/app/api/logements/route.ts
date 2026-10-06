@@ -1,8 +1,8 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import type { Listing } from '@/types';
-import { getTokenFromCookie, verifyToken } from '@/lib/auth';
-import { getAllListings, upsertListing } from '@/lib/db';
+import { getListingUser, resolveListingStatus } from '@/lib/listing-access';
+import { upsertListing } from '@/lib/db';
 
 function slugify(value: string): string {
   return value
@@ -14,15 +14,9 @@ function slugify(value: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const cookie = request.headers.get('cookie') ?? undefined;
-    const token = getTokenFromCookie(cookie);
-    if (!token) {
+    const user = await getListingUser(request.headers.get('cookie'));
+    if (!user) {
       return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Jeton invalide.' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -55,7 +49,6 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
     const baseSlug = slugify(title);
 
-    const existing = await getAllListings();
     const slugCandidate = [baseSlug, randomUUID().slice(0, 6)]
       .filter(Boolean)
       .join('-');
@@ -101,12 +94,10 @@ export async function POST(request: NextRequest) {
           ? false
           : undefined,
       images: Array.isArray(images) ? images.filter((i) => typeof i === 'string') : [],
-      status: typeof status === 'string' && ['draft', 'pending', 'approved', 'rejected'].includes(status)
-        ? (status as Listing['status'])
-        : 'pending',
-      ownerId: payload.sub,
-      ownerName: payload.name,
-      ownerEmail: payload.email,
+      status: resolveListingStatus(status, user),
+      ownerId: user.id,
+      ownerName: user.name,
+      ownerEmail: user.email,
       ownerPhone: '',
       createdAt: now,
       updatedAt: now,

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { can, CrmAction, CrmModuleKey } from './permissions';
 import { getCrmSessionFromCookieHeader } from './session';
+import { publicInquiryOriginAllowed } from '@/lib/public-inquiry-security';
 
-export function getApiSession(request: NextRequest) {
+export async function getApiSession(request: NextRequest) {
   const cookie = request.headers.get('cookie') ?? undefined;
   return getCrmSessionFromCookieHeader(cookie);
 }
@@ -15,12 +16,16 @@ export function unauthorized(message = 'Session invalide') {
   return NextResponse.json({ error: message }, { status: 401 });
 }
 
-export function requireApiPermission(
+export async function requireApiPermission(
   request: NextRequest,
   module: CrmModuleKey,
   action: CrmAction,
 ) {
-  const session = getApiSession(request);
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)
+    && (!publicInquiryOriginAllowed(request.headers.get('origin')) || request.headers.get('sec-fetch-site') === 'cross-site')) {
+    return { error: forbid('Cette demande doit provenir du site Nowis.'), session: null } as const;
+  }
+  const session = await getApiSession(request);
   if (!session) {
     return { error: unauthorized(), session: null } as const;
   }

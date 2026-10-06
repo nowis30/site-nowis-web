@@ -28,3 +28,7 @@ MIT
 
 Vendored from astronomy-engine 2.1.19, npm package verified by SHA512 integrity.
 Source: https://github.com/cosinekitty/astronomy
+The browser script is astronomy.browser.min.js. astronomy.node.js is the
+unmodified official CommonJS astronomy.js from the same npm package. The server
+uses this Node entry rather than the Browserify loader and its dynamic requires.
+Package integrity: sha512-8yWKNf7UeNbH458h3sAJ6ZgAjE5jTXp/mNNRFoC20j2SHwZIjAQeEsBB2Q3uCFRaTCCJRv33K2XhkhZQMXoX6w==

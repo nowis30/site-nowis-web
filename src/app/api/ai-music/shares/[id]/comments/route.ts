@@ -8,7 +8,8 @@ const schema = z.object({
   message: z.string().trim().min(2, 'Écrivez au moins quelques mots.').max(500),
 }).strict();
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const shareId = z.string().uuid().parse(params.id);
     const user = await getRadioUser(request);

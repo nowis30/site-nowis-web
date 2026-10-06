@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 
 export async function GET(request: NextRequest) {
-  const { error } = requireApiPermission(request, 'reviews', 'read');
+  const { error } = await requireApiPermission(request, 'reviews', 'read');
   if (error) return error;
 
   const comments = await prisma.publicComment.findMany({

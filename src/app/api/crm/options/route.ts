@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'dashboard', 'read');
+  const guard = await requireApiPermission(request, 'dashboard', 'read');
   if (guard.error) return guard.error;
 
   try {

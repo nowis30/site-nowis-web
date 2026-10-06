@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 ﻿import { randomBytes } from 'crypto';
 import { Prisma, UserRole } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,10 +14,14 @@ function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
 }
 
+class SessionContactUnavailable extends Error {}
+
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
     // ── Auth guard (hard block) ───────────────────────────────────────────────
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
     if (!session) {
       return NextResponse.json(
         {
@@ -38,6 +43,14 @@ export async function POST(request: NextRequest) {
     const throwawayPasswordHash = await hashPassword(randomBytes(32).toString('hex'));
 
     const result = await prisma.$transaction(async (tx) => {
+      // The signed dossier id is authoritative. An account's declared email is not ownership of another dossier.
+      const existingContact = await tx.contact.findFirst({
+        where: { id: session.contactId, deletedAt: null },
+        select: { id: true, email: true, type: true, source: true, tags: true },
+      });
+      if (!existingContact || existingContact.email?.trim().toLowerCase() !== sessionEmail) {
+        throw new SessionContactUnavailable();
+      }
       // ── 1. Organisation upsert ────────────────────────────────────────────
       const existingOrg = await tx.organization.findFirst({
         where: {
@@ -46,17 +59,9 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Reusing an organisation name does not authorize rewriting its existing CRM details.
       const organization = existingOrg
-        ? await tx.organization.update({
-            where: { id: existingOrg.id },
-            data: {
-              type: mapWorkshopGroupTypeToOrganizationType(payload.groupType),
-              email: sessionEmail,
-              phone: payload.phone,
-              city: payload.city,
-              status: existingOrg.status,
-            },
-          })
+        ? existingOrg
         : await tx.organization.create({
             data: {
               name: payload.organizationName,
@@ -70,19 +75,7 @@ export async function POST(request: NextRequest) {
           });
 
       // ── 2. Contact auto-upsert ────────────────────────────────────────────
-      // Tries session.contactId first, then email fallback — avoids duplicates
-      const existingContact = await tx.contact.findFirst({
-        where: {
-          OR: [
-            { id: session.contactId },
-            { email: { equals: sessionEmail, mode: 'insensitive' } },
-          ],
-        },
-        select: { id: true, type: true, source: true, tags: true },
-      });
-
-      const contact = existingContact
-        ? await tx.contact.update({
+      const contact = await tx.contact.update({
             where: { id: existingContact.id },
             data: {
               fullName: payload.contactName,
@@ -93,31 +86,25 @@ export async function POST(request: NextRequest) {
               source: existingContact.source || 'workshop-form',
               tags: Array.from(new Set([...(existingContact.tags || []), 'atelier', 'organisation'])),
             },
-          })
-        : await tx.contact.create({
-            data: {
-              fullName: payload.contactName,
-              email: sessionEmail,
-              phone: payload.phone,
-              companyName: payload.organizationName,
-              type: 'CLIENT',
-              source: 'workshop-form',
-              tags: ['atelier', 'organisation', 'portal-client'],
-            },
           });
 
       // ── 3. Portal user auto-link ──────────────────────────────────────────
-      // Find by email. If missing, create. Either way keep contactId in sync.
+      // Never move a password account between dossiers just because an email matches.
       let linkedUser = await tx.user.findFirst({
         where: {
           role: UserRole.PORTAL_USER,
           isActive: true,
+          emailVerifiedAt: new Date(),
           email: { equals: sessionEmail, mode: 'insensitive' },
+          contactId: contact.id,
         },
         select: { id: true, contactId: true },
       });
 
-      if (!linkedUser) {
+      const emailAlreadyUsed = !linkedUser && await tx.user.findFirst({
+        where: { email: { equals: sessionEmail, mode: 'insensitive' } }, select: { id: true },
+      });
+      if (!linkedUser && !emailAlreadyUsed) {
         linkedUser = await tx.user.create({
           data: {
             email: sessionEmail,
@@ -129,19 +116,13 @@ export async function POST(request: NextRequest) {
           },
           select: { id: true, contactId: true },
         });
-      } else if (!linkedUser.contactId || linkedUser.contactId !== contact.id) {
-        await tx.user.update({
-          where: { id: linkedUser.id },
-          data: { contactId: contact.id },
-        });
-        linkedUser = { ...linkedUser, contactId: contact.id };
       }
 
       // ── 4. Organisation contact upsert ────────────────────────────────────
       const existingOrgContact = await tx.organizationContact.findFirst({
         where: {
           organizationId: organization.id,
-          OR: [{ email: sessionEmail }, { contactId: contact.id }],
+          contactId: contact.id,
         },
       });
 
@@ -206,7 +187,7 @@ export async function POST(request: NextRequest) {
           title: "Nouvelle demande d'atelier",
           description: `${payload.organizationName} · ${payload.workshopTheme}`,
           contactId: contact.id,
-          userId: linkedUser.id,
+          userId: linkedUser?.id ?? null,
         },
       });
 
@@ -222,7 +203,7 @@ export async function POST(request: NextRequest) {
           workshopRequestId: workshopRequest.id,
           organizationId: organization.id,
           contactId: contact.id,
-          createdById: linkedUser.id,
+          createdById: linkedUser?.id ?? null,
           isAutoCreated: true,
         },
         tx,
@@ -245,6 +226,9 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
+    if (error instanceof SessionContactUnavailable) {
+      return NextResponse.json({ error: 'Session client invalide. Reconnectez-vous.', code: 'AUTH_REQUIRED' }, { status: 401 });
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Données invalides', details: error.issues }, { status: 400 });
     }

@@ -33,8 +33,8 @@ function normalizeOptional(value?: string | null) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function ensureAdmin(request: NextRequest, action: 'read' | 'update') {
-  const guard = requireApiPermission(request, 'settings', action);
+async function ensureAdmin(request: NextRequest, action: 'read' | 'update') {
+  const guard = await requireApiPermission(request, 'settings', action);
   if (guard.error) return { error: guard.error, session: null as null };
   if (guard.session.role !== 'ADMIN') {
     return {
@@ -46,7 +46,7 @@ function ensureAdmin(request: NextRequest, action: 'read' | 'update') {
 }
 
 export async function GET(request: NextRequest) {
-  const admin = ensureAdmin(request, 'read');
+  const admin = await ensureAdmin(request, 'read');
   if (admin.error) return admin.error;
 
   const profile = await getBillingIssuerSnapshot();
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const admin = ensureAdmin(request, 'update');
+  const admin = await ensureAdmin(request, 'update');
   if (admin.error) return admin.error;
 
   try {

@@ -1,7 +1,8 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, Suspense, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { getApiErrorMessage, readApiJson } from '@/lib/api-client';
 
@@ -15,18 +16,16 @@ const passwordRules = [
 ];
 
 export default function ClientResetPasswordPage() {
-  const [token, setToken] = useState<string | null>(null);
+  return <Suspense fallback={<p role="status">Validation du lien de réinitialisation…</p>}><ClientResetPasswordContent /></Suspense>;
+}
+
+function ClientResetPasswordContent() {
+  const token = useSearchParams().get('token')?.trim() || '';
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    setToken(params.get('token')?.trim() || '');
-  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,16 +117,6 @@ export default function ClientResetPasswordPage() {
             <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">
               Saisissez deux fois votre nouveau mot de passe pour éviter les erreurs de frappe.
             </p>
-
-            {token === null ? (
-              <div
-                className="mt-6 rounded-xl border border-[color:var(--site-border)] bg-white/80 px-4 py-3 text-sm leading-6 text-[color:var(--site-muted)]"
-                role="status"
-                aria-live="polite"
-              >
-                Validation du lien de réinitialisation…
-              </div>
-            ) : null}
 
             {token === '' ? (
               <div className="mt-6 space-y-4">

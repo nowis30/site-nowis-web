@@ -40,8 +40,9 @@ function normalizeOptionalString(value?: string | null) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'contacts', 'update');
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'contacts', 'update');
   if (guard.error) return guard.error;
 
   try {

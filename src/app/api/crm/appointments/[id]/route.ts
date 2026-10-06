@@ -6,8 +6,9 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { appointmentInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { recordCalendarActivity } from '@/lib/calendar/service';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'appointments', 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'appointments', 'read');
   if (guard.error) return guard.error;
 
   const item = await prisma.appointment.findUnique({
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 async function updateAppointment(request: NextRequest, params: { id: string }) {
-  const guard = requireApiPermission(request, 'appointments', 'update');
+  const guard = await requireApiPermission(request, 'appointments', 'update');
   if (guard.error) return guard.error;
   if (guard.session.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });
@@ -77,16 +78,19 @@ async function updateAppointment(request: NextRequest, params: { id: string }) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return updateAppointment(request, params);
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return updateAppointment(request, params);
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'appointments', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'appointments', 'delete');
   if (guard.error) return guard.error;
   if (guard.session.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Action réservée à un administrateur' }, { status: 403 });

@@ -6,7 +6,7 @@ import { buildOutlookAuthorizationUrl, OutlookConfigurationError } from '@/lib/o
 const COOKIE_NAME = 'crm_outlook_oauth_state';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'settings', 'update');
+  const guard = await requireApiPermission(request, 'settings', 'update');
   if (guard.error) return guard.error;
 
   const invoiceId = request.nextUrl.searchParams.get('invoiceId')?.trim() || null;

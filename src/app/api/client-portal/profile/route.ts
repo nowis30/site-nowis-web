@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
@@ -28,7 +29,9 @@ const profileSchema = z.object({
 });
 
 export async function PATCH(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
   if (!session) {
     return NextResponse.json({ error: 'Session client invalide' }, { status: 401 });

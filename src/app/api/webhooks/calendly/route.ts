@@ -1,4 +1,4 @@
-﻿import { createHmac, timingSafeEqual } from 'crypto';
+import { readCalendlyWebhookBody, verifyCalendlySignature } from '@/lib/calendly-webhook-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { recordCalendarActivity } from '@/lib/calendar/service';
@@ -33,38 +33,6 @@ function computeDurationMinutes(startAt: Date | null, endAt: Date | null) {
 function normalizeOptionalString(value: string | null | undefined) {
   const normalized = value?.trim();
   return normalized ? normalized : null;
-}
-
-function parseCalendlySignatureHeader(rawHeader: string | null) {
-  if (!rawHeader) return null;
-
-  const chunks = rawHeader.split(',').map((part) => part.trim());
-  const values: Record<string, string> = {};
-  for (const chunk of chunks) {
-    const [key, value] = chunk.split('=');
-    if (!key || !value) continue;
-    values[key] = value;
-  }
-
-  if (values.t && values.v1) {
-    return { timestamp: values.t, signature: values.v1 };
-  }
-
-  return { timestamp: '', signature: rawHeader.trim() };
-}
-
-function verifyCalendlySignature(rawBody: string, signatureHeader: string | null, signingKey: string) {
-  const parsed = parseCalendlySignatureHeader(signatureHeader);
-  if (!parsed?.signature) return false;
-
-  const signedPayload = parsed.timestamp ? `${parsed.timestamp}.${rawBody}` : rawBody;
-  const expected = createHmac('sha256', signingKey).update(signedPayload).digest('hex');
-
-  const expectedBuffer = Buffer.from(expected, 'utf8');
-  const receivedBuffer = Buffer.from(parsed.signature, 'utf8');
-
-  if (expectedBuffer.length !== receivedBuffer.length) return false;
-  return timingSafeEqual(expectedBuffer, receivedBuffer);
 }
 
 type CalendlyWebhookDebug = {
@@ -110,15 +78,16 @@ export async function POST(request: NextRequest) {
   };
 
   const signingKey = process.env.CALENDLY_WEBHOOK_SIGNING_KEY?.trim();
+  if (!signingKey) {
+    return NextResponse.json({ error: 'Webhook temporairement indisponible.' }, { status: 503 });
+  }
   const signatureHeader = request.headers.get('calendly-webhook-signature');
-  const rawBody = await request.text();
+  const rawBody = await readCalendlyWebhookBody(request);
+  if (rawBody === null) {
+    return NextResponse.json({ error: 'Payload trop volumineux.' }, { status: 413 });
+  }
 
-  if (signingKey && !verifyCalendlySignature(rawBody, signatureHeader, signingKey)) {
-    await recordCalendarActivity({
-      title: 'Webhook réservation legacy rejeté',
-      description: 'Signature invalide (401)',
-      relatedId: null,
-    });
+  if (!verifyCalendlySignature(rawBody, signatureHeader, signingKey)) {
     debug.skippedReason = 'invalid_signature';
     return respondWebhook({ error: 'Signature webhook invalide' }, debug, 401);
   }

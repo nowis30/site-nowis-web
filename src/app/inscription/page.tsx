@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
 import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
+import { ExistingContactVerification } from '@/features/client-portal/components/ExistingContactVerification';
 import { sanitizeNextPath } from '@/lib/safe-next';
 
 const inputClassName =
@@ -20,28 +21,30 @@ const benefits = [
 interface RegistrationResponse {
   redirectTo?: string;
   error?: string;
+  code?: string;
   details?: Array<{ message?: string }>;
 }
 
 export default function InscriptionPage() {
+  return <Suspense fallback={<p role="status">Chargement de l’inscription…</p>}><InscriptionContent /></Suspense>;
+}
+
+function InscriptionContent() {
   const router = useRouter();
+  const params = useSearchParams();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [nextPath, setNextPath] = useState('/client/dashboard');
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    setNextPath(sanitizeNextPath(params.get('next'), '/client/dashboard'));
-  }, []);
+  const nextPath = sanitizeNextPath(params.get('next'), '/client/dashboard');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setVerificationEmail(null);
 
     const parsed = clientRegisterSchema.safeParse({
       fullName,
@@ -68,6 +71,10 @@ export default function InscriptionPage() {
       const data = (await response.json().catch(() => ({}))) as RegistrationResponse;
 
       if (!response.ok) {
+        if (response.status === 403 && data.code === 'EMAIL_VERIFICATION_REQUIRED') {
+          setVerificationEmail(parsed.data.email);
+          return;
+        }
         if (response.status === 409) {
           throw new Error('Un compte existe déjà avec cette adresse e-mail. Essayez de vous connecter.');
         }
@@ -182,7 +189,10 @@ export default function InscriptionPage() {
                     name="email"
                     type="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setVerificationEmail(null);
+                    }}
                     required
                     autoComplete="email"
                     inputMode="email"
@@ -239,6 +249,8 @@ export default function InscriptionPage() {
                     {error}
                   </div>
                 ) : null}
+
+                {verificationEmail ? <ExistingContactVerification key={verificationEmail} email={verificationEmail} /> : null}
 
                 <Button type="submit" className="min-h-12 w-full" disabled={isSubmitting}>
                   {isSubmitting ? 'Création en cours…' : 'Créer mon accès'}

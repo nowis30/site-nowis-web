@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
-import { hasEnvVar, logApiDiagnostic, toErrorMetadata, getRuntimeEnv } from '@/lib/api-diagnostics';
+import { hasEnvVar, logApiDiagnostic } from '@/lib/api-diagnostics';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+const headers = { 'Cache-Control': 'no-store' };
 
 export async function GET() {
   const hasDatabaseUrl = hasEnvVar('DATABASE_URL');
-  const environment = getRuntimeEnv();
 
   if (!hasDatabaseUrl) {
     logApiDiagnostic('[HEALTH_DB]', 'DB_FAIL', 'DATABASE_URL is missing');
@@ -14,10 +16,8 @@ export async function GET() {
         ok: false,
         code: 'DB_FAIL',
         message: 'Database unreachable',
-        environment,
-        hasDatabaseUrl,
       },
-      { status: 500 },
+      { status: 503, headers },
     );
   }
 
@@ -28,13 +28,10 @@ export async function GET() {
         ok: true,
         code: 'DB_OK',
         message: 'Database reachable',
-        environment,
-        hasDatabaseUrl,
       },
-      { status: 200 },
+      { status: 200, headers },
     );
   } catch (error) {
-    const meta = toErrorMetadata(error);
     const status = error instanceof Prisma.PrismaClientInitializationError ? 503 : 500;
 
     logApiDiagnostic('[HEALTH_DB]', 'DB_FAIL', 'Database health check failed', error);
@@ -44,11 +41,8 @@ export async function GET() {
         ok: false,
         code: 'DB_FAIL',
         message: 'Database unreachable',
-        environment,
-        hasDatabaseUrl,
-        errorName: meta.errorName,
       },
-      { status },
+      { status, headers },
     );
   }
 }

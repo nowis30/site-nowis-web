@@ -7,7 +7,8 @@ import { ensureCrmTask } from '@/features/crm/server/task-automation';
 
 const ALLOWED = new Set(['accept', 'decline']);
 
-export async function POST(request: NextRequest, { params }: { params: { token: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const decoded = verifyPublicQuoteToken(params.token);
   if (!decoded) {
     return NextResponse.json({ error: 'Lien invalide ou expire.' }, { status: 401 });
@@ -42,6 +43,11 @@ export async function POST(request: NextRequest, { params }: { params: { token: 
 
   if (quote.status === 'CONVERTED' || quote.convertedToInvoiceId) {
     return NextResponse.json({ error: 'Cette soumission est deja convertie en facture.' }, { status: 409 });
+  }
+
+  // Mirror the existing authenticated client response rule.
+  if (!['DRAFT', 'SENT'].includes(quote.status)) {
+    return NextResponse.json({ error: 'Cette soumission ne peut plus être modifiée.' }, { status: 409 });
   }
 
   if (action === 'accept' && quote.songRequestId) {

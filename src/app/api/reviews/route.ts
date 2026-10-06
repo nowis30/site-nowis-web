@@ -1,18 +1,19 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { applyCorsHeaders, buildCorsPreflightResponse } from '@/lib/cors';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { getCrmSessionFromCookieHeader } from '@/features/crm/auth/session';
 
-function getVerifiedSessionEmail(request: NextRequest) {
+async function getVerifiedSessionEmail(request: NextRequest) {
   const cookieHeader = request.headers.get('cookie') ?? undefined;
-  const clientSession = getClientPortalSessionFromCookieHeader(cookieHeader);
+  const clientSession = await getClientPortalSessionFromCookieHeader(cookieHeader);
 
   if (clientSession?.email) {
     return clientSession.email.trim().toLowerCase();
   }
 
-  const crmSession = getCrmSessionFromCookieHeader(cookieHeader);
+  const crmSession = await getCrmSessionFromCookieHeader(cookieHeader);
   if (crmSession?.email) {
     return crmSession.email.trim().toLowerCase();
   }
@@ -27,7 +28,6 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       name: true,
-      email: true,
       rating: true,
       comment: true,
       context: true,
@@ -43,6 +43,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   const body = await request.json();
   const { name, email, rating, comment, context } = body;
 
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const verifiedSessionEmail = getVerifiedSessionEmail(request);
+  const verifiedSessionEmail = await getVerifiedSessionEmail(request);
   const publishedImmediately = verifiedSessionEmail === normalizedEmail;
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {

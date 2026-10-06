@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FilePlus2, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -240,7 +240,7 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<'ALL' | string>('ALL');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pageDraft, setCurrentPage] = useState(1);
   const PAGE_SIZE = 20;
 
   const totalPaid = stats.find(s => s.status === 'PAID')?._sum.amount ?? 0;
@@ -259,16 +259,13 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(pageDraft, totalPages);
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, currentPage]);
 
   const emptyText = status === 'ALL' ? 'Aucune facture trouvée' : getInvoiceEmptyText(status);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, status]);
 
   return (
     <section className="space-y-5">
@@ -311,12 +308,12 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
           type="search"
           placeholder="Rechercher une facture..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
           className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-400 md:col-span-2"
         />
         <select
           value={status}
-          onChange={(event) => setStatus(event.target.value)}
+          onChange={(event) => { setStatus(event.target.value); setCurrentPage(1); }}
           className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white"
         >
           <option value="ALL">Tous les statuts</option>
@@ -362,7 +359,7 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
             className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
           >
@@ -370,7 +367,7 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
           </button>
           <button
             type="button"
-            onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
+            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage >= totalPages}
             className="rounded-md border border-slate-700 px-2 py-1 text-slate-200 disabled:opacity-40"
           >

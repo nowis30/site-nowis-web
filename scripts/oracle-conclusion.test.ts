@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { PGlite } from '@electric-sql/pglite';
+import { Prisma } from '@prisma/client';
+import { prisma } from '../src/lib/prisma';
+import { signClientPortalSession } from '../src/features/client-portal/auth/session';
+import { withAuthDatabase } from './auth-test-database';
 import corpus from '../src/data/tarot-oracle-cards.json';
 import { GET, POST } from '../src/app/api/tarot/conclusion/route';
 import {
@@ -44,6 +50,25 @@ test('explorations reject fabricated results, unsupported cards and invalid date
 const localUrl = 'http://localhost:3008/api/tarot/conclusion';
 function request(body: unknown, extra: Record<string, string> = {}) {
   return new Request(localUrl, { method: 'POST', headers: { origin: 'http://localhost:3008', 'content-type': 'application/json', 'sec-fetch-site': 'same-origin', ...extra }, body: JSON.stringify(body) });
+}
+async function withAuthenticatedRoute(run: (authorizedRequest: typeof request) => Promise<void>) {
+  const database = new PGlite();
+  const queryBefore = prisma.$queryRaw, userBefore = prisma.user.findFirst;
+  const secretBefore = process.env.CLIENT_PORTAL_JWT_SECRET;
+  process.env.CLIENT_PORTAL_JWT_SECRET = 'isolated-oracle-test-session-secret';
+  try {
+    await database.exec(readFileSync('prisma/migrations/20260504153000_add_contact_api_rate_limits/migration.sql', 'utf8'));
+    prisma.$queryRaw = (async (sql: Prisma.Sql) => (await database.query(sql.text, sql.values)).rows) as typeof queryBefore;
+    await withAuthDatabase(async state => {
+      prisma.user.findFirst = (async ({ where }: any) => state.users.find((user: any) => user.contactId === where.contactId && user.email === where.email && user.role === where.role && user.isActive)) as typeof userBefore;
+      const token = await signClientPortalSession({ contactId: state.contact.id, tenantId: null, email: state.portal.email, fullName: state.portal.fullName });
+      await run((body, extra = {}) => request(body, { cookie: `nowis_client_session=${token}`, ...extra }));
+    });
+  } finally {
+    prisma.$queryRaw = queryBefore; prisma.user.findFirst = userBefore;
+    if (secretBefore === undefined) delete process.env.CLIENT_PORTAL_JWT_SECRET; else process.env.CLIENT_PORTAL_JWT_SECRET = secretBefore;
+    await database.close();
+  }
 }
 function expectedError(status: number) {
   return (error: unknown) => error instanceof OracleConclusionRequestError && error.status === status;
@@ -199,13 +224,13 @@ test('capabilities expose a Boolean only, use request OIDC only on Vercel and ne
   const restore = isolateProviderEnvironment();
   try {
     const runtimeRequest = request(payload, { 'x-vercel-oidc-token': 'test-oidc-not-secret' });
-    assert.deepEqual(await GET(runtimeRequest).json(), { available: false });
+    assert.equal((await (await GET(runtimeRequest)).json()).reason, 'AUTH_REQUIRED');
     process.env.VERCEL = '1';
-    const response = GET(runtimeRequest);
-    assert.deepEqual(await response.json(), { available: true });
+    const response = await GET(runtimeRequest);
+    assert.deepEqual(await response.json(), { available: false, reason: 'AUTH_REQUIRED', loginUrl: '/connexion?next=%2Ftarot', quota: null });
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.equal(response.headers.get('x-vercel-oidc-token'), null);
-    assert.deepEqual(await GET(request(payload)).json(), { available: false });
+    assert.equal((await (await GET(request(payload))).json()).reason, 'AUTH_REQUIRED');
   } finally { restore(); }
   let calls = 0;
   assert.equal(await requestOracleConclusion(parseOracleConclusionInput(payload), { env: {}, fetchImpl: (async () => { calls++; throw new Error('must not call'); }) as typeof fetch }), null);
@@ -349,12 +374,15 @@ test('the route refuses invalid consent and origin and retains local readings on
   try {
     assert.equal((await POST(request({ ...payload, consent: false }))).status, 400);
     assert.equal((await POST(request(payload, { origin: 'null' }))).status, 403);
-    const unavailable = await POST(request(payload));
-    assert.equal(unavailable.status, 503);
-    assert.equal(unavailable.headers.get('cache-control'), 'no-store');
-    const body = await unavailable.json();
-    assert.equal(body.mode, 'unavailable');
-    assert.equal(body.reason, 'configuration');
+    assert.equal((await POST(request(payload))).status, 401);
+    await withAuthenticatedRoute(async authorized => {
+      const unavailable = await POST(authorized(payload));
+      assert.equal(unavailable.status, 503);
+      assert.equal(unavailable.headers.get('cache-control'), 'no-store');
+      const body = await unavailable.json();
+      assert.equal(body.mode, 'unavailable');
+      assert.equal(body.reason, 'configuration');
+    });
   } finally { restore(); }
 });
 
@@ -374,9 +402,10 @@ test('the route reports distinct safe provider failures without returning provid
     { reason: 'timeout', response: () => { throw new DOMException('private timeout and test-not-secret', 'TimeoutError'); } },
   ];
   try {
+    await withAuthenticatedRoute(async authorized => {
     for (const [index, fixture] of fixtures.entries()) {
       globalThis.fetch = (async () => fixture.response()) as typeof fetch;
-      const response = await POST(request({ consent: true, readings: [reading] }, { 'x-forwarded-for': `198.51.100.${140 + index}` }));
+      const response = await POST(authorized({ consent: true, readings: [reading] }, { 'x-forwarded-for': `198.51.100.${140 + index}` }));
       assert.equal(response.status, 503);
       assert.equal(response.headers.get('cache-control'), 'no-store');
       const body = await response.json();
@@ -388,32 +417,35 @@ test('the route reports distinct safe provider failures without returning provid
       assert.equal(JSON.stringify(body).includes('test-not-secret'), false);
       assert.equal(JSON.stringify(body).includes(reading.question), false);
     }
+    });
   } finally { globalThis.fetch = savedFetch; console.warn = savedWarn; restore(); }
   assert.equal(diagnostics.length, fixtures.length);
   assert.equal(JSON.stringify(diagnostics).includes('private'), false);
   assert.equal(JSON.stringify(diagnostics).includes('test-not-secret'), false);
 });
 
-test('the real route translates calculation errors and enforces three requests per ten minutes', async () => {
+test('the real route translates calculation errors and enforces 20 persistent account commands despite forged IP changes', async () => {
   const restore = isolateProviderEnvironment();
   const savedFetch = globalThis.fetch;
   let calls = 0;
   process.env.OPENAI_API_KEY = 'test-not-secret';
   globalThis.fetch = (async () => { calls++; return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Une conclusion symbolique et incertaine.' }] }] }); }) as typeof fetch;
   try {
-    const invalidBirth = await POST(request({ consent: true, astrology: { ...astrology, birthDate: '1990-02-30' } }, { 'x-forwarded-for': '198.51.100.87' }));
+    await withAuthenticatedRoute(async authorized => {
+    const invalidBirth = await POST(authorized({ consent: true, astrology: { ...astrology, birthDate: '1990-02-30' } }, { 'x-forwarded-for': '198.51.100.87' }));
     assert.equal(invalidBirth.status, 400);
     assert.equal(calls, 0);
-    for (let index = 0; index < 3; index++) {
-      const response = await POST(request({ consent: true, readings: [reading] }, { 'x-forwarded-for': '198.51.100.88' }));
+    for (let index = 0; index < 20; index++) {
+      const response = await POST(authorized({ consent: true, readings: [reading] }, { 'x-forwarded-for': `198.51.100.${index}` }));
       assert.equal(response.status, 200);
       const body = await response.json();
       assert.equal(body.mode, 'ai');
       assert.ok(body.reply.endsWith(ORACLE_CONCLUSION_CLOSING));
     }
-    const limited = await POST(request({ consent: true, readings: [reading] }, { 'x-forwarded-for': '198.51.100.88' }));
+    const limited = await POST(authorized({ consent: true, readings: [reading] }, { 'x-forwarded-for': 'a-new-client-selected-ip' }));
     assert.equal(limited.status, 429);
     assert.ok(Number(limited.headers.get('retry-after')) > 0);
-    assert.equal(calls, 3);
+    assert.equal(calls, 20);
+    });
   } finally { globalThis.fetch = savedFetch; restore(); }
 });

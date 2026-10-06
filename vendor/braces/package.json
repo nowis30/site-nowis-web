@@ -1,0 +1,10 @@
+{
+  "name": "@nowis/braces-safe",
+  "version": "3.0.3-nowis.1",
+  "description": "Local MIT fork of braces 3.0.3 with mandatory depth, AST and expansion budgets",
+  "license": "MIT",
+  "main": "index.js",
+  "files": ["index.js", "lib", "LICENSE", "SECURITY.md"],
+  "engines": { "node": ">=22" },
+  "dependencies": { "fill-range": "^7.1.1" }
+}

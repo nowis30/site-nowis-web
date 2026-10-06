@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -33,7 +34,7 @@ function normalize(value?: string | null) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const contact = await prisma.contact.findUnique({
@@ -76,7 +77,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const parseResult = billingPatchSchema.safeParse(await request.json().catch(() => ({})));

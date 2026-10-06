@@ -18,7 +18,8 @@ type WorkshopRequestDetailRecord = Prisma.WorkshopRequestGetPayload<{
   };
 }>;
 
-export default async function WorkshopRequestDetailPage({ params }: { params: { id: string } }) {
+export default async function WorkshopRequestDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await requireCrmSession();
   const isAdmin = session.role === 'ADMIN';
 

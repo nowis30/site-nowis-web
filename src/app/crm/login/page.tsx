@@ -10,6 +10,7 @@ export default function CrmLoginPage() {
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [otpStep, setOtpStep] = useState(false);
+  const [otpChannel, setOtpChannel] = useState<'sms' | 'email'>('email');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,14 +33,15 @@ export default function CrmLoginPage() {
         }
 
         if (data.requiresOtp) {
+          setOtpChannel('otpChannel' in data && data.otpChannel === 'sms' ? 'sms' : 'email');
+          setPassword('');
           setOtpStep(true);
           return;
         }
 
-  // Mode sans SMS (Twilio non configuré) : session déjà créée
-  router.push(data.redirectTo || '/crm');
-  router.refresh();
-  return;
+        router.push(data.redirectTo || '/crm');
+        router.refresh();
+        return;
       }
 
       const otpResponse = await fetch('/api/crm/auth/verify-sms', {
@@ -50,7 +52,7 @@ export default function CrmLoginPage() {
 
       const otpData = await readApiJson(otpResponse);
       if (!otpResponse.ok) {
-        throw new Error(getApiErrorMessage(otpData, 'Vérification SMS impossible'));
+        throw new Error(getApiErrorMessage(otpData, 'Vérification du code impossible'));
       }
 
       router.push('/crm/dashboard');
@@ -106,14 +108,16 @@ export default function CrmLoginPage() {
           ) : (
             <>
               <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
-                Un code SMS a été envoyé. Entre le code pour finaliser la connexion.
+                {otpChannel === 'sms' ? 'Un code a été envoyé par SMS.' : 'Un code a été envoyé au courriel de votre compte.'} Entrez ce code pour finaliser la connexion. Il expire dans 10 minutes.
               </p>
 
               <label className="block">
-                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">Code SMS</span>
+                <span className="mb-1 block text-xs uppercase tracking-wide text-slate-400">{otpChannel === 'sms' ? 'Code SMS' : 'Code courriel'}</span>
                 <input
                   type="text"
                   inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
                   value={otpCode}
                   onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
                   className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
@@ -131,7 +135,7 @@ export default function CrmLoginPage() {
             disabled={loading}
             className="w-full rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {loading ? 'Connexion...' : otpStep ? 'Valider le code SMS' : 'Se connecter'}
+            {loading ? 'Connexion...' : otpStep ? 'Valider le code' : 'Se connecter'}
           </button>
 
           {otpStep ? (

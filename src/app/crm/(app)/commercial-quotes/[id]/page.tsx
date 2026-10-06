@@ -5,7 +5,8 @@ import { CommercialQuoteEditorPage } from '@/features/crm/components/commercial-
 import { getCommercialQuoteEditorOptions, getCommercialQuoteTaxRates } from '@/features/crm/components/commercial-quotes/server-data';
 import { LinkedDocumentsPanel } from '@/features/crm/components/documents/LinkedDocumentsPanel';
 
-export default async function CrmCommercialQuoteDetailPage({ params }: { params: { id: string } }) {
+export default async function CrmCommercialQuoteDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   await requireCrmSession();
 
   const [quote, options, taxRates] = await Promise.all([

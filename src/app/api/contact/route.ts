@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,6 +17,8 @@ import { buildAuthRedirect } from '@/lib/safe-next';
 import { prisma } from '@/lib/prisma';
 import { enforceContactRateLimit } from '@/lib/contact-rate-limit';
 import { buildIncomingMessageTaskDescription } from '@/lib/contact-message-tasks';
+
+class SessionContactUnavailable extends Error {}
 
 function normalizeOptionalString(value: unknown) {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
@@ -85,8 +88,10 @@ function buildEmailPayload(input: {
 }
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
     if (!session) {
       return NextResponse.json(
         {
@@ -154,17 +159,15 @@ export async function POST(request: NextRequest) {
 
     const submission = await prisma.$transaction(async (tx) => {
       const existingContact = await tx.contact.findFirst({
-        where: {
-          OR: [
-            { id: session.contactId },
-            { email: normalizedEmail },
-          ],
-        },
+        where: { id: session.contactId, deletedAt: null },
         select: { id: true, fullName: true, email: true, phone: true, companyName: true, notes: true },
       });
 
-      const upsertedContact = existingContact
-        ? await tx.contact.update({
+      if (!existingContact || existingContact.email?.trim().toLowerCase() !== normalizedEmail) {
+        throw new SessionContactUnavailable();
+      }
+
+      const upsertedContact = await tx.contact.update({
             where: { id: existingContact.id },
             data: {
               fullName: resolvedName,
@@ -173,17 +176,6 @@ export async function POST(request: NextRequest) {
               companyName: normalizeOptionalString(payload.organization || payload.company) ?? existingContact.companyName,
               source: 'site-contact',
               notes: existingContact.notes || normalizeOptionalString(sanitizedMessage),
-            },
-          })
-        : await tx.contact.create({
-            data: {
-              type: 'CLIENT',
-              fullName: resolvedName,
-              email: normalizedEmail,
-              phone: normalizeOptionalString(payload.phone),
-              companyName: normalizeOptionalString(payload.organization || payload.company),
-              source: 'site-contact',
-              notes: normalizeOptionalString(sanitizedMessage),
             },
           });
 
@@ -307,6 +299,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, contactId: submission.contactId, emailStatus });
   } catch (error) {
+    if (error instanceof SessionContactUnavailable) {
+      return NextResponse.json({ error: 'Session client invalide. Reconnectez-vous.', code: 'AUTH_REQUIRED' }, { status: 401 });
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Données invalides.', code: 'VALIDATION_ERROR', details: error.issues },

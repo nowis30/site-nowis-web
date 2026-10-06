@@ -1,9 +1,13 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import type { User, UserRole } from '@/types';
+import { issueAuthGrant, verifyAuthGrant, readNamedCookie } from '@/lib/auth-grants';
+import { getAuthSigningSecret } from '@/lib/auth-signing-secret';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';
 const COOKIE_NAME = 'nowis_session';
+
+function getJwtSecret(): string {
+  return getAuthSigningSecret(['JWT_SECRET'], 'change-me-in-production');
+}
 
 export interface AuthTokenPayload {
   sub: string;
@@ -20,22 +24,25 @@ export function comparePassword(password: string, hash: string): Promise<boolean
   return bcrypt.compare(password, hash);
 }
 
-export function signToken(user: User): string {
+export async function signToken(user: User): Promise<string> {
   const payload: AuthTokenPayload = {
     sub: user.id,
     role: user.role,
     email: user.email,
     name: user.name,
   };
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+  return issueAuthGrant({ ...payload, scope: 'legacy-session' }, getJwtSecret(), 30 * 86400);
 }
 
-export function verifyToken(token: string): AuthTokenPayload | null {
-  try {
-    return jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
-  } catch {
-    return null;
-  }
+export async function verifyToken(token: string): Promise<AuthTokenPayload | null> {
+    if (process.env.NODE_ENV === 'production') return null;
+    const decoded = await verifyAuthGrant(token, 'legacy-session', getJwtSecret());
+    if (!decoded
+      || !['owner', 'admin'].includes(decoded.role)
+      || typeof decoded.sub !== 'string' || !decoded.sub.trim()
+      || typeof decoded.email !== 'string' || !decoded.email.trim()
+      || typeof decoded.name !== 'string' || !decoded.name.trim()) return null;
+    return { sub: decoded.sub, role: decoded.role, email: decoded.email, name: decoded.name };
 }
 
 export function createSessionCookie(token: string): string {
@@ -51,7 +58,5 @@ export function clearSessionCookie(): string {
 }
 
 export function getTokenFromCookie(cookie?: string): string | null {
-  if (!cookie) return null;
-  const match = cookie.match(new RegExp(`${COOKIE_NAME}=([^;]+)`));
-  return match ? match[1] : null;
+  return readNamedCookie(cookie, COOKIE_NAME);
 }

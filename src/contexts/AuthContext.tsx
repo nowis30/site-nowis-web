@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState, useSyncExternalStore } from 'react';
 import type { User } from '@/types';
 
 interface AuthContextValue {
@@ -22,89 +22,77 @@ async function fetchMe(): Promise<User | null> {
   return data.user ?? null;
 }
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>();
+type AuthSnapshot = Pick<AuthContextValue, 'user' | 'loading' | 'error'>;
+const initialSnapshot: AuthSnapshot = { user: null, loading: true, error: undefined };
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(undefined);
+function createAuthStore() {
+  let snapshot = initialSnapshot;
+  let requestVersion = 0;
+  let started = false;
+  const listeners = new Set<() => void>();
+  const update = (next: Partial<AuthSnapshot>) => {
+    snapshot = { ...snapshot, ...next };
+    for (const listener of listeners) listener();
+  };
+  const refresh = async () => {
+    const version = ++requestVersion;
+    update({ loading: true, error: undefined });
     try {
       const currentUser = await fetchMe();
-      setUser(currentUser);
-    } catch (err) {
-      setError('Impossible de vérifier l’authentification.');
-      setUser(null);
-    } finally {
-      setLoading(false);
+      if (version === requestVersion) update({ user: currentUser, loading: false });
+    } catch {
+      if (version === requestVersion) update({ error: 'Impossible de vérifier l’authentification.', user: null, loading: false });
     }
-  }, []);
-
-  useEffect(() => {
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const login = useCallback(
-    async (email: string, password: string) => {
-      setLoading(true);
-      setError(undefined);
-
-      const response = await fetch('/api/auth/login', {
+  };
+  const authenticate = async (path: string, body: Record<string, string>, fallback: string) => {
+    const version = ++requestVersion;
+    update({ loading: true, error: undefined });
+    try {
+      const response = await fetch(path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(body),
       });
-
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { message?: string } | null;
-        const message = data?.message || 'Identifiants invalides.';
-        setError(message);
-        setLoading(false);
-        throw new Error(message);
+        throw new Error(data?.message || fallback);
       }
-
-      await refresh();
-    },
-    [refresh]
-  );
-
-  const register = useCallback(
-    async (name: string, email: string, password: string) => {
-      setLoading(true);
-      setError(undefined);
-
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { message?: string } | null;
-        const message = data?.message || 'Échec de l’inscription.';
-        setError(message);
-        setLoading(false);
-        throw new Error(message);
-      }
-
-      await refresh();
-    },
-    [refresh]
-  );
-
-  const logout = useCallback(async () => {
+      if (version === requestVersion) await refresh();
+    } catch (error) {
+      if (version === requestVersion) update({ error: error instanceof Error ? error.message : fallback, loading: false });
+      throw error;
+    }
+  };
+  const logout = async () => {
+    const version = ++requestVersion;
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } finally {
-      setUser(null);
+      if (version === requestVersion) update({ user: null, loading: false, error: undefined });
     }
-  }, []);
+  };
+  return {
+    getSnapshot: () => snapshot,
+    getServerSnapshot: () => initialSnapshot,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      if (!started) { started = true; void refresh(); }
+      return () => { listeners.delete(listener); };
+    },
+    refresh,
+    login: (email: string, password: string) => authenticate('/api/auth/login', { email, password }, 'Identifiants invalides.'),
+    register: (name: string, email: string, password: string) => authenticate('/api/auth/register', { name, email, password }, 'Échec de l’inscription.'),
+    logout,
+  };
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [store] = useState(createAuthStore);
+  const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
 
   const value = useMemo(
-    () => ({ user, loading, error, refresh, login, register, logout }),
-    [user, loading, error, refresh, login, register, logout]
+    () => ({ ...snapshot, refresh: store.refresh, login: store.login, register: store.register, logout: store.logout }),
+    [snapshot, store]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

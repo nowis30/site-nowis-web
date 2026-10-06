@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import type { FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -33,7 +33,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     setFocus,
     formState: { errors, isSubmitting },
@@ -52,7 +52,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
     },
   });
 
-  const groupType = watch('groupType');
+  const groupType = useWatch({ control, name: 'groupType' });
 
   useEffect(() => {
     setValue('organizationType', mapWorkshopGroupTypeToOrganizationType(groupType), {
@@ -68,7 +68,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
     return 'Nom de l’école ou organisme';
   }, [groupType]);
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => handleSubmit(async (values) => {
     setServerError(null);
     setSubmitted(false);
 
@@ -92,7 +92,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
       } | null;
 
       if (response.status === 401 && typeof data?.loginUrl === 'string') {
-        window.location.href = data.loginUrl;
+        router.push(data.loginUrl);
         return;
       }
       if (!response.ok) {
@@ -142,7 +142,7 @@ export function WorkshopRequestForm({ accountEmail, accountFullName, accountPhon
     if (firstKey) setFocus(firstKey);
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
     window.scrollTo({ top: 0, behavior });
-  });
+  })(event);
 
   if (submitted) {
     return (

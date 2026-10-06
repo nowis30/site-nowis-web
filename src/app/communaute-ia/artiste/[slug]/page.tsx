@@ -13,7 +13,8 @@ function sourceLabel(url: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const profile = await prisma.aiArtistProfile.findUnique({
     where: { slug: params.slug },
     select: { displayName: true, bio: true },
@@ -28,7 +29,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   });
 }
 
-export default async function PublicAiArtistPage({ params }: { params: { slug: string } }) {
+export default async function PublicAiArtistPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const profile = await prisma.aiArtistProfile.findUnique({
     where: { slug: params.slug },
     select: {

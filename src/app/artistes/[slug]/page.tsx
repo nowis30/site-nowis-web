@@ -7,7 +7,8 @@ export function generateStaticParams() {
   return getAllArtists().map((artist) => ({ slug: artist.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const artist = getArtistBySlug(params.slug);
 
   if (!artist) {
@@ -27,7 +28,8 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
   });
 }
 
-export default function ArtistDetailPage({ params }: { params: { slug: string } }) {
+export default async function ArtistDetailPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const artist = getArtistBySlug(params.slug);
 
   if (!artist) {

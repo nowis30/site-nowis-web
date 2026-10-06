@@ -5,19 +5,21 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { contactInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'contacts', 'read');
+export async function GET(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'contacts', 'read');
   if (guard.error) return guard.error;
   const item = await prisma.contact.findUnique({ where: { id: params.id } });
   if (!item) return NextResponse.json({ error: 'Introuvable' }, { status: 404 });
   return NextResponse.json({ item });
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'contacts', 'update');
+export async function PUT(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'contacts', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -65,8 +67,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'contacts', 'delete');
+export async function DELETE(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'contacts', 'delete');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {
@@ -123,8 +126,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'contacts', 'update');
+export async function PATCH(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'contacts', 'update');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

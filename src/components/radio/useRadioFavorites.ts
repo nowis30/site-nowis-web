@@ -10,17 +10,16 @@ export function useRadioFavorites() {
   const [error, setError] = useState('');
   const version = useRef(0);
   const pending = useRef(false);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(() => {
     if (pending.current) return;
     const request = ++version.current;
-    try {
-      const response = await fetch('/api/radio/favorites', { cache: 'no-store' });
+    return fetch('/api/radio/favorites', { cache: 'no-store' }).then(async (response) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
       if (request === version.current) { setUser(data.user); setIds(data.trackIds); setError(''); }
-    } catch (err) {
+    }).catch((err) => {
       if (request === version.current) setError(err instanceof Error ? err.message : 'Impossible de charger les favoris.');
-    } finally { if (request === version.current) setLoading(false); }
+    }).finally(() => { if (request === version.current) setLoading(false); });
   }, []);
   useEffect(() => {
     void refresh();

@@ -2,11 +2,12 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { DirectInvoiceCreatePage } from '@/features/crm/components/invoices/DirectInvoiceCreatePage';
 import { prisma } from '@/lib/prisma';
 
-export default async function CrmDirectInvoiceCreatePage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function CrmDirectInvoiceCreatePage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   await requireCrmSession();
 
   const [contacts, organizations] = await Promise.all([

@@ -59,8 +59,9 @@ export default async function ClientDocumentsPage() {
     originalName: document.originalName,
     mimeType: document.mimeType,
     size: document.size,
-    storageKey: document.storageKey,
-    url: document.url,
+    storageKey: document.size === 0 && /^(quotes|invoices)\//.test(document.storageKey)
+      ? document.storageKey.split('/')[0] + '/' : undefined,
+    url: `/api/client-portal/file-documents/${document.id}/download`,
     category: document.category,
     visibility: document.visibility,
     createdAt: document.createdAt.toISOString(),

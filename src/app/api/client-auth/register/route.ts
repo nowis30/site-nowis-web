@@ -3,37 +3,23 @@ import { Prisma, UserRole } from '@prisma/client';
 import { ZodError } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
-import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
+import { createClientPortalSessionCookie, getClientPortalSessionFromCookieHeader, signClientPortalSession } from '@/features/client-portal/auth/session';
+import { hasVerifiedContactRegistration } from '@/features/client-portal/auth/registration-security';
 import { clientRegisterSchema } from '@/features/client-portal/auth/validators';
-import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
+import { readAuthJson, limitAuth, authRequestErrorResponse } from '@/lib/auth-request-security';
+import { newUnusablePasswordHash, sendPortalEmailVerification } from '@/lib/verified-account';
 import { sanitizeNextPath } from '@/lib/safe-next';
 import { ensureCrmTask } from '@/features/crm/server/task-automation';
 import { sendPortalEventNotificationEmail } from '@/lib/email-service';
 
+class ContactEmailVerificationRequired extends Error {}
+
 export async function POST(request: NextRequest) {
   try {
-    const payload = clientRegisterSchema.parse(await request.json());
+    const payload = clientRegisterSchema.parse(await readAuthJson(request));
     const redirectTo = sanitizeNextPath(payload.next, '/client/dashboard');
     const email = payload.email.toLowerCase();
-    const clientIp = getRequestClientIp(request.headers);
-    const limiter = consumeRateLimit(
-      `client-register:${sanitizeRateLimitIdentifier(clientIp)}:${sanitizeRateLimitIdentifier(email)}`,
-      4,
-      15 * 60 * 1000,
-    );
-
-    if (!limiter.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Trop de tentatives d’inscription. Réessayez dans quelques minutes.',
-          code: 'RATE_LIMITED',
-        },
-        {
-          status: 429,
-          headers: { 'Retry-After': String(limiter.retryAfterSeconds), 'Cache-Control': 'no-store' },
-        },
-      );
-    }
+    await limitAuth(request, 'register', email, 4);
 
     const existingUser = await prisma.user.findFirst({
       where: { email: { equals: email, mode: 'insensitive' } },
@@ -51,12 +37,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const passwordHash = await hashPassword(payload.password);
+    const verifiedSession = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') || undefined);
+    const verified = verifiedSession?.email.trim().toLowerCase() === email;
+    const passwordHash = verified ? await hashPassword(payload.password) : await newUnusablePasswordHash();
 
     const result = await prisma.$transaction(async (tx) => {
       const existingContact = await tx.contact.findFirst({
         where: { email: { equals: email, mode: 'insensitive' } },
       });
+
+      // An email address in a public signup is not proof of ownership of the existing CRM dossier.
+      // A secure emailed login link or verified Google login provides the matching portal session.
+      if (existingContact && !hasVerifiedContactRegistration(existingContact, verifiedSession)) {
+        throw new ContactEmailVerificationRequired();
+      }
 
       const baseNotes = [
         existingContact?.notes?.trim(),
@@ -95,6 +89,7 @@ export async function POST(request: NextRequest) {
           passwordHash,
           role: UserRole.PORTAL_USER,
           isActive: true,
+          emailVerifiedAt: verified ? new Date() : null,
           contactId: contact.id,
         },
       });
@@ -145,11 +140,17 @@ export async function POST(request: NextRequest) {
       console.error('[CLIENT_AUTH_REGISTER_NOTIFICATION]', notificationError);
     }
 
-    const sessionToken = signClientPortalSession({
+    if (!verified) {
+      await sendPortalEmailVerification(result.user, request.nextUrl.origin);
+      return NextResponse.json({ ok: true, verificationRequired: true, message: 'Vérifiez votre courriel pour activer votre compte et définir votre mot de passe.', redirectTo: '/connexion?verification=sent' }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    const sessionToken = await signClientPortalSession({
       contactId: result.contact.id,
       tenantId: null,
       email,
       fullName: result.contact.fullName,
+      authVersion: result.user.authVersion,
     });
 
     const response = NextResponse.json(
@@ -168,6 +169,18 @@ export async function POST(request: NextRequest) {
     response.headers.append('Set-Cookie', createClientPortalSessionCookie(sessionToken));
     return response;
   } catch (error) {
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
+    if (error instanceof ContactEmailVerificationRequired) {
+      return NextResponse.json(
+        {
+          error: 'Cette adresse est déjà liée à un dossier client. Ouvrez le lien sécurisé envoyé par courriel avant de définir votre mot de passe. Vous pouvez aussi utiliser Google pour accéder au portail.',
+          code: 'EMAIL_VERIFICATION_REQUIRED',
+          suggestedAction: 'request-link',
+        },
+        { status: 403, headers: { 'Cache-Control': 'no-store' } },
+      );
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json(
         { error: 'Un compte existe deja avec cet email.', code: 'EMAIL_EXISTS', suggestedAction: 'login' },

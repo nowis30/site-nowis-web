@@ -3,11 +3,12 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { listCalendarConnections } from '@/lib/calendar/service';
 import { CalendarConnectionsAdminPage } from '@/features/crm/components/calendar/CalendarConnectionsAdminPage';
 
-export default async function CalendarConnectionsPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function CalendarConnectionsPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await requireCrmSession();
   if (session.role !== 'ADMIN') {
     redirect('/crm/dashboard');

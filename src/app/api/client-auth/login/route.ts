@@ -6,7 +6,7 @@ import { buildErrorPayload, ensureAuthConfig, logApiDiagnostic } from '@/lib/api
 import { prisma } from '@/lib/prisma';
 import { createClientPortalSessionCookie, signClientPortalSession } from '@/features/client-portal/auth/session';
 import { clientLoginSchema } from '@/features/client-portal/auth/validators';
-import { consumeRateLimit, getRequestClientIp, sanitizeRateLimitIdentifier } from '@/lib/rate-limit';
+import { readAuthJson, limitAuth, authRequestErrorResponse } from '@/lib/auth-request-security';
 import { sanitizeNextPath } from '@/lib/safe-next';
 
 function errorResponse(
@@ -32,30 +32,17 @@ export async function POST(request: NextRequest) {
   try {
     let rawBody: unknown;
     try {
-      rawBody = await request.json();
-    } catch {
+      rawBody = await readAuthJson(request);
+    } catch (error) {
+      const securityError = authRequestErrorResponse(error);
+      if (securityError) return securityError;
       return errorResponse('UNKNOWN', 'Invalid JSON body', 400);
     }
 
     const payload = clientLoginSchema.parse(rawBody);
     const email = payload.email.toLowerCase();
     const redirectTo = sanitizeNextPath(payload.next, '/client/dashboard');
-    const clientIp = getRequestClientIp(request.headers);
-    const limiter = consumeRateLimit(
-      `client-login:${sanitizeRateLimitIdentifier(clientIp)}:${sanitizeRateLimitIdentifier(email)}`,
-      6,
-      10 * 60 * 1000,
-    );
-
-    if (!limiter.allowed) {
-      return NextResponse.json(
-        buildErrorPayload('AUTH_FAIL', 'Trop de tentatives. Reessayez dans quelques minutes.'),
-        {
-          status: 429,
-          headers: { 'Retry-After': String(limiter.retryAfterSeconds), 'Cache-Control': 'no-store' },
-        },
-      );
-    }
+    await limitAuth(request, 'login', email, 6);
 
     const user = await prisma.user.findFirst({
       where: {
@@ -68,8 +55,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!user) {
+    if (!user || user.contact?.deletedAt) {
       return errorResponse('AUTH_FAIL', 'Invalid credentials', 401);
+    }
+    if (!user.emailVerifiedAt) {
+      return NextResponse.json({ code: 'EMAIL_VERIFICATION_REQUIRED', error: 'Vérifiez votre courriel pour activer votre compte. Demandez un lien sécurisé ou utilisez Google.', suggestedAction: 'request-link' },
+        { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
 
     if (!user.contactId || !user.contact) {
@@ -90,11 +81,12 @@ export async function POST(request: NextRequest) {
       return errorResponse('AUTH_FAIL', 'Invalid credentials', 401);
     }
 
-    const sessionToken = signClientPortalSession({
+    const sessionToken = await signClientPortalSession({
       contactId: user.contact.id,
       tenantId: null,
       email: user.email,
       fullName: user.contact.fullName,
+      authVersion: user.authVersion,
     });
 
     const response = NextResponse.json(
@@ -104,6 +96,8 @@ export async function POST(request: NextRequest) {
     response.headers.append('Set-Cookie', createClientPortalSessionCookie(sessionToken));
     return response;
   } catch (error) {
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
     if (error instanceof Prisma.PrismaClientInitializationError) {
       logApiDiagnostic('[CLIENT_AUTH_LOGIN]', 'DB_INIT', 'Database initialization failed', error);
       return errorResponse('DB_INIT', 'Database initialization failed', 503);

@@ -40,7 +40,7 @@ function invoiceReturnUrl(request: NextRequest, invoiceId: string | null, status
 }
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'settings', 'update');
+  const guard = await requireApiPermission(request, 'settings', 'update');
   if (guard.error) return guard.error;
 
   const stateCookie = parseStateCookie(request.cookies.get(COOKIE_NAME)?.value);

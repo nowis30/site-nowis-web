@@ -27,9 +27,9 @@ type CalendarOAuthCookie = {
   createdAt: number;
 };
 
-function getCalendarAdminGuard(request: NextRequest, action: 'read' | 'update') {
+async function getCalendarAdminGuard(request: NextRequest, action: 'read' | 'update') {
   const permission = action === 'read' ? 'read' : 'update';
-  const guard = requireApiPermission(request, 'settings', permission);
+  const guard = await requireApiPermission(request, 'settings', permission);
   if (guard.error) return guard;
   if (guard.session.role !== 'ADMIN') {
     return {
@@ -59,12 +59,12 @@ function redirectWithStatus(provider: string, status: string, error?: string) {
   return url.pathname + url.search;
 }
 
-export function requireCalendarAdminAccess(request: NextRequest, action: 'read' | 'update' = 'read') {
+export async function requireCalendarAdminAccess(request: NextRequest, action: 'read' | 'update' = 'read') {
   return getCalendarAdminGuard(request, action);
 }
 
 export async function handleCalendarConnect(request: NextRequest, provider: string) {
-  const guard = getCalendarAdminGuard(request, 'update');
+  const guard = await getCalendarAdminGuard(request, 'update');
   if (guard.error) return guard.error;
 
   const state = randomUUID();
@@ -83,7 +83,7 @@ export async function handleCalendarConnect(request: NextRequest, provider: stri
 }
 
 export async function handleCalendarCallback(request: NextRequest, provider: string) {
-  const guard = getCalendarAdminGuard(request, 'update');
+  const guard = await getCalendarAdminGuard(request, 'update');
   if (guard.error) return guard.error;
 
   const redirectTarget = redirectWithStatus(provider, 'error');

@@ -5,7 +5,7 @@ import { caseInputSchema, normalizeOptionalString } from '@/features/crm/server/
 import { sendCaseCreatedEmail } from '@/lib/email-service';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'cases', 'read');
+  const guard = await requireApiPermission(request, 'cases', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'cases', 'create');
+  const guard = await requireApiPermission(request, 'cases', 'create');
   if (guard.error) return guard.error;
 
   try {

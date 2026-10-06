@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { getPublishedListingBySlug, getPublishedListings } from '@/lib/logements';
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 function formatRent(amount: number) {
@@ -22,7 +22,8 @@ function formatAvailabilityDate(value: string) {
   return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long', timeZone: 'UTC' }).format(parsed);
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata(props: PageProps) {
+  const params = await props.params;
   const logement = await getPublishedListingBySlug(params.slug);
 
   if (!logement) {
@@ -48,7 +49,8 @@ export async function generateStaticParams() {
   return logements.map((logement) => ({ slug: logement.slug }));
 }
 
-export default async function LogementPage({ params }: PageProps) {
+export default async function LogementPage(props: PageProps) {
+  const params = await props.params;
   const logement = await getPublishedListingBySlug(params.slug);
   if (!logement) {
     notFound();

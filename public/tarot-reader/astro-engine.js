@@ -321,4 +321,4 @@
   const api = Object.freeze({ calculate, resolveLocalTime, signPosition, angularDistance, houseFor, planetaryPositions, chartAngles, AstroInputError, signs: SIGNS.slice(), elements: ELEMENTS.slice(), bodies: BODIES.slice() });
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ASTRO_ENGINE = api;
-})(typeof window !== 'undefined' ? window : globalThis, typeof module === 'object' && module.exports ? require('./vendor/astronomy.browser.min.js') : null);
+})(typeof window !== 'undefined' ? window : globalThis, typeof module === 'object' && module.exports ? require('./vendor/astronomy.node.js') : null);

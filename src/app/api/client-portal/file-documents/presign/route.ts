@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
 import { createPresignedUploadUrl } from '@/lib/file-storage';
 import { validateUploadDescriptor } from '@/lib/validators/file-document';
+import { getUploadFolder, issueFileUploadIntent } from '@/lib/file-upload-intent';
+import { consumeContactRateLimit } from '@/lib/contact-rate-limit';
+import { authOriginError, readAuthJson, authRequestErrorResponse } from '@/lib/auth-request-security';
 
 const presignSchema = z.object({
   fileName: z.string().trim().min(1).max(240),
@@ -11,14 +14,17 @@ const presignSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
-  if (!session) {
-    return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-  }
+  const originError = authOriginError(request);
+  if (originError) return originError;
 
   try {
-    const payload = presignSchema.parse(await request.json());
+    const payload = presignSchema.parse(await readAuthJson(request));
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
     validateUploadDescriptor({ mimeType: payload.mimeType, size: payload.size });
+    const limit = await consumeContactRateLimit({ scope: 'file-upload:client', identifier: session.contactId, max: 30, windowMs: 60 * 60 * 1000 });
+    if (!limit.allowed) return NextResponse.json({ error: 'Trop de dépôts de fichiers. Réessayez dans une heure.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } });
 
     const intent = await createPresignedUploadUrl(
       {
@@ -27,7 +33,7 @@ export async function POST(request: NextRequest) {
         size: payload.size,
       },
       {
-        folder: `client-files/${session.contactId}`,
+        folder: `${getUploadFolder({ actorType: 'client', actorId: session.contactId })}/staging`,
       },
     );
 
@@ -40,9 +46,12 @@ export async function POST(request: NextRequest) {
         originalName: intent.originalName,
         mimeType: intent.mimeType,
         size: intent.size,
+        uploadIntent: await issueFileUploadIntent({ actorType: 'client', actorId: session.contactId }, intent),
       },
     });
   } catch (error) {
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation invalide', details: error.issues }, { status: 400 });
     }
@@ -57,13 +66,12 @@ export async function POST(request: NextRequest) {
           {
             error: 'Configuration stockage incomplète sur le serveur.',
             code: 'STORAGE_CONFIG_MISSING',
-            detail: error.message,
           },
           { status: 503 },
         );
       }
     }
 
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Generation URL upload impossible' }, { status: 500 });
+    return NextResponse.json({ error: 'Préparation du dépôt temporairement indisponible.' }, { status: 503 });
   }
 }

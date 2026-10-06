@@ -6,7 +6,10 @@ const GROUP_LABELS = { AINES_RESIDENCE: 'Aînés / résidence', ECOLE: 'École',
 type GroupType = keyof typeof GROUP_LABELS;
 export const metadata = buildMetadata({ title: 'Demander un atelier sans compte | Création Nowis', description: 'Présentez votre groupe et votre projet d’atelier musical avec l’IA. Première demande sans compte ni paiement.', path: '/ateliers/demande' });
 
-export default function WorkshopRequestPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
+export default async function WorkshopRequestPage(
+  props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }
+) {
+  const searchParams = await props.searchParams;
   const raw = typeof searchParams?.groupType === 'string' ? searchParams.groupType : '';
   const groupType = Object.prototype.hasOwnProperty.call(GROUP_LABELS, raw) ? raw as GroupType : undefined;
   const nextPath = groupType ? `/client/workshops/nouveau?groupType=${encodeURIComponent(groupType)}` : '/client/workshops/nouveau';

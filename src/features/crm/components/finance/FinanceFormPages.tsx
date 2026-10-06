@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { FileUploader } from '@/features/crm/components/shared/FileUploader';
 import {
   FINANCE_ENTRY_STATUS_LABELS,
@@ -135,8 +135,8 @@ export function FinanceSaleFormPage({
   const [saleSuccess, setSaleSuccess] = useState<string | null>(null);
   const [selectedInventoryId, setSelectedInventoryId] = useState('');
   const [quantityDraft, setQuantityDraft] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState('OTHER');
-  const [amountBeforeTaxDraft, setAmountBeforeTaxDraft] = useState('0');
+  const [categoryDraft, setSelectedCategory] = useState('OTHER');
+  const [amountInput, setAmountInput] = useState<{ source: string; value: string } | null>(null);
   const [descriptionDraft, setDescriptionDraft] = useState('');
 
   const saleOptions = useMemo(() => FINANCE_SALE_TYPES.map((value) => ({ value, label: FINANCE_SALE_TYPE_LABELS[value] })), []);
@@ -146,19 +146,11 @@ export function FinanceSaleFormPage({
     [inventory, selectedInventoryId],
   );
   const suggestedAmount = selectedInventory ? Number(selectedInventory.salePrice) * Math.max(1, quantityDraft) : null;
-
-  useEffect(() => {
-    if (selectedInventory) {
-      const nextAmount = Number(selectedInventory.salePrice) * Math.max(1, quantityDraft);
-      setSelectedCategory(selectedInventory.category || 'OTHER');
-      setAmountBeforeTaxDraft(nextAmount.toFixed(2));
-      setDescriptionDraft((current) => current.trim() ? current : selectedInventory.label);
-      return;
-    }
-
-    setSelectedCategory('OTHER');
-    setAmountBeforeTaxDraft('0');
-  }, [selectedInventory, quantityDraft]);
+  const amountSource = JSON.stringify([selectedInventory?.id, selectedInventory?.salePrice, quantityDraft]);
+  const amountBeforeTaxDraft = amountInput?.source === amountSource
+    ? amountInput.value
+    : suggestedAmount?.toFixed(2) ?? '0';
+  const selectedCategory = selectedInventory?.category || categoryDraft;
 
   return (
     <FormShell title="Ajouter une vente" description="Créer un revenu et ajuster automatiquement le stock de n’importe quel produit actif.">
@@ -195,7 +187,7 @@ export function FinanceSaleFormPage({
               setSelectedInventoryId('');
               setQuantityDraft(1);
               setSelectedCategory('OTHER');
-              setAmountBeforeTaxDraft('0');
+              setAmountInput(null);
               setDescriptionDraft('');
             } catch (error) {
               setSaleError(error instanceof Error ? error.message : 'Erreur inconnue');
@@ -215,14 +207,11 @@ export function FinanceSaleFormPage({
             onChange={(event) => {
               const nextInventoryId = event.target.value;
               setSelectedInventoryId(nextInventoryId);
+              setSelectedCategory('OTHER');
+              setAmountInput(null);
               const nextInventory = inventory.find((item) => item.id === nextInventoryId) ?? null;
               if (nextInventory) {
-                setSelectedCategory(nextInventory.category || 'OTHER');
-                setAmountBeforeTaxDraft((Number(nextInventory.salePrice) * Math.max(1, quantityDraft)).toFixed(2));
                 setDescriptionDraft(nextInventory.label);
-              } else {
-                setSelectedCategory('OTHER');
-                setAmountBeforeTaxDraft('0');
               }
             }}
             className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white sm:col-span-2"
@@ -260,7 +249,7 @@ export function FinanceSaleFormPage({
             step="0.01"
             min="0"
             value={amountBeforeTaxDraft}
-            onChange={(event) => setAmountBeforeTaxDraft(event.target.value)}
+            onChange={(event) => setAmountInput({ source: amountSource, value: event.target.value })}
             placeholder="Montant avant taxes"
             className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white"
           />
@@ -274,9 +263,10 @@ export function FinanceSaleFormPage({
             onChange={(event) => {
               const nextQuantity = Math.max(1, Number(event.target.value) || 1);
               setQuantityDraft(nextQuantity);
+              setAmountInput(null);
               if (selectedInventory) {
-                setAmountBeforeTaxDraft((Number(selectedInventory.salePrice) * nextQuantity).toFixed(2));
-              }
+                setDescriptionDraft((current) => current.trim() ? current : selectedInventory.label);
+              } else setSelectedCategory('OTHER');
             }}
             className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white"
           />

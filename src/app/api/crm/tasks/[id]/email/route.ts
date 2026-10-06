@@ -21,11 +21,12 @@ function escapeHtml(value: string) {
 }
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export async function POST(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'tasks', 'update');
+export async function POST(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'tasks', 'update');
   if (guard.error) return guard.error;
 
   try {

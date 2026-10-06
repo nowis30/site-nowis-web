@@ -10,7 +10,8 @@ import { getClientDocumentSection, getDefaultCategoryForUpload } from '@/feature
 
 const CLIENT_EDITABLE_STATUSES = new Set(['BROUILLON', 'NEW', 'CONTACTED', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'SCHEDULED']);
 
-export default async function ClientWorkshopDetailPage({ params }: { params: { id: string } }) {
+export default async function ClientWorkshopDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await requireClientPortalSession();
 
   const item = await prisma.workshopRequest.findFirst({
@@ -89,8 +90,8 @@ export default async function ClientWorkshopDetailPage({ params }: { params: { i
       originalName: document.originalName,
       mimeType: document.mimeType,
       size: document.size,
-      storageKey: document.storageKey,
-      url: document.url,
+      storageKey: document.size === 0 && /^(quotes|invoices)\//.test(document.storageKey) ? document.storageKey.split('/')[0] + '/' : undefined,
+      url: `/api/client-portal/file-documents/${document.id}/download`,
       category: document.category,
       visibility: document.visibility,
       createdAt: document.createdAt.toISOString(),
@@ -99,7 +100,7 @@ export default async function ClientWorkshopDetailPage({ params }: { params: { i
       workshopRequestId: document.workshopRequestId,
       commercialQuoteId: document.commercialQuoteId,
       invoiceId: document.invoiceId,
-      uploadedByUserId: document.uploadedByUserId,
+      uploadedByUserId: document.uploadedByUserId ? 'admin' : null,
       songRequest: null,
       workshopRequest: { id: workshop.id, title: workshop.title },
     }));

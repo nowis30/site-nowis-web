@@ -7,7 +7,7 @@ import { z } from 'zod';
 const activityTypeFilterSchema = z.enum(['NOTE', 'CALL', 'MESSAGE', 'EMAIL', 'APPOINTMENT', 'INVOICE', 'PAYMENT', 'FORM', 'FORM_SUBMISSION', 'FILE', 'TASK']);
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'activities', 'read');
+  const guard = await requireApiPermission(request, 'activities', 'read');
   if (guard.error) return guard.error;
 
   const q = request.nextUrl.searchParams.get('q')?.trim();
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'activities', 'create');
+  const guard = await requireApiPermission(request, 'activities', 'create');
   if (guard.error) return guard.error;
 
   try {

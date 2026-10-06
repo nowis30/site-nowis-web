@@ -63,7 +63,9 @@ export function toErrorMetadata(error: unknown): {
   safeMessage: string;
 } {
   const errorName = error instanceof Error ? error.name : 'UnknownError';
-  const safeMessage = error instanceof Error ? error.message : 'Unexpected error';
+  // Prisma/provider messages may include connection details or submitted data.
+  // Keep only the error class and Prisma code in structured diagnostics.
+  const safeMessage = 'Server operation failed';
   const prismaCode = error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined;
 
   return { errorName, prismaCode, safeMessage };

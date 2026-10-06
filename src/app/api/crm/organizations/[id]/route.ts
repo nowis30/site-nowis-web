@@ -8,8 +8,9 @@ function normalizeOptionalString(value?: string) {
   return value && value.trim().length > 0 ? value.trim() : null;
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'organizations', 'update');
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'organizations', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -49,8 +50,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'organizations', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'organizations', 'delete');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {
@@ -76,8 +78,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'organizations', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'organizations', 'update');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

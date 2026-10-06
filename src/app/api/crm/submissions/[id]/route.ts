@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'activities', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'activities', 'update');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

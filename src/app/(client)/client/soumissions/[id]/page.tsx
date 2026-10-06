@@ -33,7 +33,8 @@ function formatCurrency(value: unknown, currency = 'CAD') {
   return new Intl.NumberFormat('fr-CA', { style: 'currency', currency }).format(Number(value || 0));
 }
 
-export default async function ClientSoumissionDetailPage({ params }: { params: { id: string } }) {
+export default async function ClientSoumissionDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await requireClientPortalSession();
 
   const item = await prisma.commercialQuote.findFirst({

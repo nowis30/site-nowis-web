@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { getPayPalDiagnostics, getPayPalInvoiceAdminDiagnostics, getPayPalMerchantEmailUsed } from '@/lib/server/paypal';
 
-function ensureAdmin(request: NextRequest) {
-  const guard = requireApiPermission(request, 'invoices', 'read');
+async function ensureAdmin(request: NextRequest) {
+  const guard = await requireApiPermission(request, 'invoices', 'read');
   if (guard.error) return { error: guard.error, session: null as null };
   if (guard.session.role !== 'ADMIN') {
     return {
@@ -15,7 +15,7 @@ function ensureAdmin(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const admin = ensureAdmin(request);
+  const admin = await ensureAdmin(request);
   if (admin.error) return admin.error;
 
   const diagnostics = getPayPalDiagnostics();

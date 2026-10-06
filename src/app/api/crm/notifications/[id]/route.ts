@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCrmSessionServer } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { isPortalNotificationChannel } from '@/lib/portal-notifications';
+import { authOriginError } from '@/lib/auth-request-security';
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
   const session = await getCrmSessionServer();
   if (!session) {
     return NextResponse.json({ error: 'Session CRM invalide' }, { status: 401 });

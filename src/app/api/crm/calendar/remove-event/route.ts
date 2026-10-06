@@ -11,7 +11,7 @@ const removeEventSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'appointments', 'delete');
+  const guard = await requireApiPermission(request, 'appointments', 'delete');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

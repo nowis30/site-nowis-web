@@ -157,13 +157,13 @@ test('GET returns only per-request capabilities without serializing the runtime 
     for (const name of names) delete process.env[name];
     process.env.VERCEL = '1';
     const runtimeRequest = request(payload, { 'x-vercel-oidc-token': 'runtime-token-not-for-client' });
-    const response = GET(runtimeRequest);
-    assert.deepEqual(await response.json(), { available: true });
+    const response = await GET(runtimeRequest);
+    assert.deepEqual(await response.json(), { available: false, reason: 'AUTH_REQUIRED', loginUrl: '/connexion?next=%2Ftarot', quota: null });
     assert.equal(response.headers.get('x-vercel-oidc-token'), null);
     assert.equal(response.headers.get('cache-control'), 'no-store');
-    assert.deepEqual(await GET(request(payload)).json(), { available: false });
+    assert.equal((await (await GET(request(payload))).json()).reason, 'AUTH_REQUIRED');
     delete process.env.VERCEL;
-    assert.deepEqual(await GET(runtimeRequest).json(), { available: false });
+    assert.equal((await (await GET(runtimeRequest)).json()).reason, 'AUTH_REQUIRED');
   } finally {
     for (const [name, value] of saved) {
       if (value === undefined) delete process.env[name]; else process.env[name] = value;

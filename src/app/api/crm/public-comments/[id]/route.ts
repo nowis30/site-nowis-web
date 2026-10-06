@@ -5,8 +5,9 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 const ALLOWED_STATUS = ['APPROVED', 'REJECTED', 'ARCHIVED'] as const;
 type AllowedStatus = (typeof ALLOWED_STATUS)[number];
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const { error } = requireApiPermission(request, 'reviews', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { error } = await requireApiPermission(request, 'reviews', 'update');
   if (error) return error;
 
   const body = await request.json().catch(() => null) as { status?: string } | null;
@@ -40,8 +41,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   return NextResponse.json({ comment: updated });
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const { error, session } = requireApiPermission(request, 'reviews', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { error, session } = await requireApiPermission(request, 'reviews', 'delete');
   if (error) return error;
 
   if (session?.role !== 'ADMIN') {

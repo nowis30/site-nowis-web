@@ -40,7 +40,8 @@ const emptyReading = () => ({drawId: '', question: '', answers: {}, spread: '3',
 const completeReading = (drawId, options = {}) => ({drawId, question: 'Comment aborder cette période ?', answers: {}, spread: '3', cardIds: ['major-0', 'major-1', 'coupes-13'], revealed: [0, 1, 2], ...options});
 const completeAstrology = options => ({birthDate: '1990-05-15', birthTime: '14:30', unknownTime: false, latitude: 45.5019, longitude: -73.5674, timeZone: 'America/Toronto', forecastDate: '2026-10-04', placeName: 'Montréal, Québec, Canada', ...options});
 
-async function setup({available = true, storage = new Map(), reading = emptyReading(), astrology = null} = {}) {
+async function setup({available = true, storage = new Map(), reading = emptyReading(), astrology = null, capability = null} = {}) {
+  let capabilityResult = capability ?? {available};
   const elements = new Map();
   const element = id => { if (!elements.has(id)) elements.set(id, new Element(id)); return elements.get(id); };
   element('summary-result').hidden = true;
@@ -63,7 +64,7 @@ async function setup({available = true, storage = new Map(), reading = emptyRead
     clearTimeout: id => timers.delete(id),
     fetch: (url, options = {}) => {
       const call = {url, options}; calls.push(call);
-      if (options.method !== 'POST') return Promise.resolve(response({available}));
+      if (options.method !== 'POST') return Promise.resolve(response(capabilityResult));
       // Ignore AbortSignal deliberately: stale responses must still be harmless.
       return new Promise((resolve, reject) => posts.push({...call, resolve, reject}));
     }
@@ -74,6 +75,7 @@ async function setup({available = true, storage = new Map(), reading = emptyRead
   await flush();
   return {
     element, window, calls, posts, storage, timers,
+    setCapability: value => {capabilityResult=value;},
     saved: () => JSON.parse(storage.get(storageKey)),
     setReading: async value => { state.reading = plain(value); await window.fire('tarot:changed'); },
     setAstrology: async value => { state.astrology = value ? plain(value) : null; await window.fire('astro:changed'); },
@@ -338,9 +340,78 @@ test('rate limits and invalid requests produce a French explanation without fabr
     await page.consent(true); const pending = page.request();
     await page.finish(page.posts[0], 'NOT_A_VALID_CONCLUSION', status, 'unavailable'); await pending;
     assert.equal(page.element('summary-result').hidden, true);
-    assert.equal(page.element('summary-request').disabled, false);
-    assert.match(page.element('summary-status').textContent, status === 429 ? /récemment/ : status === 400 ? /Vérifiez/ : /indisponible/);
+    assert.equal(page.element('summary-request').disabled, status === 429);
+    assert.match(page.element('summary-status').textContent, status === 429 ? /20 commandes.*minuit.*Toronto/ : status === 400 ? /Vérifiez/ : /indisponible/);
   }
+});
+
+const dailyQuota = remaining => ({limit:20,remaining,resetAt:new Date(Date.now()+3600000).toISOString(),timeZone:'America/Toronto'});
+
+test('an exploration alone cannot send private inputs while authentication is required', async () => {
+  const page = await setup({capability: {available: false, reason: 'AUTH_REQUIRED', quota: null}});
+  page.window.EXPLORE_SESSION.set({names: {a: 'PRIVATE_FIRST_NAME', b: 'PRIVATE_SECOND_NAME'}});
+  await page.consent(true);
+  await page.request();
+  assert.equal(page.element('summary-request').disabled, true);
+  assert.equal(page.element('summary-ai-login').hidden, false);
+  assert.equal(page.posts.length, 0);
+  assert.equal(page.calls.length, 1);
+  assert.equal(page.calls[0].options.body, undefined);
+  assert.equal(JSON.stringify(page.saved()).includes('PRIVATE_'), false);
+});
+
+test('an exploration alone respects quota exhaustion shared by another AI feature', async () => {
+  const page = await setup({capability: {available: true, reason: null, quota: dailyQuota(20)}});
+  page.window.EXPLORE_SESSION.set({names: {a: 'PRIVATE_FIRST_NAME', b: 'PRIVATE_SECOND_NAME'}});
+  await page.consent(true);
+  assert.equal(page.element('summary-request').disabled, false);
+  const event = new Event('nowis:ai-quota');
+  event.quota = dailyQuota(0);
+  page.window.dispatchEvent(event);
+  await page.request();
+  assert.equal(page.element('summary-request').disabled, true);
+  assert.match(page.element('summary-ai-quota').textContent, /0 commande/);
+  assert.equal(page.posts.length, 0);
+  assert.equal(page.calls.length, 1);
+  assert.equal(JSON.stringify(page.saved()).includes('PRIVATE_'), false);
+});
+
+test('anonymous conclusion retains the selection and offers a local top-level login without sending it', async () => {
+  const page=await setup({reading:completeReading('draw-1'),astrology:completeAstrology(),capability:{available:false,reason:'AUTH_REQUIRED',quota:null}});
+  await page.consent(true); await page.request();
+  assert.equal(page.posts.length,0);
+  assert.equal(page.saved().readings.length,1);
+  assert.equal(page.element('summary-ai-login').hidden,false);
+  assert.equal(page.element('summary-ai-controls').hidden,true);
+  assert.match(page.element('summary-status').textContent,/Connectez-vous.*20/);
+  assert.match(page.element('summary-ai-quota').textContent,/partagées.*vision.*minuit/);
+  assert.equal(page.calls[0].options.body,undefined);
+  assert.match(fs.readFileSync(path.join(readerDirectory,'index.html'),'utf8'),/id="summary-ai-login"[^>]*><a[^>]*href="\/connexion\?next=%2Ftarot"[^>]*target="_top"/);
+});
+
+test('the shared daily limit blocks direct calls and refreshes after reset without transmitting readings', async () => {
+  const page=await setup({reading:completeReading('draw-1'),capability:{available:false,reason:'ASSISTANT_DAILY_LIMIT',quota:dailyQuota(0)}});
+  await page.consent(true); await page.request(); assert.equal(page.posts.length,0);
+  assert.match(page.element('summary-ai-quota').textContent,/0 commande/);
+  page.setCapability({available:true,reason:null,quota:dailyQuota(20)});
+  [...page.timers.values()][0](); await flush();
+  assert.equal(page.calls.length,2); assert.equal(page.posts.length,0); assert.equal(page.calls[1].options.body,undefined);
+  await page.consent(true); const pending=page.request();
+  page.posts[0].resolve(response({mode:'ai',reply:'Une piste.',quota:dailyQuota(19)})); await pending;
+  assert.match(page.element('summary-ai-quota').textContent,/19 commandes/);
+  const event=new Event('nowis:ai-quota');event.quota=dailyQuota(0);page.window.dispatchEvent(event);
+  await page.request(); assert.equal(page.posts.length,1); assert.equal(page.element('summary-request').disabled,true);
+});
+
+test('an expired account displays authentication instead of a fabricated conclusion and revokes consent', async () => {
+  const page=await setup({reading:completeReading('draw-1')}); await page.consent(true);
+  const pending=page.request();page.posts[0].resolve(response({reason:'AUTH_REQUIRED',message:'PRIVATE_SERVER_DETAIL'},401));await pending;
+  assert.equal(page.element('summary-ai-login').hidden,false);
+  assert.equal(page.element('summary-consent').checked,false);
+  assert.equal(page.element('summary-result').hidden,true);
+  assert.equal(page.saved().readings.length,1);
+  assert.match(page.element('summary-status').textContent,/Connectez-vous/);
+  assert.equal(page.element('summary-status').textContent.includes('PRIVATE_SERVER_DETAIL'),false);
 });
 
 test('provider errors explain the failure, preserve readings and allow a retry without exposing server details', async () => {

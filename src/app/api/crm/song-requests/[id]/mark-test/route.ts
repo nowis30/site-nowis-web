@@ -6,8 +6,9 @@ import { z } from 'zod';
 
 const bodySchema = z.object({ reason: z.string().optional() });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'songRequests', 'update');
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'songRequests', 'update');
   if (guard.error) return guard.error;
 
   const body = bodySchema.safeParse(await request.json().catch(() => ({})));

@@ -4,8 +4,9 @@ import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal
 import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) {
     return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
   }

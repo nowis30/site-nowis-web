@@ -2,7 +2,7 @@
 
 **Crée du contenu extraordinaire : T-shirts IA, musique (Suno), vidéos (Revide.ai)**
 
-Application modern Next.js 14 + TypeScript pour créer et vendre du contenu généré par IA.
+Application Next.js 16 + React 19 + TypeScript pour créer et vendre du contenu généré par IA. Node.js 22 ou supérieur est requis.
 
 ## 🚀 Démarrage rapide (5 minutes)
 
@@ -26,6 +26,7 @@ Voir les fichiers de documentation :
 | **SETUP_INSTRUCTIONS.md** | 📖 Guide complet de configuration et personnalisation |
 | **DEPLOY_GOOGLE_PLAY.md** | 📱 Guide pour déployer sur Google Play |
 | **docs/google-client-auth.md** | 🔐 Connexion/inscription client gratuite avec Google |
+| **docs/dependency-security.md** | Versions corrigées, migrations du framework et exception de sécurité limitée à l’outillage |
 
 ## 🎯 Ce qui est inclus
 
@@ -35,7 +36,7 @@ Voir les fichiers de documentation :
 - ✅ **Service Worker** - Cache intelligent, synchronisation background
 - ✅ **Tailwind CSS** - Design moderne et rapide
 - ✅ **TypeScript** - Code type-safe
-- ✅ **Next.js 14** - Performances optimales
+- ✅ **Next.js 16** - Version prise en charge, avec API serveur asynchrones
 
 ### 📱 Pages incluses
 1. **Accueil** - Hero section avec CTA

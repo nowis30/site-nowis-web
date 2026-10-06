@@ -29,13 +29,14 @@ const entryUpdateSchema = z.object({
 });
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'finance', 'update');
+export async function PATCH(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'finance', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -132,8 +133,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'finance', 'delete');
+export async function DELETE(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'finance', 'delete');
   if (guard.error) return guard.error;
 
   try {

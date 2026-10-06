@@ -5,8 +5,9 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'read');
   if (guard.error) return guard.error;
 
   const item = await prisma.invoice.findUnique({
@@ -17,8 +18,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   return NextResponse.json({ item });
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'update');
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -74,8 +76,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'delete');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {
@@ -93,8 +96,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   return NextResponse.json({ ok: true });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'update');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

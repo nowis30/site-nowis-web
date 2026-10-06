@@ -3,8 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { logCleanupActivity, checkInvoiceDeletable } from '@/lib/cleanup-actions';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'delete');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

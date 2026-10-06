@@ -4,8 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { workshopAvailabilityInputSchema } from '@/features/workshops/schemas';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'settings', 'update');
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'settings', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -21,8 +22,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'settings', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'settings', 'delete');
   if (guard.error) return guard.error;
 
   try {

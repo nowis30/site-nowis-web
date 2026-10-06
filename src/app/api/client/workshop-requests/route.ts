@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
+import { toClientWorkshopDto } from '@/features/client-portal/workshops/client-workshop-dto';
 
 function unauthorized() {
   return NextResponse.json({ error: 'Connexion requise' }, { status: 401 });
 }
 
 export async function GET(request: NextRequest) {
-  const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+  const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
   if (!session) return unauthorized();
 
   const items = await prisma.workshopRequest.findMany({
@@ -35,5 +36,5 @@ export async function GET(request: NextRequest) {
     take: 100,
   });
 
-  return NextResponse.json({ items });
+  return NextResponse.json({ items: items.map(toClientWorkshopDto) }, { headers: { 'Cache-Control': 'private, no-store' } });
 }

@@ -35,7 +35,7 @@ const linkedTypeFilterSchema = z.enum([
 ]);
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'documents', 'read');
+  const guard = await requireApiPermission(request, 'documents', 'read');
   if (guard.error) return guard.error;
 
   const linkedType = request.nextUrl.searchParams.get('linkedType');
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'documents', 'create');
+  const guard = await requireApiPermission(request, 'documents', 'create');
   if (guard.error) return guard.error;
 
   try {

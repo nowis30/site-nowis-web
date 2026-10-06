@@ -1,6 +1,7 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { submitSongRequestFromWebsite } from '@/lib/actions/song-request';
+import { SongRequestSessionError, submitSongRequestFromWebsite } from '@/lib/actions/song-request';
 import { buildClientPortalUrl } from '@/lib/client-portal';
 import { SongRequestInput, songRequestPortalInputSchema } from '@/lib/validators/song-request';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
@@ -12,9 +13,11 @@ function compact(value?: string | null) {
 }
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
     const body = await request.json();
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
 
     if (!session) {
       return applyCorsHeaders(
@@ -89,6 +92,9 @@ export async function POST(request: NextRequest) {
       request,
     );
   } catch (error) {
+    if (error instanceof SongRequestSessionError) {
+      return applyCorsHeaders(NextResponse.json({ error: 'Session client invalide. Reconnectez-vous.', code: 'AUTH_REQUIRED' }, { status: 401 }), request);
+    }
     if (error instanceof z.ZodError) {
       return applyCorsHeaders(
         NextResponse.json(

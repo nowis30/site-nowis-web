@@ -1,0 +1,284 @@
+[
+  {
+    "pattern": "src/**/*.{js,ts,tsx}",
+    "compiled": [
+      "src/**/*.(js|ts|tsx)"
+    ],
+    "expanded": [
+      "src/**/*.js",
+      "src/**/*.ts",
+      "src/**/*.tsx"
+    ]
+  },
+  {
+    "pattern": "a/{b,c}/d",
+    "compiled": [
+      "a/(b|c)/d"
+    ],
+    "expanded": [
+      "a/b/d",
+      "a/c/d"
+    ]
+  },
+  {
+    "pattern": "{a,b}{c,d}",
+    "compiled": [
+      "(a|b)(c|d)"
+    ],
+    "expanded": [
+      "ac",
+      "ad",
+      "bc",
+      "bd"
+    ]
+  },
+  {
+    "pattern": "{a,{b,c},d}",
+    "compiled": [
+      "(a|(b|c)|d)"
+    ],
+    "expanded": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ]
+  },
+  {
+    "pattern": "{{a,b},{c,d}}",
+    "compiled": [
+      "((a|b)|(c|d))"
+    ],
+    "expanded": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ]
+  },
+  {
+    "pattern": "{1..5}",
+    "compiled": [
+      "([1-5])"
+    ],
+    "expanded": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ]
+  },
+  {
+    "pattern": "{05..01}",
+    "compiled": [
+      "(0[1-5])"
+    ],
+    "expanded": [
+      "05",
+      "04",
+      "03",
+      "02",
+      "01"
+    ]
+  },
+  {
+    "pattern": "{1..10..2}",
+    "compiled": [
+      "(1|3|5|7|9)"
+    ],
+    "expanded": [
+      "1",
+      "3",
+      "5",
+      "7",
+      "9"
+    ]
+  },
+  {
+    "pattern": "{a..f}",
+    "compiled": [
+      "([a-f])"
+    ],
+    "expanded": [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f"
+    ]
+  },
+  {
+    "pattern": "{z..t..2}",
+    "compiled": [
+      "(z|x|v|t)"
+    ],
+    "expanded": [
+      "z",
+      "x",
+      "v",
+      "t"
+    ]
+  },
+  {
+    "pattern": "{a,b,}",
+    "compiled": [
+      "(a|b|)"
+    ],
+    "expanded": [
+      "a",
+      "b",
+      ""
+    ]
+  },
+  {
+    "pattern": "{,a,b}",
+    "compiled": [
+      "(|a|b)"
+    ],
+    "expanded": [
+      "",
+      "a",
+      "b"
+    ]
+  },
+  {
+    "pattern": "{}",
+    "compiled": [
+      "{}"
+    ],
+    "expanded": [
+      "{}"
+    ]
+  },
+  {
+    "pattern": "{a}",
+    "compiled": [
+      "{a}"
+    ],
+    "expanded": [
+      "{a}"
+    ]
+  },
+  {
+    "pattern": "a{b",
+    "compiled": [
+      "a{b"
+    ],
+    "expanded": [
+      "a{b"
+    ]
+  },
+  {
+    "pattern": "a}b",
+    "compiled": [
+      "a}b"
+    ],
+    "expanded": [
+      "a}b"
+    ]
+  },
+  {
+    "pattern": "{a,b",
+    "compiled": [
+      "{a,b"
+    ],
+    "expanded": [
+      "{a,b"
+    ]
+  },
+  {
+    "pattern": "{a,b}suffix",
+    "compiled": [
+      "(a|b)suffix"
+    ],
+    "expanded": [
+      "asuffix",
+      "bsuffix"
+    ]
+  },
+  {
+    "pattern": "\\{a,b\\}",
+    "compiled": [
+      "{a,b}"
+    ],
+    "expanded": [
+      "{a,b}"
+    ]
+  },
+  {
+    "pattern": "[abc]{d,e}",
+    "compiled": [
+      "[abc](d|e)"
+    ],
+    "expanded": [
+      "[abc]d",
+      "[abc]e"
+    ]
+  },
+  {
+    "pattern": "(foo|bar)/{x,y}",
+    "compiled": [
+      "(foo|bar)/(x|y)"
+    ],
+    "expanded": [
+      "(foo|bar)/x",
+      "(foo|bar)/y"
+    ]
+  },
+  {
+    "pattern": "{1..3,5}",
+    "compiled": [
+      "(1..3|5)"
+    ],
+    "expanded": [
+      "1..3",
+      "5"
+    ]
+  },
+  {
+    "pattern": "\"{a,b}\"",
+    "compiled": [
+      "{a,b}"
+    ],
+    "expanded": [
+      "{a,b}"
+    ]
+  },
+  {
+    "pattern": "a/{01..03}/b",
+    "compiled": [
+      "a/(0[1-3])/b"
+    ],
+    "expanded": [
+      "a/01/b",
+      "a/02/b",
+      "a/03/b"
+    ]
+  },
+  {
+    "pattern": "foo/{a,\\{b,c\\},d}",
+    "compiled": [
+      "foo/(a|{b|c}|d)"
+    ],
+    "expanded": [
+      "foo/a",
+      "foo/{b",
+      "foo/c}",
+      "foo/d"
+    ]
+  },
+  {
+    "pattern": "{a,{b,{c,d}}}",
+    "compiled": [
+      "(a|(b|(c|d)))"
+    ],
+    "expanded": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ]
+  }
+]

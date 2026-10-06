@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, CopyObjectCommand, DeleteObjectCommand, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { sanitizeFileBaseName } from '@/lib/file-documents';
 
@@ -42,6 +42,10 @@ function getPublicBaseUrl() {
   return normalizeBaseUrl(requireEnv('S3_PUBLIC_BASE_URL'));
 }
 
+export function getStoredFileUrl(storageKey: string) {
+  return `${getPublicBaseUrl()}/${encodeURI(storageKey)}`;
+}
+
 function buildStorageKey(folder: string, originalName: string) {
   const now = new Date();
   const year = String(now.getUTCFullYear());
@@ -64,6 +68,7 @@ export async function createPresignedUploadUrl(
     Bucket: bucket,
     Key: storageKey,
     ContentType: file.mimeType || 'application/octet-stream',
+    ContentLength: file.size,
   });
 
   const uploadUrl = await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
@@ -71,7 +76,7 @@ export async function createPresignedUploadUrl(
   return {
     uploadUrl,
     storageKey,
-    url: `${getPublicBaseUrl()}/${encodeURI(storageKey)}`,
+    url: getStoredFileUrl(storageKey),
     filename: storageKey.split('/').pop() || storageKey,
     originalName: file.originalName || 'file',
     mimeType: file.mimeType || 'application/octet-stream',
@@ -153,9 +158,32 @@ export async function assertStoredObjectMetadata(storageKey: string, expected: {
     throw new Error('Fichier invalide: taille differente de celle attendue.');
   }
 
-  if (expectedType && actualType && actualType !== expectedType) {
+  if (actualType !== expectedType) {
     throw new Error('Fichier invalide: type MIME different de celui attendu.');
   }
+  return response.ETag;
+}
+
+/** Copy the checked staging object to a fresh key that has no public PUT grant. */
+export async function finalizeUploadedFile(file: { storageKey: string; originalName: string; mimeType: string; size: number }, folder: string) {
+  const etag = await assertStoredObjectMetadata(file.storageKey, file);
+  if (!etag) throw new Error('Fichier invalide: version stockage indisponible.');
+  const bucket = requireEnv('S3_BUCKET');
+  const finalKey = buildStorageKey(folder, file.originalName);
+  try {
+    await getS3Client().send(new CopyObjectCommand({ Bucket: bucket, Key: finalKey,
+      CopySource: `${bucket}/${encodeURIComponent(file.storageKey).replace(/%2F/g, '/')}`,
+      CopySourceIfMatch: etag,
+      MetadataDirective: 'REPLACE', ContentType: file.mimeType,
+      ContentDisposition: `attachment; filename="${sanitizeFileBaseName(file.originalName)}"`,
+    }));
+  } catch (error) {
+    // Only this request's fresh destination key is eligible for orphan cleanup.
+    await deleteFileFromPersistentStorage(finalKey).catch(() => undefined);
+    throw error;
+  }
+  await deleteFileFromPersistentStorage(file.storageKey).catch(() => undefined);
+  return { storageKey: finalKey, url: getStoredFileUrl(finalKey), filename: finalKey.split('/').pop()! };
 }
 
 export async function storeFileInPersistentStorage(file: File, options?: { folder?: string }) {

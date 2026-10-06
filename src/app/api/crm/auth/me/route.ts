@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = getCrmSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getCrmSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
     if (!session) {
       return NextResponse.json({ user: null });
     }

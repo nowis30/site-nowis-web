@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { forbid, getApiSession, requireApiPermission, unauthorized } from '@/features/crm/auth/api-guard';
+import { authOriginError } from '@/lib/auth-request-security';
 import { can } from '@/features/crm/auth/permissions';
 import { normalizeOptionalString } from '@/features/crm/server/validators';
 import { coerceTaskPayload, coerceTaskType } from '@/features/crm/tasks/task-normalization';
@@ -39,7 +40,7 @@ const taskUpdateSchema = z.object({
 });
 
 async function updateTask(request: NextRequest, params: { id: string }) {
-  const guard = requireApiPermission(request, 'tasks', 'update');
+  const guard = await requireApiPermission(request, 'tasks', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -94,8 +95,9 @@ async function updateTask(request: NextRequest, params: { id: string }) {
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'tasks', 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'tasks', 'read');
   if (guard.error) return guard.error;
 
   const item = await prisma.task.findUnique({
@@ -124,17 +126,22 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   return updateTask(request, params);
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   // Backward-compatible alias for existing UI calls.
   return updateTask(request, params);
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const session = getApiSession(request);
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
+  const params = await props.params;
+  const session = await getApiSession(request);
   if (!session) {
     return unauthorized();
   }

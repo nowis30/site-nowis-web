@@ -4,8 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { workshopRequestInputSchema } from '@/features/workshops/schemas';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'workshopRequests', 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'workshopRequests', 'read');
   if (guard.error) return guard.error;
 
   try {
@@ -99,8 +100,9 @@ function inferBookingProvider(input: { explicitProvider?: string; bookingUrl?: s
   return null;
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'workshopRequests', 'update');
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'workshopRequests', 'update');
   if (guard.error) return guard.error;
 
   try {
@@ -239,8 +241,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'workshopRequests', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'workshopRequests', 'delete');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {
@@ -266,8 +269,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'workshopRequests', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'workshopRequests', 'update');
   if (guard.error) return guard.error;
 
   if (guard.session.role !== 'ADMIN') {

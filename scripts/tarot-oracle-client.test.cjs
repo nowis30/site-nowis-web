@@ -62,7 +62,8 @@ const response = (body, status = 200) => ({ ok: status >= 200 && status < 300, s
 const flush = async () => { for (let index = 0; index < 8; index++) await Promise.resolve(); };
 const plain = value => JSON.parse(JSON.stringify(value));
 
-async function setup({ available = true, repeatedDraw = false } = {}) {
+async function setup({ available = true, repeatedDraw = false, capability = null } = {}) {
+  let capabilityResult = capability ?? {available};
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, new Element(id));
@@ -114,7 +115,7 @@ async function setup({ available = true, repeatedDraw = false } = {}) {
     fetch: (url, options = {}) => {
       const call = { url, options };
       calls.push(call);
-      if (options.method !== 'POST') return Promise.resolve(response({ available }));
+      if (options.method !== 'POST') return Promise.resolve(response(capabilityResult));
       // Deliberately ignore AbortSignal: late responses from already cancelled
       // requests must be harmless even when a transport does not stop promptly.
       return new Promise((resolve, reject) => posts.push({ ...call, resolve, reject }));
@@ -134,6 +135,7 @@ async function setup({ available = true, repeatedDraw = false } = {}) {
   };
   const drawAndReveal = async () => { await element('draw').fire('click'); await element('reveal-all').fire('click'); };
   return { element, spreads, calls, posts, storage, timers, window, input, consent, selectIntention, drawAndReveal,
+    setCapability: value => {capabilityResult = value;},
     reading: () => plain(window.TAROT_SESSION.getReading()),
     request: () => element('oracle-ai-request').fire('click'),
     finish: async (request, reply = 'Lecture symbolique.', status = 200) => { request.resolve(response({ mode: 'ai', reply }, status)); await flush(); },
@@ -329,6 +331,53 @@ test('failed AI response keeps the local reading and never exposes a supplied re
   assert.equal(page.element('oracle-ai-result').hidden, true);
   assert.equal(page.element('oracle-vision').hidden, false);
   assert.equal(page.element('interpretations').hidden, false);
-  assert.match(page.element('oracle-ai-status').textContent, /Plusieurs visions/);
-  assert.equal(page.element('oracle-ai-request').disabled, false);
+  assert.match(page.element('oracle-ai-status').textContent, /20 commandes.*minuit.*Toronto/);
+  assert.equal(page.element('oracle-ai-request').disabled, true);
+  await page.request();
+  assert.equal(page.posts.length, 1);
+});
+
+const dailyQuota = remaining => ({limit:20, remaining, resetAt:new Date(Date.now()+3600000).toISOString(), timeZone:'America/Toronto'});
+
+test('anonymous capability shows the safe login link and preserves local reading without any AI POST', async () => {
+  const page = await setup({capability:{available:false,reason:'AUTH_REQUIRED',loginUrl:'https://malicious.invalid',quota:null}});
+  await page.drawAndReveal(); await page.consent(true); await page.request();
+  assert.equal(page.posts.length,0);
+  assert.equal(page.element('oracle-ai-login').hidden,false);
+  assert.equal(page.element('oracle-ai-controls').hidden,true);
+  assert.equal(page.element('oracle-vision').hidden,false);
+  assert.match(page.element('oracle-ai-status').textContent,/Connectez-vous.*20/);
+  assert.match(page.element('oracle-ai-quota').textContent,/partagées.*conclusion.*minuit/);
+  assert.equal(page.calls[0].options.body,undefined);
+  const html=fs.readFileSync(path.join(readerDirectory,'index.html'),'utf8');
+  assert.match(html,/id="oracle-ai-login"[^>]*><a[^>]*href="\/connexion\?next=%2Ftarot"[^>]*target="_top"/);
+});
+
+test('a depleted server quota blocks direct clicks, refreshes at reset and still requires an explicit request', async () => {
+  const page=await setup({capability:{available:false,reason:'ASSISTANT_DAILY_LIMIT',quota:dailyQuota(0)}});
+  await page.drawAndReveal(); await page.consent(true); await page.request();
+  assert.equal(page.posts.length,0);
+  assert.match(page.element('oracle-ai-quota').textContent,/0 commande.*aujourd/);
+  assert.match(page.element('oracle-ai-status').textContent,/minuit.*Toronto/);
+  page.setCapability({available:true,reason:null,quota:dailyQuota(20)});
+  const reset=[...page.timers.values()][0]; reset(); await flush();
+  assert.equal(page.calls.length,2);
+  assert.equal(page.calls[1].options.body,undefined);
+  assert.equal(page.posts.length,0);
+  await page.consent(true); const pending=page.request();
+  page.posts[0].resolve(response({mode:'ai',reply:'Une piste.',quota:dailyQuota(19)})); await pending;
+  assert.match(page.element('oracle-ai-quota').textContent,/19 commandes/);
+});
+
+test('shared quota events disable a stale available vision and a server 401 revokes consent', async () => {
+  const page=await setup({capability:{available:true,reason:null,quota:dailyQuota(1)}});
+  await page.drawAndReveal(); await page.consent(true);
+  const event=new Event('nowis:ai-quota'); event.quota=dailyQuota(0); page.window.dispatchEvent(event);
+  await page.request(); assert.equal(page.posts.length,0); assert.equal(page.element('oracle-ai-request').disabled,true);
+  const expired=await setup(); await expired.drawAndReveal(); await expired.consent(true);
+  const pending=expired.request(); expired.posts[0].resolve(response({reason:'AUTH_REQUIRED',message:'PRIVATE_DETAIL'},401)); await pending;
+  assert.equal(expired.element('oracle-ai-login').hidden,false);
+  assert.equal(expired.element('oracle-ai-consent').checked,false);
+  assert.equal(expired.element('oracle-ai-result').hidden,true);
+  assert.match(expired.element('oracle-ai-status').textContent,/Connectez-vous/);
 });

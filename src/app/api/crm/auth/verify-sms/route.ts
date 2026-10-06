@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
+import { consumeContactRateLimit } from '@/lib/contact-rate-limit';
+import { consumeAuthGrant } from '@/lib/auth-grants';
+import { readAuthJson, authRequestErrorResponse } from '@/lib/auth-request-security';
 import {
   createCrmSessionCookie,
   clearCrmOtpCookie,
   getOtpTokenFromCookie,
   signCrmToken,
   verifyCrmOtpToken,
+  matchesCrmOtpCode,
 } from '@/features/crm/auth/session';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await readAuthJson(request) as { code?: unknown };
     const code = String(body?.code || '').trim();
 
-    if (!code) {
-      return NextResponse.json({ error: 'Code SMS requis' }, { status: 400 });
+    if (!/^\d{6}$/.test(code)) {
+      return NextResponse.json({ error: 'Code de vérification à six chiffres requis' }, { status: 400 });
     }
 
     const otpCookieToken = getOtpTokenFromCookie(request.headers.get('cookie') ?? undefined);
@@ -21,20 +26,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session OTP expirée. Recommence la connexion.' }, { status: 401 });
     }
 
-    const otpPayload = verifyCrmOtpToken(otpCookieToken);
+    const otpPayload = await verifyCrmOtpToken(otpCookieToken);
     if (!otpPayload) {
       return NextResponse.json({ error: 'Session OTP invalide ou expirée.' }, { status: 401 });
     }
 
-    if (otpPayload.otpCode !== code) {
-      return NextResponse.json({ error: 'Code SMS invalide' }, { status: 401 });
+    const attempts = await consumeContactRateLimit({
+      scope: 'crm:otp', identifier: createHash('sha256').update(otpPayload.sub).digest('hex'),
+      max: 5, windowMs: 10 * 60 * 1000,
+    });
+    if (!attempts.allowed) {
+      return NextResponse.json({ error: 'Trop de tentatives de code. Réessayez dans quelques minutes.' }, {
+        status: 429, headers: { 'Retry-After': String(attempts.retryAfterSeconds), 'Cache-Control': 'no-store' },
+      });
     }
 
-    const token = signCrmToken({
+    if (!matchesCrmOtpCode(otpPayload, code)) {
+      return NextResponse.json({ error: 'Code de vérification invalide' }, { status: 401 });
+    }
+    if (!await consumeAuthGrant(otpCookieToken, 'crm-otp')) {
+      return NextResponse.json({ error: 'Ce code a déjà été utilisé. Recommencez la connexion.' }, { status: 401 });
+    }
+
+    const token = await signCrmToken({
       sub: otpPayload.sub,
       role: otpPayload.role,
       email: otpPayload.email,
       fullName: otpPayload.fullName,
+      authVersion: otpPayload.authVersion,
+      authIdentityHash: otpPayload.authIdentityHash,
     });
 
     const response = NextResponse.json({
@@ -50,7 +70,11 @@ export async function POST(request: NextRequest) {
     response.headers.append('Set-Cookie', clearCrmOtpCookie());
     return response;
   } catch (error) {
-    console.error('crm auth verify-sms error', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    const securityError = authRequestErrorResponse(error);
+    if (securityError) return securityError;
+    console.error('crm auth verify-sms error', error instanceof Error ? error.name : 'UnknownError');
+    return NextResponse.json({ error: 'Vérification momentanément indisponible. Réessayez plus tard.' }, {
+      status: 503, headers: { 'Cache-Control': 'no-store' },
+    });
   }
 }

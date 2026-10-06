@@ -4,8 +4,9 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const guard = requireApiPermission(request, 'invoices', 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'invoices', 'read');
   if (guard.error) return guard.error;
 
   const invoice = await prisma.invoice.findUnique({

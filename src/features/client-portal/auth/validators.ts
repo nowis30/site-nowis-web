@@ -3,6 +3,8 @@ import { z } from 'zod';
 const strongPassword = z
   .string()
   .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+  .max(72, 'Le mot de passe est trop long')
+  .refine(value => new TextEncoder().encode(value).length <= 72, 'Le mot de passe est trop long')
   .regex(/[A-Z]/, 'Le mot de passe doit contenir au moins une majuscule')
   .regex(/[a-z]/, 'Le mot de passe doit contenir au moins une minuscule')
   .regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre');
@@ -19,7 +21,7 @@ export const clientRegisterSchema = z.object({
 
 export const clientLoginSchema = z.object({
   email: z.string().trim().toLowerCase().email('Adresse email invalide'),
-  password: z.string().min(1, 'Le mot de passe est requis'),
+  password: z.string().min(1, 'Le mot de passe est requis').max(72),
   next: z.string().trim().optional().or(z.literal('')),
 });
 

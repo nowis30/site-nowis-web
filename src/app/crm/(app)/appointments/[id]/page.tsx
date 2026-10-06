@@ -3,7 +3,8 @@ import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { AppointmentDetailPage } from '@/features/crm/components/appointments/AppointmentDetailPage';
 
-export default async function CrmAppointmentDetailPage({ params }: { params: { id: string } }) {
+export default async function CrmAppointmentDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   await requireCrmSession();
 
   const item = await prisma.appointment.findUnique({

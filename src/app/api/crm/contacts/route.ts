@@ -5,7 +5,7 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { contactInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'contacts', 'read');
+  const guard = await requireApiPermission(request, 'contacts', 'read');
   if (guard.error) return guard.error;
 
   try {
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'contacts', 'create');
+  const guard = await requireApiPermission(request, 'contacts', 'create');
   if (guard.error) return guard.error;
 
   try {

@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'crypto';
+import { publicInquiryOriginAllowed } from '@/lib/public-inquiry-security';
 
 export type PasswordResetScope = 'client' | 'crm';
 
@@ -11,7 +12,7 @@ function getBaseUrl(origin?: string) {
     process.env.NEXT_PUBLIC_SITE_URL ||
       process.env.NEXT_PUBLIC_DOMAIN ||
       process.env.APP_URL ||
-      origin ||
+      (origin && publicInquiryOriginAllowed(origin) ? origin : undefined) ||
       'http://localhost:3000',
   );
 }

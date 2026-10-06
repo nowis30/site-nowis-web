@@ -1,3 +1,4 @@
+import { authOriginError } from '@/lib/auth-request-security';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
@@ -30,8 +31,10 @@ const contactFormSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const originError = authOriginError(request);
+  if (originError) return originError;
   try {
-    const session = getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
+    const session = await getClientPortalSessionFromCookieHeader(request.headers.get('cookie') ?? undefined);
     if (!session) {
       return NextResponse.json(
         {
@@ -57,32 +60,13 @@ export async function POST(request: NextRequest) {
     const formLabel = data.formLabel ?? `Formulaire ${data.formType}`;
     const source = data.source ?? 'site-web';
 
-    // Vérifier si le contact existe déjà (par email)
-    let contact = await prisma.contact.findFirst({
-      where: data.email
-        ? {
-            OR: [
-              { id: session.contactId },
-              { email: data.email },
-            ],
-          }
-        : { id: session.contactId },
+    // Use only the authenticated dossier, never another record matching an unverified email.
+    const contact = await prisma.contact.findFirst({
+      where: { id: session.contactId, deletedAt: null },
     });
 
-    if (!contact) {
-      // Créer le contact
-      contact = await prisma.contact.create({
-        data: {
-          type: 'CLIENT',
-          fullName: data.fullName.trim(),
-          email: data.email || null,
-          phone: data.phone || null,
-          companyName: data.companyName || null,
-          source,
-          tags: data.tags,
-          notes: data.message || null,
-        },
-      });
+    if (!contact || contact.email?.trim().toLowerCase() !== session.email.trim().toLowerCase()) {
+      return NextResponse.json({ error: 'Session client invalide. Reconnectez-vous.', code: 'AUTH_REQUIRED' }, { status: 401 });
     }
 
     // Créer une demande (Inquiry)

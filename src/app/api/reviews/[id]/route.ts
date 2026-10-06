@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const { error } = requireApiPermission(request, 'reviews', 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { error } = await requireApiPermission(request, 'reviews', 'update');
   if (error) return error;
 
   const { status } = await request.json();
@@ -24,8 +25,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   return NextResponse.json(updated);
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const { error } = requireApiPermission(request, 'reviews', 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { error } = await requireApiPermission(request, 'reviews', 'delete');
   if (error) return error;
 
   const review = await prisma.review.findUnique({ where: { id: params.id } });

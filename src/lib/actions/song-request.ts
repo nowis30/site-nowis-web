@@ -52,6 +52,8 @@ function appendContactNote(existingNotes: string | null, requestId: string) {
   return existingNotes ? `${existingNotes.trim()}\n${line}` : line;
 }
 
+export class SongRequestSessionError extends Error {}
+
 export async function submitSongRequestFromWebsite(input: SongRequestInput, options?: { contactId?: string }) {
   const normalizedEmail = input.email.trim().toLowerCase();
   const normalizedBudget = normalizeBudget(input.budget);
@@ -61,51 +63,38 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
   const throwawayPasswordHash = await hashPassword(randomBytes(32).toString('hex'));
 
   return prisma.$transaction(async (tx) => {
-    const existingContact = options?.contactId
-      ? await tx.contact.findUnique({ where: { id: options.contactId } })
-      : await tx.contact.findFirst({ where: { email: normalizedEmail } });
-
-    let contact = existingContact;
-
-    if (existingContact) {
-      const nextTags = Array.from(new Set([...(existingContact.tags ?? []), 'song-request']));
-
-      contact = await tx.contact.update({
-        where: { id: existingContact.id },
-        data: {
-          phone: existingContact.phone || input.phone,
-          source: existingContact.source || input.source || 'website',
-          tags: nextTags,
-        },
-      });
-    } else {
-      contact = await tx.contact.create({
-        data: {
-          type: 'PROSPECT',
-          fullName: input.fullName,
-          email: normalizedEmail,
-          phone: input.phone,
-          source: input.source || 'website',
-          tags: ['song-request'],
-        },
-      });
+    if (!options?.contactId) throw new SongRequestSessionError('AUTH_REQUIRED');
+    const existingContact = await tx.contact.findFirst({ where: { id: options.contactId, deletedAt: null } });
+    if (!existingContact || existingContact.email?.trim().toLowerCase() !== normalizedEmail) {
+      throw new SongRequestSessionError('AUTH_REQUIRED');
     }
+
+    const nextTags = Array.from(new Set([...(existingContact.tags ?? []), 'song-request']));
+    const contact = await tx.contact.update({
+      where: { id: existingContact.id },
+      data: {
+        phone: existingContact.phone || input.phone,
+        source: existingContact.source || input.source || 'website',
+        tags: nextTags,
+      },
+    });
 
     const linkedUser = await tx.user.findFirst({
       where: {
         role: UserRole.PORTAL_USER,
         isActive: true,
-        OR: [
-          { contactId: contact.id },
-          { email: { equals: normalizedEmail, mode: 'insensitive' } },
-        ],
+        contactId: contact.id,
+        email: { equals: normalizedEmail, mode: 'insensitive' },
       },
       select: { id: true, contactId: true },
     });
 
     let ensuredUser = linkedUser;
 
-    if (!ensuredUser) {
+    const emailAlreadyUsed = !ensuredUser && await tx.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } }, select: { id: true },
+    });
+    if (!ensuredUser && !emailAlreadyUsed) {
       ensuredUser = await tx.user.create({
         data: {
           email: normalizedEmail,
@@ -113,16 +102,11 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
           passwordHash: throwawayPasswordHash,
           role: UserRole.PORTAL_USER,
           isActive: true,
+          emailVerifiedAt: new Date(),
           contactId: contact.id,
         },
         select: { id: true, contactId: true },
       });
-    } else if (!ensuredUser.contactId || ensuredUser.contactId !== contact.id) {
-      await tx.user.update({
-        where: { id: ensuredUser.id },
-        data: { contactId: contact.id },
-      });
-      ensuredUser = { ...ensuredUser, contactId: contact.id };
     }
 
     const songRequest = await tx.songRequest.create({
@@ -157,11 +141,11 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
       },
     });
 
-    const clientPortalToken = signClientPortalToken({
+    const clientPortalToken = await signClientPortalToken({
       contactId: contact.id,
       email: normalizedEmail,
       fullName: contact.fullName,
-    });
+    }, tx);
     const clientPortalPath = buildClientPortalPath(clientPortalToken);
 
     const summary = buildSongRequestSummary(input, songRequest.id, clientPortalPath);
@@ -173,7 +157,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
         description: summary,
         contactId: contact.id,
         songRequestId: songRequest.id,
-        userId: ensuredUser.id,
+        userId: ensuredUser?.id ?? null,
       },
     });
 
@@ -190,7 +174,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
         songRequestId: songRequest.id,
         linkedType: 'SONG_REQUEST',
         linkedId: songRequest.id,
-        createdById: ensuredUser.id,
+        createdById: ensuredUser?.id ?? null,
         contactId: contact.id,
         isAutoCreated: true,
       },
@@ -210,7 +194,7 @@ export async function submitSongRequestFromWebsite(input: SongRequestInput, opti
       songRequestId: songRequest.id,
       activityId: activity.id,
       taskId: task.taskId,
-      userId: ensuredUser.id,
+      userId: ensuredUser?.id ?? null,
       clientPortalPath,
     };
   });

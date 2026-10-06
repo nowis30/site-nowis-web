@@ -306,6 +306,20 @@ enum PublicCommentStatus {
   ARCHIVED
 }
 
+model AuthGrant {
+  id           String   @id @db.Uuid
+  tokenHash    String   @unique
+  scope        String
+  identityHash String
+  expiresAt    DateTime
+  usedAt       DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("auth_grants")
+}
+
 model User {
   id           String          @id @default(uuid()) @db.Uuid
   email        String          @unique
@@ -313,6 +327,8 @@ model User {
   passwordHash String
   role         UserRole        @default(ASSISTANT)
   isActive     Boolean         @default(true)
+  authVersion  Int             @default(0)
+  emailVerifiedAt DateTime?
   contactId     String?         @unique @db.Uuid
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
@@ -366,6 +382,7 @@ model PasswordResetToken {
   userId    String   @db.Uuid
   scope     String
   tokenHash String   @unique
+  authVersion Int   @default(0)
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime @default(now())
@@ -404,6 +421,7 @@ model Contact {
   notes           String?
   profileMeta     Json?
   deletedAt       DateTime?
+  authVersion     Int             @default(0)
   deletedBy       String?         @db.Uuid
   deleteReason    String?
   createdAt       DateTime        @default(now())

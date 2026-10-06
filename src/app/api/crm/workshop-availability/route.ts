@@ -5,7 +5,7 @@ import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { workshopAvailabilityInputSchema } from '@/features/workshops/schemas';
 
 export async function GET(request: NextRequest) {
-  const guard = requireApiPermission(request, 'settings', 'read');
+  const guard = await requireApiPermission(request, 'settings', 'read');
   if (guard.error) return guard.error;
 
   try {
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireApiPermission(request, 'settings', 'create');
+  const guard = await requireApiPermission(request, 'settings', 'create');
   if (guard.error) return guard.error;
 
   try {

@@ -23,6 +23,9 @@
     error: 'La demande n’a pas abouti. Vos résultats sont conservés : vous pouvez réessayer.'
   };
   const initialStatus = 'La conclusion IA est facultative. Retenez une carte du ciel ou un tirage révélé, puis donnez votre accord.';
+  const dailyLimit = 'Votre limite de 20 commandes IA pour aujourd’hui est atteinte. Vous pourrez réessayer après minuit (heure de Toronto). Vos lectures symboliques restent disponibles.';
+  const signIn = 'Connectez-vous pour utiliser vos 20 commandes IA par jour. Vos lectures symboliques restent disponibles.';
+  const quotaRule = '20 commandes IA par jour et par compte, partagées avec l’assistant du site et la vision du tarot. Remise à zéro à minuit (heure de Toronto).';
   let readings = [];
   let dismissedDrawIds = [];
   let astrology = null;
@@ -32,6 +35,19 @@
   let requestVersion = 0;
   let controller = null;
   let changedSinceLoad = false;
+  let authRequired = false;
+  let quota = null;
+  let resetTimer = null;
+
+  function updateQuota(value, publish = true) {
+    if (!value || value.limit !== 20 || !Number.isInteger(value.remaining) || value.remaining < 0 || value.remaining > 20 || value.timeZone !== 'America/Toronto' || typeof value.resetAt !== 'string' || !Number.isFinite(Date.parse(value.resetAt))) return;
+    quota = value;
+    clearTimeout(resetTimer);
+    const delay = Date.parse(quota.resetAt) - Date.now();
+    if (delay > 0) resetTimer = setTimeout(refreshCapability, Math.min(delay + 500, 2147483647));
+    if (publish) { const event = new Event('nowis:ai-quota'); event.quota = quota; window.dispatchEvent(event); }
+    syncButton();
+  }
 
   function cleanReading(value, requireRevealed) {
     if (!value || typeof value !== 'object' || !validId(value.drawId)) return null;
@@ -96,8 +112,11 @@
   persist(); // Replace malformed or extra stored fields with the bounded whitelist.
 
   function syncButton() {
-    $('summary-request').disabled = !available || busy || (!readings.length && !astrology && !Object.keys(explorations).length) || !$('summary-consent').checked;
+    $('summary-request').disabled = !available || authRequired || quota?.remaining === 0 || busy || (!readings.length && !astrology && !Object.keys(explorations).length) || !$('summary-consent').checked;
     $('summary-clear').disabled = !readings.length;
+    $('summary-ai-controls').hidden = !available || authRequired;
+    $('summary-ai-login').hidden = !authRequired;
+    $('summary-ai-quota').textContent = quota ? `${quota.remaining} commande${quota.remaining>1?'s':''} IA restante${quota.remaining>1?'s':''} aujourd’hui. ${quotaRule}` : quotaRule;
   }
 
   function invalidate(message) {
@@ -105,7 +124,7 @@
     controller?.abort(); controller = null; busy = false;
     $('summary-consent').checked = false;
     $('summary-result').replaceChildren(); $('summary-result').hidden = true;
-    $('summary-status').textContent = message;
+    $('summary-status').textContent = authRequired ? signIn : quota?.remaining === 0 ? dailyLimit : message;
     syncButton();
   }
 
@@ -197,7 +216,7 @@
   }
 
   $('summary-request').addEventListener('click', async () => {
-    if (!available || busy || (!readings.length && !astrology && !Object.keys(explorations).length) || !$('summary-consent').checked) return;
+    if (!available || authRequired || quota?.remaining === 0 || busy || (!readings.length && !astrology && !Object.keys(explorations).length) || !$('summary-consent').checked) return;
     const payload = requestPayload();
     const submittedSignature = JSON.stringify(payload);
     const version = ++requestVersion;
@@ -213,9 +232,14 @@
       const result = await response.json();
       if (version !== requestVersion || submittedSignature !== JSON.stringify(requestPayload())) return;
       if (requestController.signal.aborted) { $('summary-status').textContent = failureMessages.timeout; return; }
+      updateQuota(result.quota);
+      if (response.status === 401 || result.reason === 'AUTH_REQUIRED' || result.code === 'AUTH_REQUIRED') {
+        authRequired = true; available = false; quota = null; clearTimeout(resetTimer); $('summary-consent').checked = false; $('summary-status').textContent = signIn; return;
+      }
       if (!response.ok || result.mode !== 'ai' || typeof result.reply !== 'string' || !result.reply.trim()) {
+        if (response.status === 429) { available = false; if (quota) updateQuota({...quota, remaining: 0}); }
         $('summary-status').textContent = response.status === 429
-          ? 'Plusieurs conclusions ont été demandées récemment. Prenez le temps de lire vos résultats avant de réessayer.'
+          ? dailyLimit
           : response.status === 400
             ? 'Vérifiez les informations de la carte du ciel et les tirages retenus avant de réessayer.'
             : Object.prototype.hasOwnProperty.call(failureMessages, result.reason) ? failureMessages[result.reason] : unavailable;
@@ -225,7 +249,7 @@
         const paragraph = document.createElement('p'); paragraph.textContent = line; return paragraph;
       });
       $('summary-result').replaceChildren(...paragraphs); $('summary-result').hidden = false;
-      $('summary-status').textContent = 'Conclusion IA générée pour les éléments retenus. Ces pistes restent à rapprocher de votre vécu; vos choix vous appartiennent.';
+      $('summary-status').textContent = 'Conclusion IA générée pour les éléments retenus. Ces pistes restent à rapprocher de votre vécu; vos choix vous appartiennent.'+(quota?.remaining===0?' '+dailyLimit:'');
       window.dispatchEvent(new Event('oracle:scroll-summary-result'));
       if(window.parent&&window.parent!==window&&window.parent.postMessage)window.parent.postMessage({type:'nowis-reader-scroll',target:'summary-result'},location.origin);
     } catch {
@@ -240,18 +264,27 @@
 
   $('summary-status').textContent = initialStatus;
   synchronize(false);
-  const capabilityController = new AbortController();
-  const capabilityTimeout = setTimeout(() => capabilityController.abort(), 7000);
-  fetch('/api/tarot/conclusion', {cache: 'no-store', signal: capabilityController.signal})
-    .then(response => response.ok ? response.json() : null)
+  window.addEventListener('nowis:ai-quota', event => {updateQuota(event.quota, false);if(quota?.remaining===0)$('summary-status').textContent=dailyLimit;});
+  window.addEventListener('focus', refreshCapability);
+  function refreshCapability() {
+    const capabilityController = new AbortController();
+    const capabilityTimeout = setTimeout(() => capabilityController.abort(), 7000);
+    return fetch('/api/tarot/conclusion', {cache: 'no-store', signal: capabilityController.signal})
+    .then(response => response.json())
     .then(result => {
       if (capabilityController.signal.aborted) return;
+      authRequired = result?.reason === 'AUTH_REQUIRED' || result?.code === 'AUTH_REQUIRED';
       available = result?.available === true;
-      $('summary-ai-controls').hidden = !available;
-      if (!available) $('summary-status').textContent = unavailable;
+      if (authRequired) {quota = null; clearTimeout(resetTimer); $('summary-consent').checked = false;}
+      updateQuota(result?.quota);
+      if (authRequired) $('summary-status').textContent = signIn;
+      else if (quota?.remaining === 0) $('summary-status').textContent = dailyLimit;
+      else if (!available) $('summary-status').textContent = unavailable;
       else if (!changedSinceLoad) $('summary-status').textContent = initialStatus;
       syncButton();
     })
-    .catch(() => { $('summary-status').textContent = unavailable; })
+    .catch(() => { available = false; $('summary-status').textContent = unavailable; syncButton(); })
     .finally(() => clearTimeout(capabilityTimeout));
+  }
+  refreshCapability();
 })();

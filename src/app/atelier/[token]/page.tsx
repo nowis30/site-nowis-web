@@ -24,7 +24,8 @@ const AUDIENCE_LABELS: Record<string, string> = {
   AUTRE: 'Autre',
 };
 
-export default async function AtelierBookingPage({ params }: { params: { token: string } }) {
+export default async function AtelierBookingPage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const workshop = await prisma.workshopRequest.findUnique({
     where: { clientAccessToken: params.token },
     select: {

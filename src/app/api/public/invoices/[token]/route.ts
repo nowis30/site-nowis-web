@@ -6,7 +6,8 @@ import {
   verifyPublicInvoiceToken,
 } from '@/lib/public-links';
 
-export async function GET(_request: NextRequest, { params }: { params: { token: string } }) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const decoded = verifyPublicInvoiceToken(params.token);
   const compact = decoded ? null : parseCompactPublicInvoiceToken(params.token);
 
@@ -66,14 +67,28 @@ export async function GET(_request: NextRequest, { params }: { params: { token: 
 
   return NextResponse.json({
     item: {
-      ...item,
+      number: item.number,
+      status: item.status,
+      description: item.description,
+      paypalInvoiceUrl: item.paypalInvoiceUrl,
+      paypalStatus: item.paypalStatus,
+      paymentStatus: item.paymentStatus,
+      paymentProvider: item.paymentProvider,
+      paymentCurrency: item.paymentCurrency,
+      contact: { fullName: item.contact.fullName, email: item.contact.email },
+      customerSnapshot: getPublicCustomerSnapshot(item.customerSnapshot),
       issueDate: item.issueDate.toISOString(),
       dueDate: item.dueDate.toISOString(),
       amount: item.amount.toString(),
       paymentAmount: item.paymentAmount?.toString() || null,
-      paypalSentAt: item.paypalSentAt?.toISOString() || null,
       paypalPaidAt: item.paypalPaidAt?.toISOString() || null,
-      paypalLastWebhookAt: item.paypalLastWebhookAt?.toISOString() || null,
     },
-  });
+  }, { headers: { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' } });
+}
+
+function getPublicCustomerSnapshot(snapshot: unknown) {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return null;
+  const source = snapshot as Record<string, unknown>;
+  return Object.fromEntries(['fullName', 'companyName', 'email', 'addressLine1', 'addressLine2', 'city', 'state', 'postalCode', 'country']
+    .map(key => [key, typeof source[key] === 'string' ? source[key] : null]));
 }

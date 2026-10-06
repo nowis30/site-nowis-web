@@ -11,7 +11,7 @@ const contactEmailSchema = z.object({
 });
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 function escapeHtml(value: string) {
@@ -23,8 +23,9 @@ function escapeHtml(value: string) {
     .replace(/'/g, '&#039;');
 }
 
-export async function POST(request: NextRequest, { params }: RouteParams) {
-  const guard = requireApiPermission(request, 'contacts', 'update');
+export async function POST(request: NextRequest, props: RouteParams) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'contacts', 'update');
   if (guard.error) return guard.error;
 
   try {

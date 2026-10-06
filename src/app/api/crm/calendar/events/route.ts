@@ -20,7 +20,7 @@ const eventCreateSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  const guard = requireCalendarAdminAccess(request, 'read');
+  const guard = await requireCalendarAdminAccess(request, 'read');
   if (guard.error) return guard.error;
 
   const providerValue = request.nextUrl.searchParams.get('provider');
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const guard = requireCalendarAdminAccess(request, 'update');
+  const guard = await requireCalendarAdminAccess(request, 'update');
   if (guard.error) return guard.error;
 
   try {

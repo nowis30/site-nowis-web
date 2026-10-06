@@ -11,11 +11,9 @@ function isAudioFileName(value: string) {
   return AUDIO_EXTENSIONS.some((ext) => name.endsWith(ext));
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const guard = requireApiPermission(request, 'documents', 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const guard = await requireApiPermission(request, 'documents', 'read');
   if (guard.error) return guard.error;
 
   const doc = await prisma.fileDocument.findUnique({

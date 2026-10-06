@@ -8,6 +8,7 @@ import {
   validateContactRequestGuards,
 } from '@/lib/contact-request-security';
 import { createContactRateLimiter } from '@/lib/contact-rate-limit';
+import { prisma } from '@/lib/prisma';
 
 function createHeaders(values: Record<string, string>) {
   return new Headers(values);
@@ -146,4 +147,42 @@ test('origin localhost autorise en developpement', () => {
   } as NodeJS.ProcessEnv);
 
   assert.equal(allowed, true);
+});
+
+test('rotating forged forwarding headers cannot renew the trusted deployment IP contact budget', async () => {
+  const oldNode = process.env.NODE_ENV, oldVercel = process.env.VERCEL;
+  const oldCleanup = prisma.apiRateLimit.deleteMany;
+  const counts = new Map<string, number>();
+  const identifiers: string[] = [];
+  try {
+    process.env.NODE_ENV = 'production'; process.env.VERCEL = '1';
+    prisma.apiRateLimit.deleteMany = (async () => ({count:0})) as typeof oldCleanup;
+    const limiter = createContactRateLimiter(async args => {
+      const key = `${args.scope}:${args.identifier}`;
+      const count = counts.get(key) || 0;
+      if (args.scope === 'contact:ip') identifiers.push(args.identifier);
+      if (count >= args.max) return {allowed:false,remaining:0,retryAfterSeconds:120};
+      counts.set(key,count+1);
+      return {allowed:true,remaining:args.max-count-1,retryAfterSeconds:120};
+    });
+    for (let index=0;index<21;index++) {
+      const result=await limiter({userId:`user-${index}`,headers:createHeaders({
+        'x-vercel-forwarded-for':'203.0.113.10','x-forwarded-for':`198.51.100.${index}`,'x-real-ip':`192.0.2.${index}`,
+      })});
+      assert.equal(result.allowed,index<20);
+    }
+    assert.deepEqual([...new Set(identifiers)],['203.0.113.10']);
+    assert.equal(counts.get('contact:ip:203.0.113.10'),20);
+
+    identifiers.length=0;
+    await limiter({userId:'missing-edge-ip',headers:createHeaders({'x-forwarded-for':'198.51.100.99','x-real-ip':'192.0.2.99'})});
+    await limiter({userId:'invalid-edge-ip',headers:createHeaders({'x-vercel-forwarded-for':'203.0.113.10, 192.0.2.2'})});
+    delete process.env.VERCEL;
+    await limiter({userId:'outside-deployment',headers:createHeaders({'x-vercel-forwarded-for':'203.0.113.12','x-forwarded-for':'192.0.2.12'})});
+    assert.deepEqual(identifiers,['unknown','unknown','unknown']);
+  } finally {
+    if(oldNode===undefined)delete process.env.NODE_ENV;else process.env.NODE_ENV=oldNode;
+    if(oldVercel===undefined)delete process.env.VERCEL;else process.env.VERCEL=oldVercel;
+    prisma.apiRateLimit.deleteMany=oldCleanup;
+  }
 });

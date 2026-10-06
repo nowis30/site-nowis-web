@@ -63,8 +63,8 @@ async function resolveCustomerSnapshot(contactId?: string | null, organizationId
   return null;
 }
 
-function ensureAdmin(request: NextRequest, action: 'read' | 'update' | 'delete') {
-  const guard = requireApiPermission(request, 'commercialQuotes', action);
+async function ensureAdmin(request: NextRequest, action: 'read' | 'update' | 'delete') {
+  const guard = await requireApiPermission(request, 'commercialQuotes', action);
   if (guard.error) return { error: guard.error, session: null as null };
   if (guard.session.role !== 'ADMIN') {
     return {
@@ -75,8 +75,9 @@ function ensureAdmin(request: NextRequest, action: 'read' | 'update' | 'delete')
   return { error: null, session: guard.session };
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const admin = ensureAdmin(request, 'read');
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const admin = await ensureAdmin(request, 'read');
   if (admin.error) return admin.error;
 
   const item = await prisma.commercialQuote.findUnique({
@@ -112,8 +113,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const admin = ensureAdmin(request, 'update');
+export async function PATCH(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const admin = await ensureAdmin(request, 'update');
   if (admin.error) return admin.error;
 
   try {
@@ -239,8 +241,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const admin = ensureAdmin(request, 'delete');
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const admin = await ensureAdmin(request, 'delete');
   if (admin.error) return admin.error;
 
   const item = await prisma.commercialQuote.findUnique({ where: { id: params.id } });

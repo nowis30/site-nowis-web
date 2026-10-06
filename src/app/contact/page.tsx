@@ -13,7 +13,10 @@ function external(value: string | null | undefined, fallback: string) {
 }
 export const metadata = buildMetadata({ title: 'Contact Création Nowis | Première demande sans compte', description: 'Demandez un atelier, une chanson personnalisée ou un projet créatif sans compte. Contact direct avec Création Nowis à Drummondville.', path: '/contact' });
 
-export default async function ContactPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
+export default async function ContactPage(
+  props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }
+) {
+  const searchParams = await props.searchParams;
   const payload = await getAdminRuntimePayload();
   const page = getAdminPage(payload, 'contact');
   const direct = getAdminSection(page, 'contact.direct-info');
