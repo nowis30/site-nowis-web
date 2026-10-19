@@ -2,6 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { recordManualInvoicePayment } from '../src/lib/server/manual-invoice-payments';
+import { readFileSync } from 'node:fs';
+import { z } from 'zod';
+import { FINANCE_PAYMENT_METHODS } from '../src/features/crm/finance/constants';
+
+test('le formulaire Finance existant peut toujours envoyer une date simple', () => {
+  const route = readFileSync('src/app/api/crm/invoices/[id]/payments/route.ts', 'utf8');
+  const definition = route.slice(route.indexOf('const paymentSchema'), route.indexOf('export async function POST'));
+  const schema = new Function('z', 'FINANCE_PAYMENT_METHODS', definition + '; return paymentSchema;')(z, FINANCE_PAYMENT_METHODS);
+  assert.equal(schema.safeParse({ amount: 50, paidAt: '2026-10-19', paymentMethod: 'TRANSFER' }).success, true);
+  assert.equal(schema.safeParse({ settleBalance: true, paidAt: '2026-10-19T12:00:00.000Z' }).success, true);
+  for (const paidAt of ['2026-02-30', '2026-99-99', 'invalid']) {
+    assert.equal(schema.safeParse({ amount: 50, paidAt }).success, false);
+  }
+  for (const amount of [0, -1, 0.001, Infinity]) assert.equal(schema.safeParse({ amount }).success, false);
+  assert.equal(schema.safeParse({ amount: 50, settleBalance: true }).success, false);
+});
 
 function database(status = 'SENT', recorded = 0, history = 0, retryOnce = false) {
   const state = {

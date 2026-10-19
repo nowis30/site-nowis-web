@@ -10,7 +10,13 @@ const paymentSchema = z.object({
   settleBalance: z.boolean().optional(),
   paymentMethod: z.enum(FINANCE_PAYMENT_METHODS).default('OTHER'),
   note: z.string().trim().max(500).optional().nullable(),
-  paidAt: z.string().datetime({ offset: true }).optional(),
+  paidAt: z.string().refine((value) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const date = new Date(`${value}T12:00:00.000Z`);
+      return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+    }
+    return z.string().datetime({ offset: true }).safeParse(value).success;
+  }, 'Date de paiement invalide').optional(),
   receiptDocumentId: z.string().uuid().optional().nullable(),
 }).refine((value) => value.settleBalance ? value.amount === undefined : value.amount !== undefined, {
   message: 'Indique un montant ou demande le règlement du solde.',
