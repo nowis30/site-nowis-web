@@ -1,3 +1,6 @@
+import { Prisma } from '@prisma/client';
+import { can } from '@/features/crm/auth/permissions';
+import { InvoicePaymentPanel } from '@/features/crm/components/invoices/InvoicePaymentPanel';
 import { notFound } from 'next/navigation';
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
@@ -13,13 +16,14 @@ interface PageProps {
 
 export default async function CrmInvoiceDetailRoute(props: PageProps) {
   const params = await props.params;
-  await requireCrmSession();
+  const session = await requireCrmSession();
 
   const paypalConfigured = getPayPalDiagnostics().configured;
 
   const invoice = await prisma.invoice.findUnique({
     where: { id: params.id },
     include: {
+      paymentHistory: { orderBy: [{ paidAt: 'desc' }, { createdAt: 'desc' }] },
       contact: {
         select: {
           fullName: true,
@@ -53,6 +57,7 @@ export default async function CrmInvoiceDetailRoute(props: PageProps) {
 
   const serializedInvoice = {
     ...invoice,
+    paymentHistory: undefined,
     issueDate: invoice.issueDate.toISOString(),
     dueDate: invoice.dueDate.toISOString(),
     amount: invoice.amount.toString(),
@@ -65,6 +70,25 @@ export default async function CrmInvoiceDetailRoute(props: PageProps) {
 
   return (
     <>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <a href="/crm/invoices" className="text-sm font-medium text-primary-300">← Historique des factures</a>
+        <span className="text-sm text-slate-300">Facture {invoice.number}</span>
+      </div>
+      <div className="mb-4 flex flex-wrap gap-3 print:hidden">
+        <a href={`/api/crm/invoices/${invoice.id}/preview-pdf`} target="_blank" rel="noreferrer" className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white">Voir le PDF</a>
+        <a href={`/api/crm/invoices/${invoice.id}/preview-pdf?download=1`} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-white">Télécharger le PDF</a>
+      </div>
+      <InvoicePaymentPanel
+        invoiceId={invoice.id}
+        status={invoice.status}
+        total={(invoice.totalAmount ?? invoice.amount).toString()}
+        paid={Prisma.Decimal.max(invoice.paymentAmount ?? 0, invoice.paymentHistory.reduce((sum, payment) => sum.add(payment.amount), new Prisma.Decimal(0))).toString()}
+        canUpdate={can(session.role, 'invoices', 'update')}
+        history={invoice.paymentHistory.map((payment) => ({
+          id: payment.id, amount: payment.amount.toString(), paidAt: payment.paidAt.toISOString(),
+          paymentMethod: payment.paymentMethod, note: payment.note,
+        }))}
+      />
       <InvoiceEmailPanel
         invoice={{
           id: invoice.id,
@@ -120,3 +144,4 @@ export default async function CrmInvoiceDetailRoute(props: PageProps) {
     </>
   );
 }
+
