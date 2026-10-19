@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Prisma } from '@prisma/client';
 import { can } from '@/features/crm/auth/permissions';
 import { InvoicePaymentPanel } from '@/features/crm/components/invoices/InvoicePaymentPanel';
@@ -71,7 +72,7 @@ export default async function CrmInvoiceDetailRoute(props: PageProps) {
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <a href="/crm/invoices" className="text-sm font-medium text-primary-300">← Historique des factures</a>
+        <Link href="/crm/invoices" className="text-sm font-medium text-primary-300">← Historique des factures</Link>
         <span className="text-sm text-slate-300">Facture {invoice.number}</span>
       </div>
       <div className="mb-4 flex flex-wrap gap-3 print:hidden">
