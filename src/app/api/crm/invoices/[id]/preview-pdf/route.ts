@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
-import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot } from '@/lib/billing-profile';
 import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
 
 export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
@@ -12,9 +12,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
   const invoice = await prisma.invoice.findUnique({
     where: { id: params.id },
     include: {
-      contact: {
-        select: { fullName: true, email: true },
-      },
+      contact: true,
     },
   });
 
@@ -22,6 +20,9 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
     return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
   }
 
+  // Match the saved issuer/customer profiles used by the email attachment.
+  const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const customerProfile = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
   const pdf = await buildInvoicePdfBuffer(
     {
       number: invoice.number,
@@ -29,19 +30,20 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       dueDate: invoice.dueDate,
       amount: invoice.amount.toString(),
       description: invoice.description,
-      contact: {
-        fullName: invoice.contact.fullName,
-        email: invoice.contact.email,
-      },
+      contact: customerProfile,
     },
-    getInvoiceBusinessProfile(),
+    businessProfile,
   );
 
+  const disposition = request.nextUrl.searchParams.get('download') === '1' ? 'attachment' : 'inline';
+  const filename = `facture-${invoice.number.replace(/[^A-Za-z0-9._-]/g, '_')}.pdf`;
   return new NextResponse(new Uint8Array(pdf), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="facture-${invoice.number}.pdf"`,
-      'Cache-Control': 'no-store',
+      'Content-Disposition': `${disposition}; filename="${filename}"`,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
     },
   });
 }
+

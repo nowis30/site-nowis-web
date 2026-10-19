@@ -54,10 +54,9 @@ function getInvoiceEmptyText(status: string) {
   return 'Aucune facture trouvée';
 }
 
-function InvoiceActionsMenu({ inv, loading, onMarkPaid, onLifecycle }: {
+function InvoiceActionsMenu({ inv, loading, onLifecycle }: {
   inv: Invoice;
   loading: boolean;
-  onMarkPaid: () => void;
   onLifecycle: (action: 'archive' | 'delete' | 'restore') => void;
 }) {
   return (
@@ -66,8 +65,8 @@ function InvoiceActionsMenu({ inv, loading, onMarkPaid, onLifecycle }: {
       <div className="mt-2 flex flex-col gap-1">
         <Link href={`/crm/invoices/${inv.id}`} className="rounded-md border border-primary-500/50 px-2 py-1 text-xs text-primary-300 hover:bg-primary-900/30">Voir</Link>
         <Link href={`/crm/invoices/${inv.id}`} className="rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-200">Modifier</Link>
-        {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && inv.status !== 'DELETED' ? (
-          <button type="button" onClick={onMarkPaid} disabled={loading} className="rounded-md border border-emerald-500/50 px-2 py-1 text-left text-xs text-emerald-300">Marquer payé</button>
+        {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && inv.status !== 'ARCHIVED' && inv.status !== 'DELETED' ? (
+          <Link href={`/crm/invoices/${inv.id}#paiements`} className="rounded-md border border-emerald-500/50 px-2 py-1 text-xs text-emerald-300">Enregistrer un paiement</Link>
         ) : null}
         {inv.status !== 'ARCHIVED' && inv.status !== 'DELETED' ? (
           <button type="button" onClick={() => onLifecycle('archive')} disabled={loading} className="rounded-md border border-amber-500/50 px-2 py-1 text-left text-xs text-amber-300">Archiver</button>
@@ -84,20 +83,6 @@ function InvoiceActionsMenu({ inv, loading, onMarkPaid, onLifecycle }: {
 
 function InvoiceRow({ inv, onStatusChange }: { inv: Invoice; onStatusChange: () => void }) {
   const [loading, setLoading] = useState(false);
-
-  async function changeStatus(status: string) {
-    setLoading(true);
-    await fetch(`/api/crm/invoices/${inv.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        number: inv.number, contactId: inv.contactId,
-        dueDate: inv.dueDate, amount: inv.amount, status, description: inv.description,
-      }),
-    });
-    setLoading(false);
-    onStatusChange();
-  }
 
   async function lifecycleAction(action: 'archive' | 'delete' | 'restore') {
     if (action === 'delete') {
@@ -118,7 +103,7 @@ function InvoiceRow({ inv, onStatusChange }: { inv: Invoice; onStatusChange: () 
 
   return (
     <tr className="border-t border-slate-700/50 hover:bg-slate-800/30 transition-colors">
-      <td className="px-4 py-3 text-sm font-mono text-primary-300">{inv.number}</td>
+      <td className="px-4 py-3 text-sm font-mono text-primary-300"><Link href={`/crm/invoices/${inv.id}`}>{inv.number}</Link></td>
       <td className="px-4 py-3 text-sm text-white">{inv.contact.fullName}</td>
       <td className="px-4 py-3 text-sm text-slate-400">{formatDate(inv.issueDate)}</td>
       <td className="px-4 py-3 text-sm text-slate-400">{formatDate(inv.dueDate)}</td>
@@ -131,9 +116,9 @@ function InvoiceRow({ inv, onStatusChange }: { inv: Invoice; onStatusChange: () 
       <td className="px-4 py-3">
         <div className="hidden items-center gap-2 md:flex">
           <Link href={`/crm/invoices/${inv.id}`} className="text-xs text-primary-300 hover:text-primary-200 transition-colors">Voir</Link>
-          <Link href={`/crm/invoices/${inv.id}`} className="text-xs text-slate-300 hover:text-white transition-colors">Modifier</Link>
-          {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && inv.status !== 'DELETED' && (
-            <button type="button" onClick={() => changeStatus('PAID')} disabled={loading} className="text-xs text-slate-400 hover:text-green-400 transition-colors">✓ Payée</button>
+          <a href={`/api/crm/invoices/${inv.id}/preview-pdf`} target="_blank" rel="noreferrer" className="text-xs text-primary-300 hover:text-primary-200">Voir le PDF</a>
+          {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && inv.status !== 'ARCHIVED' && inv.status !== 'DELETED' && (
+            <Link href={`/crm/invoices/${inv.id}#paiements`} className="text-xs text-emerald-300 hover:text-emerald-200">Enregistrer un paiement</Link>
           )}
           {inv.status !== 'ARCHIVED' && inv.status !== 'DELETED' ? (
             <button type="button" onClick={() => lifecycleAction('archive')} disabled={loading} className="text-xs text-slate-400 hover:text-amber-300 transition-colors">Archiver</button>
@@ -149,7 +134,6 @@ function InvoiceRow({ inv, onStatusChange }: { inv: Invoice; onStatusChange: () 
           <InvoiceActionsMenu
             inv={inv}
             loading={loading}
-            onMarkPaid={() => void changeStatus('PAID')}
             onLifecycle={(action) => void lifecycleAction(action)}
           />
         </div>
@@ -160,20 +144,6 @@ function InvoiceRow({ inv, onStatusChange }: { inv: Invoice; onStatusChange: () 
 
 function InvoiceCard({ inv, onStatusChange }: { inv: Invoice; onStatusChange: () => void }) {
   const [loading, setLoading] = useState(false);
-
-  async function changeStatus(status: string) {
-    setLoading(true);
-    await fetch(`/api/crm/invoices/${inv.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        number: inv.number, contactId: inv.contactId,
-        dueDate: inv.dueDate, amount: inv.amount, status, description: inv.description,
-      }),
-    });
-    setLoading(false);
-    onStatusChange();
-  }
 
   async function lifecycleAction(action: 'archive' | 'delete' | 'restore') {
     if (action === 'delete') {
@@ -196,7 +166,7 @@ function InvoiceCard({ inv, onStatusChange }: { inv: Invoice; onStatusChange: ()
     <article className="rounded-xl border border-slate-700 bg-slate-900/70 p-3 md:hidden">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold text-white">{inv.number}</p>
+          <Link href={`/crm/invoices/${inv.id}`} className="text-sm font-semibold text-primary-300">{inv.number}</Link>
           <p className="text-xs text-slate-400">{inv.contact.fullName}</p>
           {inv.contact.email ? <p className="text-xs text-slate-500">{inv.contact.email}</p> : null}
         </div>
@@ -211,11 +181,12 @@ function InvoiceCard({ inv, onStatusChange }: { inv: Invoice; onStatusChange: ()
         <p className="col-span-2 text-slate-400">Montant: <span className="font-semibold text-white">{formatMoney(inv.amount)}</span></p>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Link href={`/api/crm/invoices/${inv.id}/preview-pdf`} target="_blank" rel="noreferrer" className="rounded-lg border border-primary-500/50 px-3 py-2 text-sm text-primary-300">Voir le PDF</Link>
+        {['DRAFT', 'SENT', 'OVERDUE'].includes(inv.status) ? <Link href={`/crm/invoices/${inv.id}#paiements`} className="rounded-lg border border-emerald-500/50 px-3 py-2 text-sm text-emerald-300">Enregistrer un paiement</Link> : null}
         <InvoiceActionsMenu
           inv={inv}
           loading={loading}
-          onMarkPaid={() => void changeStatus('PAID')}
           onLifecycle={(action) => void lifecycleAction(action)}
         />
       </div>
@@ -378,3 +349,4 @@ export function InvoicesPage({ invoices, contacts: _contacts, stats, initialForm
     </section>
   );
 }
+

@@ -163,3 +163,6 @@ test('POST /api/crm/workshop-requests/[id]/appointments: route désactivée reto
 
 // Vérifie également les lignes de facturation horaire.
 import './time-invoice.test';
+
+import './manual-invoice-payments.test';
+import './crm-invoice-pdf.test';
