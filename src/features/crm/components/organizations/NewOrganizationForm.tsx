@@ -25,26 +25,11 @@ export function NewOrganizationForm() {
   const [billingOpen, setBillingOpen] = useState(true);
   const billingId = useId();
   const [form, setForm] = useState({
-    name: 'Creation Nowis',
-    type: 'SCHOOL',
-    status: 'LEAD',
-    email: 'simonmorin@nowis.store',
-    phone: '819 388-3407',
-    billingCompanyName: 'Creation Nowis',
-    billingLegalName: 'Simon Morin',
-    billingEmail: 'simonmorin@nowis.store',
-    billingPhone: '819 388-3407',
-    billingAddressLine1: '4667 Traversy',
-    billingAddressLine2: '',
-    billingCity: 'Drummondville',
-    billingState: 'Quebec',
-    billingPostalCode: 'J2A 2G2',
-    billingCountry: 'Canada',
-    billingTaxId: '',
-    billingNotes: 'Taxes activees: Non (a activer seulement si inscrit TPS/TVQ).',
-    city: 'Drummondville',
-    address: '4667 Traversy',
-    notes: 'Site web: https://nowis.store',
+    name: '', type: 'OTHER', status: 'ACTIVE', email: '', phone: '',
+    billingCompanyName: '', billingLegalName: '', billingEmail: '', billingPhone: '',
+    billingAddressLine1: '', billingAddressLine2: '', billingCity: '', billingState: '',
+    billingPostalCode: '', billingCountry: '', billingTaxId: '', billingNotes: '',
+    city: '', address: '', notes: '',
   });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -316,3 +301,4 @@ export function NewOrganizationForm() {
     </section>
   );
 }
+

@@ -1,9 +1,10 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
+import { can } from '@/features/crm/auth/permissions';
 import { prisma } from '@/lib/prisma';
 import { CrmContactsAlphaList } from '@/features/crm/components/contacts/CrmContactsAlphaList';
 
 export default async function ContactsPage() {
-  await requireCrmSession();
+  const session = await requireCrmSession();
 
   const contacts = await prisma.contact.findMany({
     where: { crmStatus: { not: 'DELETED' } },
@@ -34,5 +35,6 @@ export default async function ContactsPage() {
     createdAt: c.createdAt.toISOString(),
   }));
 
-  return <CrmContactsAlphaList items={items} />;
+  return <CrmContactsAlphaList items={items} canCreate={can(session.role, 'contacts', 'create')} />;
 }
+

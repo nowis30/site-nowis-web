@@ -6,6 +6,7 @@ export const contactInputSchema = z.object({
   fullName: z.string().min(2, 'Le nom doit avoir au minimum 2 caractères').max(160, 'Le nom ne peut pas dépasser 160 caractères'),
   email: z.string().email('Email invalide').optional().or(z.literal('')),
   phone: z.string().max(40, 'Numéro de téléphone invalide').optional(),
+  organizationId: z.string().uuid().optional().or(z.literal('')),
   companyName: z.string().max(160, 'Le nom de l\'entreprise ne peut pas dépasser 160 caractères').optional(),
   billingCompanyName: z.string().max(160).optional(),
   billingLegalName: z.string().max(160).optional(),
@@ -214,3 +215,4 @@ export const taskInputSchema = z.object({
     payload: normalizedPayload,
   };
 });
+

@@ -115,6 +115,17 @@ export async function POST(request: NextRequest) {
 
   try {
     const payload = contactInputSchema.parse(await request.json());
+    if (payload.organizationId) {
+      const organizationGuard = await requireApiPermission(request, 'organizations', 'update');
+      if (organizationGuard.error) return organizationGuard.error;
+      const organization = await prisma.organization.findFirst({
+        where: { id: payload.organizationId, crmStatus: { not: 'DELETED' } },
+        select: { id: true },
+      });
+      if (!organization) {
+        return NextResponse.json({ error: 'Organisation introuvable' }, { status: 404 });
+      }
+    }
     const item = await prisma.contact.create({
       data: {
         type: payload.type,
@@ -122,6 +133,7 @@ export async function POST(request: NextRequest) {
         fullName: payload.fullName.trim(),
         email: normalizeOptionalString(payload.email),
         phone: normalizeOptionalString(payload.phone),
+        companyName: normalizeOptionalString(payload.companyName),
         billingCompanyName: normalizeOptionalString(payload.billingCompanyName),
         billingLegalName: normalizeOptionalString(payload.billingLegalName),
         billingEmail: normalizeOptionalString(payload.billingEmail),
@@ -137,6 +149,16 @@ export async function POST(request: NextRequest) {
         source: normalizeOptionalString(payload.source),
         tags: payload.tags,
         notes: normalizeOptionalString(payload.notes),
+        ...(payload.organizationId ? {
+          organizationLinks: {
+            create: {
+              organizationId: payload.organizationId,
+              fullName: payload.fullName.trim(),
+              email: normalizeOptionalString(payload.email),
+              phone: normalizeOptionalString(payload.phone),
+            },
+          },
+        } : {}),
       },
     });
     return NextResponse.json({ item }, { status: 201 });
@@ -147,3 +169,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
   }
 }
+
