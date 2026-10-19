@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ArrowLeft, Building2, FilePlus2, Plus, Trash2, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { buildRentalInvoiceDescription } from '@/lib/invoice-lines';
+import { buildRentalInvoiceDescription, buildTimeInvoiceDescription, timeInvoiceLineAmount } from '@/lib/invoice-lines';
 
 type ContactOption = {
   id: string;
@@ -23,6 +23,9 @@ type DraftLine = {
   tenantName: string;
   rentalLabel: string;
   amount: number;
+  description: string;
+  hours: number;
+  hourlyRate: number;
 };
 
 interface DirectInvoiceCreatePageProps {
@@ -57,18 +60,20 @@ function money(value: number) {
 
 export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }: DirectInvoiceCreatePageProps) {
   const router = useRouter();
-  const suggestedGestionIsrOrganization = organizations.find((organization) => /gestion\s*isr/i.test(organization.name));
-  const suggestedGestionIsrContact = contacts.find((contact) => /gestion\s*isr/i.test(`${contact.fullName} ${contact.companyName || ''}`));
   const initialRecipientType: 'organization' | 'contact' =
     initialForm?.contactId && !initialForm?.organizationId ? 'contact' : organizations.length > 0 ? 'organization' : 'contact';
+  const [invoiceMode, setInvoiceMode] = useState<'time' | 'rental'>('time');
   const initialAmount = Number(initialForm?.amount || 500);
   const [recipientType, setRecipientType] = useState<'organization' | 'contact'>(initialRecipientType);
-  const [organizationId, setOrganizationId] = useState(initialForm?.organizationId || suggestedGestionIsrOrganization?.id || '');
-  const [contactId, setContactId] = useState(initialForm?.contactId || suggestedGestionIsrContact?.id || '');
+  const [organizationId, setOrganizationId] = useState(initialForm?.organizationId || '');
+  const [contactId, setContactId] = useState(initialForm?.contactId || '');
   const [dueDate, setDueDate] = useState(defaultDueDate);
   const [lines, setLines] = useState<DraftLine[]>([
     {
       id: 'line-1',
+      description: initialForm?.description || '',
+      hours: 1,
+      hourlyRate: initialForm?.amount && Number.isFinite(initialAmount) && initialAmount > 0 ? initialAmount : 0,
       tenantName: '',
       rentalLabel: initialForm?.description || '',
       amount: Number.isFinite(initialAmount) && initialAmount > 0 ? initialAmount : 500,
@@ -78,8 +83,11 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
   const [error, setError] = useState('');
 
   const total = useMemo(
-    () => lines.reduce((sum, line) => sum + Math.max(0, Number(line.amount) || 0), 0),
-    [lines],
+    () => Math.round(lines.reduce((sum, line) => {
+      if (invoiceMode === 'rental') return sum + Math.max(0, Number(line.amount) || 0);
+      try { return sum + timeInvoiceLineAmount(line); } catch { return sum; }
+    }, 0) * 100) / 100,
+    [lines, invoiceMode],
   );
 
   function updateLine(id: string, patch: Partial<DraftLine>) {
@@ -87,10 +95,14 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
   }
 
   function addLine() {
+    if (invoiceMode === 'time' && lines.length >= 10) return;
     setLines((current) => [
       ...current,
       {
         id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `line-${current.length + 1}`,
+        description: '',
+        hours: 1,
+        hourlyRate: 0,
         tenantName: '',
         rentalLabel: '',
         amount: 500,
@@ -103,10 +115,11 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
   }
 
   async function createInvoice() {
+    if (saving) return;
     setError('');
 
     if (recipientType === 'organization' && !organizationId) {
-      setError("Choisis l'organisation à facturer, par exemple Gestion ISR.");
+      setError("Choisis l'organisation à facturer.");
       return;
     }
     if (recipientType === 'contact' && !contactId) {
@@ -117,12 +130,23 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
       setError("Choisis une date d'échéance.");
       return;
     }
-    if (lines.some((line) => !line.tenantName.trim() || !line.rentalLabel.trim())) {
+    if (invoiceMode === 'rental' && lines.some((line) => !line.tenantName.trim() || !line.rentalLabel.trim())) {
       setError('Entre le nom du locataire et le logement pour chaque ligne.');
       return;
     }
-    if (lines.some((line) => !Number.isFinite(Number(line.amount)) || Number(line.amount) <= 0)) {
+    if (invoiceMode === 'rental' && lines.some((line) => !Number.isFinite(Number(line.amount)) || Number(line.amount) <= 0)) {
       setError('Chaque logement doit avoir un montant supérieur à 0 $.');
+      return;
+    }
+    let description: string;
+    try {
+      if (invoiceMode === 'time' && lines.length > 10) throw new Error('Une facture de temps peut contenir au maximum 10 prestations.');
+      description = invoiceMode === 'time'
+        ? buildTimeInvoiceDescription(lines)
+        : buildRentalInvoiceDescription(lines);
+      if (description.length > 2000) throw new Error('La description dépasse 2 000 caractères. Réduis le nombre de lignes ou leur texte.');
+    } catch (validationError) {
+      setError(validationError instanceof Error ? validationError.message : 'Prestations invalides.');
       return;
     }
     if (total <= 0) {
@@ -140,11 +164,7 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
           dueDate: new Date(`${dueDate}T12:00:00`).toISOString(),
           amount: total,
           status: 'DRAFT',
-          description: buildRentalInvoiceDescription(lines.map((line) => ({
-            tenantName: line.tenantName,
-            rentalLabel: line.rentalLabel,
-            amount: line.amount,
-          }))),
+          description,
           sourceWorkshopRequestId: initialForm?.sourceWorkshopRequestId,
           sourceSongRequestId: initialForm?.sourceSongRequestId,
         }),
@@ -231,6 +251,7 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
               <p className="mt-2 text-xs text-emerald-300/80">
                 Le CRM utilisera les coordonnées de facturation de l'organisation. Aucun contact manuel n'est requis.
               </p>
+              <Link href="/crm/organizations/nouveau" className="mt-2 inline-block text-xs text-primary-300">Créer une organisation</Link>
             </div>
           ) : (
             <div>
@@ -247,6 +268,7 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
                   </option>
                 ))}
               </select>
+              <Link href="/crm/contacts/nouveau" className="mt-2 inline-block text-xs text-primary-300">Créer un contact</Link>
             </div>
           )}
 
@@ -268,34 +290,61 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
         <div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-900/70 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold text-white">Logements loués</h3>
-              <p className="text-xs text-slate-400">Tu peux mettre plusieurs locations sur la même facture.</p>
+              <h3 className="text-lg font-semibold text-white">{invoiceMode === 'time' ? 'Temps travaillé' : 'Logements loués'}</h3>
+              <p className="text-xs text-slate-400">{invoiceMode === 'time' ? 'Ajoute les heures et le tarif de chaque prestation (10 maximum).' : 'Tu peux mettre plusieurs locations sur la même facture.'}</p>
             </div>
             <button
               type="button"
               onClick={addLine}
+              disabled={saving || (invoiceMode === 'time' && lines.length >= 10)}
               className="inline-flex items-center gap-1 rounded-lg border border-primary-500/40 px-3 py-2 text-xs font-semibold text-primary-200 hover:bg-primary-950/40"
             >
               <Plus size={14} /> Ajouter
             </button>
           </div>
 
+          <label className="block text-sm text-slate-300">Type de facture
+            <select value={invoiceMode} onChange={(event) => setInvoiceMode(event.target.value as 'time' | 'rental')}
+              className="mt-1 block w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-white">
+              <option value="time">Temps travaillé (heures × tarif)</option>
+              <option value="rental">Logements loués</option>
+            </select>
+          </label>
           <div className="space-y-3">
             {lines.map((line, index) => (
               <article key={line.id} className="rounded-xl border border-slate-700 bg-slate-950/55 p-3 sm:p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-white">Location {index + 1}</p>
+                  <p className="text-sm font-semibold text-white">{invoiceMode === 'time' ? 'Prestation' : 'Location'} {index + 1}</p>
                   <button
                     type="button"
                     onClick={() => removeLine(line.id)}
                     disabled={lines.length <= 1}
                     className="rounded-md p-1.5 text-slate-500 hover:bg-red-950/30 hover:text-red-300 disabled:opacity-30"
-                    aria-label={`Supprimer la location ${index + 1}`}
+                    aria-label={`Supprimer la ligne ${index + 1}`}
                   >
                     <Trash2 size={15} />
                   </button>
                 </div>
 
+                {invoiceMode === 'time' ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="text-xs text-slate-400 sm:col-span-2">Description de la prestation
+                      <input value={line.description} maxLength={500} onChange={(event) => updateLine(line.id, { description: event.target.value })}
+                        placeholder="Ex. Gestion du site — du 1 au 15 octobre"
+                        className="mt-1 block w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-sm text-white" />
+                    </label>
+                    <label className="text-xs text-slate-400">Heures
+                      <input type="number" min="0.01" max="100000" step="0.01" value={line.hours || ''}
+                        onChange={(event) => updateLine(line.id, { hours: Number(event.target.value) })}
+                        className="mt-1 block w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-sm text-white" />
+                    </label>
+                    <label className="text-xs text-slate-400">Tarif horaire ($/h)
+                      <input type="number" min="0.01" max="100000" step="0.01" value={line.hourlyRate || ''}
+                        onChange={(event) => updateLine(line.id, { hourlyRate: Number(event.target.value) })}
+                        className="mt-1 block w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-sm text-white" />
+                    </label>
+                  </div>
+                ) : <>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-xs text-slate-400">Nom du locataire</label>
@@ -346,6 +395,7 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
                     />
                   </div>
                 </div>
+                </>}
               </article>
             ))}
           </div>
@@ -369,3 +419,4 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
     </section>
   );
 }
+

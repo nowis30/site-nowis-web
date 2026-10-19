@@ -160,3 +160,6 @@ test('POST /api/crm/workshop-requests/[id]/appointments: route désactivée reto
   assert.equal(DISABLED_RESPONSE.status, 405);
   assert.equal(DISABLED_RESPONSE.body.code, 'WORKSHOP_APPOINTMENT_MANUAL_CREATION_DISABLED');
 });
+
+// Vérifie également les lignes de facturation horaire.
+import './time-invoice.test';

@@ -40,7 +40,7 @@ function buildOutlookHref(email: string) {
   return `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(email)}`;
 }
 
-export function CrmContactsAlphaList({ items }: { items: ContactListItem[] }) {
+export function CrmContactsAlphaList({ items, canCreate = false }: { items: ContactListItem[]; canCreate?: boolean }) {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -97,6 +97,11 @@ export function CrmContactsAlphaList({ items }: { items: ContactListItem[] }) {
               {search.trim() ? ` — ${filtered.length} résultat${filtered.length !== 1 ? 's' : ''}` : ''}
             </p>
           </div>
+          {canCreate ? (
+            <Link href="/crm/contacts/nouveau" className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-500">
+              Nouveau contact
+            </Link>
+          ) : null}
         </div>
 
         <div className="mt-5">
@@ -204,3 +209,4 @@ export function CrmContactsAlphaList({ items }: { items: ContactListItem[] }) {
     </section>
   );
 }
+
