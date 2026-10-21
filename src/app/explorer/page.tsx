@@ -3,6 +3,7 @@ import { buildMetadata } from '@/lib/seo';
 import { rentalsPublicUrl } from '@/lib/rentals-url';
 export const metadata = buildMetadata({title: 'Explorer l’univers Nowis', description: 'Retrouvez les chansons, ateliers, jeux, liseuse de tarot, créations, services et accès clients de Création Nowis.', path: '/explorer'});
 const groups = [
+  {title: 'Gérer mes immeubles', links: [['NOWIS Immobilier · logiciel de gestion','/immobilier']]},
   {title: 'Offrir & créer', links: [['Chansons personnalisées','/commander-une-chanson'],['Ateliers de groupe','/ateliers'],['Demander un atelier','/ateliers/demande'],['Services créatifs','/services'],['Tarifs','/tarifs'],['Préparer mon projet','/avant-de-mecrire'],['Assistant projet','/assistant-projet']]},
   {title: 'Apprendre à créer', links: [['Ma méthode de création','/comment-je-cree'],['Guide ChatGPT, Suno et Revid','/outils-creation-musicale']]},
   {title: 'Écouter & découvrir', links: [['Radio Nowis','/radio'],['Musique : nouveautés et favoris','/musique'],['Vidéos','/videos'],['Créations','/creations'],['Portfolio','/portfolio'],['Artistes','/artistes'],['Idées','/idees'],['Jeux','/jeux'],['Liseuse de tarot','/tarot'],['Boutique','/shop']]},
