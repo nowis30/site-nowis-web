@@ -14,6 +14,7 @@ const primary = [
   {label: 'Ateliers', href: '/ateliers'},
   {label: 'Tarot', href: '/tarot'},
   {label: 'Explorer', href: '/explorer'},
+  {label: 'Immobilier', href: '/immobilier'},
 ];
 export function Header() {
   const pathname = usePathname();
