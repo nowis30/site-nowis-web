@@ -44,8 +44,6 @@ export const config = {
     '/chanson/le-printemps-va-rugir',
     '/chanson/j-t-alle-a-doremi',
     '/chanson/pas-besion-de-voir',
-    '/chanson/chanson-ca-va-bien-aller-nowis',
-    '/chanson/je-vais-t-aimer-pour-toujours-marie-lisa',
     '/chanson/marie-lisa-gtub6g',
   ],
 };
