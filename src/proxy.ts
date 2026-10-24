@@ -8,6 +8,17 @@ const canonicalSongPaths: Record<string, string> = Object.fromEntries(
 );
 
 export function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname === '/crm' || request.nextUrl.pathname === '/crm/dashboard') {
+    // A fixed destination drops queries; a fixed fragment prevents inheritance
+    // of any legacy #token by the browser when it follows the redirect.
+    const response = request.method === 'GET' || request.method === 'HEAD'
+      ? NextResponse.redirect('https://crm.nowis.store/app/aujourdhui#accueil', 307)
+      : new NextResponse(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
+    response.headers.set('Cache-Control', 'private, no-store');
+    response.headers.set('Referrer-Policy', 'no-referrer');
+    return response;
+  }
+
   const canonicalSongPath = canonicalSongPaths[request.nextUrl.pathname];
   if (canonicalSongPath) {
     const url = request.nextUrl.clone();

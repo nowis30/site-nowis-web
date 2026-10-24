@@ -39,7 +39,8 @@ export default function CrmLoginPage() {
           return;
         }
 
-        router.push(data.redirectTo || '/crm');
+        const destination = data.redirectTo || '/crm/historique';
+        router.push(destination === '/crm' || destination === '/crm/dashboard' ? '/crm/historique' : destination);
         router.refresh();
         return;
       }
@@ -55,7 +56,7 @@ export default function CrmLoginPage() {
         throw new Error(getApiErrorMessage(otpData, 'Vérification du code impossible'));
       }
 
-      router.push('/crm/dashboard');
+      router.push('/crm/historique');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');

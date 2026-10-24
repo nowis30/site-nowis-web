@@ -37,6 +37,6 @@ export function getPortalNotificationHref(item: {
     case 'CONTACT':
       return item.contactId ? `/crm/contacts/${item.contactId}` : '/crm/contacts';
     default:
-      return '/crm/dashboard';
+      return '/crm/historique';
   }
 }

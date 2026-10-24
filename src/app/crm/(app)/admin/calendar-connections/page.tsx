@@ -11,7 +11,7 @@ export default async function CalendarConnectionsPage(
   const searchParams = await props.searchParams;
   const session = await requireCrmSession();
   if (session.role !== 'ADMIN') {
-    redirect('/crm/dashboard');
+    redirect('/crm/historique');
   }
 
   const items = await listCalendarConnections();

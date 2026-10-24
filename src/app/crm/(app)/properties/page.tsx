@@ -1,5 +1,5 @@
 ﻿import { redirect } from 'next/navigation';
 
 export default function Page() {
-  redirect('/crm/dashboard');
+  redirect('/crm/historique');
 }

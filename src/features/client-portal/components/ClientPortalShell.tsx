@@ -70,7 +70,7 @@ export function ClientPortalShell({ session, children }: ClientPortalShellProps)
 
   async function stopImpersonation() {
     await fetch('/api/client-portal/impersonation/stop', { method: 'POST' });
-    router.push('/crm/dashboard');
+    router.push('/crm/historique');
     router.refresh();
   }
 

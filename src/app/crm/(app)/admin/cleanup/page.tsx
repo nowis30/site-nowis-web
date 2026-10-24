@@ -8,7 +8,7 @@ export default async function AdminCleanupPage() {
   const session = await requireCrmSession();
 
   if (session.role !== 'ADMIN') {
-    redirect('/crm/dashboard');
+    redirect('/crm/historique');
   }
 
   return <CrmCleanupPage />;

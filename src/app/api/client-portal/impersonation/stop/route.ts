@@ -3,7 +3,7 @@ import { clearClientPortalImpersonationCookie } from '@/features/client-portal/a
 
 export async function POST() {
   return NextResponse.json(
-    { success: true, redirectTo: '/crm/dashboard' },
+    { success: true, redirectTo: '/crm/historique' },
     {
       headers: {
         'Set-Cookie': clearClientPortalImpersonationCookie(),

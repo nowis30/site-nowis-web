@@ -21,7 +21,7 @@ function startOfYear(date: Date) {
 export default async function FinanceDashboardPage() {
   const session = await requireCrmSession();
   if (!can(session.role, 'finance', 'read')) {
-    redirect('/crm/dashboard');
+    redirect('/crm/historique');
   }
 
   const now = new Date();

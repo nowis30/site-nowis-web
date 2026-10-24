@@ -129,7 +129,7 @@ export default async function CrmDashboardPage() {
             <Link href="/crm/login" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">
               Revenir a la connexion
             </Link>
-            <Link href="/crm/dashboard" className="rounded-lg border border-red-700/60 bg-red-950/30 px-3 py-2 text-sm text-red-200 hover:bg-red-950/50">
+            <Link href="/crm/historique" className="rounded-lg border border-red-700/60 bg-red-950/30 px-3 py-2 text-sm text-red-200 hover:bg-red-950/50">
               Reessayer
             </Link>
           </div>

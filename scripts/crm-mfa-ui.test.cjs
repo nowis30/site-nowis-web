@@ -52,11 +52,22 @@ for (const channel of ['sms', 'email']) {
     const input = ui.find(tree, node => node.type === 'input' && node.props.autoComplete === 'one-time-code');
     input.props.onChange({ target: { value: '123456' } });
     await ui.find(ui.render(), node => node.type === 'form').props.onSubmit({ preventDefault() {} });
-    assert.deepEqual(ui.navigation, ['/crm/dashboard']);
+    assert.deepEqual(ui.navigation, ['/crm/historique']);
     assert.equal(ui.requests[1].url, '/api/crm/auth/verify-sms');
     assert.deepEqual(ui.requests[1].body, { code: '123456' });
   });
 }
+
+test('historical login keeps both legacy entry destinations local and preserves other authorized destinations', async () => {
+  for (const destination of [undefined, '/crm', '/crm/dashboard', '/client/dashboard', '/crm/contacts']) {
+    const ui = loginUi([{ status: 200, body: { ok: true, redirectTo: destination } }]);
+    await ui.find(ui.render(), node => node.type === 'form').props.onSubmit({ preventDefault() {} });
+    const expected = !destination || destination === '/crm' || destination === '/crm/dashboard' ? '/crm/historique' : destination;
+    assert.deepEqual(ui.navigation, [expected]);
+    assert.equal(ui.requests.length, 1);
+    assert.equal(ui.requests[0].url, '/api/crm/auth/login');
+  }
+});
 
 test('CRM delivery failure leaves the login form visible without navigation or a verification step', async () => {
   const ui = loginUi([{ status: 503, body: { message: 'L’envoi du code de vérification est momentanément indisponible.' } }]);
