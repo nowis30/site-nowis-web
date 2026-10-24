@@ -1,8 +1,20 @@
 import { randomBytes } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { songSlugRedirects } from '../config/song-slug-aliases.cjs';
 import { privateContentSecurityPolicy } from '@/lib/private-content-security-policy';
 
+const canonicalSongPaths: Record<string, string> = Object.fromEntries(
+  Object.entries(songSlugRedirects).map(([source, destination]) => [`/chanson/${source}`, `/chanson/${destination}`]),
+);
+
 export function proxy(request: NextRequest) {
+  const canonicalSongPath = canonicalSongPaths[request.nextUrl.pathname];
+  if (canonicalSongPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = canonicalSongPath;
+    return NextResponse.redirect(url, 301);
+  }
+
   const nonce = randomBytes(24).toString('base64');
   const policy = privateContentSecurityPolicy(nonce);
   const headers = new Headers(request.headers);
@@ -18,5 +30,22 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/crm/:path*', '/client/:path*', '/connexion', '/inscription', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe', '/facture/:path*', '/soumission/:path*', '/facturation/:path*'],
+  matcher: [
+    '/crm/:path*',
+    '/client/:path*',
+    '/connexion',
+    '/inscription',
+    '/mot-de-passe-oublie',
+    '/reinitialiser-mot-de-passe',
+    '/facture/:path*',
+    '/soumission/:path*',
+    '/facturation/:path*',
+    '/chanson/superbowl',
+    '/chanson/le-printemps-va-rugir',
+    '/chanson/j-t-alle-a-doremi',
+    '/chanson/pas-besion-de-voir',
+    '/chanson/chanson-ca-va-bien-aller-nowis',
+    '/chanson/je-vais-t-aimer-pour-toujours-marie-lisa',
+    '/chanson/marie-lisa-gtub6g',
+  ],
 };

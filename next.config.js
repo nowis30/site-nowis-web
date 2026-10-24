@@ -196,6 +196,15 @@ const nextConfig = {
         ],
       })),
       {
+        source: '/:file(.*\\.(?:ico|png|jpg|jpeg|gif|webp|avif|svg|woff2))',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
         // Service worker must not be cached
         source: '/sw.js',
         headers: [

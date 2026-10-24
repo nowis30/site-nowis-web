@@ -17,7 +17,7 @@ export function HomeScreen() {
           <span>Nouvel album · L’amour de Nowis</span>
         </Link>
         <p className="nm-hero-text">Un amour, un merci, un souvenir. Transformez ce qui vous touche en une chanson à offrir, avec l’accompagnement de Nowis Morin et la création musicale assistée par IA.</p>
-        <div className="nm-actions"><Link className="cta-primary" href="/commander-une-chanson">Créer ma chanson ↗</Link><a className="cta-secondary" href="#exemples">Écouter des exemples</a></div>
+        <div className="nm-actions"><Link className="cta-primary" href="/commander-une-chanson">{`Créer ma chanson — dès ${REGULAR_PRICES.songs.memorySong} $`}</Link><a className="cta-secondary" href="#exemples">Écouter des exemples</a></div>
         <p className="nm-fine">Première demande sans compte ni paiement.</p>
       </div>
       <div className="nm-gift" aria-label="Une chanson créée à partir de votre histoire">

@@ -47,7 +47,7 @@ export function CookieBanner() {
           <div className="mx-auto grid max-w-6xl gap-3 min-[1200px]:grid-cols-[1fr_auto] min-[1200px]:items-center">
             <div>
               <h2 className="text-base font-bold text-[color:var(--site-heading)]">Votre choix de cookies</h2>
-              <p className="mt-1 text-sm leading-5 text-[color:var(--site-muted)]">Les cookies essentiels restent actifs. La mesure d’audience (compteurs de visites et Google Analytics) et la publicité (Google Ads) sont facultatives, désactivées avant votre accord. <Link href="/confidentialite" className="underline">Confidentialité</Link></p>
+              <p className="mt-1 text-sm leading-5 text-[color:var(--site-muted)]">Les cookies essentiels restent actifs. La mesure d’audience (Google Analytics) et la publicité (Google Ads) sont facultatives, désactivées avant votre accord. <Link href="/confidentialite" className="underline">Confidentialité</Link></p>
             </div>
             <div className="grid grid-cols-2 gap-2 min-[1200px]:min-w-[20rem]">
               <button type="button" className={buttonClass} onClick={() => choose(false, false)}>Tout refuser</button>
@@ -59,7 +59,7 @@ export function CookieBanner() {
             {customizing ? (
               <div id="cookie-options" className="space-y-3 rounded-xl border border-[color:var(--site-border)] bg-white p-4 min-[1200px]:col-span-2">
                 <p className="text-sm">Cookies essentiels : toujours actifs pour la sécurité et les sessions du portail.</p>
-                <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={analytics} onChange={(event) => setAnalytics(event.target.checked)} className="h-5 w-5" />Mesure d’audience — compteurs de visites et Google Analytics</label>
+                <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={analytics} onChange={(event) => setAnalytics(event.target.checked)} className="h-5 w-5" />Mesure d’audience — Google Analytics</label>
                 <label className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={advertising} onChange={(event) => setAdvertising(event.target.checked)} className="h-5 w-5" />Google Ads — mesure publicitaire</label>
                 <button type="button" className={buttonClass} onClick={() => choose(analytics, advertising)}>Enregistrer mes choix</button>
               </div>

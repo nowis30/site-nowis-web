@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { ShareMenu } from '@/components/radio/ShareMenu';
-import { VisitorCounters } from '@/components/analytics/VisitorCounters';
 
 const primary = [
   {label: 'Chansons personnalisées', href: '/commander-une-chanson'},
@@ -55,7 +54,7 @@ export function Header() {
   const active = (href: string) => pathname === href || pathname.startsWith(href + '/');
   return <header className="nm-header" ref={header}>
     <nav className="nm-nav" aria-label="Navigation principale">
-      <Link className="nm-brand" href="/" aria-label="Retour à l’accueil Création Nowis"><Image src="/nowis.png" width={44} height={44} alt="" /><span>NOWIS<small>Vos histoires en musique</small></span></Link>
+      <Link className="nm-brand" href="/" aria-label="Retour à l’accueil Création Nowis"><Image src="/nowis-mark.webp" width={44} height={44} alt="" /><span>NOWIS<small>Vos histoires en musique</small></span></Link>
       <div className="nm-desktop-nav">{primary.map(link => link.href === '/radio'
         ? <div className="ns-nav-radio" key={link.href}><Link href={link.href} aria-current={active(link.href) ? 'page' : undefined}>{link.label}</Link><ShareMenu compact /></div>
         : <Link key={link.href} href={link.href} aria-current={active(link.href) ? 'page' : undefined}>{link.label}</Link>)}<Link href="/connexion">Portail client</Link><Link className="cta-primary" href="/commander-une-chanson#demande">Créer ma chanson ↗</Link></div>
@@ -69,6 +68,5 @@ export function Header() {
         <Link className="cta-primary" href="/commander-une-chanson#demande" onClick={() => setOpenPath(null)}>Créer ma chanson ↗</Link>
       </div>}
     </nav>
-    <VisitorCounters />
   </header>;
 }

@@ -12,7 +12,7 @@ const songVideoRegularPrice = REGULAR_PRICES.songs.videoWithSong;
 const offerIcons = ['🎵', '🎬', '🎨', '💡'];
 
 export const metadata = buildMetadata({
-  title: 'Services créatifs — Création Nowis | Chansons personnalisées, vidéos IA et concepts sur mesure',
+  title: 'Services créatifs | Chansons, vidéos et concepts',
   description:
     'Découvrez les services créatifs de Création Nowis : chansons personnalisées, vidéos IA, visuels et concepts sur mesure à Drummondville et partout au Québec.',
   path: '/services',

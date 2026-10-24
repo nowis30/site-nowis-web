@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { songSlugRedirects } from '../../config/song-slug-aliases.cjs';
 import { extractSpotifyTrackId, extractYouTubeVideoId, getYouTubeThumbnailUrl } from '@/lib/seo';
 
 export type SongSource = 'youtube' | 'spotify' | 'both';
@@ -50,6 +51,7 @@ type RawSong = {
 };
 
 const songsFilePath = path.join(process.cwd(), 'data', 'songs.json');
+const nonCanonicalSongSlugs = new Set(Object.keys(songSlugRedirects));
 const baseSeoTags = ['Nowis Morin', 'Nowis Morin chanson', 'musique Nowis Morin', 'chanson IA Québec', 'artiste musique IA Québec'];
 
 function cleanSongTitle(title: string) {
@@ -482,7 +484,11 @@ export async function getAllSongs(): Promise<Song[]> {
   const syncedSongs = await readSongsFile();
   const sourceSongs = syncedSongs.length > 0 ? syncedSongs : legacySongs;
 
-  return ensureUniqueSlugs(dedupeSongsForPublicCatalog(sortSongs(sourceSongs.filter((song) => song.status !== 'hidden')))).map(mapSongForUi);
+  return ensureUniqueSlugs(
+    dedupeSongsForPublicCatalog(
+      sortSongs(sourceSongs.filter((song) => song.status !== 'hidden' && !nonCanonicalSongSlugs.has(song.slug))),
+    ),
+  ).map(mapSongForUi);
 }
 
 export async function getFeaturedSongs(limit = 3): Promise<Song[]> {

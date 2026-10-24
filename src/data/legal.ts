@@ -17,6 +17,7 @@ export const legalConfig = {
   companyRegion: 'Québec, Canada',
   currency: 'dollars canadiens',
   legalLastUpdated: '20 mars 2026',
+  privacyLastUpdated: '24 octobre 2026',
 };
 
 export const privacyCollectionNotice = {

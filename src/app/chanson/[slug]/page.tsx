@@ -19,6 +19,15 @@ function formatPublishedAt(value?: string | null) {
   return new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long', timeZone: 'UTC' }).format(date);
 }
 
+const superBowlMetaDescription =
+  'Super Bowl est une chanson de Nowis Morin écrite pour ses frères. Elle évoque la fraternité, la compétition amicale et les moments partagés autour du sport.';
+
+function songMetaDescription(song: { slug: string; title: string; description?: string; spotifyUrl?: string }) {
+  if (song.slug === 'super-bowl') return superBowlMetaDescription;
+
+  return song.description?.trim() || `Découvrez ${song.title}, une chanson de Nowis Morin disponible sur YouTube${song.spotifyUrl ? ' et Spotify' : ''}.`;
+}
+
 function toAbsoluteImageUrl(image: string) {
   if (image.startsWith('http://') || image.startsWith('https://')) {
     return image;
@@ -39,7 +48,7 @@ export async function generateMetadata(props: PageProps) {
     });
   }
 
-  const description = song.description?.trim() || `Découvrez ${song.title}, une chanson de Nowis Morin disponible sur YouTube${song.spotifyUrl ? ' et Spotify' : ''}.`;
+  const description = songMetaDescription(song);
 
   return buildMetadata({
     title: `${song.title} – chanson de Nowis Morin`,

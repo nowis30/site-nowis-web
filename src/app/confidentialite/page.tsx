@@ -25,7 +25,8 @@ const privacySections = [
     bullets: [
       'votre nom, votre courriel et votre numéro de téléphone lorsque vous remplissez un formulaire ou communiquez avec nous ;',
       'les renseignements que vous choisissez de partager au sujet de votre projet, de votre histoire ou de vos attentes ;',
-      'certaines données techniques limitées liées à l’utilisation du site, comme l’adresse IP, les journaux techniques ou les données nécessaires au bon fonctionnement du service.',
+      'certaines données techniques limitées liées à l’utilisation du site, comme l’adresse IP, les journaux techniques ou les données nécessaires au bon fonctionnement du service ;',
+      'lorsqu’un courriel vous est envoyé à partir du dossier client, le fait que ce message a été ouvert, ainsi que la date et l’heure de cette ouverture.',
     ],
   },
   {
@@ -33,6 +34,7 @@ const privacySections = [
     bullets: [
       'répondre à votre demande ;',
       'communiquer avec vous et assurer le suivi du projet ;',
+      'savoir si un courriel envoyé depuis le dossier client a été ouvert, afin de faire le suivi ;',
       'préparer une proposition ou une direction de création adaptée ;',
       'respecter les obligations administratives, contractuelles ou légales applicables.',
     ],
@@ -40,8 +42,17 @@ const privacySections = [
   {
     title: '4. Partage et accès aux renseignements',
     content: [
-      'Les renseignements ne sont pas vendus. Ils peuvent être accessibles uniquement aux personnes autorisées ou à certains fournisseurs techniques nécessaires au fonctionnement du site, de l’hébergement ou des communications.',
+      'Les renseignements ne sont pas vendus. Ils peuvent être accessibles aux personnes autorisées de Création Nowis et, seulement pour ce qui est nécessaire à leur rôle, aux fournisseurs suivants.',
       'Lorsque des outils externes sont utilisés, l’accès est limité à ce qui est raisonnablement nécessaire pour traiter la demande ou faire fonctionner le service.',
+    ],
+    bullets: [
+      'Vercel, pour l’hébergement du site ;',
+      'la base de données PostgreSQL du site, pour conserver les dossiers, les demandes et les comptes ;',
+      'Amazon S3, pour le stockage des fichiers et des médias ;',
+      'PayPal, lorsque ce mode de paiement est utilisé ;',
+      'Resend, pour l’envoi des courriels du dossier client, y compris l’image qui indique une ouverture ;',
+      'Twilio, pour les messages texte de vérification de l’accès au dossier interne ;',
+      'le serveur SMTP configuré pour le formulaire de contact, afin de transmettre les demandes reçues par ce formulaire.',
     ],
   },
   {
@@ -61,18 +72,26 @@ const privacySections = [
     ],
   },
   {
-    title: '7. Cookies et outils similaires',
+    title: '7. Image invisible dans les courriels du dossier client',
+    content: [
+      'Certains courriels envoyés depuis le dossier client — par exemple une facture, une soumission ou un suivi — contiennent une petite image invisible, propre à ce message.',
+      'Lorsque votre logiciel de courriel affiche cette image, Création Nowis enregistre que le message a été ouvert, ainsi que la date et l’heure. Ce renseignement est relié au dossier déjà existant, grâce à un identifiant unique placé dans le lien de l’image. Cette image ne sert pas à connaître votre appareil au-delà de cette ouverture, ni à vous suivre pendant que vous naviguez sur le site.',
+      'Elle sert à savoir si le message a été consulté, pour faire le suivi de la demande.',
+      `Vous pouvez empêcher cette indication en bloquant l’affichage des images distantes dans votre logiciel de courriel. Vous pouvez aussi demander à ne plus recevoir ce suivi en écrivant à ${legalConfig.privacyEmail} ou en téléphonant au ${legalConfig.privacyPhone}. Le responsable est ${legalConfig.responsiblePrivacyName}.`,
+    ],
+  },
+  {
+    title: '8. Cookies et outils similaires',
     content: [
       'Le site utilise surtout des mécanismes techniques nécessaires à son bon fonctionnement, à la sécurité ou à la gestion d’une session authentifiée lorsque certaines zones privées sont utilisées.',
       complianceNotes.noMarketingCookies,
       complianceNotes.cookieBannerRule,
-      'Avec votre accord pour la mesure d’audience, les compteurs du site utilisent un identifiant aléatoire de session partagé entre vos onglets. Une nouvelle visite est comptée après 30 minutes d’inactivité ; le nombre en ligne correspond aux sessions actives durant les 3 dernières minutes. Ce compteur n’utilise ni votre adresse IP ni une empreinte de votre appareil pour vous identifier.',
-      'L’identifiant de ce compteur est conservé dans le stockage local de votre navigateur et renouvelé après 30 minutes d’inactivité. Il est supprimé lorsque vous retirez votre accord. Les totaux agrégés restent visibles même si vous refusez la mesure d’audience. Vous pouvez modifier vos choix depuis « Gérer mes cookies ».',
+      'Les pages publiques n’affichent pas de compteur de visites ni de nombre de personnes en ligne. La mesure d’audience facultative se limite aux outils Google décrits ci-dessus, et seulement après votre accord. Vous pouvez modifier vos choix depuis « Gérer mes cookies ».',
       'Vous pouvez limiter certains cookies dans votre navigateur, mais certaines fonctions du site pourraient alors être affectées.',
     ],
   },
   {
-    title: '8. Mise à jour de la politique',
+    title: '9. Mise à jour de la politique',
     content: [
       'Cette politique peut être ajustée si les pratiques du site évoluent ou si des clarifications deviennent nécessaires. La version la plus récente reste publiée sur cette page.',
     ],
@@ -130,7 +149,7 @@ export default function ConfidentialitePage() {
             Cette politique vise à mieux expliquer les pratiques de Création Nowis en matière de protection des renseignements personnels, sans donner un faux sentiment de sécurité ni faire de promesse absolue.
           </p>
           <p className="mt-5 text-sm font-medium text-[color:var(--site-soft)]">
-            Dernière mise à jour : {legalConfig.legalLastUpdated}
+            Dernière mise à jour : {legalConfig.privacyLastUpdated}
           </p>
         </article>
 
