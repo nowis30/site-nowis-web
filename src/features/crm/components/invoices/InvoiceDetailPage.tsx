@@ -426,28 +426,30 @@ export function InvoiceDetailPage({
         </div>
       ) : null}
 
-      <PayPalInvoicePanel
-        invoiceId={invoice.id}
-        amount={invoice.amount}
-        contactEmail={invoice.contact.email}
-        allowActions={allowPayPalActions}
-        paypalConfigured={paypalConfigured}
-        missingConfigMessage={missingPayPalConfigMessage}
-        initialMeta={{
-          crmStatus: invoice.status,
-          isTest: invoice.isTest,
-          paypalInvoiceId: invoice.paypalInvoiceId,
-          paypalInvoiceUrl: invoice.paypalInvoiceUrl,
-          paypalStatus: invoice.paypalStatus,
-          paypalSentAt: invoice.paypalSentAt,
-          paypalPaidAt: invoice.paypalPaidAt,
-          paypalLastWebhookAt: invoice.paypalLastWebhookAt,
-          paymentProvider: invoice.paymentProvider,
-          paymentStatus: invoice.paymentStatus,
-          paymentAmount: invoice.paymentAmount,
-          paymentCurrency: invoice.paymentCurrency,
-        }}
-      />
+      {allowPayPalActions ? (
+        <PayPalInvoicePanel
+          invoiceId={invoice.id}
+          amount={invoice.amount}
+          contactEmail={invoice.contact.email}
+          allowActions
+          paypalConfigured={paypalConfigured}
+          missingConfigMessage={missingPayPalConfigMessage}
+          initialMeta={{
+            crmStatus: invoice.status,
+            isTest: invoice.isTest,
+            paypalInvoiceId: invoice.paypalInvoiceId,
+            paypalInvoiceUrl: invoice.paypalInvoiceUrl,
+            paypalStatus: invoice.paypalStatus,
+            paypalSentAt: invoice.paypalSentAt,
+            paypalPaidAt: invoice.paypalPaidAt,
+            paypalLastWebhookAt: invoice.paypalLastWebhookAt,
+            paymentProvider: invoice.paymentProvider,
+            paymentStatus: invoice.paymentStatus,
+            paymentAmount: invoice.paymentAmount,
+            paymentCurrency: invoice.paymentCurrency,
+          }}
+        />
+      ) : null}
 
       {allowEmailSend && isComposerOpen ? (
         <div className="print:hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">

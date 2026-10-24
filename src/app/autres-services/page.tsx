@@ -5,7 +5,7 @@ import { formatPrice, REGULAR_PRICES } from '@/data/pricing';
 const hourlyRegularPrice = REGULAR_PRICES.hourly;
 
 export const metadata = buildMetadata({
-  title: 'Expertises complémentaires — Création Nowis | Jeux IA, accompagnement et projets spéciaux',
+  title: 'Expertises complémentaires | Jeux IA et projets',
   description:
     'Découvrez les expertises complémentaires de Création Nowis : jeux interactifs, accompagnement artistique, expériences IA et projets spéciaux à Drummondville et partout au Québec.',
   path: '/autres-services',

@@ -23,6 +23,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Array<{ label: string; href: string }>>([]);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +33,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
     if (cleaned.length < 2) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
+      setSearching(true);
       try {
         const response = await fetch(`/api/crm/search?q=${encodeURIComponent(cleaned)}`, { cache: 'no-store', signal: controller.signal });
         const data = await response.json();
@@ -40,7 +42,9 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
           setShowResults(true);
         }
       } catch {
-        // Ignorer les erreurs réseau silencieuses
+        if (!controller.signal.aborted) setResults([]);
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
       }
     }, 350);
     return () => { clearTimeout(timer); controller.abort(); };
@@ -94,9 +98,11 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
 
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3">
           <div ref={searchRef} className="relative min-w-0 flex-1">
-            <SearchBar value={query} onChange={handleSearchChange} placeholder="Recherche globale (contacts, dossiers, demandes, ateliers...)" />
-            {showResults && results.length > 0 ? (
-              <div className="absolute right-0 z-20 mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 shadow-soft">
+            <SearchBar value={query} onChange={handleSearchChange} placeholder="Nom, courriel, facture, chanson ou atelier" />
+            {showResults && query.trim().length >= 2 ? (
+              <div className="absolute right-0 z-20 mt-2 max-h-80 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 shadow-soft" role="listbox" aria-label="Résultats de recherche">
+                {searching ? <p className="px-3 py-2 text-sm text-slate-400">Recherche…</p> : null}
+                {!searching && results.length === 0 ? <p className="px-3 py-2 text-sm text-slate-400">Aucun résultat pour « {query.trim()} ».</p> : null}
                 {results.map((item) => (
                   <Link key={`${item.href}-${item.label}`} href={item.href} onClick={() => setShowResults(false)} className="block border-b border-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 last:border-b-0">
                     {item.label}

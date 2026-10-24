@@ -4,6 +4,7 @@ import { CalendarClock, FileText, Inbox, Sparkles } from 'lucide-react';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, PortalStatCard, QuickActions, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
 import { isClientProfileIncomplete } from '@/features/client-portal/profile';
+import { clientVisibleInvoiceWhere } from '@/lib/client-invoice-visibility';
 import { prisma } from '@/lib/prisma';
 
 const OUTLOOK_MESSAGE_URL = 'https://outlook.office.com/mail/deeplink/compose?to=simonmorin@nowis.store&subject=Demande%20depuis%20le%20portail%20client';
@@ -15,7 +16,7 @@ const contactDashboardInclude = {
     orderBy: { startAt: 'asc' as const },
     take: 8,
   },
-  invoices: { orderBy: { dueDate: 'asc' as const }, take: 8 },
+  invoices: { where: clientVisibleInvoiceWhere(), orderBy: { dueDate: 'asc' as const }, take: 8 },
   songRequests: { orderBy: { createdAt: 'desc' as const }, take: 6 },
 } satisfies Prisma.ContactInclude;
 

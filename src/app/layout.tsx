@@ -40,7 +40,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const organizationSchema = buildOrganizationSchema();
   return (
-    <html lang="fr" className={`${bodyFont.variable} ${displayFont.variable}`}>
+    <html lang="fr-CA" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <head>
         <meta name="theme-color" content="#f6f1ea" />
         <meta name="mobile-web-app-capable" content="yes" />

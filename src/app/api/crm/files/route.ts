@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
+import { safeHttpUrl } from '@/lib/safe-http-url';
 
 const createDocumentSchema = z.object({
   fileName: z.string().trim().min(1).max(255),
@@ -62,11 +63,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const payload = createDocumentSchema.parse(await request.json());
+    const fileUrl = safeHttpUrl(payload.fileUrl);
+    if (!fileUrl) {
+      return NextResponse.json({ error: 'Le lien du fichier doit être une adresse http ou https, sans identifiant dans l’URL.' }, { status: 400 });
+    }
 
     const item = await prisma.document.create({
       data: {
         fileName: payload.fileName,
-        fileUrl: payload.fileUrl,
+        fileUrl,
         mimeType: payload.mimeType ?? null,
         sizeBytes: payload.sizeBytes ?? null,
         linkedType: payload.linkedType,

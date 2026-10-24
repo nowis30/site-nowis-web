@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { safeHttpUrl } from '@/lib/safe-http-url';
 import { SongRequestFilesPanel } from './SongRequestFilesPanel';
 import { AppointmentSelector } from '@/features/crm/components/appointments/AppointmentSelector';
 
@@ -131,6 +132,8 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
   const [isEditing, setIsEditing] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [planning, setPlanning] = useState({
     title: item.title ? `Rencontre chanson - ${item.title}` : `Rencontre chanson - ${item.fullName}`,
     startAt: item.startAt ? item.startAt.slice(0, 16) : '',
@@ -145,6 +148,7 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
   async function runAction(action: 'mark_contacted' | 'convert_appointment' | 'mark_in_production' | 'mark_delivered') {
     setLoadingAction(action);
     setError(null);
+    setNotice(null);
 
     try {
       const response = await fetch(`/api/crm/song-requests/${item.id}`, {
@@ -158,11 +162,22 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
         throw new Error(data?.error ?? 'Action impossible');
       }
 
+      setNotice('Statut mis à jour.');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setLoadingAction(null);
+    }
+  }
+
+  async function copyPortalLink() {
+    try {
+      await navigator.clipboard.writeText(clientPortalUrl);
+      setCopiedLink(true);
+      window.setTimeout(() => setCopiedLink(false), 2000);
+    } catch {
+      setError('Impossible de copier le lien. Sélectionnez-le manuellement.');
     }
   }
 
@@ -337,7 +352,8 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
         </div>
       </div>
 
-      {error ? <div className="rounded-xl border border-red-700/30 bg-red-950/30 px-4 py-3 text-sm text-red-300">{error}</div> : null}
+      {error ? <div className="rounded-xl border border-red-700/30 bg-red-950/30 px-4 py-3 text-sm text-red-300" role="alert">{error}</div> : null}
+      {notice ? <div className="rounded-xl border border-emerald-700/40 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200" role="status">{notice}</div> : null}
 
       {hasBlockingQuote ? (
         <div className="rounded-xl border border-emerald-700/30 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-300 flex items-start justify-between gap-4 flex-wrap">
@@ -472,6 +488,32 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
                 </Link>
               ) : null}
 
+              <p className="text-xs text-slate-400">Statut actuel : {STATUS_LABELS[item.status]}</p>
+              <button
+                type="button"
+                onClick={() => runAction('mark_contacted')}
+                disabled={loadingAction !== null}
+                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-indigo-500/40 hover:text-indigo-300 disabled:opacity-60"
+              >
+                {loadingAction === 'mark_contacted' ? 'Mise à jour...' : 'Marquer comme contacté'}
+              </button>
+              <button
+                type="button"
+                onClick={() => runAction('mark_in_production')}
+                disabled={loadingAction !== null}
+                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-fuchsia-500/40 hover:text-fuchsia-300 disabled:opacity-60"
+              >
+                {loadingAction === 'mark_in_production' ? 'Mise à jour...' : 'Marquer en production'}
+              </button>
+              <button
+                type="button"
+                onClick={() => runAction('mark_delivered')}
+                disabled={loadingAction !== null}
+                className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-60"
+              >
+                {loadingAction === 'mark_delivered' ? 'Mise à jour...' : 'Marquer comme livré'}
+              </button>
+
               {!isEditing ? (
                 <button
                   type="button"
@@ -486,38 +528,11 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
                 <>
                   <button
                     type="button"
-                    onClick={() => runAction('mark_contacted')}
-                    disabled={loadingAction !== null}
-                    className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-indigo-500/40 hover:text-indigo-300 disabled:opacity-60"
-                  >
-                    {loadingAction === 'mark_contacted' ? 'Mise à jour...' : 'Marquer comme contacté'}
-                  </button>
-
-                  <button
-                    type="button"
                     onClick={() => runAction('convert_appointment')}
                     disabled={loadingAction !== null}
                     className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-amber-500/40 hover:text-amber-300 disabled:opacity-60"
                   >
                     {loadingAction === 'convert_appointment' ? 'Conversion...' : 'Convertir en rendez-vous'}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => runAction('mark_in_production')}
-                    disabled={loadingAction !== null}
-                    className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-fuchsia-500/40 hover:text-fuchsia-300 disabled:opacity-60"
-                  >
-                    {loadingAction === 'mark_in_production' ? 'Mise à jour...' : 'Marquer en production'}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => runAction('mark_delivered')}
-                    disabled={loadingAction !== null}
-                    className="w-full rounded-lg border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 disabled:opacity-60"
-                  >
-                    {loadingAction === 'mark_delivered' ? 'Mise à jour...' : 'Marquer comme livré'}
                   </button>
 
                   <button
@@ -544,15 +559,20 @@ export function SongRequestDetailPage({ item, clientPortalUrl, canCreateCommerci
               <p><span className="text-slate-500">Date rencontre:</span> {item.meetingDate ? new Date(item.meetingDate).toLocaleString('fr-CA') : '—'}</p>
               <p><span className="text-slate-500">Soumission/facture liee:</span> {item.convertedInvoiceId || '—'}</p>
               {item.meetingNotes ? <p><span className="text-slate-500">Notes internes:</span> {item.meetingNotes}</p> : null}
-              {item.fileUrl ? (
+              {safeHttpUrl(item.fileUrl) ? (
                 <p className="break-all">
                   <span className="text-slate-500">Lien dossier:</span>{' '}
-                  <a href={item.fileUrl} target="_blank" rel="noreferrer" className="text-primary-300 hover:text-primary-200">
+                  <a href={safeHttpUrl(item.fileUrl) || undefined} target="_blank" rel="noreferrer" className="text-primary-300 hover:text-primary-200">
                     Ouvrir le fichier joint
                   </a>
                 </p>
               ) : null}
-              <p className="break-all"><span className="text-slate-500">Lien portail client:</span> {clientPortalUrl}</p>
+              <div className="break-all">
+                <p><span className="text-slate-500">Lien portail client:</span> {clientPortalUrl}</p>
+                <button type="button" onClick={() => void copyPortalLink()} className="mt-2 rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-100 hover:border-primary-500/50">
+                  {copiedLink ? 'Lien copié' : 'Copier le lien portail'}
+                </button>
+              </div>
             </div>
           </div>
 

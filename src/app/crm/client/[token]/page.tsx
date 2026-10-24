@@ -1,7 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { verifyClientPortalToken } from '@/lib/client-portal';
+import { clientVisibleInvoiceWhere } from '@/lib/client-invoice-visibility';
 import { prisma } from '@/lib/prisma';
+import { safeHttpUrl } from '@/lib/safe-http-url';
 import { ClientFileUploadForm, ClientPortalDeleteFileButton } from '@/features/crm/components/client-portal/ClientFileUploadForm';
 import { InvoicePaymentNoticeForm } from '@/features/crm/components/portals/InvoicePaymentNoticeForm';
 
@@ -16,18 +18,6 @@ const STATUS_LABELS: Record<string, string> = {
   IN_PROGRESS: 'En cours',
   COMPLETED: 'Complété',
   CANCELLED: 'Annulé',
-};
-
-const TASK_STATUS_LABELS: Record<string, string> = {
-  TODO: 'À faire',
-  IN_PROGRESS: 'En cours',
-  DONE: 'Terminée',
-};
-
-const TASK_PRIORITY_LABELS: Record<string, string> = {
-  LOW: 'Faible',
-  MEDIUM: 'Moyenne',
-  HIGH: 'Haute',
 };
 
 const INVOICE_STATUS_LABELS: Record<string, string> = {
@@ -55,6 +45,25 @@ function formatDate(value: Date | string | null) {
 function formatDateTime(value: Date | string) {
   return new Date(value).toLocaleString('fr-CA');
 }
+
+function paymentLabel(status: string | null | undefined) {
+  const value = (status || '').toLowerCase();
+  if (!value || value === 'unpaid' || value === 'non paye' || value === 'non payée') return 'Non payée';
+  if (value === 'paid' || value === 'payee' || value === 'payée') return 'Payée';
+  if (value === 'pending' || value === 'sent') return 'En attente';
+  return 'En suivi';
+}
+
+const CLIENT_NEXT_STEP: Record<string, string> = {
+  NEW: 'Nous avons bien reçu votre demande. Nous vous contactons sous peu.',
+  CONTACTED: 'Nous sommes en contact avec vous pour préciser le projet.',
+  QUOTED: 'Une soumission vous a été envoyée. Écrivez-nous si vous avez une question.',
+  IN_PROGRESS: 'Votre chanson est en préparation.',
+  IN_PRODUCTION: 'Votre chanson est en production.',
+  DELIVERED: 'Votre chanson a été livrée. Les fichiers partagés apparaissent dans ce dossier.',
+  COMPLETED: 'Votre demande est complétée. Les fichiers partagés apparaissent dans ce dossier.',
+  CANCELLED: 'Cette demande est annulée. Écrivez-nous si ce n’est pas ce que vous attendiez.',
+};
 
 function isAudioFile(mimeType: string | null | undefined, fileName: string) {
   const normalizedName = fileName.toLowerCase();
@@ -103,18 +112,8 @@ export default async function ClientPortalPage(props: PageProps) {
       fullName: true,
       email: true,
       phone: true,
-      activities: {
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-        select: {
-          id: true,
-          type: true,
-          title: true,
-          description: true,
-          createdAt: true,
-        },
-      },
       invoices: {
+        where: clientVisibleInvoiceWhere(),
         orderBy: { issueDate: 'desc' },
         select: {
           id: true,
@@ -150,24 +149,14 @@ export default async function ClientPortalPage(props: PageProps) {
           convertedAppointmentId: true,
           convertedInvoiceId: true,
           activities: {
+            where: { type: { not: 'NOTE' } },
             orderBy: { createdAt: 'desc' },
             take: 20,
             select: {
               id: true,
+              type: true,
               title: true,
-              description: true,
               createdAt: true,
-            },
-          },
-          tasks: {
-            orderBy: [{ status: 'asc' }, { dueDate: 'asc' }, { createdAt: 'desc' }],
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              status: true,
-              priority: true,
-              dueDate: true,
             },
           },
           fileDocuments: {
@@ -205,6 +194,7 @@ export default async function ClientPortalPage(props: PageProps) {
     where: { linkedType: 'CONTACT', linkedId: contact.id },
     orderBy: { createdAt: 'desc' },
     take: 20,
+    select: { id: true, fileName: true, fileUrl: true, createdAt: true, uploadedById: true },
   });
 
   const invoiceDocuments = contact.invoices.length === 0
@@ -326,15 +316,22 @@ export default async function ClientPortalPage(props: PageProps) {
                       );
                     })}
 
-                    {contactDocuments.map((file) => (
+                    {contactDocuments.map((file) => {
+                      const fileHref = safeHttpUrl(file.fileUrl);
+                      return (
                       <div key={file.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                        <a href={file.fileUrl} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
+                        {fileHref ? (
+                          <a href={fileHref} target="_blank" rel="noreferrer" className="block hover:text-emerald-200">
+                            <p className="text-sm font-medium text-white">{file.fileName}</p>
+                            <p className="mt-1 text-xs text-slate-500">{formatDateTime(file.createdAt)}</p>
+                          </a>
+                        ) : (
                           <p className="text-sm font-medium text-white">{file.fileName}</p>
-                          <p className="mt-1 text-xs text-slate-500">{formatDateTime(file.createdAt)}</p>
-                        </a>
-                        <div className="mt-2"><ClientPortalDeleteFileButton token={params.token} fileId={file.id} /></div>
+                        )}
+                        {!file.uploadedById ? <div className="mt-2"><ClientPortalDeleteFileButton token={params.token} fileId={file.id} /></div> : null}
                       </div>
-                    ))}
+                      );
+                    })}
                   </>
                 )}
               </div>
@@ -385,16 +382,15 @@ export default async function ClientPortalPage(props: PageProps) {
                     </div>
                     <div className="text-sm text-slate-200">
                       <p>{formatCurrency(Number(invoice.amount))}</p>
-                      <p className="text-xs text-slate-500">{INVOICE_STATUS_LABELS[invoice.status] ?? invoice.status}</p>
-                      <p className="mt-1 text-xs text-slate-500">PayPal: {invoice.paymentStatus || invoice.paypalStatus || 'non disponible'}</p>
+                      <p className="text-xs text-slate-500">{INVOICE_STATUS_LABELS[invoice.status] ?? 'Facture'}</p>
+                      <p className="mt-1 text-xs text-slate-500">Paiement : {paymentLabel(invoice.paymentStatus || invoice.paypalStatus)}</p>
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-500">
                     <span>Émise le {formatDate(invoice.issueDate)}</span>
                     <span>Échéance {formatDate(invoice.dueDate)}</span>
-                    <span>Paiement: {invoice.paymentStatus || 'unpaid'}</span>
-                    {invoice.fileUrl ? (
-                      <a href={invoice.fileUrl} target="_blank" rel="noreferrer" className="text-emerald-300 hover:text-emerald-200">
+                    {safeHttpUrl(invoice.fileUrl) ? (
+                      <a href={safeHttpUrl(invoice.fileUrl) || undefined} target="_blank" rel="noreferrer" className="text-emerald-300 hover:text-emerald-200">
                         Ouvrir le fichier
                       </a>
                     ) : (
@@ -402,17 +398,17 @@ export default async function ClientPortalPage(props: PageProps) {
                         Ouvrir la version imprimable
                       </a>
                     )}
-                    {invoice.paypalInvoiceUrl ? (
-                      <a href={invoice.paypalInvoiceUrl} target="_blank" rel="noreferrer" className="text-sky-300 hover:text-sky-200">
+                    {safeHttpUrl(invoice.paypalInvoiceUrl) ? (
+                      <a href={safeHttpUrl(invoice.paypalInvoiceUrl) || undefined} target="_blank" rel="noreferrer" className="text-sky-300 hover:text-sky-200">
                         Ouvrir le paiement PayPal
                       </a>
                     ) : null}
                   </div>
                   {invoice.paypalPaidAt ? <p className="mt-2 text-xs text-emerald-300">Paiement PayPal enregistré le {formatDateTime(invoice.paypalPaidAt)}</p> : null}
-                  {invoiceDocuments.filter((document) => document.linkedId === invoice.id).length > 0 ? (
+                  {invoiceDocuments.filter((document) => document.linkedId === invoice.id && safeHttpUrl(document.fileUrl)).length > 0 ? (
                     <div className="mt-3 space-y-2">
-                      {invoiceDocuments.filter((document) => document.linkedId === invoice.id).map((document) => (
-                        <a key={document.id} href={document.fileUrl} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-emerald-200">
+                      {invoiceDocuments.filter((document) => document.linkedId === invoice.id && safeHttpUrl(document.fileUrl)).map((document) => (
+                        <a key={document.id} href={safeHttpUrl(document.fileUrl) || undefined} target="_blank" rel="noreferrer" className="block text-xs text-slate-400 hover:text-emerald-200">
                           Justificatif: {document.fileName}
                         </a>
                       ))}
@@ -486,7 +482,6 @@ export default async function ClientPortalPage(props: PageProps) {
                     request.activities.map((activity) => (
                       <article key={activity.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
                         <p className="text-sm font-medium text-white">{activity.title}</p>
-                        {activity.description ? <p className="mt-1 whitespace-pre-wrap text-sm text-slate-300">{activity.description}</p> : null}
                         <p className="mt-2 text-xs text-slate-500">{formatDateTime(activity.createdAt)}</p>
                       </article>
                     ))
@@ -497,22 +492,7 @@ export default async function ClientPortalPage(props: PageProps) {
               <div className="space-y-4">
                 <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500">Prochaines étapes</p>
-                  <div className="mt-4 space-y-3">
-                    {request.tasks.length === 0 ? (
-                      <p className="text-sm text-slate-400">Aucune tâche visible pour le moment.</p>
-                    ) : (
-                      request.tasks.map((task) => (
-                        <article key={task.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3">
-                          <p className="text-sm font-medium text-white">{task.title}</p>
-                          {task.description ? <p className="mt-1 whitespace-pre-wrap text-sm text-slate-300">{task.description}</p> : null}
-                          <p className="mt-2 text-xs text-slate-500">
-                            {TASK_STATUS_LABELS[task.status] ?? task.status} · {TASK_PRIORITY_LABELS[task.priority] ?? task.priority}
-                            {task.dueDate ? ` · ${formatDate(task.dueDate)}` : ''}
-                          </p>
-                        </article>
-                      ))
-                    )}
-                  </div>
+                  <p className="mt-4 text-sm leading-6 text-slate-200">{CLIENT_NEXT_STEP[request.status] ?? 'Nous faisons le suivi de votre demande.'}</p>
                 </div>
 
                 <div className="space-y-4">

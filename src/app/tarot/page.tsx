@@ -19,6 +19,9 @@ export const metadata = buildMetadata({
 export default function TarotPage() {
   return (
     <section aria-label="Oracle NOWIS · Tarot et carte du ciel" className="mx-auto w-full max-w-[1320px]">
+      <h1 className="px-6 pb-2 font-display text-3xl leading-tight text-[color:var(--site-heading)] md:px-11 md:text-4xl">
+        Oracle NOWIS · Tarot, astrologie et numérologie
+      </h1>
       <div className="flex justify-end px-6 pb-2 md:px-11">
         <ShareMenu destinations={tarotDestinations} triggerLabel="Partager la page Tarot" />
       </div>
