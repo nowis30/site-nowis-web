@@ -13,7 +13,9 @@ import {
   FINANCE_SALE_TYPE_LABELS,
   FINANCE_SALE_TYPES,
   getInventoryCategoryLabel,
+  isFinanceSaleType,
 } from '@/features/crm/finance/constants';
+import { quebecTaxAmount } from '@/features/crm/finance/activity';
 
 export type FinanceSelectItem = { id: string; label: string };
 
@@ -124,10 +126,12 @@ export function FinanceSaleFormPage({
   contacts,
   invoices,
   inventory,
+  initialCategory = 'OTHER',
 }: {
   contacts: FinanceSelectItem[];
   invoices: FinanceInvoiceOption[];
   inventory: FinanceInventorySaleOption[];
+  initialCategory?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const [saleReceipt, setSaleReceipt] = useState<string | null>(null);
@@ -135,9 +139,10 @@ export function FinanceSaleFormPage({
   const [saleSuccess, setSaleSuccess] = useState<string | null>(null);
   const [selectedInventoryId, setSelectedInventoryId] = useState('');
   const [quantityDraft, setQuantityDraft] = useState(1);
-  const [categoryDraft, setSelectedCategory] = useState('OTHER');
+  const [categoryDraft, setSelectedCategory] = useState<string>(isFinanceSaleType(initialCategory) ? initialCategory : 'OTHER');
   const [amountInput, setAmountInput] = useState<{ source: string; value: string } | null>(null);
   const [descriptionDraft, setDescriptionDraft] = useState('');
+  const [taxDraft, setTaxDraft] = useState('');
 
   const saleOptions = useMemo(() => FINANCE_SALE_TYPES.map((value) => ({ value, label: FINANCE_SALE_TYPE_LABELS[value] })), []);
   const paymentOptions = useMemo(() => FINANCE_PAYMENT_METHODS.map((value) => ({ value, label: FINANCE_PAYMENT_METHOD_LABELS[value] })), []);
@@ -189,6 +194,7 @@ export function FinanceSaleFormPage({
               setSelectedCategory('OTHER');
               setAmountInput(null);
               setDescriptionDraft('');
+              setTaxDraft('');
             } catch (error) {
               setSaleError(error instanceof Error ? error.message : 'Erreur inconnue');
             }
@@ -253,7 +259,23 @@ export function FinanceSaleFormPage({
             placeholder="Montant avant taxes"
             className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white"
           />
-          <input name="taxAmount" type="number" step="0.01" min="0" placeholder="Taxes" className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white" />
+          <input
+            name="taxAmount"
+            type="number"
+            step="0.01"
+            min="0"
+            value={taxDraft}
+            onChange={(event) => setTaxDraft(event.target.value)}
+            placeholder="Taxes"
+            className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white"
+          />
+          <button
+            type="button"
+            onClick={() => setTaxDraft(quebecTaxAmount(Number(amountBeforeTaxDraft) || 0).toFixed(2))}
+            className="rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:border-primary-500/50 hover:text-white sm:col-span-2"
+          >
+            Calculer TPS 5 % et TVQ 9,975 %
+          </button>
           <input
             name="quantity"
             type="number"
@@ -266,7 +288,7 @@ export function FinanceSaleFormPage({
               setAmountInput(null);
               if (selectedInventory) {
                 setDescriptionDraft((current) => current.trim() ? current : selectedInventory.label);
-              } else setSelectedCategory('OTHER');
+              }
             }}
             className="rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white"
           />

@@ -7,6 +7,8 @@ import {
   getFinanceCategoryLabel,
   getInventoryCategoryLabel,
 } from '@/features/crm/finance/constants';
+import { FinancePilotage } from '@/features/crm/components/finance/FinancePilotage';
+import type { LedgerLine } from '@/features/crm/finance/activity';
 
 type FinanceEntry = {
   id: string;
@@ -55,6 +57,15 @@ interface FinancePageProps {
   sales: FinanceEntry[];
   expenses: FinanceEntry[];
   inventory: FinanceInventoryItem[];
+  year: number;
+  ledger: LedgerLine[];
+  operations: {
+    songsInProgress: number;
+    songsDelivered: number;
+    workshopsInProgress: number;
+    workshopsDone: number;
+    usbRemaining: number;
+  };
 }
 
 const money = new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' });
@@ -64,7 +75,7 @@ function toNumber(value: string | number | null | undefined) {
   return Number.isFinite(numeric) ? numeric : 0;
 }
 
-export function FinancePage({ metrics, topProducts, sales, expenses, inventory }: FinancePageProps) {
+export function FinancePage({ metrics, topProducts, sales, expenses, inventory, year, ledger, operations }: FinancePageProps) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyEntryId, setBusyEntryId] = useState<string | null>(null);
 
@@ -142,9 +153,9 @@ export function FinancePage({ metrics, topProducts, sales, expenses, inventory }
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-primary-300">Module finance</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Registre financier simple</h1>
+          <h1 className="mt-2 text-3xl font-bold text-white">Registre des activités</h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-400">
-            Suivi des ventes, des dépenses, des factures et de l’inventaire produits sans logique comptable lourde.
+            Chansons, spectacles, ateliers et clés USB, avec l’évolution de l’année, une simulation et un rendu à remettre au comptable.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-sm">
@@ -178,7 +189,7 @@ export function FinancePage({ metrics, topProducts, sales, expenses, inventory }
 
       <div className="grid gap-3 lg:grid-cols-4">
         <article className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-          <p className="text-xs text-slate-500">Factures impayées</p>
+          <p className="text-xs text-slate-500">Factures envoyées non payées</p>
           <p className="mt-2 text-3xl font-bold text-white">{metrics.unpaidInvoices}</p>
         </article>
         <article className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
@@ -205,6 +216,8 @@ export function FinancePage({ metrics, topProducts, sales, expenses, inventory }
         <a href="/crm/finance/paiement" className="rounded-full border border-slate-700 px-4 py-2 text-slate-200">Paiement</a>
         <a href="#rapport" className="rounded-full border border-slate-700 px-4 py-2 text-slate-200">Voir rapport trimestriel</a>
       </div>
+
+      <FinancePilotage year={year} ledger={ledger} operations={operations} />
 
       <div className="grid gap-5 xl:grid-cols-2">
         <article className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
@@ -317,8 +330,8 @@ export function FinancePage({ metrics, topProducts, sales, expenses, inventory }
       </article>
 
       <article id="rapport" className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
-        <h2 className="text-lg font-semibold text-white">Rapport trimestriel rapide</h2>
-        <p className="mt-2 text-sm text-slate-400">Télécharge un CSV ou imprime cette page pour ton comptable.</p>
+        <h2 className="text-lg font-semibold text-white">Export détaillé</h2>
+        <p className="mt-2 text-sm text-slate-400">Le fichier d’origine garde ses colonnes. Le rendu comptable, plus haut, est celui à remettre.</p>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
           <a href="/api/crm/finance/reports/export?scope=month" className="rounded-xl border border-slate-700 px-4 py-2 text-slate-200">Mois</a>
           <a href="/api/crm/finance/reports/export?scope=quarter" className="rounded-xl border border-slate-700 px-4 py-2 text-slate-200">Trimestre</a>

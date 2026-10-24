@@ -39,7 +39,7 @@ export function CrmSidebar({ role, isOpen, onToggle, onNavigate, mobile = false,
         {isOpen || mobile ? (
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-400">CRM Nowis</p>
-            <h1 className="mt-0.5 text-base font-bold text-white">Musique & ateliers</h1>
+            <h1 className="mt-0.5 text-base font-bold text-white">Chansons, spectacles, ateliers</h1>
           </div>
         ) : null}
         {!mobile && onToggle ? (

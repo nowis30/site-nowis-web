@@ -334,9 +334,13 @@ test('assistant discards a late auth error from the previous route', async () =>
 
 test('finance amount follows inventory and quantity while preserving a manual price until its source changes', () => {
   const ui = createRuntime();
+  const financeConstants = ui.load('src/features/crm/finance/constants.ts');
   const { FinanceSaleFormPage } = ui.load('src/features/crm/components/finance/FinanceFormPages.tsx', {
     '@/features/crm/components/shared/FileUploader': { FileUploader: 'file-uploader' },
-    '@/features/crm/finance/constants': ui.load('src/features/crm/finance/constants.ts'),
+    '@/features/crm/finance/constants': financeConstants,
+    '@/features/crm/finance/activity': ui.load('src/features/crm/finance/activity.ts', {
+      '@/features/crm/finance/constants': financeConstants,
+    }),
   });
   const inventory = [{ id: 'usb', label: 'Clé USB', category: 'USB_16GB', salePrice: '10', quantityRemaining: 10, lowStockThreshold: 1 }];
   const props = { contacts: [], invoices: [], inventory };
@@ -357,6 +361,11 @@ test('finance amount follows inventory and quantity while preserving a manual pr
   tree = ui.render();
   assert.equal(field(tree, 'amountBeforeTax').props.value, '0');
   assert.equal(field(tree, 'category').props.value, 'OTHER');
+  field(tree, 'category').props.onChange({ target: { value: 'CUSTOM_SONG' } });
+  tree = ui.render();
+  field(tree, 'quantity').props.onChange({ target: { value: '2' } });
+  tree = ui.render();
+  assert.equal(field(tree, 'category').props.value, 'CUSTOM_SONG');
 });
 
 test('radio bootstrap restores paused selection and position without overwriting active playback', async () => {

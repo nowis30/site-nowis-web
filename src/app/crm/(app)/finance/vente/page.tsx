@@ -3,8 +3,13 @@ import { can } from '@/features/crm/auth/permissions';
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { prisma } from '@/lib/prisma';
 import { FinanceSaleFormPage } from '@/features/crm/components/finance/FinanceFormPages';
+import { saleCategoryForActivity } from '@/features/crm/finance/activity';
 
-export default async function FinanceSalePage() {
+export default async function FinanceSalePage(props: {
+  searchParams?: Promise<{ activite?: string | string[] }>;
+}) {
+  const searchParams = await props.searchParams;
+  const requestedActivity = typeof searchParams?.activite === 'string' ? searchParams.activite : undefined;
   const session = await requireCrmSession();
   if (!can(session.role, 'finance', 'create')) {
     redirect('/crm/finance');
@@ -56,6 +61,7 @@ export default async function FinanceSalePage() {
         quantityRemaining: item.quantityRemaining,
         lowStockThreshold: item.lowStockThreshold,
       }))}
+      initialCategory={saleCategoryForActivity(requestedActivity) ?? 'OTHER'}
     />
   );
 }

@@ -73,7 +73,7 @@ export const FINANCE_EXPENSE_CATEGORY_LABELS: Record<(typeof FINANCE_EXPENSE_CAT
 };
 
 export const FINANCE_PAYMENT_METHOD_LABELS: Record<(typeof FINANCE_PAYMENT_METHODS)[number], string> = {
-  CASH: 'Cash',
+  CASH: 'Comptant',
   DEBIT: 'Débit',
   CREDIT: 'Crédit',
   PAYPAL: 'PayPal',

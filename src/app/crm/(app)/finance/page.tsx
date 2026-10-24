@@ -38,6 +38,11 @@ export default async function FinanceDashboardPage() {
     inventory,
     unpaidInvoices,
     topProducts,
+    yearEntries,
+    songsInProgress,
+    songsDelivered,
+    workshopsInProgress,
+    workshopsDone,
   ] = await Promise.all([
     prisma.financeEntry.aggregate({ where: { kind: 'SALE', status: { not: 'CANCELLED' }, entryDate: { gte: monthStart } }, _sum: { totalAmount: true } }),
     prisma.financeEntry.aggregate({ where: { kind: 'EXPENSE', status: { not: 'CANCELLED' }, entryDate: { gte: monthStart } }, _sum: { totalAmount: true } }),
@@ -57,7 +62,7 @@ export default async function FinanceDashboardPage() {
     }),
     prisma.financeInventoryItem.findMany({ orderBy: { label: 'asc' } }),
     prisma.invoice.count({
-      where: { status: { in: ['DRAFT', 'SENT', 'OVERDUE'] } },
+      where: { status: { in: ['SENT', 'OVERDUE'] } },
     }),
     prisma.financeEntry.groupBy({
       by: ['category'],
@@ -65,6 +70,51 @@ export default async function FinanceDashboardPage() {
       _sum: { totalAmount: true, quantity: true },
       orderBy: { _sum: { totalAmount: 'desc' } },
       take: 5,
+    }),
+    prisma.financeEntry.findMany({
+      where: { entryDate: { gte: yearStart } },
+      select: {
+        kind: true,
+        entryDate: true,
+        category: true,
+        quantity: true,
+        amountBeforeTax: true,
+        taxAmount: true,
+        totalAmount: true,
+        status: true,
+      },
+    }),
+    prisma.songRequest.count({
+      where: {
+        deletedAt: null,
+        archivedAt: null,
+        isTest: false,
+        status: { in: ['NEW', 'CONTACTED', 'QUOTED', 'IN_PROGRESS', 'IN_PRODUCTION'] },
+      },
+    }),
+    prisma.songRequest.count({
+      where: {
+        deletedAt: null,
+        archivedAt: null,
+        isTest: false,
+        status: { in: ['DELIVERED', 'COMPLETED'] },
+      },
+    }),
+    prisma.workshopRequest.count({
+      where: {
+        deletedAt: null,
+        archivedAt: null,
+        isTest: false,
+        status: { in: ['BROUILLON', 'EN_ATTENTE_RDV', 'RDV_PLANIFIE', 'CONFIRME', 'NEW', 'CONTACTED', 'SCHEDULED'] },
+      },
+    }),
+    prisma.workshopRequest.count({
+      where: {
+        deletedAt: null,
+        archivedAt: null,
+        isTest: false,
+        status: { in: ['TERMINE', 'COMPLETED'] },
+      },
     }),
   ]);
 
@@ -74,6 +124,9 @@ export default async function FinanceDashboardPage() {
   const yearExpense = Number(yearExpenses._sum.totalAmount || 0);
 
   const totalStockRemaining = inventory.reduce((total, item) => total + item.quantityRemaining, 0);
+  const usbRemaining = inventory.reduce((total, item) => (
+    item.category === 'USB_KEY' || item.sku.startsWith('USB-') ? total + item.quantityRemaining : total
+  ), 0);
 
   return (
     <FinancePage
@@ -138,6 +191,25 @@ export default async function FinanceDashboardPage() {
         lowStockThreshold: item.lowStockThreshold,
         active: item.active,
       }))}
+      year={now.getFullYear()}
+      ledger={yearEntries.map((item) => ({
+        kind: item.kind,
+        year: item.entryDate.getFullYear(),
+        month: item.entryDate.getMonth(),
+        category: item.category,
+        quantity: item.quantity,
+        amountBeforeTax: Number(item.amountBeforeTax),
+        taxAmount: Number(item.taxAmount),
+        totalAmount: Number(item.totalAmount),
+        status: item.status,
+      }))}
+      operations={{
+        songsInProgress,
+        songsDelivered,
+        workshopsInProgress,
+        workshopsDone,
+        usbRemaining,
+      }}
     />
   );
 }
