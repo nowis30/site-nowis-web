@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Paperclip, Download, Trash2, File } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { safeHttpUrl } from '@/lib/safe-http-url';
 
 type FileItem = {
   id: string;
@@ -115,10 +116,12 @@ export function FilesPage({ files }: FilesPageProps) {
                 </p>
               </div>
               <div className="flex flex-col gap-1">
-                <a href={file.fileUrl} target="_blank" rel="noopener noreferrer"
-                  className="text-slate-400 hover:text-primary-400 transition-colors">
-                  <Download size={15} />
-                </a>
+                {safeHttpUrl(file.fileUrl) ? (
+                  <a href={safeHttpUrl(file.fileUrl) || undefined} target="_blank" rel="noopener noreferrer"
+                    className="text-slate-400 hover:text-primary-400 transition-colors">
+                    <Download size={15} />
+                  </a>
+                ) : null}
                 <button type="button" onClick={() => deleteFile(file.id)} disabled={deleting === file.id}
                   className="text-slate-500 hover:text-red-400 transition-colors">
                   <Trash2 size={15} />

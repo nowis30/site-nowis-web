@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { verifyClientPortalToken } from '@/lib/client-portal';
+import { clientVisibleInvoiceWhere } from '@/lib/client-invoice-visibility';
 import { prisma } from '@/lib/prisma';
 import { InvoiceDetailPage } from '@/features/crm/components/invoices/InvoiceDetailPage';
 import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
@@ -16,7 +17,7 @@ export default async function ClientPortalInvoicePage(props: PageProps) {
   const invoice = await prisma.invoice.findFirst({
     where: {
       id: params.id,
-      contactId: session.contactId,
+      ...clientVisibleInvoiceWhere(session.contactId),
     },
     include: {
       contact: {

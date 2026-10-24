@@ -16,9 +16,9 @@ async function loadDashboardData() {
   let openCases = 0;
   let closedCasesCount = 0;
   let recentCases: Array<{ id: string; title: string; status: string; type: string; referenceCode: string }> = [];
-  let todayAppointments: Array<{ id: string; title: string; type: string; startAt: Date; contact: { fullName: string } | null }> = [];
-  let overdueTasks: Array<{ id: string; title: string; dueDate: Date | null }> = [];
-  let recentActivities: Array<{ id: string; type: string; title: string; createdAt: Date; contact: { fullName: string } | null }> = [];
+  let todayAppointments: Array<{ id: string; title: string; type: string; startAt: Date; contact: { id: string; fullName: string } | null }> = [];
+  let overdueTasks: Array<{ id: string; title: string; dueDate: Date | null; songRequestId: string | null; invoiceId: string | null; workshopRequestId: string | null; linkedType: string | null; linkedId: string | null }> = [];
+  let recentActivities: Array<{ id: string; type: string; title: string; createdAt: Date; contact: { id: string; fullName: string } | null }> = [];
   let pendingInvoices = 0;
   let overdueInvoices = 0;
   let newContactsThisMonth = 0;
@@ -52,7 +52,7 @@ async function loadDashboardData() {
       }),
       prisma.appointment.findMany({
         where: { startAt: { gte: today, lt: tomorrow }, status: { not: "CANCELLED" } },
-        include: { contact: { select: { fullName: true } } },
+        include: { contact: { select: { id: true, fullName: true } } },
         orderBy: { startAt: "asc" },
       }),
       prisma.task.findMany({
@@ -63,7 +63,7 @@ async function loadDashboardData() {
       prisma.activity.findMany({
         take: 6,
         orderBy: { createdAt: "desc" },
-        include: { contact: { select: { fullName: true } } },
+        include: { contact: { select: { id: true, fullName: true } } },
       }),
       prisma.invoice.count({ where: { status: "SENT" } }),
       prisma.invoice.count({ where: { status: "OVERDUE" } }),
@@ -206,15 +206,15 @@ export default async function CrmDashboardPage() {
           </div>
           <div className="mt-3 space-y-2">
             {clientFollowUpTasks.map((task) => (
-              <div key={task.id} className="rounded-lg border border-emerald-800/40 bg-emerald-950/20 px-3 py-2">
+              <Link key={task.id} href={task.linkedId ? `/crm/contacts/${task.linkedId}` : '/crm/tasks'} className="block rounded-lg border border-emerald-800/40 bg-emerald-950/20 px-3 py-2 hover:border-emerald-500/50">
                 <p className="text-sm font-medium text-white">{followUpContactMap.get(task.linkedId || '') || task.title}</p>
                 <p className="mt-0.5 text-xs text-emerald-300">{task.description}</p>
                 {task.dueDate ? (
                   <p className="mt-1 text-xs text-emerald-400">
-                    Echeance: {new Date(task.dueDate).toLocaleString('fr-CA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    Échéance : {new Date(task.dueDate).toLocaleString('fr-CA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 ) : null}
-              </div>
+              </Link>
             ))}
           </div>
           <Link href="/crm/tasks" className="mt-3 inline-flex items-center gap-1 text-xs text-emerald-300 hover:text-emerald-200 transition-colors">
@@ -253,7 +253,7 @@ export default async function CrmDashboardPage() {
           ) : (
             <div className="space-y-2">
               {todayAppointments.map(apt => (
-                <div key={apt.id} className="flex items-start gap-3 rounded-lg bg-slate-800/50 px-3 py-2.5">
+                <Link key={apt.id} href={apt.contact ? `/crm/contacts/${apt.contact.id}` : '/crm/calendar'} className="flex items-start gap-3 rounded-lg bg-slate-800/50 px-3 py-2.5 hover:bg-slate-800">
                   <div className="text-center min-w-[36px]">
                     <p className="text-xs font-bold text-indigo-300">
                       {new Date(apt.startAt).toLocaleTimeString("fr-CA", { hour: "2-digit", minute: "2-digit" })}
@@ -264,7 +264,7 @@ export default async function CrmDashboardPage() {
                     {apt.contact && <p className="text-xs text-slate-400">{apt.contact.fullName}</p>}
                     <p className="text-xs text-slate-500">{APT_TYPE_LABELS[apt.type] ?? apt.type}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -283,8 +283,18 @@ export default async function CrmDashboardPage() {
             <p className="text-xs text-slate-500 italic">Toutes les tâches sont à jour ✓</p>
           ) : (
             <div className="space-y-2">
-              {overdueTasks.map(task => (
-                <div key={task.id} className="flex items-start gap-2 rounded-lg bg-red-950/20 border border-red-800/30 px-3 py-2">
+              {overdueTasks.map(task => {
+                const href = task.songRequestId
+                  ? `/crm/song-requests/${task.songRequestId}`
+                  : task.invoiceId
+                    ? `/crm/invoices/${task.invoiceId}`
+                    : task.workshopRequestId
+                      ? `/crm/workshop-requests/${task.workshopRequestId}`
+                      : task.linkedType === 'CONTACT' && task.linkedId
+                        ? `/crm/contacts/${task.linkedId}`
+                        : '/crm/tasks';
+                return (
+                <Link key={task.id} href={href} className="flex items-start gap-2 rounded-lg bg-red-950/20 border border-red-800/30 px-3 py-2 hover:border-red-500/40">
                   <AlertCircle size={12} className="text-red-400 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm text-white">{task.title}</p>
@@ -295,8 +305,9 @@ export default async function CrmDashboardPage() {
                       </p>
                     )}
                   </div>
-                </div>
-              ))}
+                </Link>
+                );
+              })}
             </div>
           )}
           <Link href="/crm/tasks" className="mt-3 flex items-center gap-1 text-xs text-slate-500 hover:text-primary-400 transition-colors">
@@ -315,7 +326,7 @@ export default async function CrmDashboardPage() {
           ) : (
             <div className="space-y-2">
               {recentActivities.map(act => (
-                <div key={act.id} className="flex items-start gap-2.5 rounded-lg bg-slate-800/40 px-3 py-2">
+                <Link key={act.id} href={act.contact ? `/crm/contacts/${act.contact.id}` : '/crm/activities'} className="flex items-start gap-2.5 rounded-lg bg-slate-800/40 px-3 py-2 hover:bg-slate-800">
                   <span className="text-sm shrink-0">{TYPE_ICON[act.type] ?? "📌"}</span>
                   <div className="min-w-0">
                     <p className="text-sm text-white truncate">{act.title}</p>
@@ -326,7 +337,7 @@ export default async function CrmDashboardPage() {
                       </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { FileText } from 'lucide-react';
 import { requireClientPortalSession } from '@/features/client-portal/auth/session';
 import { EmptyState, PageHeader, SectionCard, StatusBadge } from '@/features/client-portal/components/ui';
+import { clientVisibleInvoiceWhere } from '@/lib/client-invoice-visibility';
 import { prisma } from '@/lib/prisma';
 
 function formatDate(value: Date | null | undefined) {
@@ -30,10 +31,7 @@ export default async function ClientInvoicesPage() {
   const session = await requireClientPortalSession();
 
   const invoices = await prisma.invoice.findMany({
-    where: {
-      contactId: session.contactId,
-      status: { notIn: ['DELETED', 'ARCHIVED'] },
-    },
+    where: clientVisibleInvoiceWhere(session.contactId),
     orderBy: { issueDate: 'desc' },
     take: 100,
   });
@@ -50,7 +48,7 @@ export default async function ClientInvoicesPage() {
           <EmptyState
             icon={<FileText size={18} />}
             title="Aucune facture"
-            description="Vos factures apparaîtront ici dès qu'elles auront été créées par notre équipe."
+            description="Vos factures apparaissent ici dès qu’elles vous sont envoyées."
           />
         ) : (
           <div className="divide-y divide-slate-800">
