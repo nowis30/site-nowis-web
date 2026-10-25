@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { ArrowLeft, Building2, FilePlus2, Plus, Trash2, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { buildRentalInvoiceDescription, buildTimeInvoiceDescription, timeInvoiceLineAmount } from '@/lib/invoice-lines';
+import { roundMoney, splitConsumptionTaxes } from '@/lib/quebec-fiscal';
 
 type ContactOption = {
   id: string;
@@ -31,6 +32,12 @@ type DraftLine = {
 interface DirectInvoiceCreatePageProps {
   contacts: ContactOption[];
   organizations: OrganizationOption[];
+  taxSettings?: {
+    profileTaxesEnabled: boolean;
+    taxesEnabled: boolean;
+    gst: number;
+    qst: number;
+  };
   initialForm?: {
     organizationId?: string;
     contactId?: string;
@@ -58,7 +65,7 @@ function money(value: number) {
   return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(value);
 }
 
-export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }: DirectInvoiceCreatePageProps) {
+export function DirectInvoiceCreatePage({ contacts, organizations, taxSettings, initialForm }: DirectInvoiceCreatePageProps) {
   const router = useRouter();
   const initialRecipientType: 'organization' | 'contact' =
     initialForm?.contactId && !initialForm?.organizationId ? 'contact' : organizations.length > 0 ? 'organization' : 'contact';
@@ -89,6 +96,11 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
     }, 0) * 100) / 100,
     [lines, invoiceMode],
   );
+  const priced = useMemo(() => {
+    if (!taxSettings?.taxesEnabled) return { subtotal: total, gstAmount: 0, qstAmount: 0, taxAmount: 0, total };
+    const split = splitConsumptionTaxes(total, taxSettings.gst, taxSettings.qst);
+    return { subtotal: total, ...split, total: roundMoney(total + split.taxAmount) };
+  }, [taxSettings, total]);
 
   function updateLine(id: string, patch: Partial<DraftLine>) {
     setLines((current) => current.map((line) => (line.id === id ? { ...line, ...patch } : line)));
@@ -201,9 +213,14 @@ export function DirectInvoiceCreatePage({ contacts, organizations, initialForm }
             <p className="mt-0.5 text-sm text-slate-400">Facture une organisation ou un contact directement, sans soumission.</p>
           </div>
         </div>
-        <div className="rounded-xl border border-primary-500/30 bg-primary-950/20 px-4 py-3 text-right">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Total</p>
-          <p className="text-2xl font-bold text-white">{money(total)}</p>
+        <div className="rounded-xl border border-primary-500/30 bg-primary-950/20 px-4 py-3 sm:text-right">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Total à payer</p>
+          <p className="text-2xl font-bold text-white">{money(priced.total)}</p>
+          {priced.taxAmount > 0 ? (
+            <p className="mt-1 text-xs leading-5 text-slate-400">Hors taxes {money(priced.subtotal)} · TPS {money(priced.gstAmount)} · TVQ {money(priced.qstAmount)}</p>
+          ) : (
+            <p className="mt-1 text-xs leading-5 text-slate-400">{taxSettings?.profileTaxesEnabled ? 'Numéros TPS/TVQ manquants : aucune taxe ajoutée.' : 'Montant hors taxes. Les taxes sont désactivées.'}</p>
+          )}
         </div>
       </div>
 

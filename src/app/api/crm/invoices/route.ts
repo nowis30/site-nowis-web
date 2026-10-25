@@ -12,6 +12,7 @@ import {
   getBillingIssuerSnapshot,
 } from '@/lib/billing-profile';
 import { ensureCrmTask } from '@/features/crm/server/task-automation';
+import { pricedInvoice } from '@/lib/quebec-fiscal';
 
 const invoiceStatusFilterSchema = z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED', 'ARCHIVED', 'DELETED']);
 
@@ -217,15 +218,9 @@ export async function POST(request: NextRequest) {
           contactId: payload.contactId,
           issueDate: payload.issueDate ? new Date(payload.issueDate) : new Date(),
           dueDate: new Date(payload.dueDate),
-          amount: payload.amount,
-          subtotal: payload.amount,
-          taxAmount: 0,
-          totalAmount: payload.amount,
+          ...pricedInvoice(payload.amount, issuerSnapshot),
           issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
           customerSnapshot: customerSnapshot as Prisma.InputJsonValue,
-          taxesEnabled: issuerSnapshot.taxesEnabled,
-          taxRateGst: issuerSnapshot.taxRateGst,
-          taxRateQst: issuerSnapshot.taxRateQst,
           status: payload.status,
           description: normalizeOptionalString(payload.description),
         },

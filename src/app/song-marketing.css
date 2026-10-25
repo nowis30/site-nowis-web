@@ -71,7 +71,7 @@
 :root { --nowis-public-header-height: 116px; --nowis-cookie-banner-height: 0px; }
 .nm-public-main { padding-top: calc(var(--nowis-public-header-height) + 20px); }
 .public-site [id], .public-site #demande, .public-site [id]:target { scroll-margin-top: calc(var(--nowis-public-header-height) + 20px); }
-.nm-header { position: fixed; inset: 0 0 auto; z-index: 120; background: #fbf6eff5; border-bottom: 1px solid var(--site-border); backdrop-filter: blur(12px); }
+.nm-header { position: fixed; inset: 0 0 auto; z-index: 120; background: #fbf6eff5; border-bottom: 1px solid var(--site-border); backdrop-filter: blur(12px); padding-top: env(safe-area-inset-top); }
 .nm-nav { max-width: 1320px; padding: 15px 28px; margin: auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .nm-brand { display: flex; align-items: center; gap: 12px; min-width: 0; font-weight: 800; font-size: 1.4rem; letter-spacing: .12em; }
 .nm-brand span { min-width: 0; }
@@ -90,7 +90,7 @@
 .nm-visitor-counters dd { min-width: 3ch; margin: 0; color: var(--site-heading); font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .nm-mobile-menu > a:not(.cta-primary) { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--site-border); font-weight: 650; }
 .nm-menu-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin: 16px 0; }
-.nm-menu-secondary a { padding: 10px 0; font-size: .9rem; }
+.nm-menu-secondary a { display: flex; align-items: center; min-height: 44px; padding: 10px 0; font-size: .9rem; }
 .nm-mobile-menu > .cta-primary { display: flex; }
 .nm-page a:focus-visible, .nm-page summary:focus-visible, .nm-header a:focus-visible, .nm-header button:focus-visible { outline: 3px solid #8f5128; outline-offset: 4px; }
 @media (hover:hover) { .nm-occasion:hover { background: #f0dec8; } .nm-text-link:hover, .nm-explorer a:hover { color: #532a0d; } }
@@ -103,6 +103,15 @@
   .nm-visitor-counters dl > div { flex-direction: column; align-items: center; gap: 2px; }
   .nm-visitor-counters dd { max-width: 100%; text-align: center; }
   .nm-hero { grid-template-columns: 1fr; padding: 30px 0; gap: 34px; }
+  .nm-hero > div:first-child { display: flex; flex-direction: column; }
+  .nm-hero > div:first-child > .nm-eyebrow { order: 1; }
+  .nm-hero > div:first-child > h1 { order: 2; }
+  .nm-hero > div:first-child > .nm-hero-text { order: 3; }
+  .nm-hero > div:first-child > .nm-actions { order: 4; }
+  .nm-hero > div:first-child > .nm-fine { order: 5; }
+  .nm-hero > div:first-child > .nm-home-album-cover { order: 6; }
+  .nm-actions .cta-primary, .nm-actions .cta-secondary { width: 100%; justify-content: center; }
+  .nm-brand small { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nm-home-album-cover { display: block; width: min(78vw,320px); margin: 24px auto 0; text-align: center; }
   .nm-gift { transform: none; padding: 24px; }
   .nm-record { width: 220px; margin: 20px auto; }

@@ -1503,6 +1503,9 @@ model BillingProfile {
   postalCode    String?
   country       String?  @default("Canada")
   taxId         String?
+  neq           String?
+  gstNumber     String?
+  qstNumber     String?
   paymentTerms  String?
   footerNote    String?
   taxesEnabled  Boolean  @default(true)

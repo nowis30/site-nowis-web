@@ -202,7 +202,8 @@ export function FinancePage({ metrics, topProducts, sales, expenses, inventory }
         <a href="/crm/finance/vente" className="rounded-full bg-primary-600 px-4 py-2 font-semibold text-white">Nouvelle vente</a>
         <a href="/crm/finance/depense" className="rounded-full border border-slate-700 px-4 py-2 text-slate-200">Nouvelle dépense</a>
         <a href="/crm/finance/inventaire" className="rounded-full border border-slate-700 px-4 py-2 text-slate-200">Inventaire</a>
-        <a href="/crm/finance/paiement" className="rounded-full border border-slate-700 px-4 py-2 text-slate-200">Paiement</a>
+        <a href="/crm/finance/paiement" className="inline-flex min-h-11 items-center rounded-full border border-slate-700 px-4 py-2 text-slate-200">Paiement</a>
+        <a href="/crm/taxes" className="inline-flex min-h-11 items-center rounded-full border border-emerald-700/50 px-4 py-2 text-emerald-200">Sommaire TPS/TVQ</a>
         <a href="#rapport" className="rounded-full border border-slate-700 px-4 py-2 text-slate-200">Voir rapport trimestriel</a>
       </div>
 

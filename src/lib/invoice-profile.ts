@@ -13,6 +13,9 @@ export interface InvoiceBusinessProfile {
   postalCode?: string;
   country?: string;
   taxId?: string;
+  neq?: string;
+  gstNumber?: string;
+  qstNumber?: string;
   paymentTerms?: string;
   footerNote?: string;
 }
@@ -38,6 +41,9 @@ export function getInvoiceBusinessProfile(): InvoiceBusinessProfile {
     postalCode: process.env.COMPANY_POSTAL_CODE || '',
     country: process.env.COMPANY_COUNTRY || 'Canada',
     taxId: process.env.COMPANY_TAX_ID || '',
+    neq: process.env.COMPANY_NEQ || '',
+    gstNumber: process.env.COMPANY_GST_NUMBER || '',
+    qstNumber: process.env.COMPANY_QST_NUMBER || '',
     paymentTerms: process.env.INVOICE_PAYMENT_TERMS || 'Paiement à réception de facture.',
     footerNote: process.env.INVOICE_FOOTER_NOTE || 'Merci pour votre confiance.',
   };

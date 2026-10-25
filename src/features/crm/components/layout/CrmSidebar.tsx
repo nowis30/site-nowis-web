@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Users, Activity, Calendar, CheckSquare,
-  FileText, FolderOpen, Building2, DoorOpen, UserCheck, Banknote,
+  FileText, FolderOpen, Building2, DoorOpen, UserCheck, Banknote, Receipt,
   Wrench, Paperclip, Bell, Star, ChevronLeft, ChevronRight, LucideIcon,
 } from 'lucide-react';
 import { crmNavigation } from '@/features/crm/config/navigation';
@@ -13,7 +13,7 @@ import { CrmRole } from '@/features/crm/auth/session';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard, Users, Activity, Calendar, CheckSquare,
-  FileText, FolderOpen, Building2, DoorOpen, UserCheck, Banknote,
+  FileText, FolderOpen, Building2, DoorOpen, UserCheck, Banknote, Receipt,
   Wrench, Paperclip, Bell, Star,
 };
 
@@ -75,7 +75,7 @@ export function CrmSidebar({ role, isOpen, onToggle, onNavigate, mobile = false,
                       href={item.href}
                       onClick={onNavigate}
                       title={item.label}
-                      className={`flex items-center gap-2.5 rounded-lg px-2.5 ${mobile ? 'py-2.5' : 'py-2'} text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-2.5 rounded-lg px-2.5 ${mobile ? 'min-h-11 py-2.5' : 'py-2'} text-sm font-medium transition-colors ${
                         active
                           ? 'bg-primary-600 text-white shadow-sm'
                           : 'text-slate-400 hover:bg-slate-800 hover:text-white'

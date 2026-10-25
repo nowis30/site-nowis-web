@@ -118,7 +118,7 @@ export default function MentionsLegalesPage() {
             4. Note d’exploitation
           </h2>
           <p className="mt-4 text-base leading-8 text-[color:var(--site-muted)]">
-            Le site est exploité par Simon Morin à titre de travailleur autonome. Aucun NEQ n’est affiché à ce jour.
+            Le site est exploité par {legalConfig.legalName} à titre de travailleur autonome, sous le nom {legalConfig.companyName}. Le NEQ est le {legalConfig.businessIdValue}.
           </p>
           <p className="mt-3 text-sm leading-7 text-[color:var(--site-soft)]">{complianceNotes.legalReview}</p>
         </article>

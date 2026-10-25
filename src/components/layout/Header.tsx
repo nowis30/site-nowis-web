@@ -45,11 +45,17 @@ export function Header() {
   }, []);
   useEffect(() => {
     if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape' && !document.querySelector('dialog[open]')) { setOpenPath(null); toggle.current?.focus(); } };
     const resize = () => { if (window.innerWidth >= 1200) setOpenPath(null); };
     document.addEventListener('keydown', escape);
     window.addEventListener('resize', resize);
-    return () => { document.removeEventListener('keydown', escape); window.removeEventListener('resize', resize); };
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', escape);
+      window.removeEventListener('resize', resize);
+    };
   }, [open]);
   const active = (href: string) => pathname === href || pathname.startsWith(href + '/');
   return <header className="nm-header" ref={header}>

@@ -33,6 +33,20 @@ type InvoicePayload = {
     notes: string | null;
   } | null;
   contact: { fullName: string; email: string | null };
+  taxes?: {
+    subtotal: string;
+    gstAmount: string;
+    qstAmount: string;
+    taxAmount: string;
+    total: string;
+    showBreakdown: boolean;
+  } | null;
+  seller?: {
+    name: string;
+    neq: string | null;
+    gstNumber: string | null;
+    qstNumber: string | null;
+  } | null;
 };
 
 function formatMoney(value: string | number | null, currency = 'CAD') {
@@ -68,7 +82,7 @@ export default function PublicInvoicePage(props: { params: Promise<{ token: stri
   }, [params.token]);
 
   if (loading) {
-    return <main className="mx-auto max-w-3xl px-4 py-10 text-slate-200">Chargement...</main>;
+    return <main className="mx-auto max-w-3xl px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom))] text-slate-200">Chargement...</main>;
   }
 
   if (error || !item) {
@@ -90,8 +104,9 @@ export default function PublicInvoicePage(props: { params: Promise<{ token: stri
   const billedEmail = billed?.email || item.contact.email;
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 text-slate-100">
+    <main className="mx-auto max-w-4xl px-4 py-8 pb-[max(2.5rem,env(safe-area-inset-bottom))] text-slate-100">
       <h1 className="text-3xl font-semibold text-white">Facture {item.number}</h1>
+      {item.seller?.name ? <p className="mt-1 text-sm text-slate-400">{item.seller.name}</p> : null}
       <p className="mt-2 text-sm text-slate-400">Client: {item.contact.fullName}</p>
 
       <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
@@ -108,25 +123,36 @@ export default function PublicInvoicePage(props: { params: Promise<{ token: stri
 
         <p className="text-sm text-slate-300">Statut CRM: <strong>{item.status}</strong></p>
         <p className="text-sm text-slate-300">Statut paiement: <strong>{item.paymentStatus || 'unpaid'}</strong></p>
-        <p className="mt-2 text-sm text-slate-400">Emise le {new Date(item.issueDate).toLocaleDateString('fr-CA')} · Echeance {new Date(item.dueDate).toLocaleDateString('fr-CA')}</p>
+        <p className="mt-2 text-sm text-slate-400">Émise le {new Date(item.issueDate).toLocaleDateString('fr-CA')} · Échéance {new Date(item.dueDate).toLocaleDateString('fr-CA')}</p>
+        {item.seller?.neq || item.seller?.gstNumber || item.seller?.qstNumber ? (
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            {[item.seller.neq ? `NEQ ${item.seller.neq}` : null, item.seller.gstNumber ? `TPS ${item.seller.gstNumber}` : null, item.seller.qstNumber ? `TVQ ${item.seller.qstNumber}` : null].filter(Boolean).join(' · ')}
+          </p>
+        ) : null}
 
         <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/50 p-3">
-          <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Montant</p>
-          <p className="mt-1 text-2xl font-semibold text-white">{formatMoney(item.paymentAmount || item.amount, item.paymentCurrency || 'CAD')}</p>
+          {item.taxes?.showBreakdown ? (
+            <div className="space-y-1 text-sm text-slate-300">
+              <p className="flex justify-between gap-3"><span>Sous-total</span><span>{formatMoney(item.taxes.subtotal)}</span></p>
+              <p className="flex justify-between gap-3"><span>TPS</span><span>{formatMoney(item.taxes.gstAmount)}</span></p>
+              <p className="flex justify-between gap-3"><span>TVQ</span><span>{formatMoney(item.taxes.qstAmount)}</span></p>
+            </div>
+          ) : <p className="text-xs uppercase tracking-[0.15em] text-slate-500">Montant</p>}
+          <p className="mt-2 text-2xl font-semibold text-white">{formatMoney(item.paymentAmount || item.taxes?.total || item.amount, item.paymentCurrency || 'CAD')}</p>
         </div>
 
         {item.description ? <p className="mt-4 whitespace-pre-wrap text-sm text-slate-300">{item.description}</p> : null}
 
         {paid ? (
           <p className="mt-4 rounded-lg border border-emerald-700/40 bg-emerald-950/20 px-3 py-2 text-sm text-emerald-200">
-            Facture payee{item.paypalPaidAt ? ` le ${new Date(item.paypalPaidAt).toLocaleString('fr-CA')}` : ''}.
+            Facture payée{item.paypalPaidAt ? ` le ${new Date(item.paypalPaidAt).toLocaleString('fr-CA')}` : ''}.
           </p>
         ) : item.paypalInvoiceUrl ? (
           <a
             href={item.paypalInvoiceUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex rounded-lg border border-emerald-600/50 bg-emerald-950/20 px-4 py-2 text-sm font-medium text-emerald-200 hover:bg-emerald-900/30"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-emerald-600/50 bg-emerald-950/20 px-4 py-2 text-sm font-medium text-emerald-200 hover:bg-emerald-900/30 sm:w-auto"
           >
             Payer avec PayPal
           </a>

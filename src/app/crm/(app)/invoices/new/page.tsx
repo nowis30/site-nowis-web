@@ -1,5 +1,7 @@
 import { requireCrmSession } from '@/features/crm/auth/session';
 import { DirectInvoiceCreatePage } from '@/features/crm/components/invoices/DirectInvoiceCreatePage';
+import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
+import { chargeableTaxRates } from '@/lib/quebec-fiscal';
 import { prisma } from '@/lib/prisma';
 
 export default async function CrmDirectInvoiceCreatePage(
@@ -10,6 +12,8 @@ export default async function CrmDirectInvoiceCreatePage(
   const searchParams = await props.searchParams;
   await requireCrmSession();
 
+  const issuer = await getBillingIssuerSnapshot();
+  const rates = chargeableTaxRates(issuer);
   const [contacts, organizations] = await Promise.all([
     prisma.contact.findMany({
       where: { crmStatus: { not: 'DELETED' } },
@@ -27,6 +31,12 @@ export default async function CrmDirectInvoiceCreatePage(
     <DirectInvoiceCreatePage
       contacts={contacts}
       organizations={organizations}
+      taxSettings={{
+        profileTaxesEnabled: issuer.taxesEnabled,
+        taxesEnabled: rates.taxesEnabled,
+        gst: rates.taxRateGst,
+        qst: rates.taxRateQst,
+      }}
       initialForm={{
         organizationId: typeof searchParams?.organizationId === 'string' ? searchParams.organizationId : undefined,
         contactId: typeof searchParams?.contactId === 'string' ? searchParams.contactId : undefined,
