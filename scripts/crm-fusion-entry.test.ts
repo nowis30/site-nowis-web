@@ -11,9 +11,9 @@ import { crmNavigation } from '@/features/crm/config/navigation';
 import { getPortalNotificationHref } from '@/lib/portal-notifications';
 
 const require = createRequire(import.meta.url);
-const destination = 'https://crm.nowis.store/app/aujourdhui#accueil';
+const destination = 'https://crm.nowis.store/connexion/gestionnaire#accueil';
 
-for (const pathname of ['/crm', '/crm/dashboard']) {
+for (const pathname of ['/crm', '/crm/dashboard', '/crm/historique']) {
   for (const method of ['GET', 'HEAD']) {
     test(`${method} ${pathname} opens the fixed fusion entry without carrying legacy request data`, async () => {
       assert.equal(unstable_doesMiddlewareMatch({ config, nextConfig: {}, url: pathname }), true);
@@ -35,7 +35,7 @@ for (const pathname of ['/crm', '/crm/dashboard']) {
 }
 
 test('non-navigation methods are rejected locally without reading or redirecting their body', async () => {
-  for (const pathname of ['/crm', '/crm/dashboard']) {
+  for (const pathname of ['/crm', '/crm/dashboard', '/crm/historique']) {
     for (const method of ['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']) {
       const request = new NextRequest(`https://nowis.store${pathname}?token=synthetic`, {
         method, body: 'synthetic-body-never-forwarded', headers: { 'Content-Type': 'text/plain' },
@@ -53,7 +53,7 @@ test('non-navigation methods are rejected locally without reading or redirecting
 });
 
 test('historical pages retain the existing private CSP and neighboring paths are not redirected', () => {
-  for (const pathname of ['/crm/historique', '/crm/login', '/crm/contacts', '/crm/dashboard-extra', '/client/dashboard']) {
+  for (const pathname of ['/crm/login', '/crm/contacts', '/crm/dashboard-extra', '/client/dashboard']) {
     const response = proxy(new NextRequest(`https://nowis.store${pathname}`, { headers: { 'x-nonce': 'forged' } }));
     assert.equal(response.headers.get('location'), null);
     assert.equal(response.headers.get('x-middleware-next'), '1');

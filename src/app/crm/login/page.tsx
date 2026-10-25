@@ -39,8 +39,9 @@ export default function CrmLoginPage() {
           return;
         }
 
-        const destination = data.redirectTo || '/crm/historique';
-        router.push(destination === '/crm' || destination === '/crm/dashboard' ? '/crm/historique' : destination);
+        const destination = data.redirectTo || '/crm/song-requests';
+        const legacyDoor = destination === '/crm' || destination === '/crm/dashboard' || destination === '/crm/historique';
+        router.push(legacyDoor ? '/crm/song-requests' : destination);
         router.refresh();
         return;
       }
@@ -56,7 +57,7 @@ export default function CrmLoginPage() {
         throw new Error(getApiErrorMessage(otpData, 'Vérification du code impossible'));
       }
 
-      router.push('/crm/historique');
+      router.push('/crm/song-requests');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');

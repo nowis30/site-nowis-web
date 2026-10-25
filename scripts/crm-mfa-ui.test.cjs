@@ -52,7 +52,7 @@ for (const channel of ['sms', 'email']) {
     const input = ui.find(tree, node => node.type === 'input' && node.props.autoComplete === 'one-time-code');
     input.props.onChange({ target: { value: '123456' } });
     await ui.find(ui.render(), node => node.type === 'form').props.onSubmit({ preventDefault() {} });
-    assert.deepEqual(ui.navigation, ['/crm/historique']);
+    assert.deepEqual(ui.navigation, ['/crm/song-requests']);
     assert.equal(ui.requests[1].url, '/api/crm/auth/verify-sms');
     assert.deepEqual(ui.requests[1].body, { code: '123456' });
   });
@@ -62,7 +62,8 @@ test('historical login keeps both legacy entry destinations local and preserves 
   for (const destination of [undefined, '/crm', '/crm/dashboard', '/client/dashboard', '/crm/contacts']) {
     const ui = loginUi([{ status: 200, body: { ok: true, redirectTo: destination } }]);
     await ui.find(ui.render(), node => node.type === 'form').props.onSubmit({ preventDefault() {} });
-    const expected = !destination || destination === '/crm' || destination === '/crm/dashboard' ? '/crm/historique' : destination;
+    const legacyDoor = !destination || destination === '/crm' || destination === '/crm/dashboard' || destination === '/crm/historique';
+    const expected = legacyDoor ? '/crm/song-requests' : destination;
     assert.deepEqual(ui.navigation, [expected]);
     assert.equal(ui.requests.length, 1);
     assert.equal(ui.requests[0].url, '/api/crm/auth/login');
