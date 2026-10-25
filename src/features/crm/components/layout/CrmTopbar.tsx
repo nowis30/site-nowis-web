@@ -85,7 +85,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
             <button
               type="button"
               onClick={onMobileMenuOpen}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-200 hover:border-primary-500/40 hover:text-white"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-700 text-slate-200 hover:border-primary-500/40 hover:text-white"
               aria-label="Ouvrir le menu"
             >
               <Menu size={18} />
@@ -104,7 +104,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
                 {searching ? <p className="px-3 py-2 text-sm text-slate-400">Recherche…</p> : null}
                 {!searching && results.length === 0 ? <p className="px-3 py-2 text-sm text-slate-400">Aucun résultat pour « {query.trim()} ».</p> : null}
                 {results.map((item) => (
-                  <Link key={`${item.href}-${item.label}`} href={item.href} onClick={() => setShowResults(false)} className="block border-b border-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 last:border-b-0">
+                  <Link key={`${item.href}-${item.label}`} href={item.href} onClick={() => setShowResults(false)} className="block min-h-11 border-b border-slate-800 px-3 py-3 text-base text-slate-200 hover:bg-slate-800 last:border-b-0">
                     {item.label}
                   </Link>
                 ))}
@@ -116,7 +116,7 @@ export function CrmTopbar({ session, onMobileMenuOpen }: CrmTopbarProps) {
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="shrink-0 rounded-lg border border-slate-700 px-2.5 py-2 text-xs font-medium text-slate-300 hover:border-red-500/50 hover:bg-red-950/40 hover:text-red-400 disabled:opacity-60 sm:px-3"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-lg border border-slate-700 px-3 text-sm font-medium text-slate-300 hover:border-red-500/50 hover:bg-red-950/40 hover:text-red-400 disabled:opacity-60"
           >
             {loggingOut ? '...' : 'Déconnexion'}
           </button>

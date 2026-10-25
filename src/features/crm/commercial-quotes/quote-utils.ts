@@ -1,3 +1,5 @@
+import { roundMoney, splitConsumptionTaxes } from '@/lib/quebec-fiscal';
+
 type QuoteLineInput = {
   title: string;
   description?: string | null;
@@ -9,10 +11,6 @@ type QuoteLineInput = {
 
 const DEFAULT_GST = 0.05;
 const DEFAULT_QST = 0.09975;
-
-function roundMoney(value: number) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
-}
 
 function getTaxRates(options?: { gst?: number; qst?: number; taxesEnabled?: boolean }) {
   const gst = Number(options?.gst ?? process.env.CRM_TAX_GST_RATE ?? DEFAULT_GST);
@@ -43,13 +41,15 @@ export function computeQuoteTotals(lines: QuoteLineInput[], options?: { gst?: nu
   const subtotal = roundMoney(normalizedLines.reduce((sum, line) => sum + line.subtotal, 0));
   const taxableBase = roundMoney(normalizedLines.filter((line) => line.taxable).reduce((sum, line) => sum + line.subtotal, 0));
   const { gst, qst, taxesEnabled } = getTaxRates(options);
-  const taxAmount = taxesEnabled ? roundMoney(taxableBase * (gst + qst)) : 0;
-  const totalAmount = roundMoney(subtotal + taxAmount);
+  const split = taxesEnabled ? splitConsumptionTaxes(taxableBase, gst, qst) : { gstAmount: 0, qstAmount: 0, taxAmount: 0, taxableBase };
+  const totalAmount = roundMoney(subtotal + split.taxAmount);
 
   return {
     lines: normalizedLines,
     subtotal,
-    taxAmount,
+    gstAmount: split.gstAmount,
+    qstAmount: split.qstAmount,
+    taxAmount: split.taxAmount,
     totalAmount,
     taxMeta: { gst, qst, taxableBase, taxesEnabled },
   };

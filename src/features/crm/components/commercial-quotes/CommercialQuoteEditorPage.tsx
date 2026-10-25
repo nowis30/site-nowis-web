@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { computeQuoteTotals } from '@/features/crm/commercial-quotes/quote-utils';
 
 type SelectOption = { id: string; label: string };
 
@@ -105,23 +106,17 @@ export function CommercialQuoteEditorPage({
   } | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const totals = useMemo(() => {
-    const normalized = lines.map((line) => {
-      const quantity = toNumber(line.quantity);
-      const unitPrice = toNumber(line.unitPrice);
-      const subtotal = Math.round((quantity * unitPrice + Number.EPSILON) * 100) / 100;
-      return { ...line, quantity, unitPrice, subtotal };
-    });
-    const subtotal = normalized.reduce((sum, line) => sum + line.subtotal, 0);
-    const taxableBase = normalized.filter((line) => line.taxable).reduce((sum, line) => sum + line.subtotal, 0);
-    const taxAmount = (taxRates.taxesEnabled ?? true) ? taxableBase * (taxRates.gst + taxRates.qst) : 0;
-    const totalAmount = subtotal + taxAmount;
-    return {
-      subtotal: Math.round((subtotal + Number.EPSILON) * 100) / 100,
-      taxAmount: Math.round((taxAmount + Number.EPSILON) * 100) / 100,
-      totalAmount: Math.round((totalAmount + Number.EPSILON) * 100) / 100,
-    };
-  }, [lines, taxRates.gst, taxRates.qst, taxRates.taxesEnabled]);
+  const totals = useMemo(() => computeQuoteTotals(lines.map((line, index) => ({
+    title: line.title,
+    quantity: toNumber(line.quantity),
+    unitPrice: toNumber(line.unitPrice),
+    taxable: line.taxable,
+    sortOrder: index,
+  })), {
+    gst: taxRates.gst,
+    qst: taxRates.qst,
+    taxesEnabled: taxRates.taxesEnabled ?? true,
+  }), [lines, taxRates.gst, taxRates.qst, taxRates.taxesEnabled]);
 
   const payloadLines = lines.map((line, index) => ({
     id: line.id,
@@ -403,7 +398,8 @@ export function CommercialQuoteEditorPage({
             <h2 className="text-lg font-semibold text-white">Totaux</h2>
             <div className="mt-4 space-y-2 text-sm text-slate-300">
               <p>Sous-total: <span className="font-semibold text-white">{totals.subtotal.toFixed(2)} {form.currency}</span></p>
-              <p>Taxes ({(taxRates.gst * 100).toFixed(2)}% + {(taxRates.qst * 100).toFixed(3)}%): <span className="font-semibold text-white">{totals.taxAmount.toFixed(2)} {form.currency}</span></p>
+              <p>TPS ({(taxRates.gst * 100).toFixed(2)} %): <span className="font-semibold text-white">{totals.gstAmount.toFixed(2)} {form.currency}</span></p>
+              <p>TVQ ({(taxRates.qst * 100).toFixed(3)} %): <span className="font-semibold text-white">{totals.qstAmount.toFixed(2)} {form.currency}</span></p>
               <p className="pt-2 text-base">Total: <span className="font-semibold text-primary-200">{totals.totalAmount.toFixed(2)} {form.currency}</span></p>
             </div>
           </section>

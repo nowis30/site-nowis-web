@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { invoiceInputSchema, normalizeOptionalString } from '@/features/crm/server/validators';
 import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot } from '@/lib/billing-profile';
+import { pricedInvoice } from '@/lib/quebec-fiscal';
 
 export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -55,17 +56,11 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
         contactId: payload.contactId,
         issueDate: payload.issueDate ? new Date(payload.issueDate) : undefined,
         dueDate: new Date(payload.dueDate),
-        amount: payload.amount,
-        subtotal: payload.amount,
-        taxAmount: 0,
-        totalAmount: payload.amount,
+        ...pricedInvoice(payload.amount, issuerSnapshot),
         issuerSnapshot: issuerSnapshot as unknown as Prisma.InputJsonValue,
         customerSnapshot: customerSnapshot
           ? (customerSnapshot as Prisma.InputJsonValue)
           : Prisma.JsonNull,
-        taxesEnabled: issuerSnapshot.taxesEnabled,
-        taxRateGst: issuerSnapshot.taxRateGst,
-        taxRateQst: issuerSnapshot.taxRateQst,
         status: payload.status,
         description: normalizeOptionalString(payload.description),
       },

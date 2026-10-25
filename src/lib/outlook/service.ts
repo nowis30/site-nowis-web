@@ -331,6 +331,12 @@ export async function createInvoiceOutlookDraft(invoiceId: string, origin: strin
       issueDate: invoice.issueDate,
       dueDate: invoice.dueDate,
       amount: invoice.amount.toString(),
+      subtotal: invoice.subtotal?.toString() ?? null,
+      taxAmount: invoice.taxAmount?.toString() ?? null,
+      totalAmount: invoice.totalAmount?.toString() ?? null,
+      taxesEnabled: invoice.taxesEnabled,
+      taxRateGst: invoice.taxRateGst == null ? null : Number(invoice.taxRateGst),
+      taxRateQst: invoice.taxRateQst == null ? null : Number(invoice.taxRateQst),
       description: invoice.description,
       contact: {
         fullName: customerProfile.fullName,

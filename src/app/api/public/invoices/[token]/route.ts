@@ -6,6 +6,8 @@ import {
   verifyCompactPublicInvoiceToken,
   verifyPublicInvoiceToken,
 } from '@/lib/public-links';
+import { toIssuerSnapshot } from '@/lib/billing-profile';
+import { presentInvoiceTaxes } from '@/lib/quebec-fiscal';
 
 export async function GET(_request: NextRequest, props: { params: Promise<{ token: string }> }) {
   const params = await props.params;
@@ -71,11 +73,27 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ toke
   if (await isPublicLinkRevoked(params.token)) return NextResponse.json({ error: 'Lien invalide ou expiré.' }, { status: 401, headers: { 'Cache-Control': 'private, no-store' } });
   if (item.deletedAt || item.contact.deletedAt) return NextResponse.json({ error: 'Facture introuvable.' }, { status: 404 });
 
+  const taxes = presentInvoiceTaxes(item);
+  const issuer = toIssuerSnapshot(item.issuerSnapshot);
   return NextResponse.json({
     item: {
       number: item.number,
       status: item.status,
       description: item.description,
+      taxes: {
+        subtotal: taxes.subtotal.toFixed(2),
+        gstAmount: taxes.gstAmount.toFixed(2),
+        qstAmount: taxes.qstAmount.toFixed(2),
+        taxAmount: taxes.taxAmount.toFixed(2),
+        total: taxes.total.toFixed(2),
+        showBreakdown: taxes.showBreakdown,
+      },
+      seller: issuer ? {
+        name: issuer.displayName,
+        neq: issuer.neq || null,
+        gstNumber: issuer.gstNumber || null,
+        qstNumber: issuer.qstNumber || null,
+      } : null,
       paypalInvoiceUrl: item.paypalInvoiceUrl,
       paypalStatus: item.paypalStatus,
       paymentStatus: item.paymentStatus,
