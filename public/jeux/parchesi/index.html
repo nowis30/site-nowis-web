@@ -1,0 +1,2254 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1a0f2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Parchési">
+<meta name="description" content="Parchési des Arcanes : le parchési médiéval et magique en 3D, à plusieurs sur vos cellulaires.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Parchési des Arcanes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700&family=MedievalSharp&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+:root{
+  --parch:#f1e2bd; --parch2:#e2cb93; --ink:#3b2412; --ink2:#6a3a16; --gold:#d9a93b; --gold2:#ffdf8a;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#07060c;color:var(--ink);font-family:'MedievalSharp',Georgia,serif;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none;position:fixed;inset:0}
+input,select{user-select:text;-webkit-user-select:text;touch-action:manipulation}
+#scene{position:fixed;inset:0;display:block;width:100%;height:100%}
+.parch{background:radial-gradient(ellipse at 30% 20%,#fbf1d6 0%,var(--parch) 45%,var(--parch2) 100%);border:2px solid #8a5a24;box-shadow:0 0 0 2px #2b1a0b,0 0 0 4px var(--gold),0 8px 30px rgba(0,0,0,.6),inset 0 0 30px rgba(120,70,20,.3);border-radius:12px;color:var(--ink)}
+h1,h2,h3{font-family:'Cinzel Decorative','Cinzel',serif;margin:.2em 0;color:#4a1f08}
+button{font-family:'Cinzel',serif;font-weight:700;cursor:pointer;touch-action:manipulation}
+.btn{background:linear-gradient(#8e2a17,#5d160b);color:#ffe9b8;border:2px solid var(--gold);border-radius:12px;padding:.75em 1.1em;font-size:1.05rem;min-height:52px;letter-spacing:.03em;box-shadow:0 3px 0 #2a0a03,0 0 14px rgba(255,190,90,.25);text-shadow:0 1px 0 #000;transition:transform .1s,filter .2s;width:100%}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2a0a03}
+.btn:disabled{filter:grayscale(.8) brightness(.7)}
+.btn.sec{background:linear-gradient(#5b4127,#3a2715)}
+.btn.magic{background:linear-gradient(#5a2a8f,#2d0f55);border-color:#c99bff}
+.btn.sm{min-height:42px;padding:.45em .8em;font-size:.9rem;width:auto}
+.icon{width:44px;height:44px;border-radius:50%;background:radial-gradient(#4a2f17,#24150a);border:2px solid var(--gold);color:#ffe2a0;font-size:19px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.6);padding:0;flex:none}
+.hidden{display:none!important}
+/* ---- Écrans ---- */
+.screen{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(10,6,20,.3),rgba(5,3,10,.85));overflow:auto;padding:calc(12px + var(--sat)) calc(12px + var(--sar)) calc(12px + var(--sab)) calc(12px + var(--sal));touch-action:pan-y}
+.screen .card{width:min(520px,100%);padding:18px 18px 20px;margin:auto}
+.title{text-align:center}
+.title h1{font-size:clamp(1.6rem,8vw,2.4rem);line-height:1.05;background:linear-gradient(#7a2c0c,#3b1405);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-family:'Cinzel',serif;color:var(--ink2);font-size:.9rem;text-align:center}
+.orn{text-align:center;color:#8a5a24;letter-spacing:.4em;margin:.2em 0}
+.stack{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.field{display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.field label{font-family:'Cinzel',serif;font-weight:700;font-size:.85rem;color:var(--ink2)}
+input.txt,select.txt{font-family:'MedievalSharp',serif;font-size:1.1rem;padding:.6em .7em;border-radius:10px;border:2px solid #8a5a24;background:#fff8e6;color:var(--ink);width:100%;min-height:48px}
+#joinCode{font-family:'Cinzel',serif;font-weight:700;font-size:2rem;text-align:center;letter-spacing:.35em;text-transform:uppercase}
+.seat{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;margin:8px 0;min-height:48px}
+.shield{width:32px;height:36px;clip-path:polygon(0 0,100% 0,100% 55%,50% 100%,0 55%)}
+.seat .who{font-size:1.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .who small{display:block;font-size:.75rem;color:var(--ink2)}
+.seat.me{background:rgba(217,169,59,.18);border-radius:10px;padding:0 6px}
+button.seat{width:100%;grid-template-columns:34px 1fr;font:inherit;color:inherit;text-align:left;background:rgba(255,255,255,.25);border:1px solid rgba(138,90,36,.45);border-radius:10px;padding:4px 8px;cursor:pointer;touch-action:manipulation}
+button.seat.me{background:rgba(217,169,59,.28);border-color:#b8862b}
+.opt{display:flex;gap:10px;align-items:flex-start;margin:10px 0;padding:10px;border:1px dashed #8a5a24;border-radius:10px;background:rgba(179,107,255,.08)}
+.opt input{width:24px;height:24px;margin-top:2px;accent-color:#7b3fc4;flex:none}
+.opt b{color:#4b1d7a}
+.small{font-size:.85rem;color:var(--ink2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.code{font-family:'Cinzel',serif;font-weight:700;font-size:2.6rem;letter-spacing:.3em;text-align:center;color:#5d160b;margin:4px 0 0 .3em}
+#qr{display:flex;justify-content:center;margin:6px 0}
+#qr svg,#qr img{width:min(200px,52vw);height:auto;background:#fff;padding:8px;border-radius:10px;border:2px solid #8a5a24}
+.status{text-align:center;font-size:.9rem;color:var(--ink2);min-height:1.3em;margin-top:8px}
+.status.err{color:#9b1d10;font-weight:bold}
+/* ---- HUD ---- */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#hud .pe{pointer-events:auto}
+#topbar{position:absolute;top:calc(6px + var(--sat));left:calc(6px + var(--sal));right:calc(6px + var(--sar));display:flex;gap:6px;align-items:flex-start}
+#players{display:flex;gap:5px;flex:1;min-width:0}
+.pc{flex:1;min-width:0;padding:4px 6px 4px 9px;position:relative;font-size:.78rem;transition:transform .25s,box-shadow .25s;opacity:.85;border-radius:9px}
+.pc .band{position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:9px 0 0 9px}
+.pc.cur{opacity:1;transform:translateY(2px);box-shadow:0 0 0 2px #2b1a0b,0 0 0 4px var(--gold2),0 0 16px var(--gold2)}
+.pc .nm{font-family:'Cinzel',serif;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc .pw{display:flex;gap:3px;margin-top:2px;align-items:center;white-space:nowrap;overflow:hidden}
+.dot{width:9px;height:9px;border-radius:50%;border:1px solid #3b2412;opacity:.3;flex:none}
+.pc .dots{display:flex;gap:3px}
+.pc.p8 .dots{display:grid;grid-template-columns:repeat(4,6px);grid-auto-rows:6px;gap:2px}.pc.p8 .dot{width:6px;height:6px}.pc.p8 .st{font-size:.72rem}
+.rulesPanel{margin:10px 0;padding:10px;border:1px solid #8a5a24;border-radius:12px;background:rgba(217,169,59,.12)}
+.rulesPanel .rpTitle{font-family:'Cinzel',serif;font-weight:700;color:#4b1d7a;text-align:center;margin-bottom:6px}
+.rulesPanel .presets{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rulesPanel .preset{border:2px solid #8a5a24;border-radius:10px;background:#fffaf0;color:#3b2412;padding:8px 6px;font:inherit;font-weight:700;line-height:1.15;min-height:54px}
+.rulesPanel .preset small{display:block;font-weight:400;font-size:.78rem;opacity:.85}
+.rulesPanel .preset.on{background:linear-gradient(#e2c7ff,#b98cff);border-color:#4b1d7a;box-shadow:0 0 0 2px #ffd76a}
+.rulesPanel .preset:disabled{opacity:.6}.rulesPanel .preset.on:disabled{opacity:1}
+.rulesPanel details{margin-top:8px}
+.rulesPanel summary{cursor:pointer;font-weight:700;color:#4b1d7a;padding:6px 2px;min-height:32px}
+.rulesPanel .ro{display:flex;gap:8px;align-items:flex-start;padding:6px 2px;border-top:1px dashed rgba(138,90,36,.4)}
+.rulesPanel .ro input{width:22px;height:22px;flex:none;accent-color:#7b3fc4;margin-top:1px}
+.rulesPanel .ro span{font-size:.9rem}.rulesPanel .ro small{display:block;opacity:.75;font-size:.76rem}
+.rulesPanel .ro.mod span>b::after{content:' •';color:#b0302a}
+.rulesPanel .rpFoot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px}
+.rulesPanel .rpFoot button{background:none;border:none;color:#4b1d7a;text-decoration:underline;font:inherit;font-size:.85rem;padding:6px 0}
+.dot.out{opacity:1}.dot.home{opacity:1;box-shadow:0 0 5px #ffd76a;border-color:#ffd76a}
+.pc .st{font-size:.7rem}
+#icons{display:flex;flex-direction:column;gap:6px}
+#banner{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--barh,150px) + 10px + var(--sab));padding:6px 14px;font-family:'Cinzel',serif;font-weight:700;font-size:.9rem;text-align:center;width:max-content;max-width:calc(100vw - 20px);pointer-events:none}
+#bar{position:absolute;bottom:calc(8px + var(--sab));left:calc(8px + var(--sal));right:calc(8px + var(--sar));padding:10px;display:flex;flex-direction:column;gap:8px;align-items:stretch;max-width:560px;margin:0 auto}
+#chipsRow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;min-height:0}
+.chip{min-width:56px;height:56px;border-radius:12px;background:linear-gradient(#fffaf0,#e8dcc0);border:2px solid #7a5a30;font-family:'Cinzel',serif;font-weight:700;font-size:1.6rem;color:#3b2412;display:flex;align-items:center;justify-content:center;padding:0 10px;box-shadow:0 3px 0 #5a3a18;transition:transform .15s}
+.chip.bonus{background:linear-gradient(#ffe58a,#d9a93b);font-size:1.2rem}
+.chip.magie{background:linear-gradient(#e2c7ff,#9b5be6);color:#2a0d4a;font-size:1.15rem}
+.chip.sum{font-size:1rem}
+.chip.sel{transform:translateY(-5px);box-shadow:0 0 0 3px var(--gold2),0 0 16px var(--gold2),0 3px 0 #5a3a18}
+.chip.dead{opacity:.35}
+.chip.used{opacity:.3;height:40px;min-width:40px;font-size:1.1rem}
+#rollBtn{font-size:1.25rem;min-height:60px}
+#rollBtn.pulse{animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 3px 0 #2a0a03,0 0 8px rgba(255,200,100,.3)}50%{box-shadow:0 3px 0 #2a0a03,0 0 26px rgba(255,210,120,.95)}}
+#spells{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#spells:empty{display:none}
+.spell{background:linear-gradient(#5a2a8f,#2d0f55);color:#f1e2ff;border:2px solid #c99bff;border-radius:10px;padding:.5em .8em;font-size:.9rem;min-height:44px;box-shadow:0 0 12px rgba(179,107,255,.5)}
+.waitmsg{text-align:center;font-family:'Cinzel',serif;font-weight:700;font-size:.95rem;color:var(--ink2);padding:6px 0}
+#logPanel{position:absolute;left:calc(8px + var(--sal));right:calc(8px + var(--sar));top:calc(70px + var(--sat));max-height:45vh;overflow:auto;padding:10px 12px;font-size:.85rem;line-height:1.35;max-width:420px;touch-action:pan-y}
+#logPanel div{border-bottom:1px dotted rgba(90,50,20,.3);padding:3px 0}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(5,3,10,.7);display:flex;align-items:center;justify-content:center;padding:calc(12px + var(--sat)) 12px calc(12px + var(--sab));touch-action:pan-y}
+.modal .card{width:min(640px,100%);max-height:100%;overflow:auto;padding:18px 20px;line-height:1.45}
+.modal .card li{margin:.25em 0}
+.modal h2{text-align:center}
+#victory .card{text-align:center;width:min(480px,100%)}
+#victory h1{font-size:clamp(2rem,10vw,3rem)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:31}
+#loading{position:fixed;inset:0;z-index:50;background:#07060c;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gold2);font-family:'Cinzel Decorative',serif;font-size:1.3rem;gap:14px;transition:opacity .8s}
+#loading .rune{font-size:3rem;animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#err{position:fixed;bottom:0;left:0;right:0;background:#600;color:#fff;font:12px monospace;padding:6px;z-index:99;display:none}
+#toast{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%) scale(.8);font-family:'Cinzel Decorative',serif;font-size:clamp(1.5rem,8vw,2.8rem);color:#fff3c4;text-shadow:0 0 12px #ff9b2f,0 0 30px #ff5a00,0 3px 0 #000;pointer-events:none;opacity:0;z-index:15;transition:opacity .25s,transform .35s;text-align:center;white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#toast.magic{text-shadow:0 0 12px #c38bff,0 0 30px #7b2cff,0 3px 0 #000}
+#netBadge{position:absolute;top:calc(64px + var(--sat));left:50%;transform:translateX(-50%);font-size:.75rem;padding:3px 10px;border-radius:20px;background:rgba(20,10,30,.75);color:#e8d6ff;border:1px solid #8a6ac0;white-space:nowrap}
+#netBadge.bad{background:rgba(110,10,10,.85);color:#fff;border-color:#f88}
+.menuGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media (min-width:900px) and (min-aspect-ratio:1/1){
+  #players{max-width:640px}
+  .pc{font-size:.9rem}
+  #bar{left:50%;right:auto;transform:translateX(-50%);width:560px}
+}
+@media (orientation:landscape) and (max-height:540px){
+  #players{max-width:56vw}
+  .pc{font-size:.7rem;padding:2px 5px 2px 8px}
+  #bar{left:calc(8px + var(--sal));right:auto;transform:none;width:min(280px,34vw);margin:0;padding:8px;gap:6px}
+  #bar .btn{padding:10px 8px;font-size:.95rem}
+  #banner{left:auto;right:calc(8px + var(--sar));transform:none;bottom:calc(8px + var(--sab));max-width:40vw;font-size:.78rem}
+  #logPanel{max-height:60vh}
+}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div id="loading"><div class="rune">✦</div><div>Invocation du plateau…</div></div>
+
+<!-- Accueil -->
+<div id="scrHome" class="screen"><div class="card parch">
+  <div class="title"><div class="orn">✦ ❖ ✦</div><h1>Parchési des Arcanes</h1><div class="sub">Le parchési médiéval et magique, à plusieurs sur vos cellulaires</div><div class="orn">✦ ❖ ✦</div></div>
+  <div class="field"><label for="myName">Ton nom</label><input id="myName" class="txt" maxlength="16" placeholder="Ton nom de héros" autocomplete="nickname"></div>
+  <div class="stack">
+    <button class="btn" id="hCreate">🌐 Créer une partie en ligne</button>
+    <button class="btn magic" id="hJoin">🔗 Rejoindre une partie</button>
+    <button class="btn sec" id="hLocal">📱 Sur ce téléphone (à tour de rôle ou contre l'IA)</button>
+    <div class="row2"><button class="btn sec sm" id="hRules">📜 Règles</button><button class="btn sec sm" id="hFull">⛶ Plein écran</button></div>
+  </div>
+  <div class="small" style="margin-top:10px;text-align:center">Astuce : ajoute le jeu à ton écran d'accueil pour l'ouvrir comme une appli.</div>
+</div></div>
+
+<!-- Rejoindre -->
+<div id="scrJoin" class="screen hidden"><div class="card parch">
+  <h2 style="text-align:center">🔗 Rejoindre une partie</h2>
+  <div class="field"><label for="joinCode">Code de la salle</label><input id="joinCode" class="txt" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></div>
+  <div class="field"><label for="joinName">Ton nom</label><input id="joinName" class="txt" maxlength="16" autocomplete="nickname"></div>
+  <div class="stack"><button class="btn" id="jGo">Entrer dans la salle</button><button class="btn sec" id="jBack">Retour</button></div>
+  <div class="status" id="jStatus"></div>
+</div></div>
+
+<!-- Partie locale -->
+<div id="scrLocal" class="screen hidden"><div class="card parch">
+  <h2 style="text-align:center">📱 Sur ce téléphone</h2>
+  <div class="small" style="text-align:center">Passez-vous le téléphone à tour de rôle, ou jouez contre l'ordinateur.</div>
+  <div id="seats"></div>
+  <div id="lRules" class="rulesPanel"></div>
+  <label class="opt"><input type="checkbox" id="magicToggle"><span><b>✨ Sorts magiques (variante)</b><br><span class="small">Des runes violettes donnent des sorts : Bouclier, Téléportation +3, Gel.</span></span></label>
+  <div class="field"><label for="speed">Vitesse de l'ordinateur</label><select id="speed" class="txt"><option value="1">Posée</option><option value="0.55" selected>Rapide</option><option value="0.18">Éclair</option></select></div>
+  <div class="stack"><button class="btn" id="lStart">⚔ Commencer la partie</button><button class="btn sec" id="lBack">Retour</button></div>
+</div></div>
+
+<!-- Salle d'attente -->
+<div id="scrLobby" class="screen hidden"><div class="card parch">
+  <h2 style="text-align:center">🏰 Salle d'attente</h2>
+  <div class="sub">Code de la salle</div>
+  <div class="code" id="lbCode">-----</div>
+  <div id="hostShare">
+    <div id="qr"></div>
+    <div class="small" style="text-align:center">Scanne le code QR ou entre le code dans « Rejoindre une partie ».</div>
+    <div class="row2" style="margin-top:8px"><button class="btn sm" id="lbShare">📤 Partager le lien</button><button class="btn sec sm" id="lbCopy">📋 Copier le lien</button></div>
+  </div>
+  <div id="lbSeats" style="margin-top:8px"></div>
+  <div id="lbRules" class="rulesPanel"></div>
+  <div id="lbHostOpts">
+    <label class="opt"><input type="checkbox" id="lbMagic"><span><b>✨ Sorts magiques</b><br><span class="small">Bouclier, Téléportation +3 et Gel sur les runes violettes.</span></span></label>
+    <div class="field"><label for="lbSpeed">Vitesse de l'ordinateur</label><select id="lbSpeed" class="txt"><option value="1">Posée</option><option value="0.55" selected>Rapide</option><option value="0.18">Éclair</option></select></div>
+  </div>
+  <div id="lbClientOpts" class="small" style="text-align:center"></div>
+  <div class="stack">
+    <button class="btn" id="lbStart">⚔ Lancer la partie</button>
+    <button class="btn sec" id="lbLeave">Quitter la salle</button>
+  </div>
+  <div class="status" id="lbStatus"></div>
+</div></div>
+
+<div id="hud" class="hidden">
+  <div id="topbar"><div id="players" class="pe"></div>
+    <div id="icons" class="pe"><button class="icon" id="bMenu" title="Menu" aria-label="Menu">☰</button><button class="icon" id="bLog" title="Chronique" aria-label="Chronique">📖</button></div>
+  </div>
+  <div id="netBadge" class="hidden"></div>
+  <div id="banner" class="parch">…</div>
+  <div id="logPanel" class="parch pe hidden"></div>
+  <div id="bar" class="parch pe">
+    <div id="chipsRow"></div>
+    <div id="spells"></div>
+    <button class="btn" id="rollBtn">🎲 Lancer les dés</button>
+    <div class="waitmsg hidden" id="waitMsg"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<div id="menu" class="modal hidden"><div class="card parch" style="width:min(440px,100%)">
+  <h2>☰ Menu</h2>
+  <div class="menuGrid">
+    <button class="btn sec sm" id="mRules">📜 Règles</button>
+    <button class="btn sec sm" id="mSound">🔊 Son : oui</button>
+    <button class="btn sec sm" id="mCam">🎥 Caméra : fixe</button>
+    <button class="btn sec sm" id="mReset">⟲ Recentrer</button>
+    <button class="btn sec sm" id="mFx">✨ Lueurs : non</button>
+    <button class="btn sec sm" id="mFull">⛶ Plein écran</button>
+    <button class="btn sec sm" id="mVib">📳 Vibration : oui</button>
+    <button class="btn sec sm" id="mShare">📤 Code de salle</button>
+  </div>
+  <div class="stack">
+    <button class="btn" id="mResume">Reprendre</button>
+    <button class="btn sec sm" id="mRestart" style="width:100%">Recommencer (mêmes joueurs)</button>
+    <button class="btn sec sm" id="mQuit" style="width:100%">Quitter la partie</button>
+  </div>
+</div></div>
+
+<div id="rules" class="modal hidden"><div class="card parch">
+  <h2>📜 Règles du Parchís</h2>
+  <div id="rulesBody"></div>
+  <h3>✨ Sorts magiques (variante)</h3>
+  <ul>
+    <li>Quatre <b>runes violettes</b> (cases 9, 26, 43 et 60). Finis ton mouvement sur une rune chargée pour gagner un sort (2 au maximum). La rune se recharge pendant 8 tours.</li>
+    <li><b>🛡 Bouclier :</b> tes pitons ne peuvent pas être capturés jusqu'à ton prochain tour.</li>
+    <li><b>🌀 Téléportation :</b> un mouvement magique de +3 cases.</li>
+    <li><b>❄ Gel :</b> l'adversaire le plus avancé lancera <b>un dé de moins</b> à son prochain tour (1 dé au lieu de 2, ou 2 au lieu de 3).</li>
+  </ul>
+  <h3>🌐 En ligne</h3>
+  <ul><li>Celui qui crée la partie est l'<b>hôte</b> : son téléphone fait respecter les règles. Garde-le allumé et l'appli ouverte. Si un joueur se déconnecte, l'ordinateur joue à sa place jusqu'à ce qu'il revienne avec <b>le même nom</b>.</li></ul>
+  <p class="small">Glisse un doigt pour tourner le plateau, et pince pour zoomer.</p>
+  <div class="stack"><button class="btn" id="rulesClose">Fermer</button></div>
+</div></div>
+
+<div id="victory" class="modal hidden"><div class="card parch">
+  <div class="orn">✦ ❖ ✦</div>
+  <h1 id="vTitle">Victoire!</h1>
+  <p id="vText"></p>
+  <div id="vStats" class="small"></div>
+  <div class="stack"><button class="btn" id="vAgain">⚔ Rejouer</button><div class="row2"><button class="btn sec sm" id="vView">Voir le plateau</button><button class="btn sec sm" id="vMenu">Accueil</button></div></div>
+</div></div>
+<canvas id="confetti"></canvas>
+<div id="err"></div>
+<script>
+window.__errors=[];
+window.addEventListener('error',e=>{window.__errors.push(String(e.message));const d=document.getElementById('err');d.style.display='block';d.textContent='Erreur : '+e.message;});
+window.addEventListener('unhandledrejection',e=>{window.__errors.push(String(e.reason&&e.reason.message||e.reason));});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+let __lastTouch=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-__lastTouch<300&&!(e.target.closest&&e.target.closest('input,select')))e.preventDefault();__lastTouch=n;},{passive:false});
+if('serviceWorker' in navigator && location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+<script>
+// ===== Moteur de règles du Parchís (pur, sans rendu) =====
+const COLORS = ['jaune', 'bleu', 'rouge', 'vert'];        // ordre de jeu (sens du parcours)
+const COLOR_NAMES = { jaune: 'Jaune', bleu: 'Bleu', rouge: 'Rouge', vert: 'Vert' };
+const EXIT = { jaune: 5, bleu: 22, rouge: 39, vert: 56 };  // cases de sortie
+const ENTRY = { jaune: 68, bleu: 17, rouge: 34, vert: 51 }; // dernière case avant le couloir
+const SAFE = new Set([5, 12, 17, 22, 29, 34, 39, 46, 51, 56, 63, 68]);
+const RUNES = [9, 26, 43, 60];
+const TRACK_LEN = 64;   // progression 0..63 sur la piste commune
+const META = 71;        // 64..70 couloir (7 cases), 71 = arrivée
+const SPELLS = {
+  bouclier: { nom: 'Bouclier', desc: "Tes pions ne peuvent pas être capturés jusqu'à ton prochain tour." },
+  teleport: { nom: 'Téléportation', desc: 'Ajoute un mouvement magique de +3 cases.' },
+  gel: { nom: 'Gel', desc: "L'adversaire le plus avancé lancera un dé de moins à son prochain tour." },
+};
+// ----- Règles configurables -----
+const PRESETS = {
+  classique: { des: 2, pitons: 4, sortieVrai5: false, sortieObligatoire: true, doubleRejoue: true, troisDoublesPenalite: true, doubleDebarre: true, tripleRelance: false, captureObligatoire: false, bonusCapture: true, bonusArrivee: true, casesUneCouleur: false, sortieCapture: true },
+  trois: { des: 3, pitons: 8, sortieVrai5: true, sortieObligatoire: true, doubleRejoue: false, troisDoublesPenalite: false, doubleDebarre: true, tripleRelance: true, captureObligatoire: true, bonusCapture: true, bonusArrivee: false, casesUneCouleur: true, sortieCapture: true },
+};
+const PRESET_NAMES = { classique: 'Classique (2 dés, 4 pitons)', trois: 'Règles à 3 dés (8 pitons)' };
+const RULE_OPTS = [ // clé, libellé, aide, seulement pour (null = les deux)
+  ['sortieVrai5', 'Sortie seulement avec un vrai 5', 'Une somme de 5 (2+3, 4+1) ne sort pas de piton.', null],
+  ['sortieObligatoire', 'Un 5 doit servir à sortir un piton', 'Si un piton peut sortir, le 5 doit servir à le sortir.', null],
+  ['sortieCapture', 'La sortie capture sur sa case de sortie', 'Sortir sur sa case de sortie occupée par un adversaire le capture (sinon la sortie est bloquée).', null],
+  ['doubleRejoue', 'Double = on relance', 'Après un double, on relance les dés.', null],
+  ['tripleRelance', 'Triple = on relance', 'Trois dés pareils : on relance les dés.', 3],
+  ['troisDoublesPenalite', '3e relance de suite = pénalité', 'À la 3e relance de suite, le dernier piton joué retourne à sa forteresse et le tour finit.', null],
+  ['doubleDebarre', 'Un double oblige à débarrer', 'Avec un double, on doit ouvrir ses barrières avec la valeur du double.', null],
+  ['captureObligatoire', 'Capture obligatoire', 'Si tu peux capturer (« tuer »), tu es obligé.', null],
+  ['bonusCapture', 'Bonus de 20 cases par capture', 'Chaque capture donne un mouvement bonus de 20 cases.', null],
+  ['bonusArrivee', "Bonus de 10 cases à l'arrivée", 'Chaque piton qui arrive au centre donne 10 cases.', null],
+  ['casesUneCouleur', 'Cases protégées : une seule couleur', "Deux couleurs différentes ne partagent jamais un château : on ne peut pas s'y arrêter s'il y a un adversaire.", null],
+];
+function makeRules(r) {
+  r = r || {};
+  const preset = r.preset === 'trois' ? 'trois' : 'classique';
+  const out = { preset, ...PRESETS[preset] };
+  for (const k in PRESETS.classique) if (k !== 'des' && k !== 'pitons' && typeof r[k] === 'boolean') out[k] = r[k];
+  if (out.des !== 3) out.tripleRelance = false;
+  return out;
+}
+
+function absSquare(color, p) { return ((EXIT[color] - 1 + p) % 68) + 1; }
+function locKey(color, p) {
+  if (p < 0) return 'B' + color;
+  if (p < TRACK_LEN) return 'T' + absSquare(color, p);
+  if (p < META) return 'P' + color + (p - TRACK_LEN + 1);
+  return 'M' + color;
+}
+
+function createGame(opts) {
+  // opts.seats: [{color,name,type:'humain'|'ia'}] (actifs seulement), opts.magic
+  const rules = makeRules(opts.rules);
+  const players = opts.seats.map(s => ({
+    color: s.color, name: s.name, type: s.type, owner: s.owner || null, wasHuman: s.type === 'humain',
+    pawns: Array.from({ length: rules.pitons }, (_, i) => ({ id: i, p: -1, t: 0 })),
+    spells: [], frozen: false, shield: false, finished: false,
+  }));
+  return {
+    players, current: 0, phase: 'roll', units: [], dice: Array(rules.des).fill(0), rules,
+    doubles: 0, reroll: false, dblVal: null, lastMoved: null, magic: !!opts.magic,
+    runes: Object.fromEntries(RUNES.map(r => [r, 0])), turn: 1, stamp: 0,
+    winner: null, log: [],
+  };
+}
+
+function allPawns(g) {
+  const out = [];
+  g.players.forEach((pl, pi) => pl.pawns.forEach(pw => out.push({ pi, pl, pw, key: locKey(pl.color, pw.p) })));
+  return out;
+}
+function occupants(g, key) { return allPawns(g).filter(o => o.key === key && key[0] !== 'B' && key[0] !== 'M'); }
+function isBlockade(occ) { return occ.length >= 2 && occ[0].pi === occ[1].pi; }
+
+// Vérifie un déplacement de `steps` cases pour le pion. Renvoie null si illégal.
+function checkMove(g, pi, pawnId, steps, ignore) {
+  const pl = g.players[pi], pw = pl.pawns[pawnId];
+  if (pw.p < 0 || pw.p >= META) return null;
+  const to = pw.p + steps;
+  if (to > META) return null;
+  const path = [];
+  for (let s = pw.p + 1; s <= to; s++) {
+    const key = locKey(pl.color, s);
+    path.push(s);
+    if (s === META) break;
+    const occ = occupants(g, key).filter(o => !(o.pi === pi && o.pw.id === pawnId));
+    if (s < to) { if (isBlockade(occ)) return null; }
+    else {
+      if (occ.length >= 2) return null;
+      if (g.rules.casesUneCouleur && s < TRACK_LEN && SAFE.has(absSquare(pl.color, s)) && occ.some(o => o.pi !== pi)) return null;
+      if (occ.length === 1 && occ[0].pi !== pi) {
+        const sq = s < TRACK_LEN ? absSquare(pl.color, s) : 0;
+        if (s < TRACK_LEN && !SAFE.has(sq)) {
+          if (occ[0].pl.shield) return null;
+          return { to, path, capture: { pi: occ[0].pi, id: occ[0].pw.id } };
+        }
+      }
+    }
+  }
+  return { to, path, capture: null };
+}
+
+function checkExit(g, pi, pawnId) {
+  const pl = g.players[pi], pw = pl.pawns[pawnId];
+  if (pw.p !== -1) return null;
+  const occ = occupants(g, 'T' + EXIT[pl.color]);
+  if (g.rules.casesUneCouleur) {
+    const foes = occ.filter(o => o.pi !== pi);
+    if (!foes.length) return occ.length < 2 ? { to: 0, path: [0], capture: null, exit: true } : null;
+    if (!g.rules.sortieCapture || foes.some(o => o.pl.shield)) return null;
+    foes.sort((a, b) => b.pw.t - a.pw.t);
+    return { to: 0, path: [0], capture: { pi: foes[0].pi, id: foes[0].pw.id }, capture2: foes[1] ? { pi: foes[1].pi, id: foes[1].pw.id } : null, exit: true };
+  }
+  if (occ.length < 2) return { to: 0, path: [0], capture: null, exit: true };
+  if (occ.every(o => o.pi === pi) || !g.rules.sortieCapture) return null;
+  // case pleine avec au moins un adversaire : on capture le dernier arrivé
+  const foes = occ.filter(o => o.pi !== pi && !o.pl.shield).sort((a, b) => b.pw.t - a.pw.t);
+  if (!foes.length) return null;
+  return { to: 0, path: [0], capture: { pi: foes[0].pi, id: foes[0].pw.id }, exit: true };
+}
+
+function hasBlockade(g, pi) {
+  const pl = g.players[pi];
+  const keys = {};
+  pl.pawns.forEach(pw => { if (pw.p >= 0 && pw.p < META) { const k = locKey(pl.color, pw.p); keys[k] = (keys[k] || 0) + 1; } });
+  return Object.keys(keys).filter(k => keys[k] >= 2);
+}
+
+// Liste de tous les coups légaux : {pawn, units:[indices], value, kind, res}
+function legalMoves(g) {
+  if (g.phase !== 'move' || g.winner) return [];
+  const pi = g.current, pl = g.players[pi];
+  const moves = [];
+  const seen = new Set();
+  g.units.forEach((u, ui) => {
+    pl.pawns.forEach(pw => {
+      const sig = u.kind + u.v + ':' + pw.id;
+      if (seen.has(sig)) return; seen.add(sig);
+      let res = null;
+      if (pw.p === -1) { if (u.kind === 'die' && u.v === 5) res = checkExit(g, pi, pw.id); }
+      else res = checkMove(g, pi, pw.id, u.v);
+      if (res) moves.push({ pawn: pw.id, units: [ui], value: u.v, kind: res.exit ? 'sortie' : u.kind, res });
+    });
+  });
+  // Sortie avec la somme de deux dés = 5 (ex. 1+4, 2+3), sauf si « vrai 5 » exigé
+  const dieIdx = g.units.map((u, i) => u.kind === 'die' ? i : -1).filter(i => i >= 0);
+  const R = g.rules;
+  if (!R.sortieVrai5) {
+    const pw = pl.pawns.find(x => x.p === -1);
+    const res = pw ? checkExit(g, pi, pw.id) : null;
+    const seenSum = new Set();
+    if (res) for (let x = 0; x < dieIdx.length; x++) for (let y = x + 1; y < dieIdx.length; y++) {
+      const a = dieIdx[x], b = dieIdx[y], va = g.units[a].v, vb = g.units[b].v;
+      if (va + vb !== 5 || va === 5 || vb === 5) continue;
+      const sig = Math.min(va, vb) + '+' + Math.max(va, vb); if (seenSum.has(sig)) continue; seenSum.add(sig);
+      moves.push({ pawn: pw.id, units: [a, b], value: 5, kind: 'somme', res });
+    }
+  }
+  // Règle : un dé de 5 doit servir à sortir un pion si c'est possible
+  let out = moves;
+  const exitWith5 = out.filter(m => m.kind === 'sortie');
+  const isDie = (m, v) => m.units.length === 1 && g.units[m.units[0]].kind === 'die' && (v == null || g.units[m.units[0]].v === v);
+  if (R.sortieObligatoire && exitWith5.length) out = out.filter(m => !isDie(m, 5) || m.kind === 'sortie');
+  // Règle : avec un double, on doit d'abord ouvrir (débarrer) ses barrières avec un dé de la valeur doublée
+  if (R.doubleDebarre && g.dblVal != null) {
+    const blocks = hasBlockade(g, pi);
+    if (blocks.length) {
+      const breakers = out.filter(m => isDie(m, g.dblVal) && m.kind !== 'sortie' && blocks.includes(locKey(pl.color, pl.pawns[m.pawn].p)));
+      if (breakers.length) out = out.filter(m => breakers.includes(m) || !isDie(m) && m.kind !== 'somme' || m.kind === 'sortie');
+    }
+  }
+  // Règle : « si tu peux tuer, t'es obligé »
+  if (R.captureObligatoire) { const caps = out.filter(m => m.res.capture); if (caps.length) out = caps; }
+  return out;
+}
+
+function rand6(rng) { return 1 + Math.floor(rng() * 6); }
+
+// Lancer de dés. Renvoie la liste d'événements.
+function roll(g, rng, forced) {
+  if (g.phase !== 'roll' || g.winner) return [];
+  const pl = g.players[g.current];
+  const ev = [];
+  const R = g.rules, nd = R.des;
+  const dice = Array.from({ length: nd }, (_, i) => forced && forced[i] ? forced[i] : rand6(rng));
+  if (pl.frozen) { dice[nd - 1] = 0; pl.frozen = false; ev.push({ type: 'gelé', pi: g.current }); }
+  g.dice = dice;
+  const live = dice.filter(v => v), cnt = {};
+  live.forEach(v => cnt[v] = (cnt[v] || 0) + 1);
+  const maxC = Math.max(0, ...Object.values(cnt));
+  const dbl = maxC >= 2, triple = nd === 3 && maxC === 3;
+  g.dblVal = dbl ? +Object.keys(cnt).find(k => cnt[k] >= 2) : null;
+  g.reroll = (R.doubleRejoue && dbl) || (R.tripleRelance && triple);
+  ev.push({ type: 'roll', dice: dice.slice(), double: dbl && !triple, triple, reroll: g.reroll });
+  if (g.reroll) {
+    g.doubles++;
+    if (R.troisDoublesPenalite && g.doubles >= 3) {
+      ev.push({ type: 'troisDoubles', pi: g.current });
+      const lm = g.lastMoved;
+      if (lm) {
+        const pw = pl.pawns[lm];
+        if (pw.p >= 0 && pw.p < TRACK_LEN) {
+          const from = pw.p; pw.p = -1;
+          ev.push({ type: 'renvoi', pi: g.current, id: lm, from });
+        }
+      }
+      g.units = [];
+      endTurn(g, ev, true);
+      return ev;
+    }
+  }
+  g.units = g.units.filter(u => u.kind !== 'die');
+  live.forEach(v => g.units.push({ kind: 'die', v }));
+  g.phase = 'move';
+  afterAction(g, ev);
+  return ev;
+}
+
+function applyMove(g, move, rng) {
+  const pi = g.current, pl = g.players[pi], pw = pl.pawns[move.pawn];
+  const ev = [];
+  const from = pw.p;
+  const res = move.res;
+  // retirer les unités utilisées (indices décroissants)
+  [...move.units].sort((a, b) => b - a).forEach(i => g.units.splice(i, 1));
+  pw.p = res.to; pw.t = ++g.stamp;
+  g.lastMoved = pw.id;
+  ev.push({ type: 'move', pi, id: pw.id, from, path: res.path, exit: !!res.exit });
+  for (const c of [res.capture, res.capture2]) {
+    if (!c) continue;
+    const v = g.players[c.pi].pawns[c.id];
+    const vfrom = v.p; v.p = -1;
+    ev.push({ type: 'capture', pi, id: pw.id, vpi: c.pi, vid: c.id, from: vfrom, bonus: g.rules.bonusCapture });
+    if (g.rules.bonusCapture) g.units.push({ kind: 'bonus', v: 20 });
+  }
+  if (pw.p === META) {
+    ev.push({ type: 'arrivée', pi, id: pw.id });
+    if (pl.pawns.every(x => x.p === META)) {
+      pl.finished = true; g.winner = pi; g.phase = 'over';
+      ev.push({ type: 'victoire', pi });
+      return ev;
+    }
+    if (g.rules.bonusArrivee) g.units.push({ kind: 'bonus', v: 10 });
+  }
+  if (g.magic && pw.p >= 0 && pw.p < TRACK_LEN) {
+    const sq = absSquare(pl.color, pw.p);
+    if (g.runes[sq] === 0 && RUNES.includes(sq)) {
+      g.runes[sq] = 8;
+      if (pl.spells.length < 2) {
+        const keys = Object.keys(SPELLS);
+        const sp = keys[Math.floor(rng() * keys.length)];
+        pl.spells.push(sp);
+        ev.push({ type: 'rune', pi, sq, spell: sp });
+      }
+    }
+  }
+  afterAction(g, ev);
+  return ev;
+}
+
+function castSpell(g, idx) {
+  const pl = g.players[g.current];
+  if (!g.magic || g.winner || idx < 0 || idx >= pl.spells.length) return [];
+  if (g.phase !== 'roll' && !(g.phase === 'move' && legalMoves(g).length)) return [];
+  const sp = pl.spells.splice(idx, 1)[0];
+  const ev = [{ type: 'sort', pi: g.current, spell: sp }];
+  if (sp === 'bouclier') pl.shield = true;
+  if (sp === 'teleport') g.units.push({ kind: 'magie', v: 3 });
+  if (sp === 'gel') {
+    let best = -1, bestScore = -1;
+    g.players.forEach((o, oi) => {
+      if (oi === g.current || o.finished) return;
+      const sc = o.pawns.reduce((s, x) => s + (x.p + 1), 0);
+      if (sc > bestScore) { bestScore = sc; best = oi; }
+    });
+    if (best >= 0) { g.players[best].frozen = true; ev[0].target = best; }
+  }
+  if (g.phase === 'move') afterAction(g, ev);
+  return ev;
+}
+
+function afterAction(g, ev) {
+  if (g.phase !== 'move' || g.winner) return;
+  if (!g.units.length || !legalMoves(g).length) {
+    if (g.units.length) ev.push({ type: 'aucunCoup', pi: g.current, perdus: g.units.map(u => u.v) });
+    g.units = [];
+    if (g.reroll) { g.phase = 'roll'; g.dblVal = null; g.reroll = false; ev.push({ type: 'rejouer', pi: g.current, why: g.dice.filter(v => v).length === 3 && new Set(g.dice).size === 1 ? 'triple' : 'double' }); }
+    else endTurn(g, ev, false);
+  }
+}
+
+function endTurn(g, ev, forced) {
+  g.units = []; g.doubles = 0; g.reroll = false; g.dblVal = null; g.lastMoved = null;
+  const n = g.players.length;
+  let nx = g.current;
+  do { nx = (nx + 1) % n; } while (g.players[nx].finished && nx !== g.current);
+  g.current = nx; g.phase = 'roll'; g.turn++;
+  g.players[nx].shield = false;
+  for (const r in g.runes) if (g.runes[r] > 0) g.runes[r]--;
+  ev.push({ type: 'tour', pi: nx });
+}
+
+// ===== IA =====
+function threatAt(g, pi, key) {
+  if (key[0] !== 'T') return 0;
+  const sq = +key.slice(1);
+  if (SAFE.has(sq)) return 0;
+  let t = 0;
+  g.players.forEach((o, oi) => {
+    if (oi === pi) return;
+    o.pawns.forEach(pw => {
+      if (pw.p < 0 || pw.p >= TRACK_LEN) return;
+      const os = absSquare(o.color, pw.p);
+      const dist = (sq - os + 68) % 68;
+      if (dist >= 1 && dist <= 12 && pw.p + dist < TRACK_LEN) t += dist <= 6 ? 1 : 0.5;
+    });
+    if (o.pawns.some(pw => pw.p === -1) && EXIT[o.color] === sq) t += 1;
+  });
+  return t;
+}
+function scoreMove(g, m) {
+  const pi = g.current, pl = g.players[pi], pw = pl.pawns[m.pawn];
+  const from = pw.p, to = m.res.to;
+  let s = 0;
+  const R = g.rules || {};
+  for (const c of [m.res.capture, m.res.capture2]) if (c) s += (R.bonusCapture === false ? 80 : 120) + Math.max(0, g.players[c.pi].pawns[c.id].p);
+  if (to === META) s += R.bonusArrivee === false ? 70 : 90;
+  // 3 dés : garder un dé pour un piton libre plutôt que d'en laisser un seul derrière ; récompenser l'ouverture d'une barrière exigée
+  if (g.dblVal != null && m.kind === 'die' && m.value === g.dblVal && from >= 0 && from < TRACK_LEN && occupants(g, locKey(pl.color, from)).filter(o => o.pi === pi).length === 2) s += 10;
+  if (m.res.exit) s += 70;
+  const toKey = locKey(pl.color, to), fromKey = from >= 0 ? locKey(pl.color, from) : null;
+  if (to >= TRACK_LEN && from < TRACK_LEN) s += 35;
+  if (to < TRACK_LEN) {
+    const sq = absSquare(pl.color, to);
+    if (SAFE.has(sq)) s += R.casesUneCouleur ? 28 : 18;
+    if (g.magic && RUNES.includes(sq) && g.runes[sq] === 0) s += 15;
+    if (!pl.shield) s -= threatAt(g, pi, toKey) * 22;
+    if (occupants(g, toKey).some(o => o.pi === pi)) s += 8;
+  }
+  if (fromKey && from < TRACK_LEN && !pl.shield) s += threatAt(g, pi, fromKey) * 18;
+  s += (to - Math.max(from, 0)) * 0.6 + (from >= 0 ? from * 0.05 : 0);
+  return s;
+}
+function aiChoose(g) {
+  const ms = legalMoves(g);
+  if (!ms.length) return null;
+  let best = ms[0], bs = -1e9;
+  ms.forEach(m => { const s = scoreMove(g, m) + Math.random() * 0.5; if (s > bs) { bs = s; best = m; } });
+  return best;
+}
+
+const Engine = { PRESETS, PRESET_NAMES, RULE_OPTS, makeRules, COLORS, COLOR_NAMES, EXIT, ENTRY, SAFE, RUNES, TRACK_LEN, META, SPELLS, absSquare, locKey,
+  createGame, legalMoves, roll, applyMove, castSpell, aiChoose, occupants, hasBlockade, checkMove };
+if (typeof module !== 'undefined') module.exports = Engine;
+
+window.Engine = Engine;
+
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const E = window.Engine;
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const COL = { jaune: 0xf2c230, bleu: 0x3b7bea, rouge: 0xd8402f, vert: 0x2fa55a };
+const CSS = { jaune: '#f2c230', bleu: '#3b7bea', rouge: '#d8402f', vert: '#2fa55a' };
+const ARM = { jaune: 0, bleu: 1, rouge: 2, vert: 3 };
+const D = [new THREE.Vector2(0, 1), new THREE.Vector2(1, 0), new THREE.Vector2(0, -1), new THREE.Vector2(-1, 0)];
+const Pp = k => D[(k + 1) % 4];
+const isCoarse = matchMedia('(pointer: coarse)').matches;
+
+// ---------- Géométrie du plateau ----------
+function squareXY(n) {
+  const m = (n + 8) % 68, k = Math.floor(m / 17), j = m % 17;
+  let lane, r;
+  if (j < 8) { lane = -1; r = j; } else if (j === 8) { lane = 0; r = 7; } else { lane = 1; r = 16 - j; }
+  return D[k].clone().multiplyScalar(2 + r).add(Pp(k).clone().multiplyScalar(lane));
+}
+function corridorXY(color, i) { const k = ARM[color]; return D[k].clone().multiplyScalar(2 + 7 - i); }
+function baseCenter(color) { const k = ARM[color]; return D[k].clone().add(Pp(k)).multiplyScalar(5.5); }
+const BASE4 = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+const BASE8 = [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [-1, 0], [1, 0], [0, 1]]; // 3×3 sans le centre
+function baseSpot(color, id, n = 4) {
+  const k = ARM[color], b = baseCenter(color);
+  const s = (n > 4 ? BASE8 : BASE4)[id];
+  return b.clone().add(D[k].clone().multiplyScalar(s[0] * 0.78)).add(Pp(k).clone().multiplyScalar(s[1] * 0.78));
+}
+const META4 = [[1.0, -0.33], [1.0, 0.33], [0.5, -0.62], [0.5, 0.62]];
+const META8 = [[1.34, -0.34], [1.34, 0.34], [1.3, -0.98], [1.3, 0.98], [0.86, -0.3], [0.86, 0.3], [0.8, -0.82], [0.8, 0.82]];
+function metaSpot(color, id, n = 4) {
+  const k = ARM[color];
+  const s = (n > 4 ? META8 : META4)[id];
+  return D[k].clone().multiplyScalar(s[0]).add(Pp(k).clone().multiplyScalar(s[1]));
+}
+function cellCenter(color, p) {
+  if (p < E.TRACK_LEN) return squareXY(E.absSquare(color, p));
+  if (p < E.META) return corridorXY(color, p - E.TRACK_LEN + 1);
+  return metaSpot(color, 0);
+}
+function cellAxis(color, p) { // direction pour décaler deux pions sur une même case
+  let n, k;
+  if (p < E.TRACK_LEN) { n = E.absSquare(color, p); k = Math.floor(((n + 8) % 68) / 17); }
+  else k = ARM[color];
+  return D[k];
+}
+
+// ---------- Rendu ----------
+const canvas = $('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, isCoarse ? 1.6 : 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = isCoarse ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0b0814, 0.018);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 300);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.07;
+controls.minDistance = 9; controls.maxDistance = 90; controls.maxPolarAngle = 1.38;
+controls.target.set(0, 0, 1.2); controls.autoRotateSpeed = 0.6; controls.enablePan = false;
+const isPortrait = () => innerWidth / innerHeight < 0.9;
+const shortLand = () => !isPortrait() && innerHeight <= 540;
+function homeCamDist() { const a = innerWidth / innerHeight; const half = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)); return isPortrait() ? 12.0 / (half * a) : shortLand() ? 13.0 / half : Math.max(30, 14.5 / (half * a)); }
+function homeTarget() { return isPortrait() ? new THREE.Vector3(0, 0, 5.2) : shortLand() ? new THREE.Vector3(-1.5, 0, 0.6) : new THREE.Vector3(2.2, 0, 1.2); }
+function homeCamPos() { const d = homeCamDist(), t = homeTarget(); return isPortrait() ? new THREE.Vector3(t.x, d * 0.955, t.z + d * 0.30) : new THREE.Vector3(t.x, d * 0.78, t.z + d * 0.62); }
+camera.position.set(0, 60, 55);
+
+let composer = null, bloomOn = (params.get('fx') === '1') || (!isCoarse && params.get('fx') !== '0');
+function setupComposer() {
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.6, 0.55, 0.78));
+  composer.addPass(new OutputPass());
+}
+setupComposer();
+
+// Ciel étoilé
+{
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 512);
+  g.addColorStop(0, '#05040d'); g.addColorStop(0.55, '#140c2a'); g.addColorStop(1, '#2a1424');
+  x.fillStyle = g; x.fillRect(0, 0, 1024, 512);
+  for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(255,${230 + Math.random() * 25 | 0},${200 + Math.random() * 55 | 0},${Math.random() * 0.9})`; const s = Math.random() < 0.05 ? 2 : 1; x.fillRect(Math.random() * 1024, Math.random() * 300, s, s); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.mapping = THREE.EquirectangularReflectionMapping;
+  scene.background = t;
+}
+
+// Lumières
+scene.add(new THREE.HemisphereLight(0x8090ff, 0x2a1408, 0.55));
+const moon = new THREE.DirectionalLight(0xffe7c4, 2.1);
+moon.position.set(-10, 22, 12); moon.castShadow = true;
+moon.shadow.mapSize.set(isCoarse ? 1024 : 2048, isCoarse ? 1024 : 2048);
+Object.assign(moon.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 60 });
+moon.shadow.bias = -0.0006; moon.shadow.normalBias = 0.02;
+scene.add(moon);
+const rim = new THREE.DirectionalLight(0x9f7bff, 0.6); rim.position.set(12, 10, -14); scene.add(rim);
+
+// ---------- Textures procédurales ----------
+function noiseCanvas(w, h, base, spread, n) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d'); x.fillStyle = base; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < n; i++) { const v = Math.random() * spread | 0; x.fillStyle = `rgba(${v},${v * 0.8 | 0},${v * 0.6 | 0},${Math.random() * 0.08})`; x.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 6, 1 + Math.random() * 3); }
+  return c;
+}
+function woodTexture() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 1024; const x = c.getContext('2d');
+  x.fillStyle = '#4a2a14'; x.fillRect(0, 0, 1024, 1024);
+  for (let i = 0; i < 260; i++) {
+    const y = Math.random() * 1024; x.strokeStyle = `rgba(${20 + Math.random() * 40 | 0},${10 + Math.random() * 20 | 0},5,${0.15 + Math.random() * 0.3})`;
+    x.lineWidth = 1 + Math.random() * 3; x.beginPath(); x.moveTo(0, y);
+    for (let X = 0; X <= 1024; X += 32) x.lineTo(X, y + Math.sin(X / 90 + i) * 6 + Math.random() * 2); x.stroke();
+  }
+  for (let p = 0; p < 8; p++) { x.strokeStyle = 'rgba(0,0,0,.45)'; x.lineWidth = 2; x.beginPath(); x.moveTo(0, p * 128); x.lineTo(1024, p * 128); x.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t;
+}
+function runeGlyph(x, cx, cy, r, kind) {
+  x.save(); x.translate(cx, cy); x.lineCap = 'round';
+  x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2); x.stroke();
+  x.beginPath(); x.arc(0, 0, r * 0.78, 0, Math.PI * 2); x.stroke();
+  if (kind === 'star') {
+    x.beginPath();
+    for (let i = 0; i <= 5; i++) { const a = -Math.PI / 2 + i * Math.PI * 4 / 5; const px = Math.cos(a) * r * 0.72, py = Math.sin(a) * r * 0.72; i ? x.lineTo(px, py) : x.moveTo(px, py); }
+    x.stroke();
+  } else {
+    x.beginPath(); x.moveTo(0, -r * 0.6); x.lineTo(0, r * 0.6);
+    x.moveTo(0, -r * 0.2); x.lineTo(r * 0.38, -r * 0.55); x.moveTo(0, -r * 0.2); x.lineTo(-r * 0.38, -r * 0.55);
+    x.moveTo(0, r * 0.2); x.lineTo(r * 0.38, r * 0.55); x.moveTo(0, r * 0.2); x.lineTo(-r * 0.38, r * 0.55); x.stroke();
+  }
+  x.restore();
+}
+function glyphTexture(color, kind) {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  x.strokeStyle = color; x.lineWidth = 10; x.shadowColor = color; x.shadowBlur = 24;
+  runeGlyph(x, 128, 128, 96, kind);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function shade(hex, f) {
+  const c = new THREE.Color(hex); c.multiplyScalar(f); return '#' + c.getHexString();
+}
+const BOARD = 21, BS = 2048, S = BS / BOARD;
+const px = v => (v + BOARD / 2) * S;
+function drawBoard(magic) {
+  const c = document.createElement('canvas'); c.width = c.height = BS; const x = c.getContext('2d');
+  // pierre
+  x.fillStyle = '#3b342c'; x.fillRect(0, 0, BS, BS);
+  for (let i = 0; i < 9000; i++) { const v = 30 + Math.random() * 60 | 0; x.fillStyle = `rgba(${v},${v - 5},${v - 12},${0.25 * Math.random()})`; x.fillRect(Math.random() * BS, Math.random() * BS, 3 + Math.random() * 14, 2 + Math.random() * 8); }
+  // dalles
+  x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 3;
+  for (let i = 0; i <= BOARD; i += 1.5) { x.beginPath(); x.moveTo(px(i - 10.5), 0); x.lineTo(px(i - 10.5), BS); x.stroke(); x.beginPath(); x.moveTo(0, px(i - 10.5)); x.lineTo(BS, px(i - 10.5)); x.stroke(); }
+  // bordure dorée
+  x.strokeStyle = '#c9952e'; x.lineWidth = 10; x.strokeRect(24, 24, BS - 48, BS - 48);
+  x.strokeStyle = '#6b4a14'; x.lineWidth = 3; x.strokeRect(44, 44, BS - 88, BS - 88);
+  // forteresses
+  for (const col of E.COLORS) {
+    const b = baseCenter(col);
+    const x0 = px(b.x - 3.85), y0 = px(b.y - 3.85), w = 7.7 * S;
+    const g = x.createRadialGradient(px(b.x), px(b.y), 20, px(b.x), px(b.y), w * 0.75);
+    g.addColorStop(0, shade(COL[col], 0.95)); g.addColorStop(1, shade(COL[col], 0.35));
+    x.fillStyle = g; x.beginPath(); x.roundRect(x0, y0, w, w, 40); x.fill();
+    x.save(); x.clip(); x.strokeStyle = 'rgba(255,255,255,.08)'; x.lineWidth = 18;
+    for (let i = -w; i < w * 2; i += 70) { x.beginPath(); x.moveTo(x0 + i, y0); x.lineTo(x0 + i - w, y0 + w); x.stroke(); }
+    x.restore();
+    x.strokeStyle = '#e5b552'; x.lineWidth = 8; x.beginPath(); x.roundRect(x0, y0, w, w, 40); x.stroke();
+    x.strokeStyle = 'rgba(0,0,0,.4)'; x.lineWidth = 3; x.beginPath(); x.roundRect(x0 + 14, y0 + 14, w - 28, w - 28, 30); x.stroke();
+  }
+  // centre
+  const cc = px(0), h = 1.5 * S;
+  for (const col of E.COLORS) {
+    const k = ARM[col], d = D[k], p = Pp(k);
+    const a = [cc + (d.x + p.x) * h, cc + (d.y + p.y) * h], b2 = [cc + (d.x - p.x) * h, cc + (d.y - p.y) * h];
+    const g = x.createLinearGradient(cc, cc, cc + d.x * h, cc + d.y * h);
+    g.addColorStop(0, shade(COL[col], 1.2)); g.addColorStop(1, shade(COL[col], 0.7));
+    x.fillStyle = g; x.beginPath(); x.moveTo(cc, cc); x.lineTo(a[0], a[1]); x.lineTo(b2[0], b2[1]); x.closePath(); x.fill();
+    x.strokeStyle = '#e5b552'; x.lineWidth = 6; x.stroke();
+  }
+  x.fillStyle = '#1a1030'; x.beginPath(); x.arc(cc, cc, 0.55 * S, 0, 7); x.fill();
+  x.strokeStyle = '#e5b552'; x.lineWidth = 6; x.stroke();
+  // cases
+  const cell = (v, fill, opts = {}) => {
+    const cx = px(v.x), cy = px(v.y), s = S * 0.94;
+    const g = x.createLinearGradient(cx - s / 2, cy - s / 2, cx + s / 2, cy + s / 2);
+    g.addColorStop(0, opts.light || '#f6ead0'); g.addColorStop(1, fill);
+    x.fillStyle = g; x.beginPath(); x.roundRect(cx - s / 2, cy - s / 2, s, s, 10); x.fill();
+    x.strokeStyle = '#5a3a18'; x.lineWidth = 4; x.stroke();
+    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 2; x.beginPath(); x.roundRect(cx - s / 2 + 5, cy - s / 2 + 5, s - 10, s - 10, 7); x.stroke();
+  };
+  for (let n = 1; n <= 68; n++) {
+    const v = squareXY(n);
+    const exitCol = E.COLORS.find(cl => E.EXIT[cl] === n);
+    const entryCol = E.COLORS.find(cl => E.ENTRY[cl] === n);
+    if (exitCol) cell(v, shade(COL[exitCol], 0.85), { light: shade(COL[exitCol], 1.25) });
+    else if (E.SAFE.has(n)) cell(v, '#c9b48a', { light: '#efe2c2' });
+    else if (magic && E.RUNES.includes(n)) cell(v, '#a88bd0', { light: '#efe2ff' });
+    else cell(v, '#d9c39a');
+    if (entryCol) { x.fillStyle = CSS[entryCol]; x.globalAlpha = 0.35; x.fillRect(px(v.x) - S * 0.45, px(v.y) - S * 0.45, S * 0.9, S * 0.9); x.globalAlpha = 1; }
+    if (E.SAFE.has(n)) { x.strokeStyle = exitCol ? 'rgba(40,20,0,.75)' : '#8a5a12'; x.lineWidth = 5; runeGlyph(x, px(v.x), px(v.y), S * 0.3, 'safe'); }
+    if (magic && E.RUNES.includes(n)) { x.strokeStyle = '#5b2a9a'; x.lineWidth = 5; runeGlyph(x, px(v.x), px(v.y), S * 0.3, 'star'); }
+    x.fillStyle = 'rgba(60,35,15,.75)'; x.font = `bold ${S * 0.2}px Cinzel, serif`; x.textAlign = 'left'; x.textBaseline = 'top';
+    x.fillText(String(n), px(v.x) - S * 0.42, px(v.y) - S * 0.42);
+  }
+  for (const col of E.COLORS) for (let i = 1; i <= 7; i++) {
+    const v = corridorXY(col, i);
+    cell(v, shade(COL[col], 0.8), { light: shade(COL[col], 1.3) });
+    const d = D[ARM[col]];
+    x.save(); x.translate(px(v.x), px(v.y)); x.rotate(Math.atan2(-d.y, -d.x));
+    x.strokeStyle = 'rgba(255,245,220,.75)'; x.lineWidth = 6; x.beginPath(); x.moveTo(-S * 0.15, -S * 0.2); x.lineTo(S * 0.12, 0); x.lineTo(-S * 0.15, S * 0.2); x.stroke(); x.restore();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+
+// ---------- Décor ----------
+const table = new THREE.Mesh(new THREE.CylinderGeometry(34, 34, 1, 64), new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.75 }));
+table.material.map.repeat.set(4, 4);
+table.position.y = -1.3; table.receiveShadow = true; scene.add(table);
+const slabMat = new THREE.MeshStandardMaterial({ color: 0x4a4038, roughness: 0.9 });
+const slab = new THREE.Mesh(new THREE.BoxGeometry(BOARD, 0.8, BOARD), slabMat);
+slab.position.y = -0.4; slab.receiveShadow = true; slab.castShadow = true; scene.add(slab);
+const boardMat = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0.05 });
+const boardTop = new THREE.Mesh(new THREE.PlaneGeometry(BOARD, BOARD), boardMat);
+boardTop.rotation.x = -Math.PI / 2; boardTop.position.y = 0.002; boardTop.receiveShadow = true; scene.add(boardTop);
+function setBoardTexture(magic) { if (boardMat.map) boardMat.map.dispose(); boardMat.map = drawBoard(magic); boardMat.needsUpdate = true; }
+setBoardTexture(false);
+// cadre en bois et or
+{
+  const wood = new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.6 });
+  const gold = new THREE.MeshStandardMaterial({ color: 0xd9a93b, metalness: 0.9, roughness: 0.3 });
+  for (let i = 0; i < 4; i++) {
+    const g = new THREE.Group();
+    const w = new THREE.Mesh(new THREE.BoxGeometry(BOARD + 1.6, 1.15, 0.8), wood); w.position.set(0, -0.25, BOARD / 2 + 0.4); w.castShadow = w.receiveShadow = true; g.add(w);
+    const t = new THREE.Mesh(new THREE.BoxGeometry(BOARD + 1.6, 0.08, 0.12), gold); t.position.set(0, 0.36, BOARD / 2 + 0.1); g.add(t);
+    g.rotation.y = i * Math.PI / 2; scene.add(g);
+  }
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 16), gold); knob.position.set(sx * (BOARD / 2 + 0.4), 0.45, sz * (BOARD / 2 + 0.4)); knob.castShadow = true; scene.add(knob);
+  }
+}
+// Runes lumineuses (cases sûres) et runes magiques
+const safeGlyphs = [], magicGlyphs = {};
+{
+  const tex = glyphTexture('#ffd27a', 'safe');
+  for (const n of E.SAFE) {
+    const v = squareXY(n);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.5 }));
+    m.rotation.x = -Math.PI / 2; m.position.set(v.x, 0.02, v.y); scene.add(m); safeGlyphs.push(m);
+  }
+  const mtex = glyphTexture('#c58bff', 'star');
+  for (const n of E.RUNES) {
+    const v = squareXY(n);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.15), new THREE.MeshBasicMaterial({ map: mtex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.9 }));
+    m.rotation.x = -Math.PI / 2; m.position.set(v.x, 0.03, v.y); m.visible = false; scene.add(m);
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.16), new THREE.MeshStandardMaterial({ color: 0xc58bff, emissive: 0x9b4dff, emissiveIntensity: 2.2 }));
+    gem.position.set(v.x, 0.9, v.y); gem.visible = false; scene.add(gem);
+    magicGlyphs[n] = { m, gem };
+  }
+}
+
+// Forteresses
+const flags = [];
+function stoneMat() { return new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(noiseCanvas(256, 256, '#8d8273', 140, 900)), roughness: 0.95 }); }
+const STONE = stoneMat(); STONE.map.colorSpace = THREE.SRGBColorSpace;
+function tower(r, h, roofCol) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.08, h, 16), STONE); body.position.y = h / 2; g.add(body);
+  for (let i = 0; i < 8; i++) {
+    const a = i / 8 * Math.PI * 2; const c = new THREE.Mesh(new THREE.BoxGeometry(r * 0.32, r * 0.35, r * 0.32), STONE);
+    c.position.set(Math.cos(a) * r * 0.92, h + r * 0.17, Math.sin(a) * r * 0.92); g.add(c);
+  }
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(r * 1.15, r * 2.1, 16), new THREE.MeshStandardMaterial({ color: roofCol, roughness: 0.5, metalness: 0.2 }));
+  roof.position.y = h + r * 1.2; g.add(roof);
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(r * 0.35, r * 0.6), new THREE.MeshBasicMaterial({ color: 0xffb347 }));
+  win.position.set(0, h * 0.65, r * 1.01); g.add(win);
+  const win2 = win.clone(); win2.position.set(0, h * 0.65, -r * 1.01); win2.rotation.y = Math.PI; g.add(win2);
+  g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  return g;
+}
+for (const col of E.COLORS) {
+  const k = ARM[col], b = baseCenter(col), d = D[k], p = Pp(k);
+  const at = (s, t) => b.clone().add(d.clone().multiplyScalar(s)).add(p.clone().multiplyScalar(t));
+  const court = new THREE.Mesh(new THREE.CylinderGeometry(1.75, 1.85, 0.12, 40), new THREE.MeshStandardMaterial({ color: COL[col], roughness: 0.55, metalness: 0.2 }));
+  court.position.set(b.x, 0.06, b.y); court.receiveShadow = true; scene.add(court);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.07, 8, 48), new THREE.MeshStandardMaterial({ color: 0xd9a93b, metalness: 0.9, roughness: 0.3 }));
+  ring.rotation.x = Math.PI / 2; ring.position.set(b.x, 0.12, b.y); scene.add(ring);
+  const corners = [[-2.6, -2.6], [2.6, -2.6], [-2.6, 2.6]];
+  corners.forEach(([s, t]) => { const tw = tower(0.42, 1.5, COL[col]); const q = at(s, t); tw.position.set(q.x, 0, q.y); scene.add(tw); });
+  const keep = tower(0.75, 2.8, COL[col]); const kq = at(2.75, 2.75); keep.position.set(kq.x, 0, kq.y); scene.add(keep);
+  // murailles
+  [[0, -2.6, 1], [-2.6, 0, 0], [2.6, 0.2, 0], [0.2, 2.6, 1]].forEach(([s, t, rot]) => {
+    const len = (s === 2.6 || t === 2.6) ? 4.6 : 5.2;
+    const w = new THREE.Mesh(new THREE.BoxGeometry(len, 0.55, 0.22), STONE);
+    const q = at(s, t); w.position.set(q.x, 0.27, q.y);
+    const axis = rot ? d : p; w.rotation.y = Math.atan2(-axis.y, axis.x) ; w.castShadow = w.receiveShadow = true; scene.add(w);
+  });
+  // drapeau
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.6), new THREE.MeshStandardMaterial({ color: 0x3a2a1a }));
+  pole.position.set(kq.x, 2.8 + 1.6 + 0.8, kq.y); scene.add(pole);
+  const fg = new THREE.PlaneGeometry(1.1, 0.65, 14, 4); fg.translate(0.55, 0, 0);
+  const flag = new THREE.Mesh(fg, new THREE.MeshStandardMaterial({ color: COL[col], side: THREE.DoubleSide, emissive: COL[col], emissiveIntensity: 0.25 }));
+  flag.position.set(kq.x, 2.8 + 1.6 + 1.3, kq.y); flag.castShadow = true; scene.add(flag);
+  flag.userData.base = fg.attributes.position.array.slice(); flags.push(flag);
+}
+
+// Torches
+const torches = [];
+{
+  const flameTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,240,200,1)'); g.addColorStop(0.25, 'rgba(255,170,60,.9)'); g.addColorStop(0.6, 'rgba(255,80,10,.35)'); g.addColorStop(1, 'rgba(255,40,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  window.__flameTex = flameTex;
+  const iron = new THREE.MeshStandardMaterial({ color: 0x2b2522, metalness: 0.8, roughness: 0.45 });
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    const g = new THREE.Group(); g.position.set(sx * 13.2, -0.8, sz * 13.2);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.2, 3.2, 10), iron); pole.position.y = 1.6; pole.castShadow = true; g.add(pole);
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.25, 0.45, 14, 1, true), iron); bowl.position.y = 3.35; g.add(bowl);
+    const fl = new THREE.Sprite(new THREE.SpriteMaterial({ map: flameTex, blending: THREE.AdditiveBlending, depthWrite: false, color: 0xffffff }));
+    fl.scale.set(1.6, 2.2, 1); fl.position.y = 4.0; g.add(fl);
+    const fl2 = fl.clone(); fl2.material = fl.material.clone(); fl2.scale.set(0.9, 1.4, 1); fl2.position.y = 3.9; g.add(fl2);
+    const light = new THREE.PointLight(0xff8a35, 60, 26, 1.6); light.position.y = 4.1; g.add(light);
+    scene.add(g); torches.push({ fl, fl2, light, seed: Math.random() * 10 });
+  }
+}
+
+// Cristal central
+const crystal = new THREE.Group();
+{
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 1.0, 0.35, 8), STONE); ped.position.y = 0.18; ped.castShadow = true; crystal.add(ped);
+  const gemGeo = new THREE.OctahedronGeometry(0.62, 0); gemGeo.scale(1, 1.7, 1);
+  const gem = new THREE.Mesh(gemGeo, new THREE.MeshStandardMaterial({ color: 0xb98cff, emissive: 0x7a3cff, emissiveIntensity: 1.6, roughness: 0.15, metalness: 0.1, flatShading: true, transparent: true, opacity: 0.92 }));
+  gem.position.y = 2.3; gem.castShadow = true; crystal.add(gem); crystal.userData.gem = gem;
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: window.__flameTex, color: 0xa070ff, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.55 }));
+  halo.scale.set(3.4, 3.4, 1); halo.position.y = 2.3; crystal.add(halo);
+  const rt = glyphTexture('#c9a2ff', 'star');
+  const ringM = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.45, 64), new THREE.MeshBasicMaterial({ color: 0xb98cff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
+  ringM.rotation.x = -Math.PI / 2; ringM.position.y = 0.4; crystal.add(ringM); crystal.userData.ring = ringM;
+  const disc = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.6), new THREE.MeshBasicMaterial({ map: rt, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.6 }));
+  disc.rotation.x = -Math.PI / 2; disc.position.y = 0.37; crystal.add(disc); crystal.userData.disc = disc;
+  const orbs = new THREE.Group();
+  for (let i = 0; i < 4; i++) { const o = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), new THREE.MeshBasicMaterial({ color: COL[E.COLORS[i]] })); o.userData.a = i * Math.PI / 2; orbs.add(o); }
+  crystal.add(orbs); crystal.userData.orbs = orbs;
+  const cl = new THREE.PointLight(0xa070ff, 25, 12, 1.6); cl.position.y = 2.4; crystal.add(cl); crystal.userData.light = cl;
+  scene.add(crystal);
+}
+
+// Particules d'ambiance (braises + poussière magique)
+const ambient = (() => {
+  const N = isCoarse ? 160 : 480;
+  const geo = new THREE.BufferGeometry(); const pos = new Float32Array(N * 3), col = new Float32Array(N * 3), vel = new Float32Array(N);
+  for (let i = 0; i < N; i++) { reset(i, true); }
+  function reset(i, init) {
+    const ember = i % 3 !== 0;
+    if (ember) { const tq = torches.length ? torches[i % 4] : null; const sx = [-1, 1, -1, 1][i % 4], sz = [-1, -1, 1, 1][i % 4]; pos[i * 3] = sx * 13.2 + (Math.random() - .5) * 0.6; pos[i * 3 + 1] = 3.2 + (init ? Math.random() * 8 : 0); pos[i * 3 + 2] = sz * 13.2 + (Math.random() - .5) * 0.6; col.set([1, 0.45 + Math.random() * 0.3, 0.1], i * 3); vel[i] = 0.6 + Math.random() * 1.2; }
+    else { pos[i * 3] = (Math.random() - .5) * 26; pos[i * 3 + 1] = Math.random() * (init ? 9 : 0.5); pos[i * 3 + 2] = (Math.random() - .5) * 26; col.set([0.6, 0.45, 1], i * 3); vel[i] = 0.12 + Math.random() * 0.25; }
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const mat = new THREE.PointsMaterial({ size: 0.13, map: window.__flameTex, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+  const pts = new THREE.Points(geo, mat); scene.add(pts);
+  return { update(dt, t) { for (let i = 0; i < N; i++) { pos[i * 3 + 1] += vel[i] * dt; pos[i * 3] += Math.sin(t * 1.3 + i) * dt * 0.25; if (pos[i * 3 + 1] > 10) reset(i, false); } geo.attributes.position.needsUpdate = true; } };
+})();
+
+
+// ---------- Animation ----------
+const tweens = [];
+let speed = 1; // facteur de durée (IA plus rapide)
+function tween(dur, fn) { return new Promise(res => { tweens.push({ t0: performance.now(), dur: Math.max(1, dur * speed), fn, res }); }); }
+function wait(ms) { return new Promise(r => setTimeout(r, ms * speed)); }
+const ease = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+// ---------- Pions ----------
+const pawnMeshes = {}; // color -> [group]
+const pickables = [];
+const PAWN_GEO = (() => {
+  // géométries partagées et fusionnées : 3 maillages par piton (tissu à couleurs de sommets, or, orbe) au lieu de 8
+  const tint = (geo, hex) => { const c = new THREE.Color(hex); const n = geo.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; } geo.setAttribute('color', new THREE.BufferAttribute(a, 3)); return geo; };
+  const prof = [[0, 0.1], [0.26, 0.1], [0.24, 0.16], [0.2, 0.3], [0.15, 0.46], [0.12, 0.56], [0.14, 0.6], [0.0, 0.62]].map(([r, y]) => new THREE.Vector2(r, y));
+  const seg = isCoarse ? 18 : 28;
+  const robe = new THREE.LatheGeometry(prof, seg);
+  const head = new THREE.SphereGeometry(0.115, 16, 12); head.translate(0, 0.7, 0);
+  const brim = new THREE.CylinderGeometry(0.2, 0.2, 0.025, 20); brim.translate(0, 0.77, 0);
+  const hat = new THREE.ConeGeometry(0.13, 0.42, 20); hat.rotateZ(0.12); hat.translate(0, 0.99, 0);
+  const staff = new THREE.CylinderGeometry(0.018, 0.018, 0.6, 6); staff.translate(0.24, 0.3, 0);
+  const cloth = (robeHex, darkHex) => BufferGeometryUtils.mergeGeometries([tint(robe.clone(), robeHex), tint(head.clone(), 0xf0d2b0), tint(brim.clone(), darkHex), tint(hat.clone(), darkHex), tint(staff.clone(), 0x5a3a1a)].map(g => g.index ? g.toNonIndexed() : g));
+  const base = new THREE.CylinderGeometry(0.27, 0.31, 0.1, seg); base.translate(0, 0.05, 0);
+  const belt = new THREE.TorusGeometry(0.17, 0.025, 8, 24); belt.rotateX(Math.PI / 2); belt.translate(0, 0.38, 0);
+  const gold = BufferGeometryUtils.mergeGeometries([base.toNonIndexed(), belt.toNonIndexed()]);
+  return { cloth, gold, orb: new THREE.OctahedronGeometry(0.075), sel: new THREE.RingGeometry(0.34, 0.46, 40), sh: new THREE.SphereGeometry(0.5, 20, 14), hit: new THREE.CylinderGeometry(0.42, 0.42, 1.3, 10) };
+})();
+const PAWN_MAT = { gold: new THREE.MeshStandardMaterial({ color: 0xe0b04a, metalness: 0.95, roughness: 0.28 }), hit: new THREE.MeshBasicMaterial({ visible: false }),
+  sh: new THREE.MeshBasicMaterial({ color: 0x8fd8ff, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false }) };
+const PAWN_COL = {};
+for (const col of E.COLORS) {
+  const c = new THREE.Color(COL[col]);
+  PAWN_COL[col] = { geo: PAWN_GEO.cloth(c.getHex(), c.clone().multiplyScalar(0.55).getHex()),
+    mat: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.25 }),
+    orb: new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 2.4 }) };
+}
+function makePawn(color, id) {
+  const g = new THREE.Group(); const C = PAWN_COL[color];
+  const fig = new THREE.Group();
+  const cloth = new THREE.Mesh(C.geo, C.mat); cloth.castShadow = true; fig.add(cloth);
+  const gold = new THREE.Mesh(PAWN_GEO.gold, PAWN_MAT.gold); gold.castShadow = !isCoarse; fig.add(gold);
+  const orb = new THREE.Mesh(PAWN_GEO.orb, C.orb); orb.position.set(0.24, 0.62, 0); fig.add(orb);
+  fig.scale.setScalar(1.2); g.add(fig);
+  const sel = new THREE.Mesh(PAWN_GEO.sel, new THREE.MeshBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
+  sel.rotation.x = -Math.PI / 2; sel.position.y = 0.03; sel.visible = false; g.add(sel);
+  const sh = new THREE.Mesh(PAWN_GEO.sh, PAWN_MAT.sh); sh.position.y = 0.5; sh.visible = false; g.add(sh);
+  const hit = new THREE.Mesh(PAWN_GEO.hit, PAWN_MAT.hit); hit.position.y = 0.6; g.add(hit);
+  g.userData = { color, id, sel, sh, orb, hit, bob: 0, anim: false };
+  hit.userData.pawn = g; pickables.push(hit);
+  g.rotation.y = Math.random() * 6;
+  scene.add(g);
+  return g;
+}
+const MAX_PAWNS = 8;
+for (const col of E.COLORS) pawnMeshes[col] = Array.from({ length: MAX_PAWNS }, (_, i) => makePawn(col, i));
+const pawnCount = (g) => g && g.players[0] ? g.players[0].pawns.length : 4;
+
+function layoutTargets(g) {
+  // renvoie map "color:id" -> Vector3
+  const out = {};
+  const groups = {};
+  const plist = g ? g.players : [];
+  const active = new Set(plist.map(p => p.color));
+  for (const col of E.COLORS) {
+    const pl = plist.find(p => p.color === col);
+    const n = pawnCount(g);
+    for (let id = 0; id < MAX_PAWNS; id++) {
+      if (id >= n) { out[col + ':' + id] = new THREE.Vector3(0, -5, 0); continue; }
+      const p = pl ? pl.pawns[id].p : -1;
+      if (p < 0) { const v = baseSpot(col, id, n); out[col + ':' + id] = new THREE.Vector3(v.x, 0.12, v.y); }
+      else if (p >= E.META) { const v = metaSpot(col, id, n); out[col + ':' + id] = new THREE.Vector3(v.x, 0.42, v.y); }
+      else { const key = E.locKey(col, p); (groups[key] = groups[key] || []).push({ col, id, p }); }
+    }
+  }
+  for (const key in groups) {
+    const arr = groups[key].sort((a, b) => (a.col + a.id).localeCompare(b.col + b.id));
+    arr.forEach((o, i) => {
+      const c = cellCenter(o.col, o.p); const ax = cellAxis(o.col, o.p);
+      const off = arr.length > 1 ? (i === 0 ? -0.25 : 0.25) : 0;
+      out[o.col + ':' + o.id] = new THREE.Vector3(c.x + ax.x * off, 0.02, c.y + ax.y * off);
+    });
+  }
+  return { out, active };
+}
+function relayout(g, instant) {
+  const { out, active } = layoutTargets(g);
+  const ps = [];
+  const n = pawnCount(g);
+  for (const col of E.COLORS) pawnMeshes[col].forEach((m, id) => {
+    m.visible = active.has(col) && id < n;
+    const tgt = out[col + ':' + id];
+    if (id >= n) { m.position.copy(tgt); m.userData.sel.visible = false; return; }
+    const p = g ? g.players.find(x => x.color === col) : null;
+    const sc = p && p.pawns[id].p >= E.META ? (n > 4 ? 0.64 : 0.78) : 1;
+    if (m.userData.anim) return;
+    if (instant) { m.position.copy(tgt); m.scale.setScalar(sc); return; }
+    if (m.position.distanceTo(tgt) > 0.01 || Math.abs(m.scale.x - sc) > 0.01) {
+      const from = m.position.clone(), s0 = m.scale.x;
+      ps.push(tween(260, t => { m.position.lerpVectors(from, tgt, ease(t)); m.scale.setScalar(s0 + (sc - s0) * t); }));
+    }
+  });
+  return Promise.all(ps);
+}
+
+// ---------- Dés ----------
+function dieFaceTex(n) {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  const g = x.createRadialGradient(50, 40, 10, 64, 64, 95); g.addColorStop(0, '#fffaf0'); g.addColorStop(1, '#dccaa0');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  x.strokeStyle = '#b8955a'; x.lineWidth = 6; x.strokeRect(6, 6, 116, 116);
+  const P = { 1: [[64, 64]], 2: [[34, 34], [94, 94]], 3: [[30, 30], [64, 64], [98, 98]], 4: [[34, 34], [94, 34], [34, 94], [94, 94]], 5: [[32, 32], [96, 32], [64, 64], [32, 96], [96, 96]], 6: [[34, 28], [94, 28], [34, 64], [94, 64], [34, 100], [94, 100]] }[n];
+  for (const [a, b] of P) { x.fillStyle = n === 1 ? '#9b1d10' : '#2a1608'; x.beginPath(); x.arc(a, b, n === 1 ? 17 : 12, 0, 7); x.fill(); x.fillStyle = 'rgba(255,255,255,.25)'; x.beginPath(); x.arc(a - 3, b - 3, 4, 0, 7); x.fill(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const FACE_ORDER = [1, 6, 2, 5, 3, 4]; // +x,-x,+y,-y,+z,-z
+const dieMats = FACE_ORDER.map(n => new THREE.MeshStandardMaterial({ map: dieFaceTex(n), roughness: 0.35, metalness: 0.05 }));
+const dice = [0, 1, 2].map(() => { const m = new THREE.Mesh(new RoundedBoxGeometry(0.8, 0.8, 0.8, 4, 0.12), dieMats); m.castShadow = true; scene.add(m); return m; });
+const TRAY = new THREE.Vector3(14.4, -0.8, 1.5);
+let trayGroup = null, trayRot = 1;
+const PF = isCoarse ? 0.55 : 1; // facteur de particules
+{
+  const wood = new THREE.MeshStandardMaterial({ color: 0x5a3418, roughness: 0.6 });
+  const felt = new THREE.MeshStandardMaterial({ color: 0x5b1020, roughness: 1 });
+  const tr = new THREE.Group(); tr.position.copy(TRAY); trayGroup = tr;
+    const fl = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.12, 2.8), felt); fl.position.y = 0.06; fl.receiveShadow = true; tr.add(fl);
+  for (const [w, d, x, z] of [[6.6, 0.2, 0, 1.5], [6.6, 0.2, 0, -1.5], [0.2, 3.2, 3.2, 0], [0.2, 3.2, -3.2, 0]]) { const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.45, d), wood); b.position.set(x, 0.22, z); b.castShadow = b.receiveShadow = true; tr.add(b); }
+  scene.add(tr);
+}
+const FACE_Q = {
+  1: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2),
+  6: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI / 2),
+  2: new THREE.Quaternion(),
+  5: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI),
+  3: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2),
+  4: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2),
+};
+// u = axe long du bac, v = axe court
+function trayPt(u, v, y) { return trayRot ? new THREE.Vector3(TRAY.x + v, TRAY.y + y, TRAY.z + u) : new THREE.Vector3(TRAY.x + u, TRAY.y + y, TRAY.z + v); }
+function layoutTray() {
+  if (isPortrait()) { TRAY.set(0, -0.8, 13.7); trayRot = 0; } else { TRAY.set(14.4, -0.8, 1.5); trayRot = 1; }
+  trayGroup.position.copy(TRAY); trayGroup.rotation.y = trayRot ? Math.PI / 2 : 0;
+  showDiceCount(nDice);
+}
+let nDice = 2;
+const dieU = (i, n) => n === 3 ? [-1.85, 0, 1.85][i] : (i ? 1 : -1);
+function showDiceCount(n) {
+  nDice = n;
+  dice.forEach((d, i) => { d.visible = i < n; d.position.copy(trayPt(dieU(i, n), 0, 0.52)); d.quaternion.copy(FACE_Q[[5, 3, 6][i]]); });
+}
+layoutTray();
+function rollDiceAnim(vals) {
+  Sound.dice();
+  const ps = vals.map((v, i) => {
+    const d = dice[i]; if (!d) return Promise.resolve();
+    if (!v) { d.visible = false; return Promise.resolve(); }
+    d.visible = true;
+    const n = vals.length;
+    const end = trayPt(dieU(i, n) + (Math.random() - .5) * (n === 3 ? 0.35 : 0.6), (Math.random() - .5) * 0.8, 0.52);
+    const start = trayPt(-7 + i * 0.8, 1.5 - i * (n === 3 ? 0.9 : 1), 3.5);
+    const qEnd = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (Math.random() - .5) * 1.2).multiply(FACE_Q[v]);
+    const axis = new THREE.Vector3(Math.random() - .5, Math.random() - .5, Math.random() - .5).normalize();
+    const spin = Math.PI * (5 + Math.random() * 3);
+    const tmp = new THREE.Quaternion();
+    return tween(1100 + i * 120, t => {
+      const e = easeOut(t);
+      d.position.lerpVectors(start, end, e);
+      const bounce = Math.abs(Math.sin(t * Math.PI * 3.2)) * Math.pow(1 - t, 2) * 3.2;
+      d.position.y = THREE.MathUtils.lerp(start.y, end.y, Math.min(1, t * 2.5)) * 0 + end.y + bounce + (t < 0.15 ? (1 - t / 0.15) * 3 : 0);
+      tmp.setFromAxisAngle(axis, spin * (1 - e));
+      d.quaternion.copy(qEnd).multiply(tmp);
+    });
+  });
+  return Promise.all(ps);
+}
+
+// ---------- Effets ----------
+const effects = [];
+const sparkTex = window.__flameTex;
+function burst(pos, color, n = 60, spd = 4, life = 1.2, grav = -3, size = 0.22) {
+  n = Math.max(8, Math.round(n * PF));
+  const geo = new THREE.BufferGeometry(); const p = new Float32Array(n * 3), v = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    p.set([pos.x, pos.y, pos.z], i * 3);
+    const th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1), s = spd * (0.4 + Math.random() * 0.6);
+    v.set([Math.sin(ph) * Math.cos(th) * s, Math.abs(Math.cos(ph)) * s * 0.9 + 1, Math.sin(ph) * Math.sin(th) * s], i * 3);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const mat = new THREE.PointsMaterial({ color, size, map: sparkTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+  const pts = new THREE.Points(geo, mat); scene.add(pts);
+  effects.push({ life, age: 0, update(dt) { this.age += dt; for (let i = 0; i < n; i++) { v[i * 3 + 1] += grav * dt; p[i * 3] += v[i * 3] * dt; p[i * 3 + 1] += v[i * 3 + 1] * dt; p[i * 3 + 2] += v[i * 3 + 2] * dt; if (p[i * 3 + 1] < 0.05) { p[i * 3 + 1] = 0.05; v[i * 3 + 1] *= -0.4; } } geo.attributes.position.needsUpdate = true; mat.opacity = 1 - this.age / life; }, dispose() { scene.remove(pts); geo.dispose(); mat.dispose(); } });
+}
+function beam(pos, color, h = 6, life = 0.9) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.45, h, 24, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  m.position.set(pos.x, h / 2, pos.z); scene.add(m);
+  effects.push({ life, age: 0, update(dt) { this.age += dt; const k = this.age / life; m.material.opacity = 0.5 * (1 - k); m.scale.set(1 - k * 0.7, 1, 1 - k * 0.7); }, dispose() { scene.remove(m); m.geometry.dispose(); m.material.dispose(); } });
+}
+function shockRing(pos, color, life = 0.8, maxR = 3) {
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 48), new THREE.MeshBasicMaterial({ color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  m.rotation.x = -Math.PI / 2; m.position.set(pos.x, 0.08, pos.z); scene.add(m);
+  effects.push({ life, age: 0, update(dt) { this.age += dt; const k = this.age / life; m.scale.setScalar(0.2 + k * maxR); m.material.opacity = 1 - k; }, dispose() { scene.remove(m); m.geometry.dispose(); m.material.dispose(); } });
+}
+const flashes = [0, 1].map(() => { const l = new THREE.PointLight(0xffffff, 0, 14, 1.6); scene.add(l); return l; });
+let flashIdx = 0;
+function flash(pos, color, power = 120, life = 0.6) {
+  const l = flashes[flashIdx++ % 2]; l.color.set(color); l.position.set(pos.x, 1.5, pos.z);
+  effects.push({ life, age: 0, update(dt) { this.age += dt; l.intensity = power * Math.max(0, 1 - this.age / life); }, dispose() { l.intensity = 0; } });
+}
+function floatText(pos, text, color = '#ffe08a') {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128; const x = c.getContext('2d');
+  x.font = 'bold 72px "Cinzel Decorative", serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.lineWidth = 10; x.strokeStyle = '#2a1206'; x.strokeText(text, 128, 64); x.fillStyle = color; x.fillText(text, 128, 64);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false })); s.scale.set(2, 1, 1); s.position.set(pos.x, 1.6, pos.z); s.renderOrder = 10; scene.add(s);
+  effects.push({ life: 1.6, age: 0, update(dt) { this.age += dt; s.position.y += dt * 1.2; s.material.opacity = Math.min(1, 3 * (1 - this.age / 1.6)); }, dispose() { scene.remove(s); t.dispose(); s.material.dispose(); } });
+}
+function firework(center, colors) {
+  for (let k = 0; k < 5; k++) setTimeout(() => {
+    const p = new THREE.Vector3(center.x + (Math.random() - .5) * 3, 3 + Math.random() * 3, center.z + (Math.random() - .5) * 3);
+    burst(p, colors[k % colors.length], 90, 5, 1.6, -2.5, 0.2); Sound.pop();
+  }, k * 220);
+}
+
+// ---------- Son (synthèse WebAudio) ----------
+const Sound = (() => {
+  let ctx = null, master = null, on = true, amb = null;
+  function init() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; } if (!navigator.userActivation || !navigator.userActivation.hasBeenActive) return; try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+    master = ctx.createGain(); master.gain.value = on ? 0.55 : 0; master.connect(ctx.destination);
+    // ambiance : bourdon grave + crépitement de feu
+    const g = ctx.createGain(); g.gain.value = 0.05; g.connect(master);
+    [55, 82.4, 110.3].forEach((f, i) => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; const lg = ctx.createGain(); lg.gain.value = 0.35 / (i + 1); const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07 + i * 0.05; const lfg = ctx.createGain(); lfg.gain.value = 0.15; lfo.connect(lfg); lfg.connect(lg.gain); lfo.start(); o.connect(lg); lg.connect(g); o.start(); });
+    amb = g;
+    setInterval(() => { if (!on || !ctx || ctx.state !== 'running') return; if (Math.random() < 0.5) noise(0.02 + Math.random() * 0.03, 2500 + Math.random() * 3000, 0.04 * Math.random(), 'highpass'); }, 140);
+  }
+  function env(node, t, a, d, peak) { node.gain.setValueAtTime(0.0001, t); node.gain.exponentialRampToValueAtTime(peak, t + a); node.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+  function tone(freq, dur, type = 'sine', vol = 0.3, when = 0, slide = 0) {
+    if (!ctx || !on || ctx.state !== 'running') return; const t = ctx.currentTime + when; const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(freq, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * slide), t + dur); env(g, t, 0.01, dur, vol); o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function noise(dur, freq, vol, type = 'bandpass', when = 0, sweep = 0) {
+    if (!ctx || !on || ctx.state !== 'running') return; const t = ctx.currentTime + when; const len = Math.ceil(ctx.sampleRate * dur); const b = ctx.createBuffer(1, len, ctx.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const s = ctx.createBufferSource(); s.buffer = b; const f = ctx.createBiquadFilter(); f.type = type; f.frequency.setValueAtTime(freq, t); if (sweep) f.frequency.exponentialRampToValueAtTime(sweep, t + dur); f.Q.value = 1.2; const g = ctx.createGain(); env(g, t, 0.005, dur, vol); s.connect(f); f.connect(g); g.connect(master); s.start(t);
+  }
+  return {
+    init, get on() { return on; },
+    toggle() { on = !on; init(); if (master) master.gain.value = on ? 0.55 : 0; return on; },
+    dice() { for (let i = 0; i < 9; i++) noise(0.04, 1800 + Math.random() * 1800, 0.35, 'bandpass', i * (0.05 + i * 0.012)); },
+    hop() { tone(520 + Math.random() * 80, 0.08, 'triangle', 0.12, 0, 0.7); },
+    capture() { noise(0.6, 300, 0.4, 'lowpass', 0, 4000); tone(880, 0.5, 'sawtooth', 0.12, 0.05, 0.15); tone(1320, 0.4, 'square', 0.06, 0.1, 0.2); },
+    home() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, 'triangle', 0.2, i * 0.09)); },
+    spell() { [880, 1108, 1318, 1760].forEach((f, i) => tone(f, 0.6, 'sine', 0.1, i * 0.06, 1.02)); noise(0.8, 6000, 0.08, 'highpass'); },
+    pop() { noise(0.3, 900, 0.25, 'lowpass', 0, 200); tone(1500 + Math.random() * 800, 0.3, 'sine', 0.05, 0.05, 0.5); },
+    turn() { tone(392, 0.4, 'sine', 0.12); tone(587, 0.5, 'sine', 0.1, 0.08); },
+    bad() { tone(220, 0.35, 'sawtooth', 0.12, 0, 0.6); tone(165, 0.5, 'sawtooth', 0.1, 0.15, 0.6); },
+    victory() { [[523, 0], [523, .15], [523, .3], [659, .45], [784, .75], [659, 1.0], [784, 1.15], [1047, 1.4]].forEach(([f, w]) => { tone(f, 0.4, 'square', 0.09, w); tone(f / 2, 0.4, 'triangle', 0.12, w); }); },
+  };
+})();
+
+
+// ---------- Marqueurs de destination ----------
+const markers = [];
+function clearMarkers() { markers.forEach(m => { scene.remove(m); m.traverse(o => { if (o.material) { o.material.map && o.material.map.dispose(); o.material.dispose(); } if (o.geometry) o.geometry.dispose(); }); }); markers.length = 0; }
+function labelSprite(text, color) {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = 'rgba(30,15,5,.85)'; x.beginPath(); x.arc(64, 64, 52, 0, 7); x.fill(); x.lineWidth = 6; x.strokeStyle = color; x.stroke();
+  x.fillStyle = '#fff3c4'; x.font = `bold ${text.length > 2 ? 40 : 56}px Cinzel, serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, 64, 68);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true })); s.renderOrder = 9; s.scale.set(0.7, 0.7, 1); return s;
+}
+function addMarker(move, color) {
+  const pl = game.players[game.current];
+  const v = cellCenter(pl.color, move.res.to);
+  const g = new THREE.Group(); g.position.set(v.x, 0.04, v.y);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.46, 40), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
+  ring.rotation.x = -Math.PI / 2; g.add(ring);
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.2, 24, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
+  col.position.y = 0.6; g.add(col);
+  const lab = labelSprite(move.res.capture ? '⚔' : String(move.value), CSS[pl.color]); lab.position.y = 1.5; g.add(lab);
+  // grande zone tactile
+  const hit = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.8, 10), new THREE.MeshBasicMaterial({ visible: false })); hit.position.y = 0.7; hit.userData.move = move; g.add(hit);
+  g.userData.ring = ring; g.userData.hit = hit;
+  scene.add(g); markers.push(g);
+}
+pickables.forEach(h => { h.scale.set(1.35, 1.2, 1.35); }); // pions plus faciles à toucher
+
+// ---------- État ----------
+let game = null, setup = null, busy = false, selChip = null, camMode = 0, finished = false, gameId = 0;
+let mode = 'local';            // 'local' | 'host' | 'client'
+let myId = 'local';            // 'host' pour l'hôte, id de connexion pour un client
+let awaiting = false;          // client : intention envoyée, en attente de l'hôte
+let vibrateOn = true, lastNotify = '';
+const autoplay = params.get('autoplay') === '1';
+const HS = +(params.get('vh') || 1); // vitesse des animations des tours humains (tests)
+const NAMES_DEF = { jaune: 'Simon', bleu: 'Merlin', rouge: 'Morgane', vert: 'Arthur' };
+const TYPE_DEF = { jaune: 'humain', bleu: 'ia', rouge: 'ia', vert: 'ia' };
+const LS = { get(k, d) { try { return localStorage.getItem('parchesi-' + k) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem('parchesi-' + k, v); } catch (e) { } } };
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+const P = pi => game.players[pi];
+const pname = pi => `<b style="color:${shade(COL[P(pi).color], 0.75)}">${esc(P(pi).name)}</b>`;
+const isMine = pl => !!pl && pl.type === 'humain' && (mode === 'local' || pl.owner === myId);
+const myTurn = () => game && !finished && isMine(P(game.current));
+function showScreen(id) { ['scrHome', 'scrJoin', 'scrLocal', 'scrLobby'].forEach(s => $(s).classList.toggle('hidden', s !== id)); if (id) $('hud').classList.add('hidden'); }
+
+// ---------- Écran local ----------
+function buildSeats() {
+  const box = $('seats'); box.innerHTML = '';
+  for (const col of E.COLORS) {
+    const row = document.createElement('div'); row.className = 'seat';
+    row.innerHTML = `<div class="shield" style="background:linear-gradient(${CSS[col]},${shade(COL[col], 0.55)})"></div>
+      <input id="nm-${col}" class="txt" maxlength="16" value="${col === 'jaune' ? esc(LS.get('nom', NAMES_DEF[col])) : NAMES_DEF[col]}" aria-label="Nom ${E.COLOR_NAMES[col]}">
+      <select id="ty-${col}" class="txt" style="width:auto" aria-label="Type ${E.COLOR_NAMES[col]}"><option value="humain">👤 Humain</option><option value="ia">🔮 IA</option><option value="absent">— Absent</option></select>`;
+    box.appendChild(row);
+    row.querySelector('select').value = TYPE_DEF[col];
+  }
+}
+buildSeats();
+// ---------- Options des règles ----------
+const PROTO = 3; // version du protocole en ligne (v2 = 2 ; 3 = règles configurables)
+let localRules = (() => { try { return E.makeRules(JSON.parse(LS.get('regles', 'null'))); } catch (e) { return E.makeRules(); } })();
+function rulesDiff(r) { const base = E.PRESETS[r.preset]; return E.RULE_OPTS.filter(([k, , , only]) => (!only || only === r.des) && r[k] !== base[k]).map(o => o[0]); }
+function renderRulesPanel(el, r, editable, onChange) {
+  const diff = rulesDiff(r), wasOpen = el.querySelector('details') && el.querySelector('details').open;
+  el.innerHTML = `<div class="rpTitle">⚙ Options des règles</div>
+    <div class="presets">${Object.keys(E.PRESETS).map(k => { const [a, b] = E.PRESET_NAMES[k].split(' ('); return `<button type="button" class="preset${r.preset === k ? ' on' : ''}" data-p="${k}" ${editable ? '' : 'disabled'} aria-pressed="${r.preset === k}">${a}<small>(${b}</small></button>`; }).join('')}</div>
+    <details ${wasOpen ? 'open' : ''}><summary>Options des règles${diff.length ? ` — ${diff.length} modifiée${diff.length > 1 ? 's' : ''}` : ''}</summary>
+    ${E.RULE_OPTS.filter(o => !o[3] || o[3] === r.des).map(([k, lab, help]) => `<label class="ro${diff.includes(k) ? ' mod' : ''}"><input type="checkbox" data-k="${k}" ${r[k] ? 'checked' : ''} ${editable ? '' : 'disabled'}><span><b>${lab}</b><small>${help}</small></span></label>`).join('')}
+    </details>
+    <div class="rpFoot"><span class="small">${editable ? '' : "🔒 Choisies par l'hôte"}</span><button type="button" class="rpSee">📜 Voir les règles choisies</button></div>`;
+  el.querySelector('.rpSee').onclick = () => { renderRulesModal(r); $('rules').classList.remove('hidden'); };
+  if (!editable) return;
+  el.querySelectorAll('.preset').forEach(b => b.onclick = () => onChange(E.makeRules({ preset: b.dataset.p })));
+  el.querySelectorAll('input[data-k]').forEach(i => i.onchange = () => onChange(E.makeRules({ ...r, [i.dataset.k]: i.checked })));
+}
+function setLocalRules(r) { localRules = E.makeRules(r); LS.set('regles', JSON.stringify(localRules)); renderRulesPanel($('lRules'), localRules, true, setLocalRules); }
+function rulesSummary(r) { const d = rulesDiff(r); return (r.des === 3 ? '🎲🎲🎲 Règles à 3 dés (8 pitons)' : '🎲🎲 Classique (2 dés, 4 pitons)') + (d.length ? ` + ${d.length} option${d.length > 1 ? 's' : ''} modifiée${d.length > 1 ? 's' : ''}` : ''); }
+function renderRulesModal(r) {
+  r = E.makeRules(r);
+  const n = r.pitons, d = r.des, li = [];
+  li.push(`<li><b>Les dés :</b> on lance <b>${d} dés</b> et on joue chaque dé séparément, sur le même piton ou sur ${d === 3 ? "jusqu'à trois" : 'deux'} pitons différents. Choisis le dé en bas de l'écran, puis touche un piton brillant ou un cercle lumineux.</li>`);
+  li.push(`<li><b>Sortir de la forteresse :</b> il faut ${r.sortieVrai5 ? 'un <b>vrai 5</b> sur un dé — une somme comme 2+3 ou 4+1 <b>ne compte pas</b>' : `un <b>5</b> sur un dé, ou une <b>somme de 5</b> (1+4, 2+3)${d === 3 ? ' avec deux des dés' : ''}`}.${r.sortieObligatoire ? " Si un dé montre 5 et qu'un piton peut sortir, tu es <b>obligé</b> de le sortir." : ''} ${r.sortieCapture ? 'Si un adversaire occupe ta case de sortie, ta sortie le <b>capture</b>' + (r.casesUneCouleur ? ' (tous les adversaires présents, sauf sous bouclier)' : ' quand la case est pleine') + '.' : "Si ta case de sortie est bloquée par un adversaire, tu ne peux pas sortir."}</li>`);
+  li.push(`<li><b>Le parcours :</b> 68 cases, puis le <b>couloir de ta couleur</b> (7 cases) jusqu'au centre. Il faut le <b>nombre exact</b> pour entrer au centre.</li>`);
+  li.push(`<li><b>Châteaux (cases protégées) :</b> les cases avec une <b>rune dorée</b> et les cases de sortie colorées. On ne peut pas y être capturé.${r.casesUneCouleur ? " <b>Une seule couleur</b> par château : tu ne peux pas t'arrêter sur un château où se trouve un adversaire (tu peux passer par-dessus). Exception : ta propre case de sortie, voir plus haut." : ' Deux couleurs différentes peuvent partager un château.'}</li>`);
+  li.push(`<li><b>Capture :</b> finir sur un piton adverse seul (hors château) le renvoie chez lui${r.bonusCapture ? ' et te donne <b>+20 cases</b>' : ''}.${r.captureObligatoire ? " <b>Capture obligatoire :</b> si tu peux capturer, seuls les coups qui capturent sont permis (l'écran ne montre que ceux-là)." : ''}</li>`);
+  li.push(`<li><b>Arrivée :</b> ${r.bonusArrivee ? 'chaque piton qui atteint le centre donne <b>+10 cases</b>.' : "<b>pas de bonus</b> à l'arrivée au centre."}</li>`);
+  li.push(`<li><b>Barrières :</b> deux pitons de <b>même couleur</b> sur une case forment une barrière que personne ne peut franchir. Une case accueille au maximum 2 pitons.</li>`);
+  const dbl = [];
+  if (d === 3) dbl.push('Avec 3 dés, un <b>double</b>, c\'est deux dés pareils.');
+  if (r.doubleRejoue) dbl.push('Un double fait <b>rejouer</b>.'); else if (d === 3) dbl.push('Un double <b>ne fait pas rejouer</b>.');
+  if (r.doubleDebarre) dbl.push("Un double t'oblige à <b>débarrer</b> : tu dois d'abord jouer la valeur du double pour sortir un piton de chacune de tes barrières, tant que c'est possible. Exemple : avec 6 et 6, si le 12 est bloqué plus loin, tu dois quand même jouer au moins un 6 pour ouvrir la barrière. Sans barrière, le double n'a aucun effet." );
+  if (d === 3) dbl.push(r.tripleRelance ? 'Un <b>triple</b> (trois dés pareils) fait <b>relancer</b> les dés après avoir joué.' : 'Un triple ne fait pas relancer.');
+  if (r.troisDoublesPenalite && (r.doubleRejoue || r.tripleRelance)) dbl.push(`À la <b>3e relance de suite</b>, ton dernier piton déplacé retourne à sa forteresse (sauf s'il est dans son couloir) et ton tour se termine.`);
+  else if (r.doubleRejoue || r.tripleRelance) dbl.push('Aucune pénalité pour les relances consécutives.');
+  li.push(`<li><b>${d === 3 ? 'Doubles et triples' : 'Doubles'} :</b> ${dbl.join(' ')}</li>`);
+  li.push(`<li><b>Ordre des obligations :</b> sortir avec un 5, puis débarrer, puis capturer (parmi les coups encore permis).</li>`);
+  li.push(`<li><b>Pas de coup possible :</b> les points restants sont perdus. Les bonus se jouent d'un seul coup avec un seul piton.</li>`);
+  $('rulesBody').innerHTML = `<p class="small" style="text-align:center"><b>${E.PRESET_NAMES[r.preset]}</b>${rulesDiff(r).length ? ' — options modifiées' : ''}</p>
+    <p><b>But :</b> être le premier à amener ses <b>${n} pitons</b> de sa forteresse jusqu'au cristal central.</p><ul>${li.join('')}</ul>`;
+}
+renderRulesModal(localRules);
+renderRulesPanel($('lRules'), localRules, true, setLocalRules);
+function readLocalSetup() {
+  const seats = [];
+  for (const col of E.COLORS) {
+    const ty = $('ty-' + col).value; if (ty === 'absent') continue;
+    seats.push({ color: col, name: ($('nm-' + col).value.trim() || E.COLOR_NAMES[col]).slice(0, 16), type: ty, owner: ty === 'humain' ? 'local' : null });
+  }
+  return { seats, magic: $('magicToggle').checked, aiSpeed: +$('speed').value, rules: E.makeRules(localRules) };
+}
+
+// ---------- Démarrage d'une partie ----------
+function enterGame(st, g) {
+  setup = st; gameId++;
+  game = g; if (!game.stats) game.stats = game.players.map(() => ({ captures: 0, captured: 0, doubles: 0 }));
+  finished = !!game.winner || game.winner === 0; busy = false; selChip = null; awaiting = false; lastNotify = '';
+  confettiOn = false;
+  setBoardTexture(st.magic);
+  for (const n of E.RUNES) { magicGlyphs[n].m.visible = st.magic; magicGlyphs[n].gem.visible = st.magic; }
+  showScreen(null); ['victory', 'menu'].forEach(i => $(i).classList.add('hidden')); $('hud').classList.remove('hidden');
+  $('logPanel').innerHTML = '';
+  if (!game.rules) game.rules = E.makeRules(st.rules);
+  showDiceCount(game.rules.des);
+  relayout(game, true); clearMarkers();
+  log(`⚔ La partie commence! ${game.players.map((_, i) => pname(i)).join(', ')} — ${game.rules.des === 3 ? 'règles à 3 dés, 8 pitons' : 'classique, 2 dés, 4 pitons'}${st.magic ? ' — sorts magiques activés ✨' : ''}.`);
+  renderRulesModal(game.rules);
+  $('mRestart').classList.toggle('hidden', mode === 'client'); $('mShare').classList.toggle('hidden', mode === 'local');
+  resetCam(1600);
+  updateHUD(); measureBar();
+}
+function startGame(st) {
+  if (st.seats.length < 2) { toast('Il faut au moins 2 joueurs'); return false; }
+  const g = E.createGame(st);
+  g.stats = g.players.map(() => ({ captures: 0, captured: 0, doubles: 0 }));
+  st.seats.forEach((s, i) => { if (s.disc) { g.players[i].wasHuman = true; g.players[i].disconnected = true; } });
+  enterGame(st, g);
+  if (mode === 'host') Host.broadcast({ t: 'start', setup: st, g: game });
+  const id = gameId; setTimeout(() => { if (id === gameId) step(); }, 1000);
+  return true;
+}
+
+// ---------- Caméra ----------
+function camDirFor(color) { const k = ARM[color]; return D[k].clone().add(Pp(k).clone().multiplyScalar(0.25)).normalize(); }
+function swingTo(color) {
+  const dir = camDirFor(color);
+  const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+  let d = Math.atan2(dir.x, dir.y) - sph.theta; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+  const th0 = sph.theta;
+  return tween(900, t => { const s = new THREE.Spherical(sph.radius, sph.phi, th0 + d * ease(t)); camera.position.copy(new THREE.Vector3().setFromSpherical(s).add(controls.target)); });
+}
+function resetCam(ms = 700) {
+  const from = camera.position.clone(), to = homeCamPos(), t0 = controls.target.clone(), t1 = homeTarget();
+  const sv = speed; speed = 1;
+  const p = tween(ms, t => { camera.position.lerpVectors(from, to, ease(t)); controls.target.lerpVectors(t0, t1, ease(t)); });
+  speed = sv; return p;
+}
+
+// ---------- HUD ----------
+function log(html) { const d = document.createElement('div'); d.innerHTML = html; const e = $('logPanel'); e.prepend(d); while (e.children.length > 60) e.lastChild.remove(); }
+function banner(html) { $('banner').innerHTML = html; }
+function toast(text, magic) { const t = $('toast'); t.textContent = text; t.classList.toggle('magic', !!magic); t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1300 * Math.max(0.6, speed)); }
+function measureBar() { const h = $('bar').getBoundingClientRect().height; document.documentElement.style.setProperty('--barh', Math.round(h) + 'px'); }
+const SPELL_ICON = { bouclier: '🛡', teleport: '🌀', gel: '❄' };
+function updateHUD() {
+  if (!game) return;
+  const box = $('players'); box.innerHTML = '';
+  game.players.forEach((pl, i) => {
+    const d = document.createElement('div'); d.className = 'pc parch' + (pl.pawns.length > 4 ? ' p8' : '') + (i === game.current && !finished ? ' cur' : '');
+    const home = pl.pawns.filter(p => p.p >= E.META).length;
+    const me = mode !== 'local' && pl.owner === myId && pl.type === 'humain';
+    d.innerHTML = `<div class="band" style="background:${CSS[pl.color]}"></div>
+      <div class="nm">${pl.type === 'ia' ? '🔮' : me ? '⭐' : '👤'} ${esc(pl.name)}</div>
+      <div class="pw"><span class="dots">${pl.pawns.map(p => `<span class="dot ${p.p >= E.META ? 'home' : p.p >= 0 ? 'out' : ''}" style="background:${CSS[pl.color]}"></span>`).join('')}</span>
+      <span class="st">${home || pl.pawns.length > 4 ? home + '/' + pl.pawns.length + '✦' : ''}${pl.spells.map(s => SPELL_ICON[s]).join('')}${pl.shield ? '🛡' : ''}${pl.frozen ? '❄' : ''}${pl.disconnected ? '📵' : ''}</span></div>`;
+    box.appendChild(d);
+  });
+  const cur = P(game.current), mine = myTurn();
+  const rb = $('rollBtn');
+  const canRoll = mine && game.phase === 'roll' && !busy && !awaiting;
+  rb.classList.toggle('hidden', !(mine && game.phase === 'roll') || finished);
+  rb.disabled = !canRoll; rb.classList.toggle('pulse', canRoll);
+  const wm = $('waitMsg');
+  const showWait = !mine && !finished;
+  wm.classList.toggle('hidden', !showWait);
+  if (showWait) wm.innerHTML = cur.type === 'ia' ? `🔮 ${pname(game.current)} joue…` : `⏳ Au tour de ${pname(game.current)}…`;
+  const chips = $('chipsRow'); chips.innerHTML = '';
+  const legal = game.phase === 'move' ? E.legalMoves(game) : [];
+  if (game.phase === 'move') {
+    chipList(legal).forEach(ch => {
+      const b = document.createElement('button');
+      b.className = 'chip ' + (ch.kind === 'bonus' ? 'bonus' : ch.kind === 'magie' ? 'magie' : ch.kind === 'sum' ? 'sum' : '') + (ch.moves.length ? '' : ' dead') + (selChip === ch.key && mine ? ' sel' : '');
+      b.textContent = ch.label; b.title = ch.title; b.setAttribute('aria-label', ch.title);
+      b.onclick = () => { if (!mine || busy || awaiting || !ch.moves.length) return; selChip = ch.key; showChoices(); };
+      chips.appendChild(b);
+    });
+  } else if (game.dice[0]) {
+    game.dice.filter(v => v).forEach(v => { const b = document.createElement('div'); b.className = 'chip used'; b.textContent = v; chips.appendChild(b); });
+  }
+  const sp = $('spells'); sp.innerHTML = '';
+  if (game.magic && mine && !busy && !awaiting) cur.spells.forEach((s, i) => {
+    const b = document.createElement('button'); b.className = 'spell'; b.textContent = SPELL_ICON[s] + ' ' + E.SPELLS[s].nom; b.title = E.SPELLS[s].desc;
+    b.disabled = !(game.phase === 'roll' || legal.length > 0);
+    b.onclick = () => doCast(i);
+    sp.appendChild(b);
+  });
+  measureBar();
+}
+function chipList(legal) {
+  const out = [];
+  game.units.forEach((u, i) => {
+    const moves = legal.filter(m => m.units.length === 1 && game.units[m.units[0]].kind === u.kind && game.units[m.units[0]].v === u.v && m.kind !== 'somme');
+    out.push({ key: 'u' + i, kind: u.kind, label: u.kind === 'die' ? String(u.v) : u.kind === 'bonus' ? '+' + u.v : '🌀+' + u.v, title: u.kind === 'die' ? 'Dé de ' + u.v : u.kind === 'bonus' ? 'Bonus de ' + u.v + ' cases' : 'Téléportation magique', moves });
+  });
+  const sums = {};
+  legal.filter(m => m.kind === 'somme').forEach(m => { const vs = m.units.map(k => game.units[k].v).sort((a, b) => a - b).join('+'); (sums[vs] = sums[vs] || []).push(m); });
+  Object.keys(sums).forEach(vs => out.push({ key: 'sum' + vs, kind: 'sum', label: `${vs}=5 ⚑`, title: 'Somme des dés = 5 : sortir un piton', moves: sums[vs] }));
+  return out;
+}
+function currentChoices() {
+  const legal = E.legalMoves(game), chips = chipList(legal);
+  let ch = chips.find(c => c.key === selChip && c.moves.length);
+  if (!ch) { ch = chips.find(c => c.moves.length && c.kind === 'die') || chips.find(c => c.moves.length); selChip = ch ? ch.key : null; }
+  return { legal, ch };
+}
+function clearSel() { for (const col of E.COLORS) pawnMeshes[col].forEach(m => m.userData.sel.visible = false); }
+function showChoices() {
+  clearMarkers(); clearSel();
+  if (!game || game.phase !== 'move' || !myTurn() || busy || awaiting) { updateHUD(); return; }
+  const { legal, ch } = currentChoices();
+  const col = P(game.current).color;
+  legal.forEach(m => pawnMeshes[col][m.pawn].userData.sel.visible = true);
+  if (ch) ch.moves.forEach(m => addMarker(m, COL[col]));
+  const lab = ch ? (ch.kind === 'die' ? `le dé ${ch.label}` : ch.kind === 'sum' ? 'la somme 5' : ch.kind === 'bonus' ? `le bonus ${ch.label}` : 'la téléportation') : '';
+  banner(`Touche un piton brillant pour jouer ${lab}`);
+  updateHUD();
+}
+function notifyTurn() {
+  const key = game.turn + ':' + game.current;
+  if (lastNotify === key) return; lastNotify = key;
+  const humans = game.players.filter(p => p.type === 'humain').length;
+  if (mode !== 'local') { toast("C'est ton tour!"); if (vibrateOn && navigator.vibrate) try { navigator.vibrate([120, 60, 120]); } catch (e) { } Sound.turn(); }
+  else if (humans > 1) toast(`À toi, ${P(game.current).name}!`);
+}
+
+// ---------- Boucle de jeu ----------
+async function step() {
+  if (!game || finished || busy) return;
+  const id = gameId;
+  const pl = P(game.current);
+  updateHUD();
+  if (myTurn()) {
+    speed = HS;
+    if (awaiting) return;
+    notifyTurn();
+    if (game.phase === 'roll') banner(`${pname(game.current)}, lance les dés!`);
+    else showChoices();
+    if (autoplay) setTimeout(() => { if (id === gameId && myTurn() && !busy && !awaiting) autoAct(); }, 250);
+    return;
+  }
+  clearMarkers(); clearSel();
+  if (mode === 'client') { speed = pl.type === 'ia' ? setup.aiSpeed : HS; banner(pl.type === 'ia' ? `${pname(game.current)} joue…` : `Au tour de ${pname(game.current)}`); return; }
+  if (pl.type === 'ia') {
+    speed = setup.aiSpeed;
+    if (game.phase === 'roll') {
+      banner(`${pname(game.current)} réfléchit…`);
+      busy = true; await wait(450); busy = false; if (id !== gameId) return;
+      while (game.magic && pl.spells.length && game.phase === 'roll' && pl.type === 'ia') { await doCast(0, true); if (id !== gameId) return; }
+      await doRoll(true);
+    } else if (game.phase === 'move') {
+      const m = E.aiChoose(game);
+      busy = true; if (m) { const mesh = pawnMeshes[pl.color][m.pawn]; mesh.userData.sel.visible = true; await wait(380); mesh.userData.sel.visible = false; }
+      busy = false; if (id !== gameId) return;
+      if (m) await doMove(m, true);
+    }
+    return;
+  }
+  // hôte : humain distant
+  speed = HS;
+  banner(`En attente de ${pname(game.current)}…`);
+  Host.processIntents();
+}
+function autoAct() { // mode test : un humain joue automatiquement
+  const pl = P(game.current);
+  if (game.phase === 'roll') { if (game.magic && pl.spells.length) doCast(0); else doRoll(); }
+  else if (game.phase === 'move') { const m = E.aiChoose(game); if (m) doMove(m); }
+}
+// Les actions passent par l'hôte (ou le moteur local)
+async function doRoll(internal) {
+  if (!game || busy || game.phase !== 'roll' || finished) return;
+  if (!internal && !myTurn()) return;
+  if (mode === 'client') { if (awaiting) return; awaiting = true; Client.send({ t: 'roll' }); updateHUD(); return; }
+  busy = true; clearMarkers(); updateHUD();
+  const id = gameId;
+  const ev = E.roll(game, Math.random, window.__forceDice || null);
+  if (mode === 'host') Host.emit(ev);
+  await playEvents(ev, id);
+  if (id !== gameId) return;
+  busy = false; selChip = null; step();
+}
+async function doMove(m, internal) {
+  if (!game || busy || finished) return;
+  if (!internal && !myTurn()) return;
+  clearMarkers(); clearSel();
+  if (mode === 'client') { if (awaiting) return; awaiting = true; Client.send({ t: 'move', pawn: m.pawn, units: m.units, kind: m.kind }); updateHUD(); return; }
+  busy = true;
+  const id = gameId;
+  const ev = E.applyMove(game, m, Math.random);
+  if (mode === 'host') Host.emit(ev);
+  await playEvents(ev, id);
+  if (id !== gameId) return;
+  busy = false; selChip = null; step();
+}
+async function doCast(i, internal) {
+  if (!game || finished) return;
+  if (!internal && (busy || !myTurn())) return;
+  if (mode === 'client') { if (awaiting) return; awaiting = true; Client.send({ t: 'cast', i }); updateHUD(); return; }
+  busy = true;
+  const id = gameId;
+  const ev = E.castSpell(game, i);
+  if (mode === 'host' && ev.length) Host.emit(ev);
+  await playEvents(ev, id);
+  if (id !== gameId) return;
+  busy = false;
+  if (!internal) step();
+}
+
+function pawnWorld(col, id) { return pawnMeshes[col][id].position.clone(); }
+async function hop(e) {
+  const pl = P(e.pi), col = pl.color, m = pawnMeshes[col][e.id];
+  m.userData.anim = true;
+  const { out } = layoutTargets(game);
+  const finalPos = out[col + ':' + e.id];
+  const pts = e.path.map((p, i) => { if (i === e.path.length - 1) return finalPos.clone(); const v = cellCenter(col, p); return new THREE.Vector3(v.x, 0.02, v.y); });
+  let cur = m.position.clone();
+  if (e.exit) {
+    Sound.spell(); beam(cur, COL[col], 4, 0.7); burst(cur.clone().setY(0.4), COL[col], 30, 2, 0.8, -1);
+    const tgt = pts[0];
+    await tween(650, t => { m.position.lerpVectors(cur, tgt, ease(t)); m.position.y = cur.y + Math.sin(t * Math.PI) * 2.2; m.rotation.y += 0.25; });
+    burst(tgt.clone().setY(0.3), COL[col], 30, 2.5, 0.8, -2); shockRing(tgt, COL[col], 0.6, 1.6);
+    m.userData.anim = false; return;
+  }
+  const per = e.path.length > 12 ? 110 : 165;
+  for (const tgt of pts) {
+    const from = cur.clone();
+    m.rotation.y = Math.atan2(tgt.x - from.x, tgt.z - from.z);
+    await tween(per, t => { m.position.lerpVectors(from, tgt, t); m.position.y = from.y + (tgt.y - from.y) * t + Math.sin(t * Math.PI) * 0.55; const sq = 1 + Math.sin(t * Math.PI) * 0.12; m.scale.set(1 / Math.sqrt(sq), sq, 1 / Math.sqrt(sq)); });
+    m.scale.setScalar(1); Sound.hop(); cur = tgt.clone();
+  }
+  m.userData.anim = false;
+}
+async function sendHome(pi, id, magicColor) {
+  const col = P(pi).color, m = pawnMeshes[col][id];
+  m.userData.anim = true;
+  const from = m.position.clone();
+  const v = baseSpot(col, id, pawnCount(game)); const to = new THREE.Vector3(v.x, 0.12, v.y);
+  beam(from, magicColor, 7, 1.0); burst(from.clone().setY(0.5), magicColor, 70, 4.5, 1.2, -4, 0.16); burst(from.clone().setY(0.5), 0xffffff, 18, 3, 0.6, -2, 0.1);
+  flash(from, magicColor, 28, 0.6); shockRing(from, magicColor, 0.9, 3.5);
+  await tween(380, t => { m.scale.set(1 - t * 0.9, 1 + t * 2, 1 - t * 0.9); m.position.y = from.y + t * 2.5; m.rotation.y += 0.5; });
+  m.visible = false; m.position.copy(to);
+  await wait(200);
+  m.visible = true; beam(to, COL[col], 4, 0.7); burst(to.clone().setY(0.5), COL[col], 40, 2.5, 0.9, -3);
+  await tween(350, t => { const s = 0.1 + 0.9 * easeOut(t); m.scale.setScalar(s); m.position.y = to.y + (1 - t) * 1.2; });
+  m.scale.setScalar(1); m.userData.anim = false;
+}
+
+async function playEvents(ev, id) {
+  const stats = game.stats;
+  for (const e of ev) {
+    if (id !== gameId) return;
+    switch (e.type) {
+      case 'gelé': log(`❄ ${pname(e.pi)} est gelé : un dé de moins ce tour-ci.`); toast('❄ Gelé!', true); break;
+      case 'roll': {
+        banner(`${pname(game.current)} lance les dés…`);
+        await rollDiceAnim(e.dice);
+        if (e.triple) { stats[game.current].doubles++; toast('Triple!'); }
+        else if (e.double) { stats[game.current].doubles++; toast(game.rules.doubleDebarre && !game.rules.doubleRejoue ? 'Double : débarre!' : 'Double!'); }
+        { const dv = e.dice.filter(v => v); log(`🎲 ${pname(game.current)} obtient ${dv.slice(0, -1).join(', ')}${dv.length > 1 ? ' et ' : ''}${dv[dv.length - 1]}${e.triple ? ' — triple!' : e.double ? ' — double!' : ''}`); }
+        updateHUD();
+        break;
+      }
+      case 'troisDoubles': Sound.bad(); toast('Trois doubles!'); log(`💀 ${pname(e.pi)} fait trois doubles de suite : malédiction!`); await wait(500); break;
+      case 'renvoi': await sendHome(e.pi, e.id, 0x550000); log(`↩ Le dernier piton de ${pname(e.pi)} retourne à sa forteresse.`); break;
+      case 'move':
+        banner(`${pname(e.pi)} ${e.exit ? 'sort un piton' : 'avance de ' + e.path.length + ' case' + (e.path.length > 1 ? 's' : '')}…`);
+        await hop(e);
+        if (e.exit) log(`⚑ ${pname(e.pi)} sort un piton de sa forteresse.`);
+        break;
+      case 'capture': {
+        const cap = P(e.pi), vic = P(e.vpi);
+        Sound.capture(); toast(e.bonus ? '⚔ Capture! +20' : '⚔ Capture!');
+        stats[e.pi].captures++; stats[e.vpi].captured++;
+        if (e.bonus) floatText(pawnWorld(vic.color, e.vid), '+20');
+        if (isMine(vic) && mode !== 'local' && vibrateOn && navigator.vibrate) try { navigator.vibrate(300); } catch (er) { }
+        await sendHome(e.vpi, e.vid, COL[cap.color]);
+        log(`⚔ ${pname(e.pi)} capture un piton de ${pname(e.vpi)}!${e.bonus ? ' +20 cases.' : ''}`);
+        break;
+      }
+      case 'arrivée': {
+        const pl = P(e.pi); const pos = pawnWorld(pl.color, e.id);
+        Sound.home(); firework(new THREE.Vector3(pos.x, 0, pos.z), [COL[pl.color], 0xffe08a, 0xb98cff]);
+        flash(new THREE.Vector3(0, 0, 0), COL[pl.color], 60, 1.0); shockRing(new THREE.Vector3(0, 0, 0), COL[pl.color], 1.0, 4);
+        if (game.rules.bonusArrivee) { floatText(pos, '+10'); toast('✦ Arrivée! +10'); } else toast('✦ Arrivée!');
+        log(`✦ Un piton de ${pname(e.pi)} atteint le cristal! ${pl.pawns.filter(p => p.p >= E.META).length}/${pl.pawns.length}`);
+        await wait(500);
+        break;
+      }
+      case 'rune': {
+        const v = squareXY(e.sq); const p = new THREE.Vector3(v.x, 0.3, v.y);
+        Sound.spell(); burst(p, 0xb36bff, 70, 3, 1.3, -1.5); beam(p, 0xb36bff, 5, 1.0); flash(p, 0xb36bff, 45, 0.8);
+        toast(`✨ ${E.SPELLS[e.spell].nom}!`, true);
+        log(`✨ ${pname(e.pi)} gagne le sort <b>${E.SPELLS[e.spell].nom}</b>.`);
+        await wait(400);
+        break;
+      }
+      case 'sort': {
+        const pl = P(e.pi);
+        Sound.spell(); toast(`${SPELL_ICON[e.spell]} ${E.SPELLS[e.spell].nom}!`, true);
+        pl.pawns.forEach((pw, i) => { if (pw.p >= 0 && pw.p < E.META) burst(pawnWorld(pl.color, i).setY(0.5), e.spell === 'gel' ? 0x9be7ff : 0xb36bff, 20, 2, 0.8, -1); });
+        if (e.spell === 'gel' && e.target != null) {
+          const tp = P(e.target); tp.pawns.forEach((pw, i) => burst(pawnWorld(tp.color, i).setY(0.6), 0x9be7ff, 25, 1.5, 1.2, 0.5, 0.15));
+          log(`❄ ${pname(e.pi)} gèle ${pname(e.target)} : un dé de moins au prochain tour.`);
+        } else if (e.spell === 'bouclier') log(`🛡 ${pname(e.pi)} lève un bouclier : ses pitons sont protégés.`);
+        else log(`🌀 ${pname(e.pi)} invoque une téléportation : +3 cases à jouer.`);
+        updateHUD(); await wait(500);
+        break;
+      }
+      case 'aucunCoup': banner(`${pname(e.pi)} ne peut pas jouer${e.perdus.length ? ' (' + e.perdus.join(', ') + ' perdus)' : ''}.`); log(`… ${pname(e.pi)} n'a aucun coup possible.`); await wait(900); break;
+      case 'rejouer': toast('Rejoue!'); banner(`${pname(e.pi)} a fait un ${e.why === 'triple' ? 'triple' : 'double'} : il rejoue!`); await wait(400); break;
+      case 'tour': await relayout(game); Sound.turn(); updateHUD(); if (camMode === 2) await swingTo(P(e.pi).color); break;
+      case 'victoire': await victory(e.pi); break;
+    }
+  }
+  if (id !== gameId) return;
+  await relayout(game);
+  updateHUD();
+}
+
+// ---------- Victoire ----------
+let confettiOn = false;
+async function victory(pi) {
+  finished = true; const pl = P(pi);
+  Sound.victory();
+  for (let k = 0; k < 4; k++) setTimeout(() => firework(new THREE.Vector3((Math.random() - .5) * 8, 0, (Math.random() - .5) * 8), [COL[pl.color], 0xffe08a, 0xffffff, 0xb98cff]), k * 700);
+  log(`👑 ${pname(pi)} remporte la partie!`); banner(`👑 ${pname(pi)} remporte la partie!`);
+  if (isMine(pl) && mode !== 'local' && vibrateOn && navigator.vibrate) try { navigator.vibrate([100, 50, 100, 50, 300]); } catch (e) { }
+  await wait(1200);
+  $('vTitle').textContent = isMine(pl) && mode !== 'local' ? 'Tu as gagné!' : 'Victoire!';
+  $('vText').innerHTML = `${pname(pi)} a mené ses ${game.players[pi].pawns.length === 8 ? 'huit' : 'quatre'} pitons jusqu'au cristal des Arcanes!`;
+  $('vStats').innerHTML = game.players.map((p, i) => `${esc(p.name)} : ${p.pawns.filter(x => x.p >= E.META).length}/${p.pawns.length} · ${game.stats[i].captures} capture(s)`).join('<br>') + `<br>Tours joués : ${game.turn}`;
+  const va = $('vAgain'); va.disabled = mode === 'client'; va.textContent = mode === 'client' ? "⏳ En attente de l'hôte…" : '⚔ Rejouer';
+  $('victory').classList.remove('hidden');
+  startConfetti();
+  window.__parchis.finished = true; window.__parchis.winner = pi;
+  updateHUD();
+}
+function startConfetti() {
+  const c = $('confetti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+  const cols = ['#f2c230', '#3b7bea', '#d8402f', '#2fa55a', '#b36bff', '#fff3c4'];
+  const parts = Array.from({ length: isCoarse ? 120 : 220 }, () => ({ x: Math.random() * c.width, y: -Math.random() * c.height, w: 6 + Math.random() * 8, h: 8 + Math.random() * 10, vy: 1.5 + Math.random() * 3, vx: (Math.random() - .5) * 2, r: Math.random() * 6, vr: (Math.random() - .5) * 0.3, col: cols[Math.random() * cols.length | 0] }));
+  confettiOn = true; const t0 = performance.now();
+  (function fr() {
+    x.clearRect(0, 0, c.width, c.height);
+    if (!confettiOn) return;
+    for (const p of parts) { p.y += p.vy; p.x += p.vx + Math.sin(p.y / 30); p.r += p.vr; if (p.y > c.height + 20 && performance.now() - t0 < 6000) { p.y = -20; p.x = Math.random() * c.width; } x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.col; x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); x.restore(); }
+    if (performance.now() - t0 > 10000) confettiOn = false;
+    requestAnimationFrame(fr);
+  })();
+}
+
+// =====================================================================
+// ---------- Réseau : transports ----------
+// =====================================================================
+const PREFIX = 'parchesi-arcanes-v2-';
+const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:stun2.l.google.com:19302' }] };
+const TRANSPORT = params.get('transport') === 'bc' || typeof Peer === 'undefined' ? 'bc' : 'peer';
+const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+const makeCode = () => Array.from({ length: 5 }, () => CODE_ABC[Math.random() * CODE_ABC.length | 0]).join('');
+const rid = () => Math.random().toString(36).slice(2, 10);
+function mkConn(id, sendFn, closeFn) {
+  const h = { data: [], close: [] }; let closed = false;
+  return {
+    id, send(o) { if (!closed) try { sendFn(o); } catch (e) { } },
+    onData(f) { h.data.push(f); }, onClose(f) { h.close.push(f); },
+    _recv(d) { if (!closed) h.data.forEach(f => f(d)); },
+    _fire() { if (closed) return; closed = true; h.close.forEach(f => f()); },
+    close() { if (closed) return; try { closeFn && closeFn(); } catch (e) { } this._fire(); },
+    get closed() { return closed; },
+  };
+}
+const Transport = {
+  peer: {
+    host(code, onConn) {
+      return new Promise((res, rej) => {
+        const peer = new Peer(PREFIX + code, { config: ICE, debug: 0 }); let opened = false;
+        const to = setTimeout(() => { if (!opened) { peer.destroy(); rej(new Error('délai dépassé')); } }, 15000);
+        peer.on('open', () => { opened = true; clearTimeout(to); res({ close() { peer.destroy(); } }); });
+        peer.on('connection', c => {
+          c.on('open', () => {
+            const conn = mkConn(c.peer + ':' + c.connectionId, o => { if (c.open) c.send(o); }, () => c.close());
+            c.on('data', d => conn._recv(d)); c.on('close', () => conn._fire()); c.on('error', () => conn._fire());
+            onConn(conn);
+          });
+        });
+        peer.on('disconnected', () => { if (!peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) { } }, 1500); });
+        peer.on('error', e => { if (!opened) { clearTimeout(to); peer.destroy(); rej(e); } });
+      });
+    },
+    join(code) {
+      return new Promise((res, rej) => {
+        const peer = new Peer({ config: ICE, debug: 0 }); let done = false;
+        const fail = e => { if (done) return; done = true; clearTimeout(to); peer.destroy(); rej(e); };
+        const to = setTimeout(() => fail(new Error('délai dépassé')), 15000);
+        peer.on('open', () => {
+          const c = peer.connect(PREFIX + code, { reliable: true, serialization: 'json' });
+          c.on('open', () => {
+            done = true; clearTimeout(to);
+            const conn = mkConn(peer.id, o => { if (c.open) c.send(o); }, () => { c.close(); setTimeout(() => peer.destroy(), 300); });
+            c.on('data', d => conn._recv(d)); c.on('close', () => { conn._fire(); peer.destroy(); }); c.on('error', () => conn._fire());
+            res(conn);
+          });
+        });
+        peer.on('error', e => { if (!done) fail(e.type === 'peer-unavailable' ? new Error('salle introuvable') : e); });
+      });
+    },
+  },
+  // Repli pour tests : onglets du même navigateur (BroadcastChannel)
+  bc: {
+    host(code, onConn) {
+      const bc = new BroadcastChannel('parchesi-' + code), conns = {};
+      bc.onmessage = e => {
+        const m = e.data; if (m.to !== 'host') return;
+        if (m.k === 'hello') { if (conns[m.from]) return; const c = mkConn(m.from, o => bc.postMessage({ k: 'd', from: 'host', to: m.from, d: o }), () => bc.postMessage({ k: 'bye', from: 'host', to: m.from })); conns[m.from] = c; c.onClose(() => delete conns[m.from]); bc.postMessage({ k: 'ack', from: 'host', to: m.from }); onConn(c); }
+        else if (m.k === 'd' && conns[m.from]) conns[m.from]._recv(m.d);
+        else if (m.k === 'bye' && conns[m.from]) conns[m.from]._fire();
+      };
+      return Promise.resolve({ close() { Object.values(conns).forEach(c => c.close()); bc.close(); } });
+    },
+    join(code) {
+      return new Promise((res, rej) => {
+        const bc = new BroadcastChannel('parchesi-' + code), me = rid(); let conn = null;
+        const to = setTimeout(() => { bc.close(); rej(new Error('salle introuvable')); }, 4000);
+        bc.onmessage = e => {
+          const m = e.data; if (m.to !== me) return;
+          if (m.k === 'ack' && !conn) { clearTimeout(to); conn = mkConn(me, o => bc.postMessage({ k: 'd', from: me, to: 'host', d: o }), () => { bc.postMessage({ k: 'bye', from: me, to: 'host' }); setTimeout(() => bc.close(), 50); }); res(conn); }
+          else if (m.k === 'd' && conn) conn._recv(m.d);
+          else if (m.k === 'bye' && conn) conn._fire();
+        };
+        bc.postMessage({ k: 'hello', from: me, to: 'host' });
+      });
+    },
+  },
+};
+const Net = Transport[TRANSPORT];
+function netBadge(text, bad) { const b = $('netBadge'); b.classList.toggle('hidden', !text); b.classList.toggle('bad', !!bad); b.textContent = text || ''; }
+const basePath = () => location.pathname.endsWith('/') ? location.pathname + 'index.html' : location.pathname; // sous-dossier (ex. /jeux/parchesi/) sûr
+const shareUrl = code => location.origin + basePath() + '?salle=' + code + (TRANSPORT === 'bc' ? '&transport=bc' : '');
+
+// =====================================================================
+// ---------- Hôte (fait autorité) ----------
+// =====================================================================
+const Host = {
+  srv: null, code: null, clients: new Map(), lobby: null, intents: [], seq: 0, hb: null,
+  async open() {
+    for (let k = 0; k < 4; k++) {
+      const code = makeCode();
+      try { this.srv = await Net.host(code, c => this.onConn(c)); this.code = code; break; }
+      catch (e) { if (!(e && e.type === 'unavailable-id')) throw e; }
+    }
+    if (!this.srv) throw new Error('aucun code libre');
+    this.hb = setInterval(() => this.heartbeat(), 2500);
+    return this.code;
+  },
+  close() {
+    this.broadcast({ t: 'bye' });
+    clearInterval(this.hb); this.hb = null;
+    const s = this.srv; this.srv = null; setTimeout(() => { try { s && s.close(); } catch (e) { } }, 200);
+    this.clients.clear(); this.intents = []; this.lobby = null;
+  },
+  heartbeat() {
+    const now = Date.now();
+    for (const [id, c] of this.clients) { if (now - c.seen > 9000) { c.conn.close(); this.drop(id); } else c.conn.send({ t: 'ping', at: now }); }
+  },
+  broadcast(m) { for (const c of this.clients.values()) if (c.ready) c.conn.send(m); },
+  emit(ev) { this.seq++; this.broadcast({ t: 'ev', ev, g: game, seq: this.seq }); },
+  sync(conn) { const m = { t: 'sync', g: game, seq: this.seq }; conn ? conn.send(m) : this.broadcast(m); },
+  onConn(conn) {
+    const c = { conn, name: null, seen: Date.now(), ready: false };
+    this.clients.set(conn.id, c);
+    conn.onData(m => { c.seen = Date.now(); this.onMsg(c, m); });
+    conn.onClose(() => this.drop(conn.id));
+  },
+  uniqueName(name, exceptOwner) {
+    const used = new Set((this.lobby ? this.lobby.seats : []).filter(s => s.type === 'humain' && s.owner !== exceptOwner).map(s => s.name.toLowerCase()));
+    let n = name, k = 2; while (used.has(n.toLowerCase())) n = name.slice(0, 13) + ' ' + k++; return n;
+  },
+  onMsg(c, m) {
+    if (!m || typeof m !== 'object') return;
+    const id = c.conn.id;
+    switch (m.t) {
+      case 'pong': return;
+      case 'hello': {
+        if (m.v !== PROTO) { c.conn.send({ t: 'reject', why: `Version différente de l'hôte (${m.v || '?'} ≠ ${PROTO}) — recharge la page pour obtenir la dernière version.`, proto: PROTO }); setTimeout(() => { try { c.conn.close(); } catch (e) { } }, 800); return; }
+        const name = String(m.name || 'Joueur').trim().slice(0, 16) || 'Joueur';
+        c.ready = true;
+        if (game && setup && setup.online) { // partie en cours : reprise ou spectateur
+          const pi = game.players.findIndex(p => p.wasHuman && p.owner !== 'host' && p.name.toLowerCase() === name.toLowerCase());
+          if (pi >= 0) {
+            const p = game.players[pi];
+            if (p.owner && p.owner !== id && this.clients.has(p.owner)) { const old = this.clients.get(p.owner); this.clients.delete(p.owner); try { old.conn.close(); } catch (e) { } }
+            p.type = 'humain'; p.owner = id; p.disconnected = false;
+            c.name = p.name;
+            c.conn.send({ t: 'welcome', proto: PROTO, phase: 'game', you: id, setup, g: game, seq: this.seq, color: p.color });
+            log(`🔌 ${pname(pi)} est de retour!`); toast(`${p.name} est de retour`);
+            this.sync(); updateHUD(); if (!busy) step();
+          } else {
+            c.name = name;
+            c.conn.send({ t: 'welcome', proto: PROTO, phase: 'game', you: id, setup, g: game, seq: this.seq, color: null });
+            toast(`${name} regarde la partie`);
+          }
+          return;
+        }
+        if (!this.lobby) { c.conn.send({ t: 'reject', why: "La salle n'est plus ouverte." }); return; }
+        const free = this.lobby.seats.find(s => s.type === 'absent') || this.lobby.seats.find(s => s.type === 'ia');
+        if (!free) { c.conn.send({ t: 'reject', why: 'La salle est pleine (4 joueurs).' }); return; }
+        c.name = this.uniqueName(name, id);
+        Object.assign(free, { type: 'humain', name: c.name, owner: id });
+        c.conn.send({ t: 'welcome', proto: PROTO, phase: 'lobby', you: id });
+        this.pushLobby();
+        return;
+      }
+      case 'seat': {
+        if (!this.lobby) return;
+        const tgt = this.lobby.seats.find(s => s.color === m.color), mine = this.lobby.seats.find(s => s.owner === id);
+        if (tgt && mine && tgt !== mine && tgt.type !== 'humain') {
+          Object.assign(tgt, { type: 'humain', name: mine.name, owner: id });
+          Object.assign(mine, { type: 'absent', name: NAMES_DEF[mine.color], owner: null });
+          this.pushLobby();
+        }
+        return;
+      }
+      case 'roll': case 'move': case 'cast':
+        if (!game || finished) return;
+        if (P(game.current).owner !== id || P(game.current).type !== 'humain') { this.sync(c.conn); return; }
+        this.intents.push({ ...m, owner: id });
+        if (!busy) step();
+        return;
+    }
+  },
+  processIntents() {
+    const pl = P(game.current);
+    this.intents = this.intents.filter(i => i.owner === pl.owner);
+    const it = this.intents.shift(); if (!it) return;
+    const conn = this.clients.get(it.owner);
+    if (it.t === 'roll') { if (game.phase === 'roll') return doRoll(true); }
+    else if (it.t === 'cast') { if (pl.spells[it.i] && (game.phase === 'roll' || E.legalMoves(game).length)) return doCast(it.i, true).then(() => step()); }
+    else if (it.t === 'move' && game.phase === 'move') {
+      const m = E.legalMoves(game).find(x => x.pawn === it.pawn && x.kind === it.kind && JSON.stringify(x.units) === JSON.stringify(it.units));
+      if (m) return doMove(m, true);
+    }
+    if (conn) { conn.conn.send({ t: 'reject', why: 'Coup refusé', soft: true }); this.sync(conn.conn); }
+  },
+  drop(id) {
+    const c = this.clients.get(id); if (!c) return; this.clients.delete(id);
+    if (this.lobby) {
+      const s = this.lobby.seats.find(s => s.owner === id);
+      if (s) { Object.assign(s, { type: 'absent', name: NAMES_DEF[s.color], owner: null }); toast(`${c.name} a quitté la salle`); this.pushLobby(); }
+    }
+    if (game && setup && setup.online) {
+      const pi = game.players.findIndex(p => p.owner === id && p.type === 'humain');
+      if (pi >= 0) {
+        const p = game.players[pi]; p.type = 'ia'; p.disconnected = true;
+        log(`📵 ${pname(pi)} s'est déconnecté : l'ordinateur joue à sa place.`); toast(`${p.name} déconnecté — l'IA prend le relais`);
+        this.intents = this.intents.filter(i => i.owner !== id);
+        this.sync(); updateHUD(); if (!busy) step();
+      }
+    }
+  },
+  pushLobby() { this.broadcast({ t: 'lobby', lobby: this.lobby }); renderLobby(this.lobby, 'host'); },
+};
+
+// =====================================================================
+// ---------- Client ----------
+// =====================================================================
+const Client = {
+  conn: null, code: null, name: null, inbox: [], pumping: false, seen: 0, hb: null, leaving: false, retry: null, lobby: null,
+  async join(code, name) {
+    this.code = code; this.name = name; this.leaving = false;
+    const conn = await Net.join(code);
+    this.attach(conn);
+    conn.send({ t: 'hello', name, v: PROTO });
+  },
+  attach(conn) {
+    this.conn = conn; this.seen = Date.now();
+    conn.onData(m => { this.seen = Date.now(); if (m && m.t === 'ping') { conn.send({ t: 'pong' }); return; } this.inbox.push(m); this.pump(); });
+    conn.onClose(() => { if (this.conn === conn) this.lost(); });
+    clearInterval(this.hb); this.hb = setInterval(() => { if (this.conn === conn && Date.now() - this.seen > 9000) { conn.close(); } }, 2000);
+  },
+  send(m) { if (this.conn && !this.conn.closed) this.conn.send(m); else { awaiting = false; toast('Hors ligne — reconnexion…'); } },
+  lost() {
+    if (this.leaving) return;
+    this.conn = null; awaiting = false;
+    netBadge("📡 Connexion à l'hôte perdue — reconnexion…", true);
+    if (!$('scrLobby').classList.contains('hidden')) $('lbStatus').textContent = 'Connexion perdue, reconnexion…';
+    clearTimeout(this.retry);
+    const tryAgain = async () => {
+      if (this.leaving || this.conn) return;
+      try { await this.join(this.code, this.name); netBadge(''); }
+      catch (e) { this.retry = setTimeout(tryAgain, 4000); }
+    };
+    this.retry = setTimeout(tryAgain, 1500);
+  },
+  leave() { this.leaving = true; clearTimeout(this.retry); clearInterval(this.hb); if (this.conn) this.conn.close(); this.conn = null; this.inbox = []; },
+  async pump() {
+    if (this.pumping) return; this.pumping = true;
+    try { while (this.inbox.length) { const m = this.inbox.shift(); try { await this.handle(m); } catch (e) { console.error(e); } } }
+    finally { this.pumping = false; }
+    if (game && !busy) step();
+  },
+  async handle(m) {
+    switch (m.t) {
+      case 'welcome':
+        if (m.proto !== PROTO) { this.leave(); $('jStatus').textContent = "L'hôte utilise une ancienne version du jeu — demande-lui de recharger la page, puis réessaie."; $('jStatus').classList.add('err'); showScreen('scrJoin'); return; }
+        myId = m.you; netBadge('');
+        if (m.phase === 'lobby') { showScreen('scrLobby'); setLobbyRole('client'); $('lbStatus').textContent = ''; }
+        else { enterGame(m.setup, m.g); Client.seq = m.seq; if (!m.color) banner('👁 Tu regardes la partie en cours.'); else toast('Reconnecté!'); }
+        return;
+      case 'reject':
+        if (m.soft) { awaiting = false; toast(m.why); return; }
+        this.leaving = true; $('jStatus').textContent = m.why; $('jStatus').classList.add('err'); showScreen('scrJoin'); return;
+      case 'lobby': this.lobby = m.lobby; renderLobby(m.lobby, 'client'); return;
+      case 'start': enterGame(m.setup, m.g); return;
+      case 'sync':
+        if (busy) return;
+        game = m.g; awaiting = false; finished = game.winner != null; await relayout(game); clearMarkers(); updateHUD(); return;
+      case 'ev': {
+        if (!game) return;
+        game = m.g; awaiting = false; busy = true; clearMarkers(); clearSel();
+        const id = gameId;
+        speed = P(game.current).type === 'ia' ? setup.aiSpeed : HS;
+        await playEvents(m.ev, id);
+        if (id === gameId) busy = false;
+        return;
+      }
+      case 'bye':
+        this.leave(); toast("L'hôte a fermé la salle"); goHome("L'hôte a fermé la salle."); return;
+    }
+  },
+};
+
+// ---------- Salle d'attente ----------
+function setLobbyRole(role) {
+  $('hostShare').classList.toggle('hidden', role !== 'host');
+  $('lbHostOpts').classList.toggle('hidden', role !== 'host');
+  $('lbStart').classList.toggle('hidden', role !== 'host');
+  $('lbClientOpts').classList.toggle('hidden', role === 'host');
+}
+function renderLobby(lb, role) {
+  if (!lb) return;
+  $('lbCode').textContent = lb.code;
+  const box = $('lbSeats'); box.innerHTML = '';
+  for (const s of lb.seats) {
+    const me = s.type === 'humain' && s.owner === myId;
+    const row = document.createElement('button'); row.className = 'seat' + (me ? ' me' : ''); row.type = 'button';
+    const label = s.type === 'humain' ? `${me ? '⭐' : '👤'} ${esc(s.name)}${me ? ' (toi)' : ''}${s.owner === 'host' ? ' · hôte' : ''}` : s.type === 'ia' ? `🔮 ${esc(s.name)} (ordinateur)` : '— Place libre';
+    const hint = role === 'host' ? (s.type === 'humain' ? '' : s.type === 'ia' ? 'Toucher : retirer' : 'Toucher : ajouter l\'IA') : (s.type === 'humain' ? '' : 'Toucher : prendre cette couleur');
+    row.innerHTML = `<div class="shield" style="background:linear-gradient(${CSS[s.color]},${shade(COL[s.color], 0.55)})"></div><div style="flex:1;text-align:left"><div>${label}</div><div class="small">${E.COLOR_NAMES[s.color]}${hint ? ' · ' + hint : ''}</div></div>`;
+    row.onclick = () => {
+      if (role === 'host') { if (s.type === 'humain') return; s.type = s.type === 'ia' ? 'absent' : 'ia'; s.name = NAMES_DEF[s.color]; Host.pushLobby(); }
+      else if (s.type !== 'humain') Client.send({ t: 'seat', color: s.color });
+    };
+    box.appendChild(row);
+  }
+  const n = lb.seats.filter(s => s.type !== 'absent').length, humans = lb.seats.filter(s => s.type === 'humain').length;
+  if (role === 'host') { $('lbStart').disabled = n < 2; $('lbStatus').textContent = `${humans} humain(s), ${n - humans} IA${n < 2 ? ' — il faut au moins 2 joueurs' : ''}`; }
+  renderRulesPanel($('lbRules'), E.makeRules(lb.rules), role === 'host', r => { if (!Host.lobby) return; Host.lobby.rules = r; LS.set('regles', JSON.stringify(r)); localRules = r; Host.pushLobby(); });
+  if (role !== 'host') { $('lbClientOpts').innerHTML = `${esc(rulesSummary(E.makeRules(lb.rules)))}<br>${lb.magic ? '✨ Sorts magiques activés' : 'Sans sorts magiques'} · ${humans} humain(s), ${n - humans} IA<br>⏳ En attente que l'hôte lance la partie…`; $('lbStatus').textContent = ''; }
+}
+function hostLobbyOpts() { if (!Host.lobby) return; Host.lobby.magic = $('lbMagic').checked; Host.lobby.aiSpeed = +$('lbSpeed').value; Host.pushLobby(); }
+$('lbMagic').onchange = hostLobbyOpts; $('lbSpeed').onchange = hostLobbyOpts;
+
+function myNameVal() { const n = ($('myName').value || '').trim().slice(0, 16); if (n) LS.set('nom', n); return n; }
+async function createOnline() {
+  const name = myNameVal() || 'Hôte';
+  mode = 'host'; myId = 'host';
+  showScreen('scrLobby'); setLobbyRole('host');
+  $('lbCode').textContent = '·····'; $('qr').innerHTML = ''; $('lbSeats').innerHTML = ''; $('lbStatus').classList.remove('err');
+  $('lbStatus').textContent = 'Ouverture de la salle…'; $('lbStart').disabled = true;
+  try {
+    const code = await Host.open();
+    Host.lobby = { code, rules: E.makeRules(localRules), magic: $('lbMagic').checked, aiSpeed: +$('lbSpeed').value, seats: E.COLORS.map(col => col === 'jaune' ? { color: col, name, type: 'humain', owner: 'host' } : { color: col, name: NAMES_DEF[col], type: 'absent', owner: null }) };
+    try { const q = qrcode(0, 'M'); q.addData(shareUrl(code)); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { $('qr').textContent = ''; }
+    Host.pushLobby();
+  } catch (e) {
+    $('lbStatus').textContent = "Impossible d'ouvrir la salle en ligne (" + (e && (e.type || e.message) || 'erreur') + '). Vérifie ta connexion Internet.'; $('lbStatus').classList.add('err');
+  }
+}
+async function joinOnline(code, name) {
+  code = (code || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
+  name = (name || '').trim().slice(0, 16);
+  const st = $('jStatus'); st.classList.remove('err');
+  if (code.length !== 5) { st.textContent = 'Le code a 5 lettres.'; st.classList.add('err'); return; }
+  if (!name) { st.textContent = 'Entre ton nom.'; st.classList.add('err'); return; }
+  LS.set('nom', name); $('myName').value = name;
+  mode = 'client'; st.textContent = 'Connexion à la salle ' + code + '…'; $('jGo').disabled = true;
+  try { await Client.join(code, name); }
+  catch (e) { st.textContent = (e && e.message === 'salle introuvable') ? `Salle ${code} introuvable. Vérifie le code ou demande un nouveau lien.` : 'Connexion impossible (' + (e && (e.type || e.message)) + ').'; st.classList.add('err'); mode = 'local'; }
+  $('jGo').disabled = false;
+}
+function goHome(msg) {
+  confettiOn = false; gameId++; game = null; finished = false; busy = false; awaiting = false; clearMarkers(); clearSel();
+  if (mode === 'host') Host.close(); if (mode === 'client') Client.leave();
+  mode = 'local'; myId = 'local'; netBadge('');
+  ['menu', 'victory', 'hud'].forEach(i => $(i).classList.add('hidden'));
+  showScreen('scrHome'); relayout(null, true); resetCam(900);
+  if (msg) toast(msg);
+}
+function startOnlineGame() {
+  const lb = Host.lobby; if (!lb) return;
+  const seats = lb.seats.filter(s => s.type !== 'absent').map(s => ({ color: s.color, name: s.name, type: s.type, owner: s.type === 'humain' ? s.owner : null }));
+  if (seats.length < 2) return;
+  Host.lobby = null; Sound.init();
+  startGame({ seats, magic: lb.magic, aiSpeed: lb.aiSpeed, online: true, code: lb.code, rules: E.makeRules(lb.rules) });
+}
+
+// ---------- Entrées ----------
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+let downPos = null;
+canvas.addEventListener('pointerdown', e => { downPos = [e.clientX, e.clientY]; Sound.init(); });
+canvas.addEventListener('pointerup', e => {
+  if (!downPos) return; const dx = e.clientX - downPos[0], dy = e.clientY - downPos[1]; downPos = null;
+  if (dx * dx + dy * dy > 144) return;
+  pick(e.clientX, e.clientY);
+});
+function pick(cx, cy) {
+  if (!game || busy || awaiting || finished || game.phase !== 'move' || !myTurn()) return;
+  const r = canvas.getBoundingClientRect();
+  mouse.set((cx - r.left) / r.width * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(mouse, camera);
+  const objs = [...markers.map(m => m.userData.hit), ...pickables];
+  const hits = ray.intersectObjects(objs, false);
+  const { legal, ch } = currentChoices();
+  for (const h of hits) {
+    if (h.object.userData.move) { doMove(h.object.userData.move); return; }
+    const pm = h.object.userData.pawn;
+    if (pm && pm.userData.color === P(game.current).color) {
+      const id = pm.userData.id;
+      const m = (ch && ch.moves.find(x => x.pawn === id)) || legal.find(x => x.pawn === id && x.kind === 'sortie') || legal.find(x => x.pawn === id);
+      if (m) { doMove(m); return; }
+    }
+  }
+}
+window.addEventListener('keydown', e => { if (e.code === 'Space' && myTurn() && game.phase === 'roll' && !busy && e.target === document.body) { e.preventDefault(); doRoll(); } });
+$('rollBtn').onclick = () => { Sound.init(); doRoll(); };
+
+// Accueil
+$('myName').value = LS.get('nom', '');
+$('hCreate').onclick = () => { Sound.init(); createOnline(); };
+$('hJoin').onclick = () => { $('joinName').value = $('myName').value || LS.get('nom', ''); $('jStatus').textContent = ''; showScreen('scrJoin'); };
+$('hLocal').onclick = () => { const n = myNameVal(); if (n) $('nm-jaune').value = n; showScreen('scrLocal'); };
+$('jBack').onclick = () => { if (mode === 'client') Client.leave(); mode = 'local'; showScreen('scrHome'); };
+$('jGo').onclick = () => { Sound.init(); joinOnline($('joinCode').value, $('joinName').value); };
+$('joinCode').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, ''); });
+$('lBack').onclick = () => showScreen('scrHome');
+$('lStart').onclick = () => { Sound.init(); mode = 'local'; myId = 'local'; const st = readLocalSetup(); const n = $('nm-jaune').value.trim(); if (n) LS.set('nom', n); startGame(st); };
+$('lbStart').onclick = startOnlineGame;
+$('lbLeave').onclick = () => goHome();
+$('lbCopy').onclick = async () => { const u = shareUrl(Host.code); try { await navigator.clipboard.writeText(u); toast('Lien copié!'); } catch (e) { prompt('Copie ce lien :', u); } };
+$('lbShare').onclick = async () => { const u = shareUrl(Host.code); if (navigator.share) { try { await navigator.share({ title: 'Parchési des Arcanes', text: `Viens jouer au Parchési des Arcanes! Code : ${Host.code}`, url: u }); } catch (e) { } } else $('lbCopy').onclick(); };
+
+// Plein écran
+const fsOK = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+function toggleFull() {
+  const d = document;
+  if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+  else { const el = d.documentElement; const r = (el.requestFullscreen || el.webkitRequestFullscreen).call(el, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => { }); }
+}
+['hFull', 'mFull'].forEach(id => { $(id).classList.toggle('hidden', !fsOK); $(id).onclick = toggleFull; });
+
+// Menu
+const openRules = () => { renderRulesModal(game ? game.rules : Host.lobby ? Host.lobby.rules : Client.lobby && mode === 'client' ? Client.lobby.rules : localRules); $('rules').classList.remove('hidden'); };
+$('hRules').onclick = openRules; $('mRules').onclick = () => { $('menu').classList.add('hidden'); openRules(); };
+$('rulesClose').onclick = () => $('rules').classList.add('hidden');
+$('bMenu').onclick = () => $('menu').classList.remove('hidden');
+$('bLog').onclick = () => { $('logPanel').classList.toggle('hidden'); $('bLog').classList.toggle('on', !$('logPanel').classList.contains('hidden')); };
+$('logPanel').onclick = () => { $('logPanel').classList.add('hidden'); $('bLog').classList.remove('on'); };
+$('mResume').onclick = () => $('menu').classList.add('hidden');
+$('mSound').onclick = () => { const on = Sound.toggle(); $('mSound').textContent = on ? '🔊 Son : oui' : '🔇 Son : non'; };
+const CAM_LABELS = ['🎥 Caméra : fixe', '🌀 Caméra : orbite', '🎯 Caméra : suit'];
+$('mCam').onclick = () => { camMode = (camMode + 1) % 3; $('mCam').textContent = CAM_LABELS[camMode]; if (camMode === 2 && game) swingTo(P(game.current).color); if (camMode === 0) resetCam(); };
+$('mReset').onclick = () => { camMode = camMode === 1 ? 0 : camMode; $('mCam').textContent = CAM_LABELS[camMode]; $('menu').classList.add('hidden'); resetCam(); };
+const fxLabel = () => $('mFx').textContent = bloomOn ? '✨ Lueurs : oui' : '✨ Lueurs : non';
+$('mFx').onclick = () => { bloomOn = !bloomOn; fxLabel(); toast(bloomOn ? 'Lueurs magiques activées' : 'Lueurs magiques désactivées'); }; fxLabel();
+vibrateOn = LS.get('vib', '1') === '1';
+const vibLabel = () => $('mVib').textContent = vibrateOn ? '📳 Vibration : oui' : '📴 Vibration : non';
+$('mVib').onclick = () => { vibrateOn = !vibrateOn; LS.set('vib', vibrateOn ? '1' : '0'); vibLabel(); if (vibrateOn && navigator.vibrate) navigator.vibrate(60); }; vibLabel();
+if (!navigator.vibrate) $('mVib').classList.add('hidden');
+$('mShare').onclick = async () => { const code = mode === 'host' ? Host.code : Client.code; if (!code) return; const u = shareUrl(code); if (navigator.share) { try { await navigator.share({ title: 'Parchési des Arcanes', text: `Code de salle : ${code}`, url: u }); } catch (e) { } } else { try { await navigator.clipboard.writeText(u); toast(`Code ${code} — lien copié`); } catch (e) { toast(`Code de salle : ${code}`); } } };
+const restart = () => {
+  if (mode === 'client' || !setup) return; confettiOn = false; $('menu').classList.add('hidden');
+  if (mode === 'host' && game) setup = { ...setup, seats: game.players.map(p => ({ color: p.color, name: p.name, type: p.type, owner: p.type === 'humain' ? p.owner : null, disc: !!(p.wasHuman && p.type === 'ia') })) };
+  startGame(setup);
+};
+$('mRestart').onclick = restart; $('vAgain').onclick = restart;
+$('mQuit').onclick = () => goHome(); $('vMenu').onclick = () => goHome();
+$('vView').onclick = () => { $('victory').classList.add('hidden'); };
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown', e => { if (e.target === m && m.id !== 'victory') m.classList.add('hidden'); }));
+addEventListener('beforeunload', () => { if (mode === 'host' && Host.srv) Host.broadcast({ t: 'bye' }); if (mode === 'client') Client.leave(); });
+
+// ---------- Boucle de rendu ----------
+const clock = new THREE.Clock();
+let frames = 0, lastAspectPortrait = isPortrait();
+function onResize() {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); composer && composer.setSize(innerWidth, innerHeight);
+  layoutTray();
+  if (isPortrait() !== lastAspectPortrait || !game) { lastAspectPortrait = isPortrait(); camera.position.copy(homeCamPos()); controls.target.copy(homeTarget()); }
+  measureBar();
+}
+addEventListener('resize', onResize);
+addEventListener('orientationchange', () => setTimeout(onResize, 250));
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime; frames++;
+  const now = performance.now();
+  for (let i = tweens.length - 1; i >= 0; i--) { const tw = tweens[i]; const k = Math.min(1, (now - tw.t0) / tw.dur); tw.fn(k); if (k >= 1) { tweens.splice(i, 1); tw.res(); } }
+  for (let i = effects.length - 1; i >= 0; i--) { const ef = effects[i]; ef.update(dt); if (ef.age >= ef.life) { ef.dispose(); effects.splice(i, 1); } }
+  torches.forEach(tc => { const f = 0.8 + 0.2 * Math.sin(t * 13 + tc.seed) + 0.12 * Math.sin(t * 27 + tc.seed * 3) + 0.08 * Math.random(); tc.light.intensity = 60 * f; tc.fl.scale.set(1.6 * (0.9 + 0.1 * f), 2.2 * f, 1); tc.fl2.scale.set(0.9, 1.4 * (0.9 + 0.2 * Math.sin(t * 19 + tc.seed)), 1); });
+  const gem = crystal.userData.gem; gem.rotation.y = t * 0.6; gem.position.y = 2.3 + Math.sin(t * 1.4) * 0.18;
+  crystal.userData.ring.rotation.z = t * 0.4; crystal.userData.disc.rotation.z = -t * 0.25; crystal.userData.light.intensity = 22 + Math.sin(t * 2) * 6;
+  crystal.userData.orbs.children.forEach((o, i) => { const a = o.userData.a + t * 0.9; o.position.set(Math.cos(a) * 1.25, 2.3 + Math.sin(t * 2 + i) * 0.3, Math.sin(a) * 1.25); });
+  safeGlyphs.forEach((g, i) => g.material.opacity = 0.32 + 0.22 * Math.sin(t * 1.6 + i));
+  if (game && game.magic) for (const n of E.RUNES) { const mg = magicGlyphs[n]; const charged = game.runes[n] === 0; mg.m.rotation.z = t * 0.8; mg.m.material.opacity = charged ? 0.75 + 0.25 * Math.sin(t * 3) : 0.15; mg.gem.visible = charged; mg.gem.rotation.y = t * 2; mg.gem.position.y = 0.9 + Math.sin(t * 2.5 + n) * 0.12; }
+  if (!isCoarse || frames % 2 === 0) flags.forEach((f, k) => { const a = f.geometry.attributes.position, b = f.userData.base; for (let i = 0; i < a.count; i++) { const x = b[i * 3]; a.array[i * 3 + 2] = Math.sin(x * 5 - t * 6 + k) * 0.12 * x; } a.needsUpdate = true; f.geometry.computeVertexNormals(); });
+  for (const col of E.COLORS) pawnMeshes[col].forEach((m, i) => {
+    if (!m.visible) return;
+    const u = m.userData; u.orb.position.y = 0.62 + Math.sin(t * 3 + i) * 0.05; u.orb.rotation.y = t * 3;
+    if (u.sel.visible) { u.sel.rotation.z = t * 2; u.sel.material.opacity = 0.6 + 0.4 * Math.sin(t * 6); if (!u.anim) m.position.y = (m.position.y * 0.8) + 0.2 * (Math.abs(Math.sin(t * 4)) * 0.25 + baseY(col, i)); }
+    else if (!u.anim && game) { const by = baseY(col, i); if (Math.abs(m.position.y - by) > 0.001 && !tweensBusy()) m.position.y += (by - m.position.y) * 0.2; }
+    const pl = game && game.players.find(p => p.color === col); u.sh.visible = !!(pl && pl.shield && pl.pawns[i] && pl.pawns[i].p >= 0 && pl.pawns[i].p < E.META); if (u.sh.visible) u.sh.material.opacity = 0.14 + 0.08 * Math.sin(t * 4);
+  });
+  markers.forEach(mk => { mk.userData.ring.rotation.z = t * 1.5; mk.userData.ring.scale.setScalar(1 + 0.1 * Math.sin(t * 5)); });
+  ambient.update(dt, t);
+  controls.autoRotate = camMode === 1 || !game;
+  controls.update();
+  scene.fog.density = 0.018 * Math.min(1, 30 / camera.position.distanceTo(controls.target));
+  if (bloomOn && composer) composer.render(); else renderer.render(scene, camera);
+}
+function tweensBusy() { return tweens.length > 0; }
+function baseY(col, i) { const pl = game && game.players.find(p => p.color === col); if (!pl || !pl.pawns[i]) return 0.12; const p = pl.pawns[i].p; return p < 0 ? 0.12 : p >= E.META ? 0.42 : 0.02; }
+if (params.get('debug3d') === '1') window.__three = { scene, renderer, pawnMeshes, moon: typeof moon !== 'undefined' ? moon : null };
+relayout(null, true);
+camera.position.copy(homeCamPos()); controls.target.copy(homeTarget()); controls.update();
+animate();
+setTimeout(() => { $('loading').style.opacity = 0; setTimeout(() => $('loading').remove(), 900); }, 400);
+
+// ---------- Crochets de test ----------
+function stateHash(g) { if (!g) return null; const s = JSON.stringify({ c: g.current, t: g.turn, ph: g.phase, w: g.winner, p: g.players.map(p => [p.color, p.pawns.map(x => x.p), p.spells, p.type]) }); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
+window.__parchis = {
+  get game() { return game; }, get busy() { return busy; }, get frames() { return frames; }, finished: false, winner: null,
+  get mode() { return mode; }, get myId() { return myId; }, get code() { return mode === 'host' ? Host.code : Client.code; },
+  get awaiting() { return awaiting; }, get inbox() { return Client.inbox.length; }, get transport() { return TRANSPORT; },
+  get clients() { return [...Host.clients.values()].map(c => c.name); }, get lobby() { return Host.lobby || Client.lobby; },
+  hash() { return stateHash(game); }, get stats() { return game && game.stats; },
+  start(opts) { mode = 'local'; myId = 'local'; const seats = (opts.seats || E.COLORS).map(c => ({ color: c, name: NAMES_DEF[c], type: 'ia', owner: null })); this.finished = false; startGame({ seats, magic: !!opts.magic, aiSpeed: opts.speed || 0.1, rules: E.makeRules(opts.rules || (opts.trois ? { preset: 'trois' } : null)) }); },
+  setRules(r) { const v = E.makeRules(r); if (Host.lobby) { Host.lobby.rules = v; Host.pushLobby(); } else setLocalRules(v); return v; },
+  create() { return createOnline(); }, join(code, name) { $('joinCode').value = code; $('joinName').value = name; return joinOnline(code, name); },
+  addAI(color) { const s = Host.lobby && Host.lobby.seats.find(x => x.color === color); if (s && s.type === 'absent') { s.type = 'ia'; Host.pushLobby(); } },
+  setMagic(v) { $('lbMagic').checked = !!v; hostLobbyOpts(); }, setSpeed(v) { const o = document.createElement('option'); o.value = v; $('lbSpeed').appendChild(o); $('lbSpeed').value = String(v); hostLobbyOpts(); },
+  launch() { startOnlineGame(); }, quit() { goHome(); },
+  dropNet() { if (mode === 'client' && Client.conn) Client.conn.close(); },
+  markers() { return markers.map(m => { const v = m.position.clone().setY(0.6).project(camera); return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; }); },
+  relayout() { relayout(game, true); updateHUD(); },
+};
+// Liens : ?salle=CODE ouvre « Rejoindre »
+const salle = (params.get('salle') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
+if (salle) { $('joinCode').value = salle; $('joinName').value = LS.get('nom', ''); showScreen('scrJoin'); history.replaceState(null, '', location.pathname + (TRANSPORT === 'bc' && params.get('transport') ? '?transport=bc' : '')); }
+if (params.get('auto')) { const n = +params.get('auto') || 4; window.__parchis.start({ seats: E.COLORS.slice(0, n), magic: params.get('magie') === '1', trois: params.get('regles') === '3', speed: +(params.get('vitesse') || 0.12) }); }
+
+</script>
+</body>
+</html>
