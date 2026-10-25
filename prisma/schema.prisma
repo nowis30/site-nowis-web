@@ -1518,3 +1518,17 @@ model BillingProfile {
   @@index([isActive, updatedAt])
   @@map("billing_profiles")
 }
+
+// Jeu « Combien de Oui? » (/jeux/combien-de-oui). Une ligne par salle,
+// l'état complet de la partie est stocké en JSON et expire automatiquement.
+model YesNoRoom {
+  code      String   @id
+  state     Json
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@map("yes_no_rooms")
+}
