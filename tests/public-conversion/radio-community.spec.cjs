@@ -25,15 +25,15 @@ async function register(api, email = uniqueEmail(), name = 'Auditeur QA') {
   return email;
 }
 async function verifyEmailAndLogin(api, email) {
-  const unverified = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio'}});
+  const unverified = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio'},headers:{origin:baseURL}});
   expect(unverified.status()).toBe(401);
   expect((await unverified.json()).code).toBe('EMAIL_VERIFICATION_REQUIRED');
   const message = JSON.parse(fs.readFileSync(capturedEmailPath(email), 'utf8'));
   const token = message.html.match(/token=([a-f0-9]{64})/)?.[1];
   expect(token).toBeTruthy();
-  const verified = await api.post('/api/client-auth/reset-password', {data:{token,password}});
+  const verified = await api.post('/api/client-auth/reset-password', {data:{token,password},headers:{origin:baseURL}});
   expect(verified.status(), await verified.text()).toBe(200);
-  const login = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio#mes-favoris'}});
+  const login = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio#mes-favoris'},headers:{origin:baseURL}});
   expect(login.status(), await login.text()).toBe(200);
 }
 async function favorite(api,id,method='put') {
@@ -74,7 +74,7 @@ test('radio account: signup, private favorites across sessions, safe CRM separat
   const second=await playwright.request.newContext({baseURL});
   const anonymous=await playwright.request.newContext({baseURL});
   try {
-    expect((await same.post('/api/client-auth/login',{data:{email,password,next:'/radio'}})).status()).toBe(200);
+    expect((await same.post('/api/client-auth/login',{data:{email,password,next:'/radio'},headers:{origin:baseURL}})).status()).toBe(200);
     expect((await (await same.get('/api/radio/favorites')).json()).trackIds).toEqual([tracks[0].id]);
     await register(second);
     expect((await (await second.get('/api/radio/favorites')).json()).trackIds).toEqual([]);
@@ -198,8 +198,13 @@ test('new album and community: official links, presentation placement, responsiv
   await album.scrollIntoViewIfNeeded();
   await expect.poll(()=>album.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBeTruthy();
   await page.goto('/radio');
-  await page.locator('.nr-album-tracks summary').click();
-  await expect(page.locator('.nr-album-tracks li')).toHaveCount(32);
+  // The favorites response marks client hydration complete; the trace showed
+  // the native details click racing that first hydration on a cold dev route.
+  await expect(page.getByRole('link',{name:'Créer mon compte ou me connecter',exact:true})).toBeVisible();
+  const albumTracks=page.locator('.nr-album-tracks');
+  await albumTracks.locator('summary').click();
+  await expect(albumTracks).toHaveAttribute('open','');
+  await expect(albumTracks.locator('li')).toHaveCount(32);
   for(const track of store.album.tracks) await expect(page.getByRole('link',{name:`Acheter ${track.title} sur iTunes`,exact:true}).first()).toHaveAttribute('href',new RegExp(`i=${track.id}.*app=itunes`));
   await page.locator('.nr-catalogue summary').click();
   for(const width of [320,390,768,1440]){
