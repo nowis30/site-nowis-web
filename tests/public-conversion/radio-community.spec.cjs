@@ -169,7 +169,11 @@ test('radio favorites: selected songs loop, reload preserves selection, single-s
   await expect.poll(()=>audio.evaluate(a=>!a.paused&&a.currentTime>0)).toBeTruthy();
   await page.locator('.nr-player').getByRole('button',{name:'Mettre la radio en pause'}).click();
   await expect(page.getByTestId('radio-cycle-progress')).toContainText('Titre 2 sur 2');
-  await page.reload();await expect(audio).not.toHaveAttribute('src',/.+/);
+  await page.reload();
+  // Verify restored client state before interacting with the server-rendered button.
+  await expect(page.locator('.nr-player .nm-eyebrow')).toHaveText('Mes favoris');
+  await expect(page.getByRole('list',{name:'Mes chansons favorites'}).locator('li')).toHaveCount(2);
+  await expect(audio).not.toHaveAttribute('src',/.+/);
   await page.locator('.nr-player').getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect(audio).toHaveAttribute('src',tracks[1].src);
   await page.locator('.nr-player').getByRole('button',{name:'Chanson suivante'}).click();
