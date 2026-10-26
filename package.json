@@ -13,7 +13,7 @@
     "type-check": "next typegen && tsc --noEmit",
     "typecheck": "next typegen && tsc --noEmit",
     "test:quebec-fiscal": "node --import tsx --test scripts/quebec-fiscal.test.ts",
-    "test": "npm run test:quebec-fiscal && npm run test:crm-fusion-entry && npm run test:security-audit && npm run test:contact-route-security && npm run test:billing-profile-security && npm run test:document-numbers && npm run test:song-request-quote-guards && npm run test:paypal-integration && npm run test:crm-task-automation && npm run test:document-categories && npm run test:client-documents-security && npm run test:invoice-business-rules && npm run test:appointment-business-rules && npm run test:rental-links-ui && npm run test:yes-no-game",
+    "test": "npm run test:quebec-fiscal && npm run test:crm-fusion-entry && npm run test:security-audit && npm run test:contact-route-security && npm run test:billing-profile-security && npm run test:document-numbers && npm run test:song-request-quote-guards && npm run test:paypal-integration && npm run test:crm-task-automation && npm run test:document-categories && npm run test:client-documents-security && npm run test:invoice-business-rules && npm run test:appointment-business-rules && npm run test:rental-links-ui && npm run test:yes-no-game && npm run test:oui-la",
     "test:yes-no-game": "node --import tsx --test scripts/yes-no-game.test.ts",
     "test:crm-fusion-entry": "node --import tsx --test scripts/crm-fusion-entry.test.ts",
     "test:security-audit": "node --test scripts/private-cache-headers.test.cjs scripts/parchesi-static-route.test.cjs scripts/build-database-isolation.test.cjs scripts/account-verification-ui.test.cjs scripts/crm-mfa-ui.test.cjs scripts/auth-client-store.test.cjs scripts/ui-state-regressions.test.cjs scripts/braces-security.test.cjs scripts/eslint-plugin-compat.test.cjs scripts/provider-preflight.test.cjs scripts/provider-otp-delivery-check.test.cjs scripts/provider-storage-probe.test.cjs scripts/private-navigation-boundary.test.cjs && node --import tsx --test scripts/ai-agent-boundaries.test.ts scripts/site-assistant-security.test.ts scripts/site-feedback-security.test.ts scripts/auth-session-security.test.ts scripts/auth-routes-security.test.ts scripts/calendly-webhook-security.test.ts scripts/legacy-client-portal-security.test.ts scripts/listing-access-security.test.ts scripts/client-registration-security.test.ts scripts/client-dossier-isolation.test.ts scripts/google-link-security.test.ts scripts/file-upload-security.test.ts scripts/health-response-security.test.ts scripts/security-migrations.test.ts scripts/persistent-auth-security.test.ts scripts/public-document-security.test.ts scripts/ai-command-quota-security.test.ts scripts/tarot-oracle.test.ts scripts/oracle-conclusion.test.ts scripts/login-redirect-security.test.ts scripts/public-link-key-security.test.ts scripts/storage-paths.test.ts scripts/crm-mfa-transport-security.test.ts scripts/legacy-upload-security.test.ts && node --import tsx --test scripts/public-link-revocation.test.ts scripts/paypal-webhook-receipts.test.ts scripts/private-csp.test.ts scripts/file-content-signature.test.ts scripts/security-diagnostics.test.ts scripts/crm-client-visibility.test.ts",
@@ -30,6 +30,7 @@
     "test:invoice-business-rules": "tsx scripts/invoice-business-rules.test.ts",
     "test:appointment-business-rules": "tsx scripts/appointment-business-rules.test.ts",
     "test:rental-links-ui": "tsx scripts/rental-links-ui.test.ts",
+    "test:oui-la": "node --import tsx --test scripts/oui-la.test.ts",
     "test:booking-migration-rules": "tsx scripts/booking-migration-rules.test.ts",
     "test:guard-no-calendly-links": "tsx scripts/guard-no-calendly-links.test.ts",
     "test:contract": "tsx scripts/admin-runtime-contract.test.ts",
@@ -85,6 +86,7 @@
     "react-icons": "^5.6.0",
     "resend": "^6.9.4",
     "rimraf": "^5.0.10",
+    "uqr": "^0.1.3",
     "zod": "^4.6.7"
   },
   "devDependencies": {
