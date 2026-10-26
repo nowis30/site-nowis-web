@@ -1,7 +1,9 @@
 name: Public conversion QA (isolated)
 on:
+  pull_request:
+    paths: ['src/**', 'public/**', 'tests/**', 'scripts/**', 'package*.json', 'next.config.js', '.github/workflows/public-conversion.yml']
   push:
-    branches: ["audit/public-conversion-20260928", "codex/song-marketing-redesign", "codex/nowis-radio", "codex/radio-full-catalog", "codex/radio-community-album"]
+    branches: ["main", "audit/public-conversion-20260928", "codex/song-marketing-redesign", "codex/nowis-radio", "codex/radio-full-catalog", "codex/radio-community-album"]
 permissions:
   contents: read
 concurrency:
