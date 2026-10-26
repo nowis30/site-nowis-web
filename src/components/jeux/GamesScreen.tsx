@@ -7,6 +7,7 @@ import {
   Crown,
   ExternalLink,
   Gamepad2,
+  MessageCircleQuestion,
   MessageCircleQuestionMark,
   Spade,
   Sparkles,
@@ -46,6 +47,20 @@ const featuredGames: FeaturedGame[] = [
     iconStyle: 'border-cyan-200/30 bg-cyan-300/15 text-cyan-100',
     badgeStyle: 'border-cyan-200/20 bg-cyan-300/10 text-cyan-100',
     buttonStyle: 'bg-cyan-300 text-cyan-950 hover:bg-cyan-200',
+  },
+  {
+    name: 'Oui là',
+    eyebrow: 'Jeu de soirée',
+    description:
+      'Questions oui ou non, parfois osées. Un code QR sur la télé, et chaque personne répond sur son cellulaire.',
+    href: '/jeux/oui-la',
+    cta: 'Ouvrir Oui là',
+    icon: <MessageCircleQuestion size={28} />,
+    border: 'border-rose-300/30 hover:border-rose-200/60',
+    glow: 'from-rose-400/25 via-fuchsia-400/10 to-transparent',
+    iconStyle: 'border-rose-200/30 bg-rose-300/15 text-rose-100',
+    badgeStyle: 'border-rose-200/25 bg-rose-300/10 text-rose-100',
+    buttonStyle: 'bg-rose-300 text-rose-950 hover:bg-rose-200',
   },
   {
     name: 'Village IA',
@@ -216,12 +231,12 @@ export function GamesScreen() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-            Cinq grandes expériences NOWIS et 37 mini-jeux rapides, colorés et pensés pour le téléphone.
+            Six grandes expériences NOWIS et 37 mini-jeux rapides, colorés et pensés pour le téléphone.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-xs font-bold text-slate-200">
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 42 expériences</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⭐ 5 univers vedettes</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 43 expériences</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⭐ 6 univers vedettes</span>
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">📱 Téléphone d’abord</span>
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⚡ 37 mini-jeux instantanés</span>
           </div>
@@ -236,7 +251,7 @@ export function GamesScreen() {
               </div>
               <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Les grands univers à découvrir</h2>
             </div>
-            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Cinq expériences, cinq styles de jeu</span>
+            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Six expériences, six styles de jeu</span>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-5">

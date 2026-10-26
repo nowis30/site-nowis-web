@@ -18,6 +18,7 @@ Pages publiques connues :
 - Portfolio : /portfolio
 - Boutique : /shop
 - Jeux NOWIS : /jeux
+- Oui là, questions oui ou non en gang sur téléphone : /jeux/oui-la
 - Ateliers : /ateliers
 - Chansons personnalisées : /commander-une-chanson
 - À propos : /a-propos
@@ -41,7 +42,8 @@ function fallbackReply(message: string) {
   const value = message.toLocaleLowerCase('fr');
   if (value.includes('atelier')) return 'Vous trouverez les ateliers sur /ateliers. Vous pourrez y découvrir les activités proposées par Création NOWIS.';
   if (value.includes('chanson') || value.includes('musique')) return 'Pour une chanson personnalisée, allez sur /commander-une-chanson. Pour voir les tarifs généraux, utilisez aussi /tarifs.';
-  if (value.includes('jeu')) return 'Le monde des jeux NOWIS se trouve sur /jeux.';
+  if (value.includes('oui ou non') || value.includes('oui là') || value.includes('oui la')) return 'Le jeu de soirée Oui là se joue sur /jeux/oui-la. Chacun répond par oui ou par non sur son téléphone.';
+  if (value.includes('jeu')) return 'Le monde des jeux NOWIS se trouve sur /jeux. Pour le jeu de soirée Oui là, ouvre /jeux/oui-la.';
   if (value.includes('service') || value.includes('offre')) return 'Les services principaux de Création NOWIS sont regroupés sur /services.';
   if (value.includes('création') || value.includes('creation') || value.includes('visuel') || value.includes('vidéo') || value.includes('video')) return 'Pour explorer les créations visuelles, musicales et vidéo, commencez par /creations. Le portfolio complet est aussi disponible sur /portfolio.';
   if (value.includes('spécial') || value.includes('special') || value.includes('atypique') || value.includes('hybride') || value.includes('accompagnement')) return 'Les expertises complémentaires et projets plus atypiques sont regroupés sur /autres-services.';
