@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { PrismaClient } = require('@prisma/client');
 const fs = require('node:fs');
+const { capturedEmailPath } = require('./isolated-email.cjs');
 const tracks = require('../../src/data/radio-tracks.json');
 const store = require('../../src/data/music-store.json');
 const baseURL = 'http://127.0.0.1:3000';
@@ -18,7 +19,22 @@ test.afterAll(async () => { await prisma.$disconnect(); });
 async function register(api, email = uniqueEmail(), name = 'Auditeur QA') {
   const response = await api.post('/api/radio/account', {data:{email,fullName:name,password,website:''},headers:{origin:baseURL,'x-forwarded-for':`qa-${email}`}});
   expect(response.status(), await response.text()).toBe(201);
+  expect((await response.json()).verificationRequired).toBe(true);
+  expect(response.headers()['set-cookie']).toBeUndefined();
+  await verifyEmailAndLogin(api, email);
   return email;
+}
+async function verifyEmailAndLogin(api, email) {
+  const unverified = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio'}});
+  expect(unverified.status()).toBe(401);
+  expect((await unverified.json()).code).toBe('EMAIL_VERIFICATION_REQUIRED');
+  const message = JSON.parse(fs.readFileSync(capturedEmailPath(email), 'utf8'));
+  const token = message.html.match(/token=([a-f0-9]{64})/)?.[1];
+  expect(token).toBeTruthy();
+  const verified = await api.post('/api/client-auth/reset-password', {data:{token,password}});
+  expect(verified.status(), await verified.text()).toBe(200);
+  const login = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio#mes-favoris'}});
+  expect(login.status(), await login.text()).toBe(200);
 }
 async function favorite(api,id,method='put') {
   const response = await api[method]('/api/radio/favorites',{data:{trackId:id},headers:{origin:baseURL}});
@@ -38,6 +54,11 @@ test('radio account: signup, private favorites across sessions, safe CRM separat
   await page.getByLabel('Courriel',{exact:true}).fill(email);
   await page.getByLabel('Mot de passe',{exact:true}).fill(password);
   await page.getByRole('button',{name:'Créer mon compte gratuit',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('Vérifiez votre courriel');
+  await expect(page).toHaveURL(/\/radio\/compte$/);
+  expect((await page.context().cookies()).some(cookie => cookie.name === 'nowis_client_session')).toBe(false);
+  await verifyEmailAndLogin(page.request, email);
+  await page.goto('/radio#mes-favoris');
   await expect(page).toHaveURL(/\/radio#mes-favoris$/);
   await expect(page.locator('#mes-favoris')).toContainText('Bonjour Camille QA');
   const user=await prisma.user.findUnique({where:{email},include:{contact:true}});
