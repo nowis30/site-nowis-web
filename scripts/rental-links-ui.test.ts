@@ -60,6 +60,7 @@ function loadHeader(initialPath = '/radio') {
       if (name === 'next/navigation') return { usePathname: () => pathname };
       if (name === 'next/link') return { __esModule: true, default: 'a' };
       if (name === 'next/image') return { __esModule: true, default: 'img' };
+      if (name === '@/lib/principal-crm') return { principalCrmUrl: 'https://crm.nowis.store/app/aujourdhui#accueil' };
       if (name === '@/components/radio/ShareMenu') return { ShareMenu: 'share-menu' };
       if (name === '@/components/analytics/VisitorCounters') return { VisitorCounters: 'counters' };
       throw new Error('Unexpected Header dependency: ' + name);
@@ -169,7 +170,10 @@ test('Rentals URL constant supports default and custom domain', async () => {
   assert.equal(mod.resolveRentalsPublicUrl('  https://logements.nowis.store  '), 'https://logements.nowis.store');
 });
 
-test('Client portal link remains present', () => {
-  assert.match(headerSource, /Portail client/);
-  assert.match(footerSource, /Portail client/);
+test('CRM links use the principal CRM and the footer no longer advertises old-site signup', () => {
+  const ui = loadHeader();
+  assert.ok(findNodes(ui.render(), node => node.type === 'a' && node.props.href === 'https://crm.nowis.store/app/aujourdhui#accueil').length);
+  assert.match(headerSource, /CRM principal/);
+  assert.match(footerSource, /CRM principal/);
+  assert.doesNotMatch(footerSource, /href="\/inscription"/);
 });

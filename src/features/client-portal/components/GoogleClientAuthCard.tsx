@@ -18,7 +18,7 @@ function GoogleIcon() {
 
 export function GoogleClientAuthCard({
   nextPath = '/client/dashboard',
-  title = 'Créer mon compte gratuitement',
+  title = 'Connexion à un compte existant',
   description = 'Connectez-vous avec Google pour accéder à votre portail client, faire une demande de chanson, réserver un atelier ou consulter vos documents.',
   compact = false,
 }: GoogleClientAuthCardProps) {
@@ -37,7 +37,7 @@ export function GoogleClientAuthCard({
       </a>
       {!compact ? (
         <p className="mt-3 text-xs leading-6 text-[color:var(--site-soft)]">
-          Aucun paiement requis. Votre espace client sera créé automatiquement si nécessaire.
+          Réservé aux comptes existants. Aucun nouveau compte ne sera créé sur cet ancien site.
         </p>
       ) : null}
     </div>

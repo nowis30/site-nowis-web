@@ -8,7 +8,6 @@ interface ClientPortalRequestGateProps {
 }
 
 const steps = [
-  'Créez votre compte',
   'Connectez-vous au portail',
   'Remplissez votre demande',
   'Suivez votre dossier',
@@ -17,7 +16,7 @@ const steps = [
 export function ClientPortalRequestGate({
   nextPath,
   title = 'Les demandes se font maintenant à partir du portail client',
-  description = 'Pour envoyer une demande de chanson, d\'atelier ou de service, vous devez d\'abord créer votre accès client. Une fois connecté, vous pourrez remplir votre demande et suivre votre dossier dans votre portail.',
+  description = 'Pour envoyer une demande de chanson, d\'atelier ou de service, connectez-vous à votre compte existant. Les inscriptions sont fermées sur cet ancien site. Une fois connecté, vous pourrez remplir votre demande et suivre votre dossier dans votre portail.',
   showBackToPortal = false,
 }: ClientPortalRequestGateProps) {
   const encodedNext = encodeURIComponent(nextPath);
@@ -43,12 +42,7 @@ export function ClientPortalRequestGate({
       </ol>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <Link
-          href={`/inscription?next=${encodedNext}`}
-          className="cta-primary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center text-sm font-semibold shadow-fire transition hover:-translate-y-0.5 hover:brightness-110 motion-reduce:transform-none motion-reduce:transition-none"
-        >
-          S’inscrire au portail
-        </Link>
+        <Link href="/contact" className="cta-primary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center text-sm font-semibold">Contacter NOWIS</Link>
         <Link
           href={`/connexion?next=${encodedNext}`}
           className="cta-secondary inline-flex min-h-11 items-center justify-center rounded-2xl px-5 py-3 text-center text-sm font-semibold"

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { principalCrmUrl } from '@/lib/principal-crm';
 import { House } from 'lucide-react';
 import { FaFacebookF, FaInstagram, FaSpotify, FaYoutube } from 'react-icons/fa';
 import { TrackedPhoneLink } from '@/components/analytics/TrackedPhoneLink';
@@ -103,7 +104,7 @@ export const Footer: React.FC = () => {
               <li><Link href="/comment-je-cree" className="font-semibold underline">Comment je crée mes chansons</Link></li>
               <li><Link href="/outils-creation-musicale" className="font-semibold underline">Guide des applications musicales</Link></li>
               <li><Link href="/explorer" className="font-semibold underline">Explorer tout le site</Link></li>
-              <li><Link href="/immobilier" className="font-semibold underline">NOWIS Immobilier · CRM</Link></li>
+              <li><a href={principalCrmUrl} referrerPolicy="no-referrer" className="font-semibold underline">CRM principal ↗</a></li>
               <li><Link href="/radio" className="font-semibold underline">Radio Nowis · écoute aléatoire</Link></li>
               <li><Link href="/musique" className="font-semibold underline">Écouter les chansons</Link></li>
               <li><Link href="/tarot" className="font-semibold underline">Liseuse de tarot</Link></li>
@@ -153,13 +154,8 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/connexion" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
-                  Portail client
-                </Link>
-              </li>
-              <li>
-                <Link href="/inscription" className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
-                  Créer un compte
+                <Link href={principalCrmUrl} className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">
+                  CRM principal
                 </Link>
               </li>
               <li>
@@ -191,8 +187,8 @@ export const Footer: React.FC = () => {
                 <ContactPrefillLink href={legalLinks.contact} className="text-[color:var(--site-muted)] transition-colors hover:text-[color:var(--site-accent-strong)]">Parler de mon projet</ContactPrefillLink>
               </li>
               <li className="pt-2">
-                <Link href="/connexion" className="cta-secondary gap-2 rounded-lg px-4 py-2 text-sm text-[color:var(--site-accent-strong)]">
-                  Portail client →
+                <Link href={principalCrmUrl} className="cta-secondary gap-2 rounded-lg px-4 py-2 text-sm text-[color:var(--site-accent-strong)]">
+                  CRM principal →
                 </Link>
               </li>
               <li>
