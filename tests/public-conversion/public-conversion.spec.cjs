@@ -99,6 +99,12 @@ async function refuseOnLoad(page) {
   await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {key: CONSENT_KEY, value: consent});
 }
 
+async function waitForRadioReady(page) {
+  // The play button is server-rendered before its client handlers and audio ref.
+  // This invitation appears after the anonymous favorites request finishes.
+  await expect(page.getByRole('link', {name: 'Créer mon compte ou me connecter', exact: true})).toBeVisible();
+}
+
 test('presentation downloads only after a click', async ({page}) => {
   await refuseOnLoad(page);
   const videos = [];
@@ -331,6 +337,7 @@ test('radio: click to start, persistent player, shuffle, pause and mobile contro
   });
   await page.setViewportSize({width:390,height:844});
   await page.goto('/radio');
+  await waitForRadioReady(page);
   const audio = page.getByTestId('nowis-radio-audio');
   await expect(audio).not.toHaveAttribute('src', /.+/);
   expect(requests).toHaveLength(0);
@@ -379,6 +386,7 @@ test('radio: unavailable catalog stops after one attempt per track', async ({pag
     return route.fulfill({status:404,body:'Unavailable'});
   });
   await page.goto('/radio');
+  await waitForRadioReady(page);
   await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect(page.locator('.nr-player [role="status"]').filter({hasText:'momentanément indisponible'})).toBeVisible({timeout:45000});
   expect(new Set(attempted).size).toBe(139);
@@ -408,6 +416,7 @@ test('radio: all 139 tracks end before a new tour starts on mobile', async ({pag
     route => route.fulfill({status:200,contentType:'audio/mpeg',body}));
   await page.setViewportSize({width:390,height:844});
   await page.goto('/radio');
+  await waitForRadioReady(page);
   await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect.poll(() => page.evaluate(() => window.__radioEnded.length), {timeout:120000})
     .toBeGreaterThanOrEqual(catalog.length + 1);
@@ -435,6 +444,7 @@ test('radio: temporary failures cannot trap later tours on three playable tracks
     return route.fulfill({status:200,contentType:'audio/mpeg',body});
   });
   await page.goto('/radio');
+  await waitForRadioReady(page);
   await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect.poll(() => page.evaluate(() => window.__radioEnded.length), {timeout:120000})
     .toBeGreaterThanOrEqual(catalog.length + 3);
@@ -452,6 +462,7 @@ test('radio: reloading and closing preserve the tour and resume the current song
   await page.route(/\/audio\/nowis-radio(?:-suno)?\/.*\.mp3(?:\?|$)/,
     route => route.fulfill({status:200,contentType:'audio/mpeg',body}));
   await page.goto('/radio');
+  await waitForRadioReady(page);
   const audio = page.getByTestId('nowis-radio-audio');
   await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect.poll(()=>audio.evaluate(a=>!a.paused && a.currentTime > 0)).toBeTruthy();
@@ -466,6 +477,7 @@ test('radio: reloading and closing preserve the tour and resume the current song
   const saved = await page.evaluate(()=>JSON.parse(sessionStorage.getItem('nowis-radio-session-v1')));
   expect(saved.queue.length).toBe(catalog.length - 3);
   await page.reload();
+  await waitForRadioReady(page);
   await expect(audio).not.toHaveAttribute('src',/.+/);
   await page.getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect(audio).toHaveAttribute('src',selected);
