@@ -97,3 +97,15 @@ test('inactive password accounts cannot receive a new magic link or persisted gr
     assert.equal(state.grants.size, 0);
   });
 });
+
+test('Google cannot provision a new old-site account or mutate an unclaimed CRM contact', async () => {
+  await withGoogle(async () => withAuthDatabase(async state => withBindings(state, async binding => {
+    state.users.splice(1, 1);
+    const before = JSON.stringify({ users: state.users, contact: state.contact });
+    const response = await callback(request());
+    assert.match(response.headers.get('location') || '', /error=registration-closed/);
+    assert.doesNotMatch(response.headers.get('set-cookie') || '', /nowis_client_session=/);
+    assert.equal(binding.count, 0);
+    assert.equal(JSON.stringify({ users: state.users, contact: state.contact }), before);
+  })));
+});

@@ -177,10 +177,10 @@ export function PfeqSection() {
             Présenter l'atelier à votre milieu
           </Link>
           <Link
-            href="/inscription?next=%2Fclient%2Fworkshops%2Fnouveau"
+            href="/contact"
             className="rounded-xl border border-white/10 bg-slate-950/50 px-7 py-3.5 font-semibold text-white transition hover:bg-white/10"
           >
-            Créer un compte et faire une demande
+            Nous parler de votre projet
           </Link>
         </div>
       </div>

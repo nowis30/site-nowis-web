@@ -282,7 +282,7 @@ export function AiMusicCommunity() {
           <div className="flex flex-wrap gap-3">
             {me.profile ? <Link className="cta-secondary" href={`/communaute-ia/artiste/${me.profile.slug}`}>Ma page artiste</Link> : null}
             <Link className="cta-primary" href={me.authenticated ? '/communaute-ia/profil' : '/communaute-ia/compte'}>
-              {me.authenticated ? 'Modifier mon profil ↗' : 'Créer mon compte ↗'}
+              {me.authenticated ? 'Modifier mon profil ↗' : 'Me connecter ↗'}
             </Link>
           </div>
         </div>

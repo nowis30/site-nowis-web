@@ -29,6 +29,7 @@ function loadComponent(file, name, data, initial = [], search = '?verification=s
       if (name === 'next/navigation') return { useSearchParams: () => new URLSearchParams(search), useRouter: () => ({ push: path => navigation.push(path), replace: path => navigation.push(path), refresh: () => {} }) };
       if (name === 'next/link') return { __esModule: true, default: 'a' };
       if (name.endsWith('/validators')) return require('zod') && { clientRegisterSchema: { safeParse: form => ({ success: true, data: form }) } };
+      if (name.endsWith('/principal-crm')) return { principalCrmUrl: 'https://crm.nowis.store/app/aujourdhui#accueil' };
       if (name.endsWith('/safe-next')) return { sanitizeNextPath: (path, fallback) => path || fallback };
       if (name.endsWith('/api-client')) return { readApiJson: response => response.json(), getApiErrorMessage: body => body.error };
       if (name.endsWith('/ExistingContactVerification')) return { ExistingContactVerification: verification };
@@ -55,13 +56,12 @@ for (const [file, name] of [
   ['src/components/radio/RadioAccount.tsx', 'RadioAccount'],
   ['src/components/community/AiCommunityAccount.tsx', 'AiCommunityAccount'],
 ]) {
-  test(name + ' shows email activation and keeps public access without claiming a logged-in account', async () => {
-    const ui = loadComponent(file, name, { status: 201, body: { verificationRequired: true, message: 'Vérifiez votre courriel pour activer votre compte.', redirectTo: '/connexion?verification=sent' } });
-    const form = ui.find(ui.render(), node => node.type === 'form');
-    await form.props.onSubmit({ preventDefault() {}, currentTarget: { fullName: 'Owner', email: 'owner@example.test', password: 'OwnerPassword1', website: '' } });
-    assert.deepEqual(ui.navigation, []);
-    assert.match(ui.text(ui.find(ui.render(), node => node.props?.role === 'status')), /Vérifiez votre courriel/);
-    assert.equal(ui.requests[0].url, '/api/radio/account');
+  test(name + ' offers existing login and has no signup action', () => {
+    const ui = loadComponent(file, name, { status: 200, body: {} });
+    const tree = ui.render();
+    assert.match(ui.text(tree), /inscriptions sont fermées/);
+    assert.equal(ui.find(tree, node => node.type === 'input' && node.props.autoComplete === 'new-password'), null);
+    assert.doesNotMatch(ui.text(tree), /Créer mon compte/);
   });
   test(name + ' respects successful login redirect and exposes the email-proof action on pending login', async () => {
     const success = loadComponent(file, name, { status: 200, body: { redirectTo: '/client/dashboard' } }, [false]);
@@ -85,13 +85,13 @@ test('connexion shows the sent-email confirmation and offers proof after an unve
   assert.ok(ui.find(ui.render(), node => node.type === ui.verification && node.props.email === 'owner@example.test'));
 });
 
-test('client registration respects the email confirmation redirect and clears its unusable pending password', async () => {
-  const ui = loadComponent('src/features/client-portal/components/public/ClientRegisterCard.tsx', 'ClientRegisterCard', { status: 201, body: {
-    verificationRequired: true, message: 'Vérifiez votre courriel.', redirectTo: '/connexion?verification=sent',
-  } }, [{ fullName: 'Owner', email: 'owner@example.test', phone: '8195551234', password: 'OwnerPassword1', address: '', message: '' }]);
-  await ui.find(ui.render(), node => node.type === 'form').props.onSubmit({ preventDefault() {} });
-  assert.deepEqual(ui.navigation, ['/connexion?verification=sent']);
-  assert.equal(ui.states[0].password, '');
+test('the retired signup page offers the principal CRM and historical login without a form', () => {
+  const ui = loadComponent('src/app/inscription/page.tsx', 'default', { status: 410, body: {} });
+  const tree = ui.render();
+  assert.equal(ui.find(tree, node => node.type === 'form'), null);
+  assert.match(ui.text(tree), /inscriptions sont fermées/);
+  assert.ok(ui.find(tree, node => node.type === 'a' && node.props.href === 'https://crm.nowis.store/app/aujourdhui#accueil'));
+  assert.ok(ui.find(tree, node => node.type === 'a' && node.props.href === '/connexion'));
 });
 
 for (const [file, endpoint] of [
@@ -110,10 +110,10 @@ for (const [file, endpoint] of [
   });
 }
 
-test('registration submits the next destination read from the current query', async () => {
-  const ui = loadComponent('src/app/inscription/page.tsx', 'default', { status: 201, body: { redirectTo: '/connexion?verification=sent' } },
-    ['Owner', 'owner@example.test', '8195551234', 'OwnerPassword1'], '?next=%2Fradio%23mes-favoris');
-  await ui.find(ui.render(), node => node.type === 'form').props.onSubmit({ preventDefault() {} });
-  assert.equal(ui.requests[0].body.next, '/radio#mes-favoris');
-  assert.deepEqual(ui.navigation, ['/connexion?verification=sent']);
+test('retired signup ignores supplied next destinations and does not send registration requests', () => {
+  const ui = loadComponent('src/app/inscription/page.tsx', 'default', { status: 410, body: {} }, [], '?next=https://example.invalid');
+  const tree = ui.render();
+  assert.equal(ui.find(tree, node => node.type === 'form'), null);
+  assert.deepEqual(ui.requests, []);
+  assert.ok(ui.find(tree, node => node.type === 'a' && node.props.href === 'https://crm.nowis.store/app/aujourdhui#accueil'));
 });

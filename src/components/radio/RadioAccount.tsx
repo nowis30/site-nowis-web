@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 
 export function RadioAccount() {
   const router = useRouter();
-  const [register, setRegister] = useState(true);
+  const register = false;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -36,7 +36,7 @@ export function RadioAccount() {
     <Link className="nm-text-link" href="/radio">← Retour à la radio</Link>
     <p className="nm-eyebrow">Votre musique, à retrouver</p><h1>{register ? 'Mes chansons préférées.' : 'Bon retour à la radio.'}</h1>
     <p>Un compte gratuit pour garder vos favoris et les réécouter sur votre téléphone ou votre ordinateur.</p>
-    <div className="nr-account-tabs" aria-label="Choisir une action"><button type="button" aria-pressed={register} disabled={busy} onClick={() => { setRegister(true); setError(''); }}>Créer mon compte</button><button type="button" aria-pressed={!register} disabled={busy} onClick={() => { setRegister(false); setError(''); }}>Me connecter</button></div>
+      <p role="status" className="mt-5">Les inscriptions sont fermées sur cet ancien site. Connectez-vous à votre compte existant.</p>
     <form className="nr-form" onSubmit={submit}>
       {register && <label>Prénom ou pseudo<input name="fullName" autoComplete="nickname" required minLength={2} maxLength={80} /></label>}
       <label>Courriel<input name="email" type="email" autoComplete="email" required maxLength={254} /></label>
