@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -5,6 +7,7 @@ import {
   Crown,
   ExternalLink,
   Gamepad2,
+  MessageCircleQuestionMark,
   Spade,
   Sparkles,
   Users,
@@ -12,7 +15,38 @@ import {
 } from 'lucide-react';
 import { GamesGrid } from './GamesGrid';
 
-const featuredGames = [
+type FeaturedGame = {
+  name: string;
+  eyebrow: string;
+  description: string;
+  href: string;
+  cta: string;
+  icon?: ReactNode;
+  image?: string;
+  external?: boolean;
+  staticDocument?: boolean;
+  border: string;
+  glow: string;
+  iconStyle: string;
+  badgeStyle: string;
+  buttonStyle: string;
+};
+
+const featuredGames: FeaturedGame[] = [
+  {
+    name: 'Combien de Oui?',
+    eyebrow: 'Party · Cellulaires',
+    description:
+      'Tout le monde répond oui ou non en secret sur son cellulaire. Devine combien ont dit oui! Code QR, sans installation, iPhone et Android.',
+    href: '/jeux/combien-de-oui',
+    cta: 'Lancer une partie',
+    icon: <MessageCircleQuestionMark size={28} />,
+    border: 'border-cyan-300/25 hover:border-cyan-200/55',
+    glow: 'from-cyan-400/20 via-sky-400/10 to-transparent',
+    iconStyle: 'border-cyan-200/30 bg-cyan-300/15 text-cyan-100',
+    badgeStyle: 'border-cyan-200/20 bg-cyan-300/10 text-cyan-100',
+    buttonStyle: 'bg-cyan-300 text-cyan-950 hover:bg-cyan-200',
+  },
   {
     name: 'Village IA',
     eyebrow: 'Univers social',
@@ -58,9 +92,24 @@ const featuredGames = [
     badgeStyle: 'border-amber-200/20 bg-amber-300/10 text-amber-100',
     buttonStyle: 'bg-amber-300 text-amber-950 hover:bg-amber-200',
   },
+  {
+    name: 'Parchési des Arcanes',
+    eyebrow: 'Parchési 3D',
+    description:
+      'Le parchési médiéval et magique en 3D, classique ou à 3 dés et 8 pitons. Joue contre l’ordinateur ou en ligne avec tes amis, chacun sur son cellulaire.',
+    href: '/jeux/parchesi',
+    cta: 'Jouer à Parchési',
+    image: '/jeux/parchesi/icons/icon-512.png',
+    staticDocument: true,
+    border: 'border-violet-300/30 hover:border-amber-200/60',
+    glow: 'from-violet-500/25 via-amber-300/10 to-transparent',
+    iconStyle: 'border-amber-200/40 bg-[#1a0f2e] text-amber-100',
+    badgeStyle: 'border-amber-200/25 bg-amber-300/10 text-amber-100',
+    buttonStyle: 'bg-amber-300 text-amber-950 hover:bg-amber-200',
+  },
 ];
 
-function FeaturedGameCard({ game }: { game: (typeof featuredGames)[number] }) {
+function FeaturedGameCard({ game }: { game: FeaturedGame }) {
   const content = (
     <>
       <div
@@ -74,9 +123,19 @@ function FeaturedGameCard({ game }: { game: (typeof featuredGames)[number] }) {
 
       <div className="relative flex h-full flex-col p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
-          <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-lg ${game.iconStyle}`}>
-            {game.icon}
-          </div>
+          {game.image ? (
+            <Image
+              src={game.image}
+              alt=""
+              width={64}
+              height={64}
+              className={`h-16 w-16 rounded-2xl border object-cover shadow-lg ${game.iconStyle}`}
+            />
+          ) : (
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-lg ${game.iconStyle}`}>
+              {game.icon}
+            </div>
+          )}
           <span className={`rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.15em] ${game.badgeStyle}`}>
             {game.eyebrow}
           </span>
@@ -97,9 +156,13 @@ function FeaturedGameCard({ game }: { game: (typeof featuredGames)[number] }) {
 
   const className = `group relative min-h-[300px] overflow-hidden rounded-[1.7rem] border bg-slate-950/75 shadow-[0_22px_70px_rgba(0,0,0,0.38)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_85px_rgba(0,0,0,0.48)] ${game.border}`;
 
-  if (game.external) {
+  if (game.external || game.staticDocument) {
     return (
-      <a href={game.href} target="_blank" rel="noopener noreferrer" className={className}>
+      <a
+        href={game.href}
+        {...(game.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        className={className}
+      >
         {content}
       </a>
     );
@@ -153,12 +216,12 @@ export function GamesScreen() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-            Trois grandes expériences NOWIS et 37 mini-jeux rapides, colorés et pensés pour le téléphone.
+            Cinq grandes expériences NOWIS et 37 mini-jeux rapides, colorés et pensés pour le téléphone.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-xs font-bold text-slate-200">
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 40 expériences</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⭐ 3 univers vedettes</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 42 expériences</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⭐ 5 univers vedettes</span>
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">📱 Téléphone d’abord</span>
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⚡ 37 mini-jeux instantanés</span>
           </div>
@@ -173,10 +236,10 @@ export function GamesScreen() {
               </div>
               <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Les grands univers à découvrir</h2>
             </div>
-            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Trois expériences, trois styles de jeu</span>
+            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Cinq expériences, cinq styles de jeu</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-5">
             {featuredGames.map((game) => (
               <FeaturedGameCard key={game.name} game={game} />
             ))}

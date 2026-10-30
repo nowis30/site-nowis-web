@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
+import { principalCrmUrl } from '@/lib/principal-crm';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { GoogleClientAuthCard } from '@/features/client-portal/components/GoogleClientAuthCard';
@@ -19,6 +20,7 @@ const benefits = [
 ];
 
 const externalErrorMessages: Record<string, string> = {
+  'registration-closed': 'Les inscriptions sont fermées sur cet ancien site. Ouvrez le CRM principal pour vos nouveaux accès.',
   'invalid-link': 'Le lien de connexion est invalide ou expiré.',
   'account-not-found': "Aucun compte client n’est relié à ce lien.",
   'google-unavailable': 'La connexion Google est temporairement indisponible.',
@@ -31,7 +33,7 @@ const externalErrorMessages: Record<string, string> = {
   'google-db-schema-missing': 'Connexion Google temporairement indisponible : migration de base de données requise.',
   'google-auth-failed': 'La connexion Google a échoué. Réessayez.',
   'google-email-invalid': 'Votre compte Google doit avoir une adresse e-mail vérifiée.',
-  'google-role-mismatch': 'Cette adresse est déjà utilisée pour un compte interne. Utilisez la connexion CRM.',
+  'google-role-mismatch': 'Cette adresse est déjà utilisée pour un compte interne. Utilisez la ouvrir le CRM principal ↗.',
   'google-account-disabled': 'Ce compte est désactivé. Contactez le support.',
   'google-account-conflict': 'Un conflit de connexion Google est survenu. Contactez le support.',
   'google-link-login-required': 'Un accès existe déjà pour cette adresse. Connectez-vous d’abord à ce compte avec votre mot de passe, puis revenez ici pour associer Google. Si vous ne l’avez pas créé, utilisez « Mot de passe oublié » ou contactez NOWIS.',
@@ -103,6 +105,7 @@ function ConnexionContent() {
           >
             Retrouvez votre projet NOWIS sans chercher dans vos courriels
           </h1>
+          <a className="cta-primary mt-6 inline-flex min-h-12 items-center" href={principalCrmUrl} referrerPolicy="no-referrer">Ouvrir le CRM principal ↗</a>
           <p className="mt-5 text-base leading-8 text-[color:var(--site-muted)]">
             Connectez-vous pour consulter vos demandes, vos rendez-vous, vos échanges et vos documents dans un espace
             client simple et sécurisé.
@@ -238,13 +241,7 @@ function ConnexionContent() {
             </details>
 
             <p className="mt-6 text-sm leading-6 text-[color:var(--site-muted)]">
-              Pas encore d’accès ?{' '}
-              <Link
-                href={`/inscription?next=${encodeURIComponent(nextPath)}`}
-                className="inline-flex min-h-11 items-center font-semibold text-[color:var(--site-accent-strong)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40"
-              >
-                Créer mon accès
-              </Link>
+              Les inscriptions sont fermées sur cet ancien site. Cette connexion permet de consulter un compte existant.
             </p>
 
             <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">

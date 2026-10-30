@@ -20,6 +20,7 @@ export const crmNavigation: CrmNavItem[] = [
   { label: 'Demandes atelier', href: '/crm/workshop-requests', module: 'workshopRequests', icon: 'FolderOpen', section: 'Production' },
   { label: 'Fichiers',      href: '/crm/files',         module: 'documents',     icon: 'Paperclip',       section: 'Production' },
   { label: 'Finance',       href: '/crm/finance',       module: 'finance',       icon: 'Banknote',        section: 'Finance' },
+  { label: 'Taxes TPS/TVQ', href: '/crm/taxes',          module: 'finance',       icon: 'Receipt',         section: 'Finance' },
   { label: 'Soumissions commerciales', href: '/crm/commercial-quotes', module: 'commercialQuotes', icon: 'FileText', section: 'Finance' },
   { label: 'Factures',      href: '/crm/invoices',      module: 'invoices',      icon: 'FileText',        section: 'Finance' },
   { label: 'Dossiers',      href: '/crm/cases',         module: 'cases',         icon: 'FolderOpen',      section: 'Administration' },

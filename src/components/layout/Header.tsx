@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { principalCrmUrl } from '@/lib/principal-crm';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { ShareMenu } from '@/components/radio/ShareMenu';
@@ -45,11 +46,17 @@ export function Header() {
   }, []);
   useEffect(() => {
     if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape' && !document.querySelector('dialog[open]')) { setOpenPath(null); toggle.current?.focus(); } };
     const resize = () => { if (window.innerWidth >= 1200) setOpenPath(null); };
     document.addEventListener('keydown', escape);
     window.addEventListener('resize', resize);
-    return () => { document.removeEventListener('keydown', escape); window.removeEventListener('resize', resize); };
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', escape);
+      window.removeEventListener('resize', resize);
+    };
   }, [open]);
   const active = (href: string) => pathname === href || pathname.startsWith(href + '/');
   return <header className="nm-header" ref={header}>
@@ -57,14 +64,14 @@ export function Header() {
       <Link className="nm-brand" href="/" aria-label="Retour à l’accueil Création Nowis"><Image src="/nowis-mark.webp" width={44} height={44} alt="" /><span>NOWIS<small>Vos histoires en musique</small></span></Link>
       <div className="nm-desktop-nav">{primary.map(link => link.href === '/radio'
         ? <div className="ns-nav-radio" key={link.href}><Link href={link.href} aria-current={active(link.href) ? 'page' : undefined}>{link.label}</Link><ShareMenu compact /></div>
-        : <Link key={link.href} href={link.href} aria-current={active(link.href) ? 'page' : undefined}>{link.label}</Link>)}<Link href="/connexion">Portail client</Link><Link className="cta-primary" href="/commander-une-chanson#demande">Créer ma chanson ↗</Link></div>
+        : <Link key={link.href} href={link.href} aria-current={active(link.href) ? 'page' : undefined}>{link.label}</Link>)}<a href={principalCrmUrl} referrerPolicy="no-referrer">CRM principal ↗</a><Link className="cta-primary" href="/commander-une-chanson#demande">Créer ma chanson ↗</Link></div>
       <button className="nm-menu-toggle" ref={toggle} type="button" aria-expanded={open} aria-controls="mobile-main-menu" aria-label={open ? 'Fermer le menu principal' : 'Ouvrir le menu principal'} onClick={() => setOpenPath(current => current === pathname ? null : pathname)}>{open ? 'Fermer ×' : 'Menu ☰'}</button>
       {open && <div id="mobile-main-menu" className="nm-mobile-menu">
         <p className="nm-eyebrow">Bienvenue chez Nowis</p>
         {primary.map(link => link.href === '/radio'
           ? <div className="ns-nav-radio" key={link.href}><Link href={link.href} aria-current={active(link.href) ? 'page' : undefined} onClick={() => setOpenPath(null)}>{link.label}<span aria-hidden="true">↗</span></Link><ShareMenu /></div>
           : <Link key={link.href} href={link.href} aria-current={active(link.href) ? 'page' : undefined} onClick={() => setOpenPath(null)}>{link.label}<span aria-hidden="true">↗</span></Link>)}
-        <div className="nm-menu-secondary">{[{label:'Accueil',href:'/'},{label:'Tarifs',href:'/tarifs'},{label:'Contact',href:'/contact'},{label:'Jeux',href:'/jeux'},{label:'À propos',href:'/a-propos'},{label:'Portail client',href:'/connexion'}].map(link => <Link key={link.href} href={link.href} onClick={() => setOpenPath(null)}>{link.label}</Link>)}</div>
+        <div className="nm-menu-secondary">{[{label:'Accueil',href:'/'},{label:'Tarifs',href:'/tarifs'},{label:'Contact',href:'/contact'},{label:'Jeux',href:'/jeux'},{label:'À propos',href:'/a-propos'},{label:'CRM principal ↗',href:principalCrmUrl}].map(link => <Link key={link.href} href={link.href} onClick={() => setOpenPath(null)}>{link.label}</Link>)}</div>
         <Link className="cta-primary" href="/commander-une-chanson#demande" onClick={() => setOpenPath(null)}>Créer ma chanson ↗</Link>
       </div>}
     </nav>

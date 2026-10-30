@@ -6,7 +6,7 @@ import { FormEvent, useState } from 'react';
 
 export function AiCommunityAccount() {
   const router = useRouter();
-  const [register, setRegister] = useState(true);
+  const register = false;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -51,17 +51,7 @@ export function AiCommunityAccount() {
       <h1 className="nm-page-title">{register ? 'Créez votre profil artiste.' : 'Revenez dans la communauté.'}</h1>
       <p className="nm-intro">Le même compte fonctionne pour la radio et la communauté musicale Nowis.</p>
 
-      <div className="mt-7 flex gap-2 rounded-2xl bg-[color:var(--site-soft)] p-2">
-        <button type="button" onClick={() => { setRegister(true); setError(''); }} aria-pressed={register}
-          className="min-h-11 flex-1 rounded-xl px-4 py-2 font-semibold aria-pressed:bg-white aria-pressed:shadow-sm">
-          Créer un compte
-        </button>
-        <button type="button" onClick={() => { setRegister(false); setError(''); }} aria-pressed={!register}
-          className="min-h-11 flex-1 rounded-xl px-4 py-2 font-semibold aria-pressed:bg-white aria-pressed:shadow-sm">
-          Me connecter
-        </button>
-      </div>
-
+      <p role="status" className="mt-5">Les inscriptions sont fermées sur cet ancien site. Connectez-vous à votre compte existant.</p>
       <form onSubmit={submit} className="brand-card mt-5 rounded-[2rem] p-5 sm:p-7">
         {register ? (
           <label className="block text-sm font-medium text-[color:var(--site-heading)]">

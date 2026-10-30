@@ -1,7 +1,5 @@
-import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { Prisma, UserRole } from '@prisma/client';
-import { hashPassword } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import {
   clearGoogleOauthNextCookie,
@@ -295,7 +293,11 @@ export async function GET(request: NextRequest) {
         include: { contact: true },
       });
 
-      if (existingUser && existingUser.role !== UserRole.PORTAL_USER) {
+      // A verified Google identity can sign in to an existing account, but cannot
+      // create an account or attach a previously unclaimed contact on this site.
+      if (!existingUser) throw new Error('REGISTRATION_CLOSED');
+
+      if (existingUser.role !== UserRole.PORTAL_USER) {
         throw new Error('GOOGLE_ROLE_MISMATCH');
       }
 
@@ -315,76 +317,7 @@ export async function GET(request: NextRequest) {
       let user = existingUser;
       let contact = existingUser?.contact || null;
 
-      if (!user) {
-        const existingContact = await tx.contact.findFirst({
-          where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
-        });
-
-        contact = existingContact
-          ? await tx.contact.update({
-              where: { id: existingContact.id },
-              data: {
-                fullName,
-                type: 'CLIENT',
-                source: existingContact.source || 'website-google',
-                tags: Array.from(new Set([...(existingContact.tags || []), 'portal-client', 'google-auth'])),
-              },
-            })
-          : await tx.contact.create({
-              data: {
-                type: 'CLIENT',
-                fullName,
-                email,
-                source: 'website-google',
-                tags: ['portal-client', 'google-auth'],
-              },
-            });
-
-        const generatedPassword = await hashPassword(`google-${randomUUID()}`);
-
-        user = await tx.user.create({
-          data: {
-            email,
-            fullName,
-            passwordHash: generatedPassword,
-            role: UserRole.PORTAL_USER,
-            isActive: true,
-            emailVerifiedAt: new Date(),
-            contactId: contact.id,
-          },
-          include: { contact: true },
-        });
-
-        try {
-          await tx.activity.create({
-            data: {
-              type: 'FORM',
-              title: 'Client inscrit via Google',
-              description: `Inscription gratuite via Google: ${fullName} (${email}).`,
-              contactId: contact.id,
-              userId: user.id,
-            },
-          });
-        } catch {
-          // Non-critical: skip activity logging if table is missing or fails
-        }
-
-        try {
-          await tx.task.create({
-            data: {
-              title: 'Nouveau client Google: completer la fiche contact',
-              description: `Inscription Google: ${fullName} (${email}). Verifier telephone, adresse de facturation et adresse postale de la demande (atelier/chanson).`,
-              type: 'FOLLOW_UP',
-              status: 'TODO',
-              priority: 'MEDIUM',
-              linkedType: 'CONTACT',
-              linkedId: contact.id,
-            },
-          });
-        } catch {
-          // Non-critical: do not block login if task table is unavailable
-        }
-      } else {
+      {
         if (!contact) {
           const existingContact = await tx.contact.findFirst({
             where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
@@ -515,7 +448,9 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     const code =
-      error instanceof Error && error.message === 'GOOGLE_ROLE_MISMATCH'
+      error instanceof Error && error.message === 'REGISTRATION_CLOSED'
+        ? 'registration-closed'
+        : error instanceof Error && error.message === 'GOOGLE_ROLE_MISMATCH'
         ? 'google-role-mismatch'
         : error instanceof Error && error.message === 'GOOGLE_ACCOUNT_DISABLED'
           ? 'google-account-disabled'

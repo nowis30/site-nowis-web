@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireApiPermission } from '@/features/crm/auth/api-guard';
 import { getBillingIssuerSnapshot } from '@/lib/billing-profile';
+import { normalizeGstNumber, normalizeNeq, normalizeQstNumber, QuebecRegistrationError } from '@/lib/quebec-fiscal';
 
 const billingProfileSchema = z.object({
   displayName: z.string().trim().min(2).max(160),
@@ -19,6 +20,9 @@ const billingProfileSchema = z.object({
   postalCode: z.string().trim().max(40).optional().or(z.literal('')),
   country: z.string().trim().max(120).optional().or(z.literal('')),
   taxId: z.string().trim().max(80).optional().or(z.literal('')),
+  neq: z.string().trim().max(20).optional().or(z.literal('')),
+  gstNumber: z.string().trim().max(20).optional().or(z.literal('')),
+  qstNumber: z.string().trim().max(20).optional().or(z.literal('')),
   paymentTerms: z.string().trim().max(1000).optional().or(z.literal('')),
   footerNote: z.string().trim().max(1000).optional().or(z.literal('')),
   taxesEnabled: z.boolean().default(true),
@@ -59,6 +63,9 @@ export async function PUT(request: NextRequest) {
 
   try {
     const payload = billingProfileSchema.parse(await request.json());
+    const neq = normalizeNeq(payload.neq, true);
+    const gstNumber = normalizeGstNumber(payload.gstNumber, true);
+    const qstNumber = normalizeQstNumber(payload.qstNumber, true);
 
     const current = await prisma.billingProfile.findFirst({
       where: { isActive: true },
@@ -84,6 +91,9 @@ export async function PUT(request: NextRequest) {
             postalCode: normalizeOptional(payload.postalCode),
             country: normalizeOptional(payload.country) || 'Canada',
             taxId: normalizeOptional(payload.taxId),
+            neq,
+            gstNumber,
+            qstNumber,
             paymentTerms: normalizeOptional(payload.paymentTerms),
             footerNote: normalizeOptional(payload.footerNote),
             taxesEnabled: payload.taxesEnabled,
@@ -109,6 +119,9 @@ export async function PUT(request: NextRequest) {
             postalCode: normalizeOptional(payload.postalCode),
             country: normalizeOptional(payload.country) || 'Canada',
             taxId: normalizeOptional(payload.taxId),
+            neq,
+            gstNumber,
+            qstNumber,
             paymentTerms: normalizeOptional(payload.paymentTerms),
             footerNote: normalizeOptional(payload.footerNote),
             taxesEnabled: payload.taxesEnabled,
@@ -126,7 +139,12 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ ok: true, item });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Donnees invalides';
-    return NextResponse.json({ error: message }, { status: 400 });
+    if (error instanceof QuebecRegistrationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Les champs du profil de facturation sont invalides.' }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Enregistrement impossible.' }, { status: 400 });
   }
 }

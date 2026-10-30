@@ -14,7 +14,8 @@ export function SearchBar({ value, onChange, placeholder = 'Rechercher...' }: Se
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+        aria-label={placeholder}
+        className="min-h-11 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-base text-slate-100 placeholder:text-slate-500"
       />
     </div>
   );

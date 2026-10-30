@@ -16,6 +16,35 @@ const retiredServiceRedirects = [
   permanent: true,
 }));
 
+// Static Parchési des Arcanes build. Kept off the site-wide CSP: the page
+// loads Three.js, PeerJS and a QR library from CDNs, Google Fonts, and opens
+// WebRTC to the public PeerJS broker plus Google STUN. Scoped to this game
+// only. The service worker stays at /jeux/parchesi/sw.js with its default
+// directory scope — do not send Service-Worker-Allowed. Fullscreen is named
+// in Permissions-Policy. Vibration is not: this Chrome build rejects the
+// vibrate token and would print a console warning, while the default policy
+// already allows navigator.vibrate on this origin.
+const parchesiNoStore = 'no-cache, no-store, must-revalidate';
+const parchesiContentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  // Chrome rejects host-specific stun: URLs as invalid sources and logs a CSP warning.
+  // The scheme source stun: is the form it accepts, and it covers the three Google STUN servers.
+  "connect-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://0.peerjs.com wss://0.peerjs.com stun:",
+  "media-src 'self' blob:",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+  "upgrade-insecure-requests",
+].join('; ');
+const parchesiPermissionsPolicy = 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), fullscreen=(self)';
+
 const nextConfig = {
   // Output config for Vercel
   output: 'standalone',
@@ -78,6 +107,22 @@ const nextConfig = {
         source: '/jeux/HeritierMillionaire',
         destination: '/jeux/heritier-millionnaire',
         permanent: true,
+      },
+      // Relative assets (sw.js, icons, manifest) resolve against the document
+      // URL. A rewrite would leave the bar on /jeux/parchesi and those URLs
+      // would escape the game directory. Landing on index.html also matches
+      // the build's share links (location.pathname, or pathname + index.html
+      // when the path ends with a slash). Query strings such as ?salle= are
+      // forwarded by the redirect.
+      {
+        source: '/jeux/parchesi',
+        destination: '/jeux/parchesi/index.html',
+        permanent: false,
+      },
+      {
+        source: '/jeux/parchesi/',
+        destination: '/jeux/parchesi/index.html',
+        permanent: false,
       },
       {
         source: '/logements/:slug/reserver',
@@ -205,13 +250,47 @@ const nextConfig = {
         ],
       },
       {
-        // Service worker must not be cached
+        // Service worker must not be cached. This matches only the site root
+        // worker; the Parchési worker must not inherit Service-Worker-Allowed.
         source: '/sw.js',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=0, must-revalidate',
           },
+        ],
+      },
+      // These rules follow the global "/(.*)" policy so the same header keys
+      // replace it for the game document only. Public files otherwise get a
+      // one-year immutable cache; index.html and sw.js must stay fresh.
+      {
+        source: '/jeux/parchesi',
+        headers: [{ key: 'Cache-Control', value: parchesiNoStore }],
+      },
+      {
+        source: '/jeux/parchesi/',
+        headers: [{ key: 'Cache-Control', value: parchesiNoStore }],
+      },
+      {
+        source: '/jeux/parchesi/index.html',
+        headers: [
+          { key: 'Cache-Control', value: parchesiNoStore },
+          { key: 'Content-Security-Policy', value: parchesiContentSecurityPolicy },
+          { key: 'Permissions-Policy', value: parchesiPermissionsPolicy },
+        ],
+      },
+      {
+        source: '/jeux/parchesi/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: parchesiNoStore },
+          { key: 'Content-Security-Policy', value: parchesiContentSecurityPolicy },
+        ],
+      },
+      {
+        source: '/jeux/parchesi/manifest.webmanifest',
+        headers: [
+          { key: 'Cache-Control', value: parchesiNoStore },
+          { key: 'Content-Type', value: 'application/manifest+json; charset=utf-8' },
         ],
       },
     ];

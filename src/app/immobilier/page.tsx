@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import { principalCrmUrl } from '@/lib/principal-crm';
 import { ArrowUpRight, Building2, CalendarDays, FileText, KeyRound, Users, Wrench } from 'lucide-react';
 import { buildMetadata } from '@/lib/seo';
-import { immobilierInquiryUrl, immobilierServiceUrl } from '@/lib/immobilier-service';
+import { immobilierInquiryUrl } from '@/lib/immobilier-service';
 import styles from './immobilier.module.css';
 
 export const metadata = buildMetadata({
@@ -20,7 +21,6 @@ const tools = [
 ];
 
 export default function ImmobilierPage() {
-  const crm = immobilierServiceUrl(process.env.NOWIS_IMMOBILIER_URL);
   return <div className={styles.page}>
     <section className={styles.hero} aria-labelledby="immobilier-title">
       <div className={styles.intro}>
@@ -29,7 +29,7 @@ export default function ImmobilierPage() {
         <p className={styles.lead}>Un logiciel de gestion immobilière pour retrouver vos dossiers, organiser les suivis et travailler ensemble, dans l’espace de votre entreprise.</p>
         <div className={styles.actions}>
           <Link className={styles.primary} href={immobilierInquiryUrl}>Demander une démonstration<ArrowUpRight size={19} aria-hidden="true" /></Link>
-          {crm ? <a className={styles.secondary} href={`${crm}/connexion/gestionnaire`}>Accéder à mon CRM</a> : <a className={styles.secondary} href="#mise-en-route">Comment commencer</a>}
+          <a className={styles.secondary} href={principalCrmUrl} referrerPolicy="no-referrer">Accéder au CRM principal</a>
         </div>
         <p className={styles.caption}>Accès sur invitation · Mise en route accompagnée</p>
       </div>

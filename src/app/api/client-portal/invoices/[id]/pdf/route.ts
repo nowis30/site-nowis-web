@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getClientPortalSessionFromCookieHeader } from '@/features/client-portal/auth/session';
-import { getInvoiceBusinessProfile } from '@/lib/invoice-profile';
-import { buildInvoicePdfBuffer } from '@/lib/invoice-pdf';
+import { buildCustomerSnapshotFromContact, getBillingIssuerSnapshot, toCustomerSnapshot, toIssuerSnapshot } from '@/lib/billing-profile';
+import { buildInvoicePdfBuffer, safeInvoiceFilename } from '@/lib/invoice-pdf';
 
 export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -16,40 +16,39 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       id: params.id,
       contactId: session.contactId,
     },
-    include: {
-      contact: {
-        select: {
-          fullName: true,
-          email: true,
-        },
-      },
-    },
+    include: { contact: true },
   });
 
   if (!invoice) {
     return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
   }
 
+  const businessProfile = toIssuerSnapshot(invoice.issuerSnapshot) || await getBillingIssuerSnapshot();
+  const customer = toCustomerSnapshot(invoice.customerSnapshot) || buildCustomerSnapshotFromContact(invoice.contact);
   const pdf = await buildInvoicePdfBuffer(
     {
       number: invoice.number,
       issueDate: invoice.issueDate,
       dueDate: invoice.dueDate,
       amount: invoice.amount.toString(),
+      subtotal: invoice.subtotal?.toString() ?? null,
+      taxAmount: invoice.taxAmount?.toString() ?? null,
+      totalAmount: invoice.totalAmount?.toString() ?? null,
+      taxesEnabled: invoice.taxesEnabled,
+      taxRateGst: invoice.taxRateGst == null ? null : Number(invoice.taxRateGst),
+      taxRateQst: invoice.taxRateQst == null ? null : Number(invoice.taxRateQst),
       description: invoice.description,
-      contact: {
-        fullName: invoice.contact.fullName,
-        email: invoice.contact.email,
-      },
+      contact: customer,
     },
-    getInvoiceBusinessProfile(),
+    businessProfile,
   );
 
   return new NextResponse(new Uint8Array(pdf), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="facture-${invoice.number}.pdf"`,
-      'Cache-Control': 'no-store',
+      'Content-Disposition': `inline; filename="${safeInvoiceFilename(invoice.number)}"`,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
     },
   });
 }

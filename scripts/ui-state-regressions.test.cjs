@@ -212,10 +212,12 @@ test('public menu closes across navigation and remains closed on history return'
   const ui = createRuntime(); let pathname = '/radio';
   const { Header } = ui.load('src/components/layout/Header.tsx', {
     'next/navigation': { usePathname: () => pathname },
+    '@/lib/principal-crm': { principalCrmUrl: 'https://crm.nowis.store/app/aujourdhui#accueil' },
     '@/components/radio/ShareMenu': { ShareMenu: 'share-menu' },
     '@/components/analytics/VisitorCounters': { VisitorCounters: 'counters' },
   });
   const toggle = tree => find(tree, node => node.props?.['aria-controls'] === 'mobile-main-menu');
+  assert.ok(find(ui.render(Header), node => node.type === 'a' && node.props.href === 'https://crm.nowis.store/app/aujourdhui#accueil'));
   toggle(ui.render(Header)).props.onClick();
   assert.equal(toggle(ui.render()).props['aria-expanded'], true);
   pathname = '/album'; assert.equal(toggle(ui.render()).props['aria-expanded'], false);

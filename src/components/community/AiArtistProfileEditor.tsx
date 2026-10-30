@@ -97,7 +97,7 @@ export function AiArtistProfileEditor() {
         <h1 className="nm-page-title">Votre espace musical.</h1>
         <p className="nm-intro">Connectez-vous pour créer votre page d’artiste, ajouter vos images et regrouper vos chansons.</p>
         <div className="nm-actions justify-center">
-          <Link className="cta-primary" href="/communaute-ia/compte">Créer mon compte ↗</Link>
+          <Link className="cta-primary" href="/communaute-ia/compte">Connexion au compte existant ↗</Link>
           <Link className="cta-secondary" href="/connexion?next=/communaute-ia/profil">Me connecter</Link>
         </div>
       </section>
