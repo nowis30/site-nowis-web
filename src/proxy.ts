@@ -7,12 +7,15 @@ const canonicalSongPaths: Record<string, string> = Object.fromEntries(
   Object.entries(songSlugRedirects).map(([source, destination]) => [`/chanson/${source}`, `/chanson/${destination}`]),
 );
 
+const gestionnairePortal = 'https://crm.nowis.store/connexion/gestionnaire#accueil';
+const legacyCrmDoors = new Set(['/crm', '/crm/dashboard', '/crm/historique']);
+
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === '/crm' || request.nextUrl.pathname === '/crm/dashboard') {
+  if (legacyCrmDoors.has(request.nextUrl.pathname)) {
     // A fixed destination drops queries; a fixed fragment prevents inheritance
     // of any legacy #token by the browser when it follows the redirect.
     const response = request.method === 'GET' || request.method === 'HEAD'
-      ? NextResponse.redirect('https://crm.nowis.store/app/aujourdhui#accueil', 307)
+      ? NextResponse.redirect(gestionnairePortal, 307)
       : new NextResponse(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
     response.headers.set('Cache-Control', 'private, no-store');
     response.headers.set('Referrer-Policy', 'no-referrer');

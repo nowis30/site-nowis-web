@@ -246,12 +246,12 @@ function ConnexionContent() {
 
             <p className="mt-2 text-sm leading-6 text-[color:var(--site-muted)]">
               Espace équipe interne :{' '}
-              <Link
-                href={principalCrmUrl}
+              <a
+                href="https://crm.nowis.store/connexion/gestionnaire#accueil"
                 className="inline-flex min-h-11 items-center font-semibold text-[color:var(--site-accent-strong)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--site-accent)]/40"
               >
-                ouvrir le CRM principal ↗
-              </Link>
+                portail gestionnaire
+              </a>
             </p>
           </div>
         </section>
