@@ -1532,3 +1532,12 @@ model YesNoRoom {
   @@index([expiresAt])
   @@map("yes_no_rooms")
 }
+
+model OuiLaRoom {
+  code      String   @id
+  state     Json
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("oui_la_rooms")
+}
