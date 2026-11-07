@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Crown,
   ExternalLink,
+  Fence,
   Gamepad2,
   MessageCircleQuestionMark,
   Spade,
@@ -23,6 +24,7 @@ type FeaturedGame = {
   cta: string;
   icon?: ReactNode;
   image?: string;
+  cover?: string;
   external?: boolean;
   staticDocument?: boolean;
   border: string;
@@ -107,6 +109,21 @@ const featuredGames: FeaturedGame[] = [
     badgeStyle: 'border-amber-200/25 bg-amber-300/10 text-amber-100',
     buttonStyle: 'bg-amber-300 text-amber-950 hover:bg-amber-200',
   },
+  {
+    name: 'À deux au galop',
+    eyebrow: 'Cheval · Navigateur',
+    description:
+      'Retrouve Noisette sur le domaine, soigne-la, monte-la et gagne tes écus, directement dans ton navigateur.',
+    href: '/jeux/a-deux-au-galop',
+    cta: 'Retrouver Noisette',
+    icon: <Fence size={28} />,
+    cover: '/jeux/a-deux-au-galop/vignette.webp',
+    border: 'border-lime-300/30 hover:border-amber-200/60',
+    glow: 'from-lime-400/25 via-amber-300/10 to-transparent',
+    iconStyle: 'border-lime-200/40 bg-[#142218] text-lime-100',
+    badgeStyle: 'border-lime-200/25 bg-lime-300/10 text-lime-100',
+    buttonStyle: 'bg-lime-300 text-lime-950 hover:bg-lime-200',
+  },
 ];
 
 function FeaturedGameCard({ game }: { game: FeaturedGame }) {
@@ -122,6 +139,15 @@ function FeaturedGameCard({ game }: { game: FeaturedGame }) {
       />
 
       <div className="relative flex h-full flex-col p-5 sm:p-6">
+        {game.cover ? (
+          <Image
+            src={game.cover}
+            alt=""
+            width={1280}
+            height={720}
+            className="mb-5 aspect-video w-full rounded-2xl border border-white/10 object-cover"
+          />
+        ) : null}
         <div className="flex items-start justify-between gap-4">
           {game.image ? (
             <Image
@@ -216,12 +242,12 @@ export function GamesScreen() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-            Cinq grandes expériences NOWIS et 37 mini-jeux rapides, colorés et pensés pour le téléphone.
+            Six grandes expériences NOWIS et 37 mini-jeux rapides, colorés et pensés pour le téléphone.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-xs font-bold text-slate-200">
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 42 expériences</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⭐ 5 univers vedettes</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">🎮 43 expériences</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⭐ 6 univers vedettes</span>
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">📱 Téléphone d’abord</span>
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-2">⚡ 37 mini-jeux instantanés</span>
           </div>
@@ -236,7 +262,7 @@ export function GamesScreen() {
               </div>
               <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">Les grands univers à découvrir</h2>
             </div>
-            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Cinq expériences, cinq styles de jeu</span>
+            <span className="hidden text-sm font-semibold text-slate-400 sm:block">Six expériences, six styles de jeu</span>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-5">

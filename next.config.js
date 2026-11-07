@@ -45,6 +45,35 @@ const parchesiContentSecurityPolicy = [
 ].join('; ');
 const parchesiPermissionsPolicy = 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), fullscreen=(self)';
 
+// « À deux au galop » is a self-contained Vite build. The document is iframed
+// by /jeux/a-deux-au-galop and also opened directly on mobile. Keep this
+// policy on the game file only: script-src 'self' matches the hashed bundle,
+// and frame-ancestors 'self' lets the play page embed it. child-src 'self'
+// does not widen framing. Fullscreen is named; gamepad is not, because an
+// unrecognized token would warn in Chrome while the iframe allow attribute
+// delegates the default same-origin gamepad permission.
+const galopNoStore = 'no-cache, no-store, must-revalidate';
+const galopAssetCache = 'public, max-age=31536000, immutable';
+const galopContentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "media-src 'self' blob: data:",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  "frame-src 'self'",
+  "child-src 'self'",
+  "frame-ancestors 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "upgrade-insecure-requests",
+].join('; ');
+const galopPermissionsPolicy = 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), fullscreen=(self)';
+
 const nextConfig = {
   // Output config for Vercel
   output: 'standalone',
@@ -292,6 +321,18 @@ const nextConfig = {
           { key: 'Cache-Control', value: parchesiNoStore },
           { key: 'Content-Type', value: 'application/manifest+json; charset=utf-8' },
         ],
+      },
+      {
+        source: '/jeux/a-deux-au-galop/index.html',
+        headers: [
+          { key: 'Cache-Control', value: galopNoStore },
+          { key: 'Content-Security-Policy', value: galopContentSecurityPolicy },
+          { key: 'Permissions-Policy', value: galopPermissionsPolicy },
+        ],
+      },
+      {
+        source: '/jeux/a-deux-au-galop/assets/:path*',
+        headers: [{ key: 'Cache-Control', value: galopAssetCache }],
       },
     ];
   },
