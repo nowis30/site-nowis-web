@@ -12,7 +12,7 @@ function configuration(env: NodeJS.ProcessEnv) {
   try {
     const url = new URL(env.NOWIS_LOCAL_QUEUE_URL || '');
     if (!key || url.protocol !== 'https:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) return null;
-    return { url: url.origin, key };
+    return { url: url.origin, key, relay: env.NOWIS_LOCAL_QUEUE_TRANSPORT === 'relay' };
   } catch { return null; }
 }
 
@@ -28,9 +28,9 @@ export async function requestLocalAiResponse(payload: Payload, options: Options 
   const timeoutMs = Math.min(LOCAL_AI_TIMEOUT_MS, Math.max(1000, payload.timeoutMs));
   const startedAt = Date.now();
   const signal = AbortSignal.timeout(timeoutMs);
-  const rest = (path: string, init: RequestInit = {}) => transport(`${config.url}/rest/v1/${path}`, {
+  const rest = (path: string, init: RequestInit = {}) => transport(`${config.url}/${config.relay ? 'functions/v1/nowis-local-queue' : 'rest/v1'}/${path}`, {
     ...init, signal: init.signal || signal, redirect: 'error', cache: 'no-store',
-    headers: { apikey: config.key, Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    headers: { ...(config.relay ? {} : { apikey: config.key }), Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
   });
   const id = randomUUID();
   let submitted = false;
