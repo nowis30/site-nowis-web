@@ -57,7 +57,8 @@
     "sync:youtube": "node scripts/sync-youtube.js",
     "sync:spotify": "node scripts/sync-spotify.js",
     "sync:songs": "node scripts/sync-songs.js",
-    "upload:media": "node scripts/upload-media-to-s3.js"
+    "upload:media": "node scripts/upload-media-to-s3.js",
+    "test:local-ai": "node --test scripts/local-ai-provider.test.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1071.0",

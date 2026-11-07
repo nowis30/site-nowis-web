@@ -4,32 +4,7 @@ L’assistant public est monté par `AppLayout` sur les pages publiques. Il n’
 
 ## IA
 
-La route `POST /api/site-assistant/chat` utilise, dans cet ordre :
-
-1. Vercel AI Gateway avec `AI_GATEWAY_API_KEY`;
-2. Vercel AI Gateway avec `VERCEL_OIDC_TOKEN` sur les déploiements Vercel;
-3. OpenAI directement avec `OPENAI_API_KEY`;
-4. un guide de navigation déterministe si aucun fournisseur IA n’est disponible.
-
-Le modèle du Gateway peut être remplacé avec `SITE_ASSISTANT_MODEL`. Le modèle OpenAI direct peut être remplacé avec `OPENAI_MODEL`.
-
-## Limite de 20 commandes par jour
-
-Chaque question soumise à `POST /api/site-assistant/chat`, vision demandée à `POST /api/tarot/oracle` ou conclusion demandée à `POST /api/tarot/conclusion` compte comme une commande. Ces trois routes utilisent **le même compteur par compte**, limité à **20 commandes par jour civil**, avec remise à zéro à **minuit dans le fuseau `America/Toronto`** (y compris les changements d’heure). La navigation par les raccourcis, le formulaire « Mon idée » et les lectures symboliques locales du tarot ne consomment pas ce quota.
-
-Le serveur réserve une commande dans un compteur persistant avant tout appel au fournisseur IA. Plusieurs requêtes simultanées partagent le même compteur : seules les vingt premières réservations du jour peuvent réussir. Une commande réservée reste comptée même si le fournisseur échoue ensuite, afin qu’un échec ne permette pas de multiplier les appels facturables. Le repli de navigation déterministe suit la même limite. Si le stockage du compteur est indisponible, le serveur refuse la demande et n’appelle pas le fournisseur.
-
-Le site possède déjà des comptes : poser une question exige donc une session existante vérifiée par le serveur. L’identité vient exclusivement de cette session; aucun identifiant ni compteur fourni par le navigateur ne décide du quota. Sans session, `GET` et `POST` renvoient HTTP `401` avec `code: "AUTH_REQUIRED"`. L’interface propose « Se connecter pour poser une question », via `/connexion?next=…` avec un retour local validé vers la page courante. Les pages publiques, les raccourcis et le formulaire d’idées restent disponibles sans connexion.
-
-Effacer le stockage du navigateur, changer d’adresse IP ou de VPN, modifier le JavaScript ou appeler directement l’API ne supprime pas le compteur serveur associé au compte. Se déconnecter n’ouvre pas un quota anonyme. La règle limite les commandes **par compte**, et non par personne physique : des comptes distincts ont des quotas distincts. Il n’y a aucun mécanisme de quota anonyme par IP, car une IP peut être partagée ou changée et ne permet pas d’établir l’identité d’un utilisateur.
-
-`GET /api/site-assistant/chat` retourne le compteur de l’identité courante sans consommer de commande. Les réponses utilisent `quota: { limit, remaining, resetAt, timeZone }`; `resetAt` est un instant ISO, et `timeZone` vaut `America/Toronto`. Le navigateur consulte ce statut à l’ouverture, au retour dans l’onglet, au changement de session et à l’heure de remise à zéro. Les cookies de session sont transmis automatiquement sur le même domaine. La règle et le nombre restant apparaissent dans l’interface.
-
-Quand les vingt commandes sont épuisées, l’API renvoie HTTP `429` avec `code: "ASSISTANT_DAILY_LIMIT"` et le quota; aucun appel IA n’est effectué. Le champ et l’envoi sont désactivés, avec un message indiquant la reprise à minuit, heure de Toronto. Les raccourcis restent disponibles. La désactivation dans l’interface est un confort : le blocage obligatoire reste côté serveur. Les erreurs de l’API apparaissent clairement, sans être présentées comme une réponse réussie ni renvoyées comme historique IA.
-
-Les requêtes de conversation sont limitées à huit messages récents, avec au plus 1 200 caractères par message et 16 384 octets UTF-8 pour le corps JSON. L’interface conserve la dernière question et réduit l’historique transmis si nécessaire. Le rendu des réponses reste du texte React, sans interprétation HTML.
-
-Les deux statuts `GET /api/tarot/oracle` et `GET /api/tarot/conclusion` retournent le quota sans transmettre une question, un tirage ou des informations de naissance. Sans compte connecté, ils renvoient `available: false`, `reason: "AUTH_REQUIRED"` et un lien local vers `/connexion?next=%2Ftarot`; leurs `POST` refusent HTTP `401`. Le tarot affiche le compteur partagé, la connexion nécessaire à l’IA et la reprise après minuit quand il est épuisé. Le lien sort de l’iframe pour ouvrir la page de connexion. Toute demande IA exige toujours l’accord explicite existant; relire le statut ou réinitialiser le quota n’envoie aucun élément de lecture. Les cartes, la lecture astrologique locale et le carnet restent utilisables sans connexion.
+La route POST /api/site-assistant/chat utilise uniquement le travailleur Qwen local NOWIS via une file privée. Configurer NOWIS_LOCAL_QUEUE_URL et NOWIS_LOCAL_QUEUE_SERVICE_KEY dans les secrets serveur. Les anciennes clés OpenAI, Gateway et OIDC ne sont pas utilisées. L'ordinateur n'est pas exposé à Internet. Si le travailleur est absent, le guide de navigation déterministe reste disponible. Les quotas et contrôles d'identité sont conservés.
 
 ## Idées d’amélioration
 
@@ -46,3 +21,5 @@ Le destinataire est choisi dans cet ordre :
 Configurer `SITE_FEEDBACK_EMAIL` dans Vercel est la façon recommandée de choisir précisément la boîte qui reçoit les suggestions.
 
 La conversation d’aide n’est pas jointe au courriel; seuls l’idée explicitement soumise, le courriel facultatif du visiteur, la page d’origine et des métadonnées techniques minimales sont transmis.
+
+Pour isoler les installations, utiliser une file et une identité de travailleur propres à chaque application, ou une identité serveur limitée à ses seules demandes dans un relais dédié. Ne pas copier la clé générale d’un autre CRM. Les travailleurs acceptent --data-dir et --port-verrou distincts ; --installer-cle --url configure le projet cible de leur propre identité.

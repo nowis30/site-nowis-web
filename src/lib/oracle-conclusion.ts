@@ -1,3 +1,4 @@
+import { LOCAL_AI_TIMEOUT_MS, requestLocalAiResponse } from '@/lib/local-ai-provider';
 /** Ephemeral synthesis of recomputed sky positions and validated tarot readings. */
 import { z } from 'zod';
 import corpus from '@/data/tarot-oracle-cards.json';
@@ -318,13 +319,13 @@ export function fitOracleConclusionReply(reply: string): string | null {
 
 export async function requestOracleConclusion(
   input: OracleConclusionInput,
-  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request; onFailure?: (failure: SymbolicVisionFailure) => void } = {},
+  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; responseImpl?: typeof requestLocalAiResponse; request?: Request; onFailure?: (failure: SymbolicVisionFailure) => void } = {},
 ): Promise<string | null> {
   const startedAt = Date.now();
   if (!isTarotOracleAvailable(options.env || process.env, options.request)) return null;
   const reply = await requestSymbolicVision({
     instructions: ORACLE_CONCLUSION_GUIDE, prompt: buildOracleConclusionPrompt(input),
-    maxOutputTokens: 8000, maxWords: 2000, maxCharacters: 30000, timeoutMs: 45000,
+    maxOutputTokens: 8000, maxWords: 2000, maxCharacters: 30000, timeoutMs: LOCAL_AI_TIMEOUT_MS,
     feature: 'oracle-conclusion', quiet: true,
   }, options);
   if (!reply) return null;

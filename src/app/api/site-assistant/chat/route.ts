@@ -5,6 +5,7 @@ import { getAssistantIdentity } from '@/lib/site-assistant-identity';
 import { consumeAssistantQuota, readAssistantQuota } from '@/lib/site-assistant-quota';
 
 export const runtime = 'nodejs';
+export const maxDuration = 150;
 
 
 const SITE_GUIDE = `

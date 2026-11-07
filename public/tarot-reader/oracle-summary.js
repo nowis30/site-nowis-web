@@ -221,7 +221,7 @@
     const submittedSignature = JSON.stringify(payload);
     const version = ++requestVersion;
     controller = new AbortController(); const requestController = controller;
-    const timeout = setTimeout(() => requestController.abort(), 70000);
+    const timeout = setTimeout(() => requestController.abort(), 125000);
     busy = true; syncButton();
     $('summary-result').replaceChildren(); $('summary-result').hidden = true;
     $('summary-status').textContent = 'L’IA rapproche les symboles de la carte du ciel et les tirages retenus pour proposer une conclusion…';

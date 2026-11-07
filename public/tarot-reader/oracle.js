@@ -90,7 +90,7 @@
     const version=++requestVersion;
     const submittedSignature=lastSignature;
     controller=new AbortController();const requestController=controller;
-    const timeout=setTimeout(()=>requestController.abort(),32000);
+    const timeout=setTimeout(()=>requestController.abort(),125000);
     busy=true;syncButton();$('oracle-ai-result').hidden=true;
     $('oracle-ai-status').textContent='L’IA relie votre question aux symboles et aux positions de ce tirage…';
     try {

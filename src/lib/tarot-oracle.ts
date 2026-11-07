@@ -1,3 +1,4 @@
+import { requestLocalAiResponse, isLocalAiConfigured, LOCAL_AI_TIMEOUT_MS } from '@/lib/local-ai-provider';
 import { AI_AGENT_BOUNDARIES, containsAiCredential, isTextOnlyAiResponse, readBoundedAiJson, safeAiText } from '@/lib/ai-provider-security';
 /** Server-side symbolic writing. No transcript, answer or provider token is persisted. */
 import { createHash } from 'node:crypto';
@@ -74,31 +75,9 @@ export async function readTarotOracleInput(request: Request): Promise<TarotOracl
   return parseTarotOracleInput(body);
 }
 
-type OracleProvider = { endpoint: string; token: string; model: string; gateway: boolean };
-/** Use the provider choice already configured for the NOWIS assistant. */
-function oracleProvider(env: NodeJS.ProcessEnv, request?: Request): OracleProvider | null {
-  const gatewayToken = env.AI_GATEWAY_API_KEY?.trim() || env.VERCEL_OIDC_TOKEN?.trim();
-  if (gatewayToken) return {
-    endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: gatewayToken,
-    model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.4-nano', gateway: true,
-  };
-  const token = env.OPENAI_API_KEY?.trim();
-  if (token) return {
-    endpoint: 'https://api.openai.com/v1/responses', token,
-    model: env.OPENAI_MODEL?.trim() || 'gpt-5.6-luna', gateway: false,
-  };
-  // Vercel issues the function token on each Request, not in the build-time env.
-  // Never cache it or accept this fallback on a non-Vercel server. Explicit
-  // provider credentials above remain authoritative; AI Gateway verifies OIDC.
-  const runtimeToken = env.VERCEL === '1' ? request?.headers.get('x-vercel-oidc-token')?.trim() : null;
-  return runtimeToken ? {
-    endpoint: 'https://ai-gateway.vercel.sh/v1/responses', token: runtimeToken,
-    model: env.SITE_ASSISTANT_MODEL?.trim() || 'openai/gpt-5.4-nano', gateway: true,
-  } : null;
-}
-
-export function isTarotOracleAvailable(env: NodeJS.ProcessEnv = process.env, request?: Request): boolean {
-  return oracleProvider(env, request) !== null;
+/** Availability reflects the explicit local queue configuration, never cloud credentials. */
+export function isTarotOracleAvailable(env: NodeJS.ProcessEnv = process.env, _request?: Request): boolean {
+  return isLocalAiConfigured(env);
 }
 
 const intentions = {
@@ -217,10 +196,9 @@ export async function requestSymbolicVision(
     maxCharacters: number; timeoutMs: number; feature: 'tarot-oracle' | 'oracle-conclusion';
     quiet?: boolean;
   },
-  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request; onFailure?: (failure: SymbolicVisionFailure) => void } = {},
+  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; responseImpl?: typeof requestLocalAiResponse; request?: Request; onFailure?: (failure: SymbolicVisionFailure) => void } = {},
 ): Promise<string | null> {
-  const provider = oracleProvider(options.env || process.env, options.request);
-  if (!provider || containsAiCredential(settings.prompt)) return null;
+  if (!isLocalAiConfigured(options.env || process.env) || containsAiCredential(settings.prompt)) return null;
   const diagnostic = (detail: Record<string, unknown>) => {
     if (!settings.quiet) console.warn('TAROT_ORACLE', detail);
   };
@@ -235,19 +213,10 @@ export async function requestSymbolicVision(
   };
   try {
     const signal = AbortSignal.timeout(settings.timeoutMs);
-    const response = await (options.fetchImpl || fetch)(provider.endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${provider.token}`, 'Content-Type': 'application/json',
-        ...(provider.gateway ? { 'ai-reporting-tags': `feature:${settings.feature}` } : {}),
-      },
-      body: JSON.stringify({
-        model: provider.model, instructions: settings.instructions + AI_AGENT_BOUNDARIES,
-        input: [{ type: 'message', role: 'user', content: settings.prompt }],
-        max_output_tokens: settings.maxOutputTokens, store: false, tools: [], tool_choice: 'none',
-      }),
-      signal, redirect: 'error', cache: 'no-store',
-    });
+    const response = await (options.responseImpl || requestLocalAiResponse)({
+      instructions: settings.instructions + AI_AGENT_BOUNDARIES, prompt: settings.prompt,
+      maxOutputTokens: settings.maxOutputTokens, timeoutMs: settings.timeoutMs,
+    }, options);
     if (!response.ok) {
       let providerCode = 'OTHER';
       try { providerCode = providerErrorCode(await readBoundedAiJson(response, signal)); } catch { /* Non-JSON errors remain opaque. */ }
@@ -278,11 +247,11 @@ export async function requestSymbolicVision(
 
 export async function requestTarotOracleVision(
   input: TarotOracleInput,
-  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; request?: Request } = {},
+  options: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; responseImpl?: typeof requestLocalAiResponse; request?: Request } = {},
 ): Promise<string | null> {
   return requestSymbolicVision({
     instructions: TAROT_ORACLE_GUIDE, prompt: buildTarotOraclePrompt(input),
-    maxOutputTokens: 2200, maxWords: 500, maxCharacters: 7000, timeoutMs: 25000,
+    maxOutputTokens: 2200, maxWords: 500, maxCharacters: 7000, timeoutMs: LOCAL_AI_TIMEOUT_MS,
     feature: 'tarot-oracle',
   }, options);
 }

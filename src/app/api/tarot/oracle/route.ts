@@ -7,7 +7,7 @@ import { createAiCommandQuota } from '@/lib/ai-command-quota';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+export const maxDuration = 150;
 
 const commands = createAiCommandQuota();
 const unavailable = 'La vision IA est indisponible pour le moment. Votre lecture symbolique locale reste accessible.';

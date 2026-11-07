@@ -1,3 +1,5 @@
+import { requestLocalAiResponse } from '@/lib/local-ai-provider';
+const LOCAL_ENV = { NOWIS_LOCAL_QUEUE_URL: 'https://queue.test', NOWIS_LOCAL_QUEUE_SERVICE_KEY: 'queue-fixture' };
 import { AI_AGENT_BOUNDARIES } from '@/lib/ai-provider-security';
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -74,7 +76,7 @@ async function withAuthenticatedRoute(run: (authorizedRequest: typeof request) =
 function expectedError(status: number) {
   return (error: unknown) => error instanceof OracleConclusionRequestError && error.status === status;
 }
-const providerNames = ['VERCEL', 'AI_GATEWAY_API_KEY', 'VERCEL_OIDC_TOKEN', 'OPENAI_API_KEY'];
+const providerNames = ['NOWIS_LOCAL_QUEUE_URL', 'NOWIS_LOCAL_QUEUE_SERVICE_KEY', 'VERCEL', 'AI_GATEWAY_API_KEY', 'VERCEL_OIDC_TOKEN', 'OPENAI_API_KEY'];
 function isolateProviderEnvironment() {
   const saved = providerNames.map(name => [name, process.env[name]] as const);
   for (const name of providerNames) delete process.env[name];
@@ -234,28 +236,21 @@ test('capabilities expose a Boolean only, use request OIDC only on Vercel and ne
     assert.equal((await (await GET(request(payload))).json()).reason, 'AUTH_REQUIRED');
   } finally { restore(); }
   let calls = 0;
-  assert.equal(await requestOracleConclusion(parseOracleConclusionInput(payload), { env: {}, fetchImpl: (async () => { calls++; throw new Error('must not call'); }) as typeof fetch }), null);
+  assert.equal(await requestOracleConclusion(parseOracleConclusionInput(payload), { env: {}, responseImpl: (async () => { calls++; throw new Error('must not call'); }) as typeof requestLocalAiResponse }), null);
   assert.equal(calls, 0);
 });
 
 test('provider adapter sends one ephemeral request with server calculations and the dedicated limits', async () => {
   const input = parseOracleConclusionInput(payload);
-  const reply = await requestOracleConclusion(input, { env: { AI_GATEWAY_API_KEY: 'test-not-secret', SITE_ASSISTANT_MODEL: 'openai/test-conclusion' }, fetchImpl: (async (url, init) => {
-    assert.equal(url, 'https://ai-gateway.vercel.sh/v1/responses');
-    assert.equal(new Headers(init?.headers).get('ai-reporting-tags'), 'feature:oracle-conclusion');
-    const body = JSON.parse(String(init?.body));
-    assert.equal(body.model, 'openai/test-conclusion');
-    assert.equal(body.store, false);
-    assert.equal(body.max_output_tokens, 8000);
+  const reply = await requestOracleConclusion(input, { env: LOCAL_ENV, responseImpl: (async (body) => {
+    assert.equal(body.maxOutputTokens, 8000);
     assert.equal(body.instructions, ORACLE_CONCLUSION_GUIDE + AI_AGENT_BOUNDARIES);
-    assert.equal(body.input.length, 1);
-    assert.equal(body.input[0].role, 'user');
-    assert.equal(body.input[0].content, buildOracleConclusionPrompt(input));
+    assert.equal(body.prompt, buildOracleConclusionPrompt(input));
     assert.equal('previous_response_id' in body, false);
-    assert.equal(String(init?.body).includes('test-not-secret'), false);
-    assert.equal(init?.signal?.aborted, false);
+    assert.equal('tools' in body, false);
+    assert.equal(body.timeoutMs, 110000);
     return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Cette lecture symbolique et incertaine propose quelques pistes à explorer.' }] }] });
-  }) as typeof fetch });
+  }) as typeof requestLocalAiResponse });
   assert.ok(reply!.endsWith(ORACLE_CONCLUSION_CLOSING));
   assert.ok(reply!.includes('Cette lecture symbolique'));
 });
@@ -273,9 +268,9 @@ test('provider failures, incomplete and overlong output are refused without logg
       Response.json({ output: [] }),
       Response.json({ output: [{ content: [{ type: 'output_text', text: 'mot '.repeat(2001) }] }] }),
       Response.json({ output: [{ content: [{ type: 'refusal', refusal: 'not a reply' }] }] }),
-    ]) assert.equal(await requestOracleConclusion(input, { env: { OPENAI_API_KEY: 'test-not-secret' }, fetchImpl: (async () => response) as typeof fetch }), null);
-    assert.equal(await requestOracleConclusion(input, { env: { OPENAI_API_KEY: 'test-not-secret' }, fetchImpl: (async () => { throw new DOMException('private birth details', 'TimeoutError'); }) as typeof fetch }), null);
-    assert.equal(await requestOracleConclusion(input, { env: { OPENAI_API_KEY: 'test-not-secret' }, fetchImpl: (async () => { throw new Error('private provider and user content'); }) as typeof fetch }), null);
+    ]) assert.equal(await requestOracleConclusion(input, { env: { ...LOCAL_ENV, OPENAI_API_KEY: 'test-not-secret' }, responseImpl: (async () => response) as typeof requestLocalAiResponse }), null);
+    assert.equal(await requestOracleConclusion(input, { env: { ...LOCAL_ENV, OPENAI_API_KEY: 'test-not-secret' }, responseImpl: (async () => { throw new DOMException('private birth details', 'TimeoutError'); }) as typeof requestLocalAiResponse }), null);
+    assert.equal(await requestOracleConclusion(input, { env: { ...LOCAL_ENV, OPENAI_API_KEY: 'test-not-secret' }, responseImpl: (async () => { throw new Error('private provider and user content'); }) as typeof requestLocalAiResponse }), null);
   } finally { console.warn = savedWarn; }
   assert.equal(diagnostics.length, 8);
   for (const [tag, detail] of diagnostics) {
@@ -295,8 +290,8 @@ test('a completed reply over 1560 words keeps complete prose and the entire free
   assert.equal(raw.split(/\s+/u).length, 1640);
   const failures: unknown[] = [];
   const reply = await requestOracleConclusion(parseOracleConclusionInput({ consent: true, readings: [reading] }), {
-    env: { OPENAI_API_KEY: 'test-not-secret' }, onFailure: value => failures.push(value),
-    fetchImpl: (async () => Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: raw }] }] })) as typeof fetch,
+    env: { ...LOCAL_ENV, OPENAI_API_KEY: 'test-not-secret' }, onFailure: value => failures.push(value),
+    responseImpl: (async () => Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: raw }] }] })) as typeof requestLocalAiResponse,
   });
   assert.ok(reply);
   const prose = reply.split(`\n\n${ORACLE_CONCLUSION_CLOSING}`)[0];
@@ -335,8 +330,8 @@ test('partial and refused responses never become successes and expose only safe 
     for (const fixture of cases) {
       let failure: unknown;
       const reply = await requestOracleConclusion(parseOracleConclusionInput({ consent: true, readings: [reading] }), {
-        env: { OPENAI_API_KEY: 'test-not-secret' }, onFailure: value => { failure = value; },
-        fetchImpl: (async () => Response.json(fixture.data)) as typeof fetch,
+        env: { ...LOCAL_ENV, OPENAI_API_KEY: 'test-not-secret' }, onFailure: value => { failure = value; },
+        responseImpl: (async () => Response.json(fixture.data)) as typeof requestLocalAiResponse,
       });
       assert.equal(reply, null);
       const detail = failure as { reason: string; incompleteReason?: string; durationMs: number };
@@ -350,8 +345,8 @@ test('partial and refused responses never become successes and expose only safe 
 
 test('even the longest accepted text finishes with free choice and an optional action under 1600 words', async () => {
   const reply = await requestOracleConclusion(parseOracleConclusionInput({ consent: true, readings: [reading] }), {
-    env: { OPENAI_API_KEY: 'test-not-secret' },
-    fetchImpl: (async () => Response.json({ output: [{ content: [{ type: 'output_text', text: 'mot '.repeat(1560) }] }] })) as typeof fetch,
+    env: { ...LOCAL_ENV, OPENAI_API_KEY: 'test-not-secret' },
+    responseImpl: (async () => Response.json({ output: [{ content: [{ type: 'output_text', text: 'mot '.repeat(1560) }] }] })) as typeof requestLocalAiResponse,
   });
   assert.ok(reply!.endsWith(ORACLE_CONCLUSION_CLOSING));
   assert.ok(reply!.split(/\s+/u).length <= 1600);
@@ -361,8 +356,8 @@ test('even the longest accepted text finishes with free choice and an optional a
 test('the character ceiling preserves the complete closing within the client display limit', async () => {
   const input = parseOracleConclusionInput({ consent: true, readings: [reading] });
   const generate = (text: string) => requestOracleConclusion(input, {
-    env: { OPENAI_API_KEY: 'test-not-secret' },
-    fetchImpl: (async () => Response.json({ output: [{ content: [{ type: 'output_text', text }] }] })) as typeof fetch,
+    env: { ...LOCAL_ENV, OPENAI_API_KEY: 'test-not-secret' },
+    responseImpl: (async () => Response.json({ output: [{ content: [{ type: 'output_text', text }] }] })) as typeof requestLocalAiResponse,
   });
   const accepted = await generate('a'.repeat(23750));
   assert.ok(accepted!.length <= 24000);
@@ -387,12 +382,13 @@ test('the route refuses invalid consent and origin and retains local readings on
   } finally { restore(); }
 });
 
-test('the route reports distinct safe provider failures without returning provider messages or partial text', async () => {
+test('the route reports safe local queue failures without returning private messages or partial text', async () => {
   const restore = isolateProviderEnvironment();
   const savedFetch = globalThis.fetch;
   const savedWarn = console.warn;
   const diagnostics: unknown[][] = [];
   console.warn = (...args) => { diagnostics.push(args); };
+  Object.assign(process.env, LOCAL_ENV);
   process.env.OPENAI_API_KEY = 'test-not-secret';
   const fixtures = [
     { reason: 'auth', response: () => new Response('private provider account and test-not-secret', { status: 401 }) },
@@ -411,7 +407,7 @@ test('the route reports distinct safe provider failures without returning provid
       assert.equal(response.headers.get('cache-control'), 'no-store');
       const body = await response.json();
       assert.equal(body.mode, 'unavailable');
-      assert.equal(body.reason, fixture.reason);
+      assert.equal(body.reason, fixture.reason === 'timeout' ? 'timeout' : 'http');
       assert.ok(typeof body.message === 'string' && body.message.length > 30);
       assert.equal(body.reply, undefined);
       assert.equal(JSON.stringify(body).includes('private'), false);
@@ -429,8 +425,14 @@ test('the real route translates calculation errors and enforces 20 persistent ac
   const restore = isolateProviderEnvironment();
   const savedFetch = globalThis.fetch;
   let calls = 0;
+  Object.assign(process.env, LOCAL_ENV);
   process.env.OPENAI_API_KEY = 'test-not-secret';
-  globalThis.fetch = (async () => { calls++; return Response.json({ status: 'completed', output: [{ content: [{ type: 'output_text', text: 'Une conclusion symbolique et incertaine.' }] }] }); }) as typeof fetch;
+  globalThis.fetch = (async (url, init) => {
+      assert.ok(String(url).startsWith('https://queue.test/rest/v1/'));
+      if (String(url).includes('nowis_worker_status')) return Response.json([{ last_seen: new Date().toISOString() }]);
+      if (init?.method === 'POST' || init?.method === 'DELETE') return new Response(null, { status: 201 });
+      calls++; return Response.json([{ status: 'done', result: { text: 'Une conclusion symbolique et incertaine.' } }]);
+    }) as typeof fetch;
   try {
     await withAuthenticatedRoute(async authorized => {
     const invalidBirth = await POST(authorized({ consent: true, astrology: { ...astrology, birthDate: '1990-02-30' } }, { 'x-forwarded-for': '198.51.100.87' }));
