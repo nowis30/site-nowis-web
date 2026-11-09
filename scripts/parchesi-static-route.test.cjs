@@ -27,7 +27,7 @@ test('Parchési des Arcanes is a static game reached from the clean URL', async 
   assert.doesNotMatch(html, /serviceWorker\.register\([^)]*scope\s*:\s*['"]\/['"]/);
 
   const worker = fs.readFileSync('public/jeux/parchesi/sw.js', 'utf8');
-  assert.match(worker, /parchesi-arcanes-v3-/);
+  assert.match(worker, /parchesi-arcanes-v4-/);
   assert.doesNotMatch(worker, /Service-Worker-Allowed|scope\s*=\s*['"]\/['"]/);
 
   const redirects = await config.redirects();

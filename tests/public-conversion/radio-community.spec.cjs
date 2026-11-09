@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { PrismaClient } = require('@prisma/client');
 const fs = require('node:fs');
+const { capturedEmailPath } = require('./isolated-email.cjs');
 const tracks = require('../../src/data/radio-tracks.json');
 const store = require('../../src/data/music-store.json');
 const baseURL = 'http://127.0.0.1:3000';
@@ -18,7 +19,22 @@ test.afterAll(async () => { await prisma.$disconnect(); });
 async function register(api, email = uniqueEmail(), name = 'Auditeur QA') {
   const response = await api.post('/api/radio/account', {data:{email,fullName:name,password,website:''},headers:{origin:baseURL,'x-forwarded-for':`qa-${email}`}});
   expect(response.status(), await response.text()).toBe(201);
+  expect((await response.json()).verificationRequired).toBe(true);
+  expect(response.headers()['set-cookie']).toBeUndefined();
+  await verifyEmailAndLogin(api, email);
   return email;
+}
+async function verifyEmailAndLogin(api, email) {
+  const unverified = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio'},headers:{origin:baseURL}});
+  expect(unverified.status()).toBe(401);
+  expect((await unverified.json()).code).toBe('EMAIL_VERIFICATION_REQUIRED');
+  const message = JSON.parse(fs.readFileSync(capturedEmailPath(email), 'utf8'));
+  const token = message.html.match(/token=([a-f0-9]{64})/)?.[1];
+  expect(token).toBeTruthy();
+  const verified = await api.post('/api/client-auth/reset-password', {data:{token,password},headers:{origin:baseURL}});
+  expect(verified.status(), await verified.text()).toBe(200);
+  const login = await api.post('/api/client-auth/login', {data:{email,password,next:'/radio#mes-favoris'},headers:{origin:baseURL}});
+  expect(login.status(), await login.text()).toBe(200);
 }
 async function favorite(api,id,method='put') {
   const response = await api[method]('/api/radio/favorites',{data:{trackId:id},headers:{origin:baseURL}});
@@ -38,6 +54,11 @@ test('radio account: signup, private favorites across sessions, safe CRM separat
   await page.getByLabel('Courriel',{exact:true}).fill(email);
   await page.getByLabel('Mot de passe',{exact:true}).fill(password);
   await page.getByRole('button',{name:'Créer mon compte gratuit',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('Vérifiez votre courriel');
+  await expect(page).toHaveURL(/\/radio\/compte$/);
+  expect((await page.context().cookies()).some(cookie => cookie.name === 'nowis_client_session')).toBe(false);
+  await verifyEmailAndLogin(page.request, email);
+  await page.goto('/radio#mes-favoris');
   await expect(page).toHaveURL(/\/radio#mes-favoris$/);
   await expect(page.locator('#mes-favoris')).toContainText('Bonjour Camille QA');
   const user=await prisma.user.findUnique({where:{email},include:{contact:true}});
@@ -53,7 +74,7 @@ test('radio account: signup, private favorites across sessions, safe CRM separat
   const second=await playwright.request.newContext({baseURL});
   const anonymous=await playwright.request.newContext({baseURL});
   try {
-    expect((await same.post('/api/client-auth/login',{data:{email,password,next:'/radio'}})).status()).toBe(200);
+    expect((await same.post('/api/client-auth/login',{data:{email,password,next:'/radio'},headers:{origin:baseURL}})).status()).toBe(200);
     expect((await (await same.get('/api/radio/favorites')).json()).trackIds).toEqual([tracks[0].id]);
     await register(second);
     expect((await (await second.get('/api/radio/favorites')).json()).trackIds).toEqual([]);
@@ -148,7 +169,11 @@ test('radio favorites: selected songs loop, reload preserves selection, single-s
   await expect.poll(()=>audio.evaluate(a=>!a.paused&&a.currentTime>0)).toBeTruthy();
   await page.locator('.nr-player').getByRole('button',{name:'Mettre la radio en pause'}).click();
   await expect(page.getByTestId('radio-cycle-progress')).toContainText('Titre 2 sur 2');
-  await page.reload();await expect(audio).not.toHaveAttribute('src',/.+/);
+  await page.reload();
+  // Verify restored client state before interacting with the server-rendered button.
+  await expect(page.locator('.nr-player .nm-eyebrow')).toHaveText('Mes favoris');
+  await expect(page.getByRole('list',{name:'Mes chansons favorites'}).locator('li')).toHaveCount(2);
+  await expect(audio).not.toHaveAttribute('src',/.+/);
   await page.locator('.nr-player').getByRole('button',{name:'Écouter la radio',exact:true}).click();
   await expect(audio).toHaveAttribute('src',tracks[1].src);
   await page.locator('.nr-player').getByRole('button',{name:'Chanson suivante'}).click();
@@ -177,8 +202,13 @@ test('new album and community: official links, presentation placement, responsiv
   await album.scrollIntoViewIfNeeded();
   await expect.poll(()=>album.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBeTruthy();
   await page.goto('/radio');
-  await page.locator('.nr-album-tracks summary').click();
-  await expect(page.locator('.nr-album-tracks li')).toHaveCount(32);
+  // The favorites response marks client hydration complete; the trace showed
+  // the native details click racing that first hydration on a cold dev route.
+  await expect(page.getByRole('link',{name:'Créer mon compte ou me connecter',exact:true})).toBeVisible();
+  const albumTracks=page.locator('.nr-album-tracks');
+  await albumTracks.locator('summary').click();
+  await expect(albumTracks).toHaveAttribute('open','');
+  await expect(albumTracks.locator('li')).toHaveCount(32);
   for(const track of store.album.tracks) await expect(page.getByRole('link',{name:`Acheter ${track.title} sur iTunes`,exact:true}).first()).toHaveAttribute('href',new RegExp(`i=${track.id}.*app=itunes`));
   await page.locator('.nr-catalogue summary').click();
   for(const width of [320,390,768,1440]){

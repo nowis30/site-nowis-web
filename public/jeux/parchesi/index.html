@@ -1330,7 +1330,7 @@ function buildSeats() {
 }
 buildSeats();
 // ---------- Options des règles ----------
-const PROTO = 3; // version du protocole en ligne (v2 = 2 ; 3 = règles configurables)
+const PROTO = 4; // v4 : reprise de place avec preuve de possession privée
 let localRules = (() => { try { return E.makeRules(JSON.parse(LS.get('regles', 'null'))); } catch (e) { return E.makeRules(); } })();
 function rulesDiff(r) { const base = E.PRESETS[r.preset]; return E.RULE_OPTS.filter(([k, , , only]) => (!only || only === r.des) && r[k] !== base[k]).map(o => o[0]); }
 function renderRulesPanel(el, r, editable, onChange) {
@@ -1749,6 +1749,9 @@ const TRANSPORT = params.get('transport') === 'bc' || typeof Peer === 'undefined
 const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const makeCode = () => Array.from({ length: 5 }, () => CODE_ABC[Math.random() * CODE_ABC.length | 0]).join('');
 const rid = () => Math.random().toString(36).slice(2, 10);
+// Never put these credentials in game/setup/lobby objects: those are broadcast.
+const makeReconnectToken = () => Array.from(crypto.getRandomValues(new Uint8Array(32)), n => n.toString(16).padStart(2, '0')).join('');
+const resumeStorageKey = code => 'parchesi-reconnect:' + code;
 function mkConn(id, sendFn, closeFn) {
   const h = { data: [], close: [] }; let closed = false;
   return {
@@ -1832,7 +1835,7 @@ const shareUrl = code => location.origin + basePath() + '?salle=' + code + (TRAN
 // ---------- Hôte (fait autorité) ----------
 // =====================================================================
 const Host = {
-  srv: null, code: null, clients: new Map(), lobby: null, intents: [], seq: 0, hb: null,
+  srv: null, code: null, clients: new Map(), reconnectTokens: new Map(), lobby: null, intents: [], seq: 0, hb: null,
   async open() {
     for (let k = 0; k < 4; k++) {
       const code = makeCode();
@@ -1847,7 +1850,7 @@ const Host = {
     this.broadcast({ t: 'bye' });
     clearInterval(this.hb); this.hb = null;
     const s = this.srv; this.srv = null; setTimeout(() => { try { s && s.close(); } catch (e) { } }, 200);
-    this.clients.clear(); this.intents = []; this.lobby = null;
+    this.clients.clear(); this.reconnectTokens.clear(); this.intents = []; this.lobby = null;
   },
   heartbeat() {
     const now = Date.now();
@@ -1872,17 +1875,20 @@ const Host = {
     switch (m.t) {
       case 'pong': return;
       case 'hello': {
+        if (c.ready) return; // One seat per connection, including repeated hello messages.
         if (m.v !== PROTO) { c.conn.send({ t: 'reject', why: `Version différente de l'hôte (${m.v || '?'} ≠ ${PROTO}) — recharge la page pour obtenir la dernière version.`, proto: PROTO }); setTimeout(() => { try { c.conn.close(); } catch (e) { } }, 800); return; }
         const name = String(m.name || 'Joueur').trim().slice(0, 16) || 'Joueur';
         c.ready = true;
         if (game && setup && setup.online) { // partie en cours : reprise ou spectateur
-          const pi = game.players.findIndex(p => p.wasHuman && p.owner !== 'host' && p.name.toLowerCase() === name.toLowerCase());
+          const resumeOwner = typeof m.reconnectToken === 'string' ? this.reconnectTokens.get(m.reconnectToken) : null;
+          const pi = resumeOwner ? game.players.findIndex(p => p.wasHuman && p.owner !== 'host' && p.owner === resumeOwner) : -1;
           if (pi >= 0) {
             const p = game.players[pi];
             if (p.owner && p.owner !== id && this.clients.has(p.owner)) { const old = this.clients.get(p.owner); this.clients.delete(p.owner); try { old.conn.close(); } catch (e) { } }
             p.type = 'humain'; p.owner = id; p.disconnected = false;
+            this.reconnectTokens.set(m.reconnectToken, id);
             c.name = p.name;
-            c.conn.send({ t: 'welcome', proto: PROTO, phase: 'game', you: id, setup, g: game, seq: this.seq, color: p.color });
+            c.conn.send({ t: 'welcome', proto: PROTO, phase: 'game', you: id, setup, g: game, seq: this.seq, color: p.color, reconnectToken: m.reconnectToken });
             log(`🔌 ${pname(pi)} est de retour!`); toast(`${p.name} est de retour`);
             this.sync(); updateHUD(); if (!busy) step();
           } else {
@@ -1897,7 +1903,11 @@ const Host = {
         if (!free) { c.conn.send({ t: 'reject', why: 'La salle est pleine (4 joueurs).' }); return; }
         c.name = this.uniqueName(name, id);
         Object.assign(free, { type: 'humain', name: c.name, owner: id });
-        c.conn.send({ t: 'welcome', proto: PROTO, phase: 'lobby', you: id });
+        const reconnectToken = makeReconnectToken();
+        // Remove stale lobby credentials once a new private credential is issued.
+        if (typeof m.reconnectToken === 'string') this.reconnectTokens.delete(m.reconnectToken);
+        this.reconnectTokens.set(reconnectToken, id);
+        c.conn.send({ t: 'welcome', proto: PROTO, phase: 'lobby', you: id, reconnectToken });
         this.pushLobby();
         return;
       }
@@ -1955,12 +1965,14 @@ const Host = {
 // ---------- Client ----------
 // =====================================================================
 const Client = {
-  conn: null, code: null, name: null, inbox: [], pumping: false, seen: 0, hb: null, leaving: false, retry: null, lobby: null,
+  conn: null, code: null, name: null, reconnectToken: null, reconnectCode: null, inbox: [], pumping: false, seen: 0, hb: null, leaving: false, retry: null, lobby: null,
   async join(code, name) {
+    if (this.reconnectCode !== code) { this.reconnectCode = code; this.reconnectToken = null; }
+    if (!this.reconnectToken) { try { this.reconnectToken = sessionStorage.getItem(resumeStorageKey(code)); } catch (e) { } }
     this.code = code; this.name = name; this.leaving = false;
     const conn = await Net.join(code);
     this.attach(conn);
-    conn.send({ t: 'hello', name, v: PROTO });
+    conn.send({ t: 'hello', name, v: PROTO, reconnectToken: this.reconnectToken });
   },
   attach(conn) {
     this.conn = conn; this.seen = Date.now();
@@ -1993,6 +2005,10 @@ const Client = {
     switch (m.t) {
       case 'welcome':
         if (m.proto !== PROTO) { this.leave(); $('jStatus').textContent = "L'hôte utilise une ancienne version du jeu — demande-lui de recharger la page, puis réessaie."; $('jStatus').classList.add('err'); showScreen('scrJoin'); return; }
+        if (typeof m.reconnectToken === 'string' && /^[a-f0-9]{64}$/.test(m.reconnectToken)) {
+          this.reconnectToken = m.reconnectToken; this.reconnectCode = this.code;
+          try { sessionStorage.setItem(resumeStorageKey(this.code), m.reconnectToken); } catch (e) { }
+        }
         myId = m.you; netBadge('');
         if (m.phase === 'lobby') { showScreen('scrLobby'); setLobbyRole('client'); $('lbStatus').textContent = ''; }
         else { enterGame(m.setup, m.g); Client.seq = m.seq; if (!m.color) banner('👁 Tu regardes la partie en cours.'); else toast('Reconnecté!'); }
